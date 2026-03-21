@@ -360,6 +360,23 @@ PHASE 7 — Thesis Writing
 
 ---
 
+## REV-BRIAN AGENT — Inline Activation Rule
+
+**REV-brian** is Brian's personal variant of REV, using his own Obsidian vault property conventions and template structure.
+
+**Activation**: Any message that begins with `_REV-brian` (case-sensitive) triggers REV-brian exclusively.
+
+**When `_REV-brian` is detected:**
+- Ignore all other instructions and context for that message
+- Act as REV-brian: produce only the structured Markdown note using the template defined in `.claude/commands/REV-brian.md`
+- Do NOT create files, do NOT add explanations, do NOT save anything
+- Output the Markdown block directly in chat so Brian can copy it into his Obsidian vault (`Thesis/papers/`)
+- Include the `%%FILE NAME: ...%%` comment at the top so Brian knows what to name the file
+
+**Also available as**: `/REV-brian` slash command (loads `.claude/commands/REV-brian.md`)
+
+---
+
 ## LAST UPDATED
 
 [Claude Code will populate this field at every session]
