@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Environment / secrets
+.env
+.env.*
+*.key
+
+# Data files (do not upload sensitive datasets)
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.db
+*.sqlite
+
+# Exception: literature review CSV is safe to track
+!2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# CBS Guidelines PDFs (large files, not needed on GitHub)
+Thesis/Thesis\ Guidelines/
+
+# Claude local memory (machine-specific)
+.claude/projects/

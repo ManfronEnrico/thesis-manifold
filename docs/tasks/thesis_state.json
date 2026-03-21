@@ -1,0 +1,701 @@
+{
+  "literature_state": {
+    "papers": {
+      "Customer profiling, segmentation, and sales prediction using AI in direct marketing": {
+        "title": "Customer profiling, segmentation, and sales prediction using AI in direct marketing",
+        "authors": "(see Neural Computing & Applications, Springer, 2023)",
+        "year": 2023,
+        "venue": "Neural Computing & Applications (Springer)",
+        "url": "https://link.springer.com/article/10.1007/s00521-023-09339-6",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "SRQ3"
+        ],
+        "annotation_file": "docs/literature/papers/customer_segmentation_sales_prediction.md",
+        "confirmed": true
+      },
+      "Machine Learning-Based Demand Forecasting for an FMCG Retailer": {
+        "title": "Machine Learning-Based Demand Forecasting for an FMCG Retailer",
+        "authors": "(see Springer LNCS 2024)",
+        "year": 2024,
+        "venue": "Springer LNCS",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-031-67192-0_11",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "SRQ1",
+          "SRQ4"
+        ],
+        "annotation_file": "docs/literature/papers/ml_fmcg_demand_forecasting.md",
+        "confirmed": true
+      },
+      "Design principles for AI-augmented decision making: An action design research study": {
+        "title": "Design principles for AI-augmented decision making: An action design research study",
+        "authors": "(see European Journal of Information Systems, 2024)",
+        "year": 2024,
+        "venue": "European Journal of Information Systems (Taylor & Francis)",
+        "url": "https://www.tandfonline.com/doi/full/10.1080/0960085X.2024.2330402",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "SRQ4",
+          "Methodology"
+        ],
+        "annotation_file": "docs/literature/papers/ai_augmented_decision_making_dsr.md",
+        "confirmed": true
+      },
+      "Accurate Uncertainties for Deep Learning Using Calibrated Regression": {
+        "title": "Accurate Uncertainties for Deep Learning Using Calibrated Regression",
+        "authors": "Volodymyr Kuleshov, Nathan Fenner, Stefano Ermon",
+        "year": 2018,
+        "venue": "ICML 2018 (Proceedings of Machine Learning Research, Vol. 80)",
+        "url": "https://proceedings.mlr.press/v80/kuleshov18a/kuleshov18a.pdf",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "SRQ2"
+        ],
+        "annotation_file": "docs/literature/papers/calibrated_regression_uncertainty.md",
+        "confirmed": true
+      },
+      "AI-Based Design Science Research: An Exploratory Framework for Leveraging AI in DSR": {
+        "title": "AI-Based Design Science Research: An Exploratory Framework for Leveraging AI in DSR",
+        "authors": "(see Springer LNCS 2024)",
+        "year": 2024,
+        "venue": "Springer LNCS",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-031-93976-1_2",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "Methodology"
+        ],
+        "annotation_file": "docs/literature/papers/ai_based_dsr_framework.md",
+        "confirmed": true
+      },
+      "Pathways for Design Research on Artificial Intelligence": {
+        "title": "Pathways for Design Research on Artificial Intelligence",
+        "authors": "(Editorial, Information Systems Research)",
+        "year": 2024,
+        "venue": "Information Systems Research (INFORMS) \u2014 Vol. 35, No. 2",
+        "url": "https://pubsonline.informs.org/doi/10.1287/isre.2024.editorial.v35.n2",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "Methodology"
+        ],
+        "annotation_file": "docs/literature/papers/pathways_design_research_ai.md",
+        "confirmed": true
+      },
+      "Applying ML in Retail Demand Prediction \u2014 Tree Ensembles vs LSTM": {
+        "title": "Applying ML in Retail Demand Prediction \u2014 Tree Ensembles vs LSTM",
+        "authors": "(see Applied Sciences, MDPI, 2024)",
+        "year": 2024,
+        "venue": "Applied Sciences (MDPI)",
+        "url": "https://www.mdpi.com/2076-3417/13/19/11112",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ1"
+        ],
+        "annotation_file": "docs/literature/papers/retail_ml_tree_ensembles_lstm.md",
+        "confirmed": true
+      },
+      "Demand Forecasting Methods and the Potential of ML in the FMCG Retail Industry": {
+        "title": "Demand Forecasting Methods and the Potential of ML in the FMCG Retail Industry",
+        "authors": "(see Springer Book Chapter, 2023)",
+        "year": 2023,
+        "venue": "Springer Book Chapter",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-658-39072-3_8",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ1"
+        ],
+        "annotation_file": "docs/literature/papers/fmcg_demand_forecasting_methods.md",
+        "confirmed": true
+      },
+      "A machine learning approach to consumer behavior in supermarket analytics": {
+        "title": "A machine learning approach to consumer behavior in supermarket analytics",
+        "authors": "(see Computers & Industrial Engineering, ScienceDirect, 2025)",
+        "year": 2025,
+        "venue": "Computers & Industrial Engineering (ScienceDirect)",
+        "url": "https://www.sciencedirect.com/science/article/pii/S2772662225000566",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ3"
+        ],
+        "annotation_file": "docs/literature/papers/consumer_behavior_supermarket_ml.md",
+        "confirmed": true
+      },
+      "Humans vs. LLMs: Judgmental forecasting in an era of advanced AI": {
+        "title": "Humans vs. LLMs: Judgmental forecasting in an era of advanced AI",
+        "authors": "(see International Journal of Forecasting, ScienceDirect, 2024)",
+        "year": 2024,
+        "venue": "International Journal of Forecasting (ScienceDirect)",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0169207024000700",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ4"
+        ],
+        "annotation_file": "docs/literature/papers/humans_vs_llms_forecasting.md",
+        "confirmed": true
+      },
+      "LLMs in Supply Chain Management: Opportunities and a Case Study": {
+        "title": "LLMs in Supply Chain Management: Opportunities and a Case Study",
+        "authors": "(see IFAC-PapersOnLine, ScienceDirect, 2025)",
+        "year": 2025,
+        "venue": "IFAC-PapersOnLine (ScienceDirect)",
+        "url": "https://www.sciencedirect.com/science/article/pii/S2405896325012595",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "annotation_file": "docs/literature/papers/llms_supply_chain.md",
+        "confirmed": true
+      },
+      "Sales forecasting for retail stores using hybrid neural networks with sales-affecting variables": {
+        "title": "Sales forecasting for retail stores using hybrid neural networks with sales-affecting variables",
+        "authors": "(see PLOS ONE, PMC, 2024)",
+        "year": 2024,
+        "venue": "PLOS ONE (PMC)",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12453866/",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ1"
+        ],
+        "annotation_file": "docs/literature/papers/retail_hybrid_neural_forecasting.md",
+        "confirmed": true
+      },
+      "AI-enhanced Business Intelligence for decision-making": {
+        "title": "AI-enhanced Business Intelligence for decision-making",
+        "authors": "(see Procedia Computer Science, ScienceDirect, 2025)",
+        "year": 2025,
+        "venue": "Procedia Computer Science (ScienceDirect)",
+        "url": "https://www.sciencedirect.com/science/article/pii/S1877050925028303",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ4"
+        ],
+        "annotation_file": "docs/literature/papers/ai_enhanced_bi_decision_making.md",
+        "confirmed": true
+      },
+      "Evaluating and Calibrating Uncertainty Prediction in Regression Tasks": {
+        "title": "Evaluating and Calibrating Uncertainty Prediction in Regression Tasks",
+        "authors": "(see Sensors, MDPI, 2023)",
+        "year": 2023,
+        "venue": "Sensors (MDPI)",
+        "url": "https://www.mdpi.com/1424-8220/22/15/5540",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "annotation_file": "docs/literature/papers/calibrating_uncertainty_regression.md",
+        "confirmed": true
+      },
+      "Do forecasts expressed as prediction intervals improve production planning decisions?": {
+        "title": "Do forecasts expressed as prediction intervals improve production planning decisions?",
+        "authors": "(see European Journal of Operational Research, Elsevier, 2010)",
+        "year": 2010,
+        "venue": "European Journal of Operational Research (Elsevier)",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0377221709004592",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ3"
+        ],
+        "annotation_file": "docs/literature/papers/prediction_intervals_planning.md",
+        "confirmed": true
+      },
+      "Artifact Types in Information Systems Design Science \u2014 A Literature Review": {
+        "title": "Artifact Types in Information Systems Design Science \u2014 A Literature Review",
+        "authors": "(see Springer LNCS, 2012)",
+        "year": 2012,
+        "venue": "Springer Lecture Notes in Computer Science (LNCS)",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-642-33681-2_14",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "Methodology"
+        ],
+        "annotation_file": "docs/literature/papers/artifact_types_dsr.md",
+        "confirmed": true
+      },
+      "Design Science in Information Systems Research": {
+        "title": "Design Science in Information Systems Research",
+        "authors": "Alan R. Hevner, Salvatore T. March, Jinsoo Park, Sudha Ram",
+        "year": 2004,
+        "venue": "MIS Quarterly, 28(1), 75\u2013105",
+        "url": "https://aisel.aisnet.org/misq/vol28/iss1/6/",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "Methodology"
+        ],
+        "annotation_file": "docs/literature/papers/hevner_design_science_2004.md",
+        "confirmed": true
+      },
+      "A Design Science Research Methodology for Information Systems Research": {
+        "title": "A Design Science Research Methodology for Information Systems Research",
+        "authors": "Peffers, K., Tuunanen, T., Rothenberger, M. A., & Chatterjee, S.",
+        "year": 2007,
+        "venue": "Journal of Management Information Systems, 24(3), 45\u201377",
+        "url": "https://www.tandfonline.com/doi/abs/10.2753/MIS0742-1222240302",
+        "tier": "2 \u2014 Recommended",
+        "score": 9,
+        "srqs": [
+          "Methodology"
+        ],
+        "annotation_file": "docs/literature/papers/peffers_dsr_methodology_2007.md",
+        "confirmed": true
+      },
+      "LangGraph: Building Stateful Multi-Actor Applications with LLMs": {
+        "title": "LangGraph: Building Stateful Multi-Actor Applications with LLMs",
+        "authors": "LangChain AI (Harrison Chase et al.)",
+        "year": 2024,
+        "venue": "Software (GitHub, MIT licence) \u2014 no peer-reviewed paper",
+        "url": "https://github.com/langchain-ai/langgraph",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "annotation_file": "docs/literature/papers/langgraph_2024.md",
+        "confirmed": true,
+        "note": "Cite as software, not academic paper"
+      },
+      "Model Averaging and Double Machine Learning": {
+        "title": "Model Averaging and Double Machine Learning",
+        "authors": "Ahrens, A., Hansen, C. B., Schaffer, M. E., & Wiemann, T.",
+        "year": 2024,
+        "venue": "Journal of Applied Econometrics",
+        "url": "https://arxiv.org/abs/2401.01645",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ1"
+        ],
+        "annotation_file": "docs/literature/papers/model_averaging_double_ml.md",
+        "confirmed": true
+      },
+      "ANAH: Analytical Annotation of Hallucinations in LLMs": {
+        "title": "ANAH: Analytical Annotation of Hallucinations in LLMs",
+        "authors": "Ji, Z., Gu, J., Zhang, X., Lyu, B., Lin, D., & Chen, J.",
+        "year": 2024,
+        "venue": "ACL 2024",
+        "url": "https://aclanthology.org/2024.acl-long.442/",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "annotation_file": "docs/literature/papers/anah_hallucination_eval.md",
+        "confirmed": true
+      },
+      "AgentNoiseBench: Benchmarking Robustness of Tool-Using LLM Agents": {
+        "title": "AgentNoiseBench: Benchmarking Robustness of Tool-Using LLM Agents",
+        "authors": "(see arXiv:2602.11348, 2026)",
+        "year": 2026,
+        "venue": "arXiv (not yet peer-reviewed)",
+        "url": "https://arxiv.org/abs/2602.11348",
+        "tier": "2 \u2014 Recommended",
+        "score": 7,
+        "srqs": [
+          "SRQ2"
+        ],
+        "annotation_file": "docs/literature/papers/agent_noise_bench.md",
+        "confirmed": true,
+        "note": "Very recent \u2014 not peer-reviewed; use with caveat"
+      },
+      "Edge Intelligence Unleashed: Survey on Resource-Constrained AI": {
+        "title": "Edge Intelligence Unleashed: Survey on Resource-Constrained AI",
+        "authors": "TBD (Journal of Edge Computing, 2024)",
+        "year": 2024,
+        "venue": "Journal of Edge Computing / arXiv:2503.06027",
+        "url": "https://acnsci.org/journal/index.php/jec/article/view/1000",
+        "tier": "2 \u2014 Recommended",
+        "score": 8,
+        "srqs": [
+          "SRQ1"
+        ],
+        "annotation_file": "docs/literature/papers/edge_ai_inference_survey.md",
+        "confirmed": true
+      }
+    },
+    "gap_analysis_version": "v3",
+    "rq_version": "v2",
+    "open_questions": [
+      "Do any papers address the descriptive-to-predictive agent transition explicitly?",
+      "What is the standard benchmark for recommendation quality in LLM decision-support systems?",
+      "Is PydanticAI + LangGraph combination referenced in any multi-agent coordination paper?",
+      "What memory profiling methodology is standard for ML-in-production papers?",
+      "Are there retail-specific forecasting papers with memory/compute constraints?"
+    ],
+    "scraping_runs_completed": 2,
+    "last_scraped": "2026-03-15"
+  },
+  "thesis_outline": {
+    "chapters": [
+      {
+        "id": "frontpage",
+        "title": "Front Page",
+        "target_pages": 1
+      },
+      {
+        "id": "ch1_introduction",
+        "title": "Chapter 1 \u2014 Introduction",
+        "target_pages": 8
+      },
+      {
+        "id": "ch2_literature_review",
+        "title": "Chapter 2 \u2014 Literature Review",
+        "target_pages": 20
+      },
+      {
+        "id": "ch3_methodology",
+        "title": "Chapter 3 \u2014 Methodology",
+        "target_pages": 12
+      },
+      {
+        "id": "ch4_data_assessment",
+        "title": "Chapter 4 \u2014 Data Assessment",
+        "target_pages": 10
+      },
+      {
+        "id": "ch5_framework_design",
+        "title": "Chapter 5 \u2014 Framework Design",
+        "target_pages": 15
+      },
+      {
+        "id": "ch6_model_benchmark",
+        "title": "Chapter 6 \u2014 Model Benchmark & Selection",
+        "target_pages": 15
+      },
+      {
+        "id": "ch7_synthesis",
+        "title": "Chapter 7 \u2014 Context-Aware Decision Synthesis",
+        "target_pages": 12
+      },
+      {
+        "id": "ch8_evaluation",
+        "title": "Chapter 8 \u2014 Experimental Evaluation",
+        "target_pages": 15
+      },
+      {
+        "id": "ch9_discussion",
+        "title": "Chapter 9 \u2014 Discussion",
+        "target_pages": 8
+      },
+      {
+        "id": "ch10_conclusion",
+        "title": "Chapter 10 \u2014 Conclusion",
+        "target_pages": 5
+      }
+    ],
+    "total_target_pages": 120,
+    "body_target_pages": 115
+  },
+  "sections": {
+    "abstract": {
+      "chapter": "abstract",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/abstract.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "frontpage": {
+      "chapter": "frontpage",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/frontpage.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch1_introduction": {
+      "chapter": "ch1_introduction",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch1_introduction.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch2_literature_review": {
+      "chapter": "ch2_literature_review",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch2_literature_review.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch3_methodology": {
+      "chapter": "ch3_methodology",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch3_methodology.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch4_data_assessment": {
+      "chapter": "ch4_data_assessment",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch4_data_assessment.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch5_framework_design": {
+      "chapter": "ch5_framework_design",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch5_framework_design.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch6_model_benchmark": {
+      "chapter": "ch6_model_benchmark",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch6_model_benchmark.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch7_synthesis": {
+      "chapter": "ch7_synthesis",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch7_synthesis.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch8_evaluation": {
+      "chapter": "ch8_evaluation",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch8_evaluation.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch9_discussion": {
+      "chapter": "ch9_discussion",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch9_discussion.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    },
+    "ch10_conclusion": {
+      "chapter": "ch10_conclusion",
+      "status": "bullets_draft",
+      "bullet_file": "docs/thesis/sections/ch10_conclusion.md",
+      "compliance_checked": true,
+      "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
+      "word_count_estimate": 0
+    }
+  },
+  "figures": {
+    "system_architecture_v1": {
+      "figure_id": "system_architecture_v1",
+      "figure_type": "architecture",
+      "output_path": "docs/thesis/figures/system_architecture_v1.svg",
+      "format": "svg+png",
+      "generated": true,
+      "generated_date": "2026-03-15",
+      "generation_script": "generate_figures.py"
+    },
+    "agent_workflow_v1": {
+      "figure_id": "agent_workflow_v1",
+      "figure_type": "workflow",
+      "output_path": "docs/thesis/figures/agent_workflow_v1.svg",
+      "format": "svg+png",
+      "generated": true,
+      "generated_date": "2026-03-15",
+      "generation_script": "generate_figures.py"
+    },
+    "data_flow_v1": {
+      "figure_id": "data_flow_v1",
+      "figure_type": "data_flow",
+      "output_path": "docs/thesis/figures/data_flow_v1.svg",
+      "format": "svg+png",
+      "generated": true,
+      "generated_date": "2026-03-15",
+      "generation_script": "generate_figures.py"
+    },
+    "ram_budget_v1": {
+      "figure_id": "ram_budget_v1",
+      "figure_type": "ram_budget",
+      "output_path": "docs/thesis/figures/ram_budget_v1.svg",
+      "format": "svg+png",
+      "generated": true,
+      "generated_date": "2026-03-15",
+      "generation_script": "generate_figures.py"
+    },
+    "confidence_score_v1": {
+      "figure_id": "confidence_score_v1",
+      "figure_type": "confidence_score",
+      "output_path": "docs/thesis/figures/confidence_score_v1.svg",
+      "format": "svg+png",
+      "generated": true,
+      "generated_date": "2026-03-15",
+      "generation_script": "generate_figures.py"
+    },
+    "project_overview_v1": {
+      "figure_id": "project_overview_v1",
+      "figure_type": "project_overview",
+      "output_path": "docs/thesis/figures/project_overview_v1.svg",
+      "format": "svg+png",
+      "generated": true,
+      "generated_date": "2026-03-15",
+      "generation_script": "generate_figures.py",
+      "description": "Combined System A + System B overview \u2014 two clusters side-by-side; used in PROJECT_OVERVIEW.md"
+    }
+  },
+  "compliance_checks": {
+    "checks": {},
+    "total_character_count": 0,
+    "standard_pages_estimate": 0.0,
+    "page_limit": 120,
+    "within_page_limit": true
+  },
+  "last_task_plan": null,
+  "last_critic_result": null,
+  "current_agent": null,
+  "session_id": "20260315-000000",
+  "state_file": "docs/tasks/thesis_state.json",
+  "scraping_runs_completed": 3,
+  "literature": {
+    "confirmed_papers": [
+      {
+        "id": "sciagent_tool_augmented_llm",
+        "title": "SciAgent: Tool-augmented Language Models for Scientific Reasoning",
+        "tier": 1,
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "agent_q_autonomous_reasoning",
+        "title": "Agent Q: Advanced Reasoning and Learning for Autonomous AI Agents",
+        "tier": 2,
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "autoflow_llm_workflow",
+        "title": "AutoFlow: Automated Workflow Generation for Large Language Model Agents",
+        "tier": 2,
+        "score": 8,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "scoreflow_llm_workflow",
+        "title": "ScoreFlow: Mastering LLM Agent Workflows via Score-based Preference Optimization",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "dynamic_llm_agent_network",
+        "title": "A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "mcdm_methods_overview",
+        "title": "Overview of Existing MCDM Methods Used in Industrial Environments",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "dss4ex_decision_support",
+        "title": "DSS4EX: A Decision Support System framework for AI pipelines in time series forecasting",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ4",
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "agentcompass_workflow_eval",
+        "title": "AgentCompass: Towards Reliable Evaluation of Agentic Workflows in Production",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "stacked_ensemble_clinical_decision",
+        "title": "Heart Attack Risk Prediction via Stacked Ensemble Metamodeling",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ1"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "ml_economic_forecasting_sme",
+        "title": "Innovative ML approaches for complexity in economic forecasting and SME growth",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ1"
+        ],
+        "confirmed": true,
+        "run": 3
+      },
+      {
+        "id": "self_verification_sampling_llm",
+        "title": "Sample, Predict, then Proceed: Self-Verification Sampling for Tool Use of LLMs",
+        "tier": 2,
+        "score": 7,
+        "srqs": [
+          "SRQ2"
+        ],
+        "confirmed": true,
+        "run": 3
+      }
+    ],
+    "total_confirmed": 37,
+    "last_run": 3,
+    "last_updated": "2026-03-15"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "experiments": [
+    {
+      "_comment": "Template entry — shows the schema. Remove this entry and replace with real experiments.",
+      "experiment_id": "exp_TEMPLATE",
+      "timestamp": "2026-03-15T00:00:00+00:00",
+      "dataset_version": "nielsen_v1",
+      "dataset_split": {
+        "train_start": "2023-01-01",
+        "train_end": "2025-06-30",
+        "validation_end": "2025-09-30",
+        "test_end": "2025-12-31"
+      },
+      "models_executed": ["ARIMA", "Prophet", "LightGBM", "XGBoost", "Ridge"],
+      "hyperparameters": {
+        "ARIMA": {"params": {"p": 2, "d": 1, "q": 2, "seasonal": true}},
+        "Prophet": {"params": {"changepoint_prior_scale": 0.05, "seasonality_mode": "multiplicative"}},
+        "LightGBM": {"params": {"n_estimators": 500, "learning_rate": 0.05, "num_leaves": 31}},
+        "XGBoost": {"params": {"n_estimators": 500, "learning_rate": 0.05, "max_depth": 6}},
+        "Ridge": {"params": {"alpha": 1.0}}
+      },
+      "metrics": {
+        "ARIMA":     {"MAPE": null, "RMSE": null, "MAE": null, "directional_accuracy": null, "calibration_coverage": null},
+        "Prophet":   {"MAPE": null, "RMSE": null, "MAE": null, "directional_accuracy": null, "calibration_coverage": null},
+        "LightGBM":  {"MAPE": null, "RMSE": null, "MAE": null, "directional_accuracy": null, "calibration_coverage": null},
+        "XGBoost":   {"MAPE": null, "RMSE": null, "MAE": null, "directional_accuracy": null, "calibration_coverage": null},
+        "Ridge":     {"MAPE": null, "RMSE": null, "MAE": null, "directional_accuracy": null, "calibration_coverage": null}
+      },
+      "runtime": {
+        "ARIMA":    {"runtime_seconds": null, "peak_ram_mb": null, "within_ram_budget": null},
+        "Prophet":  {"runtime_seconds": null, "peak_ram_mb": null, "within_ram_budget": null},
+        "LightGBM": {"runtime_seconds": null, "peak_ram_mb": null, "within_ram_budget": null},
+        "XGBoost":  {"runtime_seconds": null, "peak_ram_mb": null, "within_ram_budget": null},
+        "Ridge":    {"runtime_seconds": null, "peak_ram_mb": null, "within_ram_budget": null}
+      },
+      "peak_ram_total_mb": null,
+      "within_total_ram_budget": null,
+      "consumer_signals_included": false,
+      "best_model_by_mape": null,
+      "notes": "Template entry — populate with real experiment results."
+    }
+  ]
+}

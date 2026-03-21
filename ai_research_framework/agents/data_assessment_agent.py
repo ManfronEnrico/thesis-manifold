@@ -1,0 +1,132 @@
+"""
+Data Assessment Agent — AI Research Framework (System A)
+---------------------------------------------------------
+Analyses Nielsen CSD and Indeks Danmark datasets.
+Produces a structured data quality report and engineered feature matrix.
+
+SRQs addressed: precondition for all SRQs.
+RAM budget: ~1,024 MB (dominated by Indeks Danmark: ~970 MB).
+"""
+
+from __future__ import annotations
+
+import gc
+import tracemalloc
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
+
+from ..config import NielsenConfig, IndeksDanmarkConfig, RAM_BUDGET_MB
+from ..state.research_state import ResearchState
+
+
+class DataAssessmentAgent:
+    """
+    Loads, validates, and profiles the Nielsen and Indeks Danmark datasets.
+    Outputs a quality report (Markdown string) and engineered feature matrix.
+    """
+
+    def __init__(
+        self,
+        nielsen_cfg: NielsenConfig,
+        indeks_cfg: IndeksDanmarkConfig,
+        output_path: Path = Path("docs/data"),
+    ) -> None:
+        self.nielsen_cfg = nielsen_cfg
+        self.indeks_cfg = indeks_cfg
+        self.output_path = output_path
+
+    # ── Main entry point (LangGraph node function) ────────────────────────────
+
+    def run(self, state: ResearchState) -> ResearchState:
+        """
+        LangGraph node. Called by the Coordinator when phase == 'data_assessment'.
+        Returns an updated state dict (LangGraph merges partial updates).
+        """
+        tracemalloc.start()
+        errors: list[str] = []
+
+        try:
+            nielsen_df, nielsen_report = self._assess_nielsen()
+            indeks_df, indeks_report = self._assess_indeks_danmark()
+            feature_matrix, consumer_signals = self._engineer_features(
+                nielsen_df, indeks_df
+            )
+            quality_report = self._format_report(nielsen_report, indeks_report)
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"DataAssessmentAgent failed: {exc}")
+            quality_report = None
+            feature_matrix = None
+            consumer_signals = None
+            nielsen_df = None
+            indeks_df = None
+
+        _, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+        peak_mb = peak / 1_048_576
+
+        return {
+            "current_phase": "feature_engineering" if not errors else "data_assessment",
+            "nielsen_data": nielsen_df,
+            "indeks_data": indeks_df,
+            "feature_matrix": feature_matrix,
+            "consumer_signals": consumer_signals,
+            "data_quality_report": quality_report,
+            "peak_ram_observed_mb": max(
+                state.get("peak_ram_observed_mb", 0.0), peak_mb
+            ),
+            "errors": state.get("errors", []) + errors,
+            "requires_human_approval": True,  # Always pause after data assessment
+        }
+
+    # ── Internal steps ────────────────────────────────────────────────────────
+
+    def _assess_nielsen(self) -> Tuple[Any, Dict]:
+        """Load Nielsen data and run quality checks."""
+        if not self.nielsen_cfg.access_confirmed:
+            raise RuntimeError(
+                "Nielsen database access not yet confirmed. "
+                "Contact Manifold AI to obtain credentials."
+            )
+        # Placeholder: actual SQL/CSV loading implemented once access is confirmed
+        raise NotImplementedError("Nielsen loading: pending data access confirmation.")
+
+    def _assess_indeks_danmark(self) -> Tuple[Any, Dict]:
+        """Load Indeks Danmark CSVs and run quality checks."""
+        if not self.indeks_cfg.local_available:
+            raise RuntimeError(
+                "Indeks Danmark CSVs not found locally. "
+                "Download the 3 CSVs from Google Drive to Thesis/ folder."
+            )
+        # Placeholder: actual CSV loading implemented once files are local
+        raise NotImplementedError("Indeks Danmark loading: CSVs not yet downloaded.")
+
+    def _engineer_features(
+        self, nielsen_df: Any, indeks_df: Any
+    ) -> Tuple[Any, Dict[str, float]]:
+        """
+        Build feature matrix for ML models.
+        Includes: lag features, rolling statistics, calendar, promotional flags,
+        and Indeks Danmark-derived consumer demand indices (PCA + k-means).
+        """
+        raise NotImplementedError("Feature engineering: pending data access.")
+
+    def _format_report(
+        self, nielsen_report: Dict, indeks_report: Dict
+    ) -> str:
+        """Format data quality findings as a Markdown string."""
+        raise NotImplementedError("Report formatting: pending data assessment.")
+
+    # ── Cleanup ───────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def unload(state: ResearchState) -> ResearchState:
+        """
+        Explicitly release dataset references from state to free RAM
+        before loading the Forecasting Agent's models.
+        Call this after feature_matrix is written to disk.
+        """
+        gc.collect()
+        return {
+            "nielsen_data": None,
+            "indeks_data": None,
+        }

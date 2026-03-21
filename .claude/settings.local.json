@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p docs/literature/papers docs/data docs/tasks docs/thesis/sections docs/compliance/compliance_checks)",
+      "Bash(touch docs/context.md docs/architecture.md docs/literature/gap_analysis.md docs/literature/rq_evolution.md docs/data/nielsen_assessment.md docs/data/indeksdanmark_notes.md docs/tasks/data_assessment.md docs/tasks/model_benchmark.md docs/tasks/synthesis_module.md docs/tasks/validation_report.md docs/thesis/outline.md docs/compliance/cbs_guidelines_notes.md)",
+      "Read(//Users/enricomanfron/Desktop/**)",
+      "WebSearch",
+      "Bash(for f:*)",
+      "Bash(do sed:*)",
+      "Bash(done)",
+      "Bash(python3 -c \"import graphviz; print\\(''graphviz OK:'', graphviz.__version__\\)\")",
+      "Bash(python3 -c \"import matplotlib; print\\(''matplotlib OK:'', matplotlib.__version__\\)\")",
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3 -c \"import graphviz; print\\(''''graphviz OK:'''', graphviz.__version__\\)\")",
+      "Bash(brew list:*)",
+      "Bash(brew install:*)",
+      "Bash(python3 generate_figures.py)",
+      "Bash(ls -lh \"/Users/enricomanfron/Desktop/Thesis Maniflod/docs/thesis/figures/project_overview_v1.\"*)"
+    ],
+    "additionalDirectories": [
+      "/Users/enricomanfron/Desktop/Thesis Maniflod"
+    ]
+  }
+}
