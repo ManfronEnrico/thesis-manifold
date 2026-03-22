@@ -16,6 +16,11 @@ lightgbm>=4.3.0             # LightGBM
 xgboost>=2.0.3              # XGBoost
 scikit-learn>=1.4.0         # Ridge + calibration utilities
 
+# ── Database connectivity ─────────────────────────────────────────────────────
+pyodbc>=5.1.0               # ODBC Driver 18 for SQL Server (must be installed separately)
+azure-identity>=1.16.0      # Azure AD service principal auth (ClientSecretCredential)
+python-dotenv>=1.0.0        # Load .env into os.environ
+
 # ── Data manipulation ─────────────────────────────────────────────────────────
 pandas>=2.2.0
 numpy>=1.26.0

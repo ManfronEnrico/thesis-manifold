@@ -64,7 +64,7 @@ ResearchCoordinator (LangGraph StateGraph)
 
 | Dataset | Format | Status |
 |---|---|---|
-| Nielsen/Prometheus CSD | SQL star schema (4 tables, ~36 months, 28 retailers) | 🔴 Blocked — access pending |
+| Nielsen/Prometheus CSD | SQL star schema (4 tables, ~36 months, 28 retailers) | 🟡 Credentials received — see [setup guide](docs/DATA_ACCESS_SETUP.md) |
 | Indeks Danmark | CSV (20,134 respondents × 6,364 variables) | 🔴 Blocked — download pending |
 
 ### RAM Budget
@@ -175,13 +175,16 @@ git clone https://github.com/ManfronEnrico/thesis-manifold.git
 cd thesis-manifold
 ```
 
-### 2. Set your API key
+### 2. Configure credentials
+
+Copy the `.env` template and fill in values (ask your co-author for the Nielsen credentials):
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+cp .env.example .env   # then open .env and fill in all values
 ```
 
-Add to `~/.zshrc` or `~/.bashrc` to persist across sessions.
+For full instructions including ODBC driver installation on Windows and macOS:
+→ **[docs/DATA_ACCESS_SETUP.md](docs/DATA_ACCESS_SETUP.md)**
 
 ### 3. Install dependencies
 
@@ -277,8 +280,12 @@ Phase 7 — Thesis Writing            [bullets only → human approval → prose
 - GitHub repository set up with collaborator access
 
 ### Blocked 🔴
-- Nielsen database access — awaiting Manifold AI confirmation + confidentiality agreement
 - Indeks Danmark CSVs — must download from Google Drive
+
+### In Progress 🟡
+- Nielsen database — credentials received, connection verified, data exploration in progress
+  → See [docs/DATA_ACCESS_SETUP.md](docs/DATA_ACCESS_SETUP.md) for colleague setup
+  → Run `python scripts/explore_nielsen.py` to inspect the data
 
 ### Pending
 - Phase 1–6 implementation (all data-dependent)

@@ -5,8 +5,13 @@ All architectural constraints defined here are the subject of the thesis evaluat
 The 8GB RAM budget is a hard constraint, not a preference.
 """
 
+import os
 from dataclasses import dataclass, field
 from typing import List
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # ── Hard constraint (SRQ1 evaluation dimension) ──────────────────────────────
@@ -53,6 +58,16 @@ CALIBRATION_COVERAGE_TARGET: float = 0.85   # 90% PI should cover ≥85% of actu
 # ── Data configuration ────────────────────────────────────────────────────────
 
 @dataclass
+class NielsenConnectionConfig:
+    """Azure AD service principal credentials — loaded from .env, never hardcoded."""
+    server: str = field(default_factory=lambda: os.environ["RU_SERVER_STRING"])
+    database: str = field(default_factory=lambda: os.environ["RU_DATABASE"])
+    client_id: str = field(default_factory=lambda: os.environ["RU_CLIENT_ID"])
+    tenant_id: str = field(default_factory=lambda: os.environ["RU_TENANT_ID"])
+    client_secret: str = field(default_factory=lambda: os.environ["RU_CLIENT_SECRET"])
+
+
+@dataclass
 class NielsenConfig:
     schema_tables: List[str] = field(default_factory=lambda: [
         "csd_clean_dim_market_v",
@@ -66,7 +81,7 @@ class NielsenConfig:
         "sales_units",
     ])
     history_periods: int = 36   # ~3 years monthly
-    access_confirmed: bool = False  # ⚠️ BLOCKED — must confirm with Manifold AI
+    access_confirmed: bool = True  # credentials received via one-time secret
 
 
 @dataclass
