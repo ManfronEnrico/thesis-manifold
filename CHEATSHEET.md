@@ -43,33 +43,147 @@ _REV
 
 ## Git & GitHub
 
+### The Golden Rule
+Always `git pull` before you start working. Always `git push` when you're done.
+Never work directly on `main` — use your own branch.
+
+---
+
+### Everyday Workflow
+
 ```bash
-# Check current status
+# 1. Check what branch you are on and what has changed
 git status
-git log --oneline -10
+git branch                        # * marks your current branch
 
-# Stage and commit changes
-git add docs/literature/papers/new_paper.md
-git commit -m "Add annotated paper: [paper title]"
+# 2. Get the latest changes from GitHub before starting work
+git fetch --all                   # see what's changed remotely (safe, no edits applied)
+git pull                          # apply those changes to your current branch
 
-# Push to GitHub
-git push
+# 3. Stage your changes (choose what to include in the commit)
+git add Thesis/papers/my_note.md  # add a specific file
+git add Thesis/papers/            # add an entire folder
+git add -p                        # interactive — review each change before staging
 
-# Pull latest changes (when collaborating)
-git pull
+# 4. Commit (save a snapshot locally)
+git commit -m "Add annotated note: Schick et al. (2023) Toolformer"
 
-# See what changed
-git diff
-git diff --staged   # staged changes only
-
-# Undo last commit (keep changes)
-git reset --soft HEAD~1
-
-# Common workflow after a session
-git add -p          # interactive staging (review each change)
-git commit -m "Session N: [what was done]"
+# 5. Push (upload to GitHub so your colleague can see it)
 git push
 ```
+
+---
+
+### Branching — Working Without Stepping on Each Other
+
+```bash
+# See all branches (local + remote)
+git branch -a
+
+# Switch to an existing branch
+git checkout main
+git checkout brian/rev-brian-command
+
+# Create a new branch and switch to it
+git checkout -b brian/new-feature
+
+# Push a new branch to GitHub for the first time
+git push -u origin brian/new-feature   # only needed once; plain `git push` works after
+```
+
+---
+
+### Merging Your Branch into Main
+
+```bash
+# Step 1 — switch to main and get the latest version
+git checkout main
+git pull
+
+# Step 2 — merge your branch in
+git merge brian/rev-brian-command
+
+# Step 3 — push the updated main to GitHub
+git push
+```
+
+---
+
+### Keeping Your Branch Up to Date with Main
+
+Run this when your colleague has pushed changes to `main` that you want in your branch:
+
+```bash
+git checkout brian/rev-brian-command   # make sure you're on your branch
+git fetch --all                        # get latest remote state
+git merge origin/main                  # bring main's changes into your branch
+```
+
+---
+
+### Checking What Has Changed
+
+```bash
+git log --oneline -10             # last 10 commits, compact view
+git diff                          # unstaged changes (what you've edited but not staged)
+git diff --staged                 # staged changes (what will go into the next commit)
+git diff main..brian/rev-brian-command  # compare two branches
+```
+
+---
+
+### Undoing Mistakes
+
+```bash
+# Undo the last commit but KEEP your file changes (safest option)
+git reset --soft HEAD~1
+
+# Discard changes to a specific file (revert to last committed version)
+git checkout -- Thesis/papers/my_note.md
+
+# See what's different between local and remote before pushing
+git diff origin/main..HEAD
+```
+
+---
+
+### Conflict Resolution (when two people edited the same file)
+
+Git will mark conflicts inside the file like this:
+
+```
+<<<<<<< HEAD
+your version of the line
+=======
+your colleague's version of the line
+>>>>>>> origin/main
+```
+
+1. Open the file, delete the conflict markers, and keep the correct version.
+2. Then:
+
+```bash
+git add the_conflicted_file.md
+git commit -m "Resolve merge conflict in [filename]"
+git push
+```
+
+---
+
+### Quick Reference Card
+
+| Task | Command |
+|---|---|
+| What branch am I on? | `git branch` |
+| What files have changed? | `git status` |
+| Get latest from GitHub | `git fetch --all` then `git pull` |
+| Stage a file | `git add path/to/file` |
+| Commit staged changes | `git commit -m "message"` |
+| Upload to GitHub | `git push` |
+| Switch branch | `git checkout branch-name` |
+| Create new branch | `git checkout -b branch-name` |
+| Merge branch into main | `git checkout main` → `git merge branch-name` → `git push` |
+| Undo last commit (keep files) | `git reset --soft HEAD~1` |
 
 ---
 
