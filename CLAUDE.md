@@ -416,6 +416,8 @@ PHASE 7 — Thesis Writing
 
 **Auth**: Run once per session expiry — `notebooklm login` (opens Chromium browser). Cookies stored at `~/.notebooklm/storage_state.json`.
 
+**Ownership model**: Brian's Google account owns all notebooks. Enrico gets shared access via NotebookLM web UI (`notebooklm.google.com`). Only Brian runs `notebooklm-py` scripts — the API only sees notebooks owned by the authenticated account. `ingestion_manifest.json` holds Brian's notebook IDs as the single source of truth.
+
 ### Notebook Map (populate after `notebooklm login` + `notebooklm create`)
 
 | Notebook | NotebookLM ID | Chapter focus |

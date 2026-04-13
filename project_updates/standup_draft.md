@@ -92,4 +92,5 @@ _(Deprioritized items — not committed for this meeting period)_
 - Finding: PDF naming convention needed — use `author_year_shorttitle.pdf` so citations show author/year
 - Finding: `notebooklm research` (web search) is also relevant for gap analysis — keep in workflow
 - Decision gate: **PASSED** → proceed to Phase 1 (create 6 chapter notebooks, populate with 16 confirmed papers)
+- Sharing model decided: Brian owns all notebooks (API + ingestion); Enrico gets shared view access via NotebookLM web UI
 - Features not yet tested (Phase 1): `source guide`, `source fulltext`, `metadata`, `generate report`, `download report`
