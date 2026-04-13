@@ -420,35 +420,39 @@
     },
     "ch1_introduction": {
       "chapter": "ch1_introduction",
-      "status": "bullets_draft",
+      "status": "prose_draft",
       "bullet_file": "docs/thesis/sections/ch1_introduction.md",
-      "compliance_checked": true,
+      "compliance_checked": false,
+      "compliance_note": "Em dashes removed 2026-04-12. Citation corrected 2026-04-12 (Sapkota et al., 2025). Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
-      "word_count_estimate": 0
+      "word_count_estimate": 21400
     },
     "ch2_literature_review": {
       "chapter": "ch2_literature_review",
-      "status": "bullets_draft",
+      "status": "prose_draft",
       "bullet_file": "docs/thesis/sections/ch2_literature_review.md",
       "compliance_checked": true,
+      "compliance_note": "Written 2026-04-12. All 8 unknown-author citations resolved via /find-papers. 25 citations still pending NotebookLM verification. Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
-      "word_count_estimate": 0
+      "word_count_estimate": 50500
     },
     "ch3_methodology": {
       "chapter": "ch3_methodology",
-      "status": "bullets_draft",
+      "status": "prose_draft",
       "bullet_file": "docs/thesis/sections/ch3_methodology.md",
       "compliance_checked": true,
+      "compliance_note": "Written 2026-04-12. All citations from existing corpus. DSR supervisor confirmation still pending (OI-03). Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
-      "word_count_estimate": 0
+      "word_count_estimate": 27300
     },
     "ch4_data_assessment": {
       "chapter": "ch4_data_assessment",
-      "status": "bullets_draft",
+      "status": "prose_draft",
       "bullet_file": "docs/thesis/sections/ch4_data_assessment.md",
       "compliance_checked": true,
+      "compliance_note": "Written 2026-04-12 from live Nielsen query results. Nielsen sections fully grounded in data. Indeks Danmark sections based on documented data model (CSVs pending download). Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
-      "word_count_estimate": 0
+      "word_count_estimate": 22700
     },
     "ch5_framework_design": {
       "chapter": "ch5_framework_design",

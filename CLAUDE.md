@@ -72,24 +72,31 @@
 - [x] `docs/experiments/experiment_registry.json` initialised (template)
 - [x] `docs/thesis_production_architecture.md` — System A/B separation documented
 - [x] `docs/system_architecture_report.md` — full 10-section architecture report
+- [x] Ch.1 Introduction prose (21,400 chars) — citation corrected 2026-04-12
+- [x] Ch.2 Literature Review prose (50,500 chars, 22 pages) — written 2026-04-12
+- [x] Ch.3 Methodology prose (27,300 chars, 12 pages) — written 2026-04-12
+- [x] **Nielsen DB connection confirmed** — Microsoft Fabric connector implemented 2026-04-12; all 4 views return data
+- [x] `ai_research_framework/data/nielsen_connector.py` — Service Principal auth via pyodbc + azure-identity
+- [x] **Indeks Danmark CSVs downloaded** — 2026-04-13; located at `Thesis/indeksdanmark/`; CSD brand + retailer variables identified
 
 ### Blocked 🔴
-- [ ] **BLOCKED**: Nielsen database access — not yet obtained, must request from Manifold + sign confidentiality agreement
-- [ ] **BLOCKED**: Indeks Danmark CSVs — must download from Google Drive to Thesis/ folder
+- [ ] **PENDING REVIEW**: Ch.1, Ch.2, Ch.3, Ch.4 prose in `docs/thesis/writing/` — requires human review before `prose_approved`
+- [ ] **PENDING**: DSR supervisor confirmation (OI-03) — required for Ch.3 compliance sign-off
 
-### Pending (can proceed without data)
-- [ ] Literature Scraping Run 2 (trigger at next session)
-- [ ] Generate architecture figures (requires: pip install graphviz matplotlib)
-- [ ] CBS compliance checks on chapter skeletons
-- [ ] Tier B paper confirmations (10 papers — user decision pending)
+### Pending (can proceed now)
+- [ ] Ch.4 Data Assessment — Nielsen connection confirmed; can begin data quality assessment
+- [ ] Ch.5 Framework Design (14pp) — no data required; can begin immediately
+- [ ] Ch.9 Discussion (8pp) — no data required
+- [ ] Ch.10 Conclusion (6pp) — no data required
+- [ ] NotebookLM verification of 25 Ch.2 citations (pending)
 
-### Data-dependent (blocked)
-- [ ] Phase 1: Data Assessment (actual implementation)
-- [ ] Phase 4: Model Benchmark (SRQ1)
-- [ ] Phase 5: Synthesis Module (SRQ2)
-- [ ] Phase 6: Evaluation (SRQ3/SRQ4)
+### Data-dependent (now unblocked)
+- [ ] Phase 1: Data Assessment (SRQ1–4 precondition) — UNBLOCKED 2026-04-12
+- [ ] Phase 4: Model Benchmark (SRQ1) — requires data assessment complete
+- [ ] Phase 5: Synthesis Module (SRQ2) — requires Phase 4 complete
+- [ ] Phase 6: Evaluation (SRQ3/SRQ4) — requires Phase 5 complete
 
-> Last updated: 2026-03-15
+> Last updated: 2026-04-12
 
 ---
 
@@ -141,6 +148,60 @@
 | **Experiment Tracking Agent** | `agents/experiment_tracking_agent.py` | Registry + summary | ✅ |
 | **Results Visualization Agent** | `agents/results_visualization_agent.py` | Data-driven charts | ✅ |
 | **Results Tables Agent** | `agents/results_tables_agent.py` | Markdown tables for thesis | ✅ |
+
+#### OutlineAgent (via thesis-structuring skill)
+
+**Skill location**: `.claude/skills/thesis-structuring/`
+**Slash command**: `/update-outline`
+**Triggered by**: User invocation or PlannerAgent P2 pre-check (see below)
+
+**Role**: Sole agent responsible for `docs/thesis/outline.md`. No other agent writes to this file.
+Reads thesis state and context → decides whether outline needs updating → writes updated outline.
+Never writes prose or bullet content.
+
+**Reads**:
+- `docs/thesis/outline.md`
+- `docs/tasks/thesis_state.json`
+- `docs/thesis/sections/*.md`
+- `.claude/agents/thesis-writer.md` lines 154–169 (page budgets)
+- `docs/context.md`
+
+**Writes**:
+- `docs/thesis/outline.md`
+- `docs/thesis/sections/{chapter_id}.md` stubs only (status: `no_bullets`)
+
+#### APA Citation Agent (via apa-citation skill)
+
+**Skill location**: `.claude/skills/apa-citation/`
+**Slash command**: `/cite`
+**Triggered by**: User invokes `/cite`, pastes a _REV or _REV-brian note, provides a DOI, or says "cite this" / "add this reference" / "format this in APA"
+
+**Role**: Sole agent responsible for `docs/thesis/references.md`. No other agent writes to this file directly.
+Formats APA 7 citations from any input source (Obsidian notes, DOIs, raw data), verifies via NotebookLM, checks for duplicates, and appends to the references list.
+
+**Do NOT confuse with `/verify-citations`** — that command performs bulk verification of existing prose. This skill handles new citation insertion.
+
+**Reads**:
+- User-provided input (_REV note, DOI, raw metadata)
+- `docs/thesis/references.md` (duplicate check)
+- `docs/thesis/sections/{chapter_id}.md` (insertion target, if specified)
+
+**Writes**:
+- `docs/thesis/references.md` (appends new entry — alphabetical order)
+- `docs/thesis/sections/{chapter_id}.md` (inserts in-text citation, if section specified)
+
+**Edge case rules**: `.claude/skills/apa-citation/references/apa7-rules.md`
+
+---
+
+#### PlannerAgent P2 pre-check (scheduling rule amendment)
+
+> **[P2 pre-check]** Before scheduling WritingAgent for a chapter, verify that chapter
+> has a structural skeleton approved in `docs/thesis/outline.md`.
+> If the chapter has no skeleton entry → run `/update-outline` first.
+> WritingAgent must not draft bullets for a structurally undefined chapter.
+
+---
 
 **Core architectural rules**:
 - System A = research subject — System B never modifies System A logic
@@ -291,7 +352,12 @@ PHASE 7 — Thesis Writing
 - Show a brief before every phase and await approval
 - Thesis Writing Agent produces ONLY bullet points — never direct prose
 - Stop and request human approval before writing any thesis section
+- **No em dashes (—) in any thesis prose.** Rewrite around them using commas, semicolons, colons, or subordinate clauses. Hyphens in compound adjectives (resource-constrained, data-driven) are permitted.
 - Every installed package must be documented in `docs/context.md`
+- `docs/thesis/outline.md` is owned exclusively by the thesis-structuring skill. PlannerAgent reads it. WritingAgent reads it. Neither writes to it.
+- `docs/thesis/references.md` is owned exclusively by the APA Citation Skill (`/cite`). No agent writes to it directly. Use `/cite` for all new reference insertions.
+- Major restructuring proposed by `/update-outline` requires explicit human approval before PlannerAgent may schedule any writing tasks for affected chapters.
+- WritingAgent may not draft bullets for a chapter not present in `docs/thesis/outline.md`.
 
 ---
 
@@ -377,6 +443,32 @@ PHASE 7 — Thesis Writing
 
 ---
 
+## THESIS WRITER AGENT — Slash Command
+
+**`/write-section <chapter_id>`** converts an approved bullet-point skeleton into CBS-compliant academic prose and writes it to `Thesis/thesis_draft.docx`.
+
+**Activation**: `/write-section ch1_introduction` (or any valid chapter ID)
+
+**Mandatory workflow** (never skip steps):
+1. Read bullet file — confirm status is `bullets_approved` (not `bullets_draft`)
+2. Generate prose draft — show in chat with character count estimate
+3. **Citation verification** — NotebookLM verifies every citation is real and accurate (notebook ID: `48697de0-f0a5-4e66-918e-531abea82c20`)
+4. **Compliance check** — CBS Compliance Agent validates: APA 7, structure, page budget, mandatory sections
+5. **Human approval gate** — show draft + citation report + compliance report, wait for explicit OK
+6. Write to Word — `Thesis/thesis_draft.docx` — update section status
+
+**File**: `.claude/commands/write-section.md` + `.claude/agents/thesis-writer.md`
+**Word dependency**: `python-docx` (install if missing, log in `docs/context.md`)
+**NotebookLM notebook ID**: `48697de0-f0a5-4e66-918e-531abea82c20` (always run `notebooklm use <id>` at session start)
+
+**Hard rules**:
+- NEVER write prose without human approval
+- NEVER skip compliance check
+- NEVER fabricate citations — use `[CITATION NEEDED]` if source unknown
+- NEVER claim Nielsen/Indeks Danmark results unless Phase 1 confirmed complete
+
+---
+
 ## LAST UPDATED
 
-[Claude Code will populate this field at every session]
+2026-04-12 — Added `/write-section` + `/verify-citations` + `/find-papers` commands; `thesis-writer` + `literature-researcher` agents; NotebookLM integration (notebook ID: 48697de0-f0a5-4e66-918e-531abea82c20)

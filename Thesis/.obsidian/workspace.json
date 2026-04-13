@@ -204,6 +204,58 @@
             }
           },
           {
+            "id": "f56a4db5bc279564",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME - Makridakis et al. (2020) - The M4 Competition- 100,000 Time Series and 61 Forecasting Methods.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME - Makridakis et al. (2020) - The M4 Competition- 100,000 Time Series and 61 Forecasting Methods"
+            }
+          },
+          {
+            "id": "ced42d94d702c304",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME- Makridakis et al. (2022) - M5 Accuracy Competition- Results, Findings, and Conclusions.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME- Makridakis et al. (2022) - M5 Accuracy Competition- Results, Findings, and Conclusions"
+            }
+          },
+          {
+            "id": "fc25124ab472b28c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "FILE NAME - Ma et al. (2025) - A Data-Driven and Context-Aware Approach for Demand Forecasting in the Beverage Industry.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME - Ma et al. (2025) - A Data-Driven and Context-Aware Approach for Demand Forecasting in the Beverage Industry"
+            }
+          },
+          {
+            "id": "45ff1049568b3241",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          },
+          {
             "id": "11adc394eb9e5203",
             "type": "leaf",
             "state": {
@@ -237,16 +289,250 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Untitled.md",
+                "file": "papers/A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Untitled"
+              "title": "A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting"
+            }
+          },
+          {
+            "id": "927307a5929d1e1d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting.md",
+                "mode": "preview",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting"
+            }
+          },
+          {
+            "id": "d7c6b40524b2da6f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/An information-sharing and cost-aware custom loss machine learning framework for 3PL supply chain forecasting.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "An information-sharing and cost-aware custom loss machine learning framework for 3PL supply chain forecasting"
+            }
+          },
+          {
+            "id": "e96b96abdafa9ebb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes A Clean-in-Place Case Study.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes A Clean-in-Place Case Study"
+            }
+          },
+          {
+            "id": "ecb67aabeae39502",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/Neuro-Symbolic AI in 2024 A Systematic Review.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Neuro-Symbolic AI in 2024 A Systematic Review"
+            }
+          },
+          {
+            "id": "026868eb96a8f0d2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/SciAgent Tool-Augmented Language Models for Scientific Reasoning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SciAgent Tool-Augmented Language Models for Scientific Reasoning"
+            }
+          },
+          {
+            "id": "6764baeef8d40ec0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration"
+            }
+          },
+          {
+            "id": "31d54ce63135d3a2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/ScoreFlow Mastering LLM Agent Workflows via Score-based Preference Optimization.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ScoreFlow Mastering LLM Agent Workflows via Score-based Preference Optimization"
+            }
+          },
+          {
+            "id": "676c93c2a715306e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/Toolformer Language Models Can Teach Themselves to Use Tools.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Toolformer Language Models Can Teach Themselves to Use Tools"
+            }
+          },
+          {
+            "id": "006b3e7fa5b383a4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/Peffers et al. (2007) - A Design Science Research Methodology for Information Systems Research.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Peffers et al. (2007) - A Design Science Research Methodology for Information Systems Research"
+            }
+          },
+          {
+            "id": "4f790df66803c507",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/AgentNoiseBench Benchmarking Robustness of Tool-Using LLM Agents Under Noisy Conditions.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "AgentNoiseBench Benchmarking Robustness of Tool-Using LLM Agents Under Noisy Conditions"
+            }
+          },
+          {
+            "id": "63b7238df91afac0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME Ahrens et al. (2025) - Model Averaging and Double Machine Learning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME Ahrens et al. (2025) - Model Averaging and Double Machine Learning"
+            }
+          },
+          {
+            "id": "9ff7071969b81f3f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME Ng (2017) Opportunities and Challenges Lessons from Analyzing Terabytes of Scanner Data.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME Ng (2017) Opportunities and Challenges Lessons from Analyzing Terabytes of Scanner Data"
+            }
+          },
+          {
+            "id": "4be3f9c01e87d76a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME Klee & Xia (2025) - Measuring Time Series Forecast Stability for Demand PlanningUntitled.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME Klee & Xia (2025) - Measuring Time Series Forecast Stability for Demand PlanningUntitled"
+            }
+          },
+          {
+            "id": "401b962361b574e9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME Klee & Xia (2025) - Measuring Time Series Forecast Stability for Demand Planning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME Klee & Xia (2025) - Measuring Time Series Forecast Stability for Demand Planning"
+            }
+          },
+          {
+            "id": "8798d759d1e567c9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME Pham et al. (2025) - SLM-Bench A Comprehensive Benchmark of Small Language Models on Environmental Impacts.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME Pham et al. (2025) - SLM-Bench A Comprehensive Benchmark of Small Language Models on Environmental Impacts"
+            }
+          },
+          {
+            "id": "040bc4d33fbaa648",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          },
+          {
+            "id": "4f1ad999b4fdf8b3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "papers/FILE NAME - Niculescu-Mizil & Caruana (2005) - Predicting Good Probabilities With Supervised Learning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "FILE NAME - Niculescu-Mizil & Caruana (2005) - Predicting Good Probabilities With Supervised Learning"
             }
           }
         ],
-        "currentTab": 16
+        "currentTab": 17
       }
     ],
     "direction": "vertical"
@@ -408,43 +694,44 @@
       "bases:Create new base": false
     }
   },
-  "active": "2d7098716b2fd3c1",
+  "active": "45ff1049568b3241",
   "lastOpenFiles": [
-    "papers/AgentCompass Towards Reliable Evaluation of Agentic Workflows in Production.md",
+    "indeksdanmark/official_codebook.csv",
+    "indeksdanmark/indeksdanmark_metadata.csv",
+    "indeksdanmark/indeksdanmark_data.csv",
+    "indeksdanmark",
+    "papers/Agent Q Advanced Reasoning and Learning for Autonomous AI Agents.md",
+    "Untitled 1.md",
+    "FILE NAME - Ma et al. (2025) - A Data-Driven and Context-Aware Approach for Demand Forecasting in the Beverage Industry.md",
     "Untitled.md",
-    "papers/AgentCompass Towards Reliable Evaluation of Agentic Workflows in Production 1.md",
-    "prometheus_data_model-1.md",
-    "indeksdanmark_data_model-1.md",
+    "papers/FILE NAME- Makridakis et al. (2022) - M5 Accuracy Competition- Results, Findings, and Conclusions.md",
+    "papers/FILE NAME - Makridakis et al. (2020) - The M4 Competition- 100,000 Time Series and 61 Forecasting Methods.md",
     "papers/Sample, Predict, then Proceed Self-Verification Sampling for Tool Use of LLMs.md",
+    "Untitled.canvas",
+    "UntitledUntitled.md",
+    "papers/FILE NAME - Niculescu-Mizil & Caruana (2005) - Predicting Good Probabilities With Supervised Learning.md",
+    "papers/FILE NAME Sharma (2024) - Unlocking Business Potential in FMCG with Predictive Analytics.md",
+    "papers/FILE NAME Pham et al. (2025) - SLM-Bench A Comprehensive Benchmark of Small Language Models on Environmental Impacts.md",
+    "papers/FILE NAME Klee & Xia (2025) - Measuring Time Series Forecast Stability for Demand Planning.md",
+    "papers/FILE NAME Klee & Xia (2025) - Measuring Time Series Forecast Stability for Demand PlanningUntitled.md",
+    "papers/FILE NAME Ng (2017) Opportunities and Challenges Lessons from Analyzing Terabytes of Scanner Data.md",
+    "papers/FILE NAME Ahrens et al. (2025) - Model Averaging and Double Machine Learning.md",
+    "papers/AgentNoiseBench Benchmarking Robustness of Tool-Using LLM Agents Under Noisy Conditions.md",
+    "papers/AgentCompass Towards Reliable Evaluation of Agentic Workflows in Production 1.md",
+    "papers/AgentCompass Towards Reliable Evaluation of Agentic Workflows in Production.md",
+    "papers/A hybrid multi-criteria decision-making and machine learning approach for explainable supplier selection.md",
+    "papers/A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration.md",
+    "papers/A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting.md",
+    "papers/FILE NAME Hevner et al. (2004) - Design Science in Information Systems Research.md",
+    "papers/Peffers et al. (2007) - A Design Science Research Methodology for Information Systems Research.md",
+    "papers/Schick et al. (2023) - Toolformer Language Models Can Teach Themselves to Use Tools.md",
+    "papers/Toolformer Language Models Can Teach Themselves to Use Tools.md",
     "Thesis Guidelines/Changing topic.pdf",
     "Thesis Guidelines/Case study.pdf",
     "Thesis Guidelines/Bibliographies and references.pdf",
     "Thesis Guidelines/Appendices and transcription.pdf",
-    "papers/AgentNoiseBench Benchmarking Robustness of Tool-Using LLM Agents Under Noisy Conditions.md",
-    "papers/Overview of Existing Multi-Criteria Decision-Making (MCDM) Methods Used in Industrial Environments.md",
-    "papers/Model Averaging and Double Machine Learning.md",
-    "papers/Measuring Reliability of Large Language Models through Semantic Consistency.md",
-    "papers/Innovative machine learning approaches for complexity in economic forecasting and SME growth A comprehensive review.md",
-    "papers/Heart Attack Risk Prediction via Stacked Ensemble Metamodeling A Machine Learning Framework for Real-Time Clinical Decision Support.md",
-    "papers/Executable Code Actions Elicit Better LLM Agents.md",
-    "papers/AutoFlow Automated Workflow Generation for Large Language Model Agents.md",
-    "papers/ART Automatic Multi-Step Reasoning and Tool-Use for Large Language Models.md",
-    "papers/ANAH Analytical Annotation of Hallucinations in Large Language Models.md",
-    "papers/AI Agents vs. Agentic AI A Conceptual Taxonomy, Applications and Challenges.md",
-    "papers/Agent Q Advanced Reasoning and Learning for Autonomous AI Agents.md",
-    "papers/A hybrid multi-criteria decision-making and machine learning approach for explainable supplier selection.md",
-    "papers/Heart Attack Risk Prediction via Stacked Ensemble Metamodeling A Machine Learning Framework for Real-Time Clinical Decision Support 1.md",
     "papers",
     "Visualizza anteprima allegato indeksdanmark_data.csvVisualizza anteprima allegato indeksdanmark_data.csvindeksdanmark_data.csvScansione virus non eseguita 2.webloc",
-    "Visualizza anteprima allegato official_codebook.csvVisualizza anteprima allegato official_codebook.csvofficial_codebook.csvCondiviso in Drive 2.webloc",
-    "Visualizza anteprima allegato indeksdanmark.metadata.csvVisualizza anteprima allegato indeksdanmark.metadata.csvindeksdanmark.metadata.csvCondiviso in Drive 2.webloc",
-    "Thesis Guidelines/Research question.pdf",
-    "Thesis Guidelines/Research design.pdf",
-    "docs/thesis/outline.md",
-    "docs/tasks/validation_report.md",
-    "docs/tasks/synthesis_module.md",
-    "docs/tasks/model_benchmark.md",
-    "docs/tasks/data_assessment.md",
-    "docs/literature/rq_evolution.md"
+    "Visualizza anteprima allegato official_codebook.csvVisualizza anteprima allegato official_codebook.csvofficial_codebook.csvCondiviso in Drive 2.webloc"
   ]
 }
