@@ -1,6 +1,77 @@
 # CLAUDE.md — Manifold AI Thesis: Predictive Analytics Framework
 > This file is automatically read by Claude Code at every session.
-> Do not edit manually — update only through Claude Code.
+> Navigation hub only — full specs live in `.claude/rules/`. Do not bloat this file.
+
+---
+
+## NAVIGATION
+
+**Read at session start (in order):**
+1. This file (CLAUDE.md) — project context + constraints
+2. [dev/repository_map.md](dev/repository_map.md) — file locations + agent status
+3. [docs/tooling-issues.md](docs/tooling-issues.md) — known env problems (mandatory before any plan)
+
+**Key references:**
+- [docs/decisions/ADR-001-template-strategy.md](docs/decisions/ADR-001-template-strategy.md) — LaTeX template (OPEN)
+- [docs/decisions/ADR-002-build-pipeline.md](docs/decisions/ADR-002-build-pipeline.md) — PDF pipeline (OPEN)
+- [docs/decisions/ADR-003-builder-agent-fate.md](docs/decisions/ADR-003-builder-agent-fate.md) — Builder agent (OPEN)
+- [docs/compliance/cbs_guidelines_notes.md](docs/compliance/cbs_guidelines_notes.md) — CBS requirements
+- [CHEATSHEET.md](CHEATSHEET.md) — quick-reference commands
+
+**Claude workflows (in `.claude/rules/`):**
+- Standup: `/log_standup` → `/prep_standup` → `/finalize_standup` → `/init_standup`
+- Commit: `/draft_commit`
+- Docs: `/update_all_docs`
+- Plans: `/update_plan`
+
+---
+
+## TOOLING RULE
+
+**OneDrive safety**: This repo is on an OneDrive path. **Never** use Edit/Write directly on `.py` files.
+Use the safe patching pattern (temp script → CRLF normalize → write_bytes). See [docs/tooling-issues.md](docs/tooling-issues.md).
+The PreToolUse hook (`.claude/hooks/check_file_edit.py`) enforces this automatically.
+
+> **macOS / Desktop path note**: The hook only fires on OneDrive-rooted paths. Enrico's Desktop path (`/Users/enricomanfron/Desktop/Thesis Maniflod/`) is NOT an OneDrive path — Edit/Write on `.py` files work normally here.
+
+---
+
+## BUILD COMMANDS (Phase 3 — not yet set up)
+
+Once the LaTeX pipeline is built (Phase 3):
+```bash
+make pdf      # Markdown → LaTeX → PDF (build/thesis.pdf)
+make check    # Run integrity gates (scripts/check_integrity.py)
+make figures  # Regenerate all figures (generate_figures.py)
+```
+
+---
+
+## INTEGRITY GATES (Phase 4 — not yet set up)
+
+| Gate | When | Checks |
+|------|------|--------|
+| Gate 1 (Pre-Draft) | Before prose expansion | Section completeness, page budget (120p), skeleton approved |
+| Gate 2 (Post-Draft) | After first full draft | APA7 citations, figure references, NotebookLM cross-check |
+| Gate 3 (Pre-Submission) | Before final PDF | 7-mode AI failure checklist, CBS compliance, AI disclosure, 49-citation validation |
+
+Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integrity_checklist.md](docs/compliance/integrity_checklist.md) (TODO Phase 4).
+
+---
+
+## KNOWN TODOs / FROZEN DECISIONS
+
+> These are deliberate choices. **Do not "fix" these without explicit instruction from Enrico or Brian.**
+
+- **Measurement model**: DSR (Design Science Research) methodology confirmed — do not suggest alternatives
+- **RAM constraint**: 8GB hard limit on all System A models — no exceptions, no suggestions to "just use more RAM"
+- **Writing Agent**: produces ONLY bullet points — never full prose. Prose requires human sign-off
+- **Phase transitions**: every phase requires explicit human approval before proceeding
+- **RQs v2**: currently the canonical version — do not modify without flagging a change
+- **System A vs System B**: these are separate systems. Never modify System A logic from System B agents
+- **ADR-001/002/003**: open decisions — do not implement Phase 3 before these are resolved
+- **Global LightGBM v2 (Tweedie)**: current best model at 22.5% median MAPE — do not replace without benchmarking
+- **No em dashes in prose**: rewrite using commas, semicolons, colons, or subordinate clauses (hyphens in compound adjectives permitted)
 
 ---
 
@@ -39,28 +110,34 @@
 | Runtime | Local Python + Google Colab |
 | Agent framework | PydanticAI + LangGraph |
 | Orchestration | LangGraph (multi-agent coordination) |
-| ML/Forecasting | TBD (target: ARIMA, Prophet, LightGBM, scikit-learn) |
-| Primary data | Nielsen/Prometheus CSD — star schema SQL (access TBD) |
-| Secondary data | Indeks Danmark consumer survey (CSV, 20,134 rows, 6,364 variables) |
-| Data format | CSV + SQL (connection TBD) |
-| Packages | TBD — Claude Code may install autonomously, must document every installation |
+| ML/Forecasting | LightGBM (global, Tweedie loss), XGBoost, Ridge (log-transform), ARIMA, Prophet, Seasonal Naive — **CONFIRMED** |
+| Primary data | Nielsen/Prometheus CSD — SQL via Microsoft Fabric (pyodbc + azure-identity) — **CONFIRMED** |
+| Secondary data | Indeks Danmark consumer survey — CSV, 20,134 rows, 6,364 variables — **CONFIRMED (downloaded)** |
+| Data format | SQL (Microsoft Fabric) + CSV (Indeks Danmark) |
+| Packages | See docs/context.md for install log |
 | Frontend | None for now |
 | Deployment | Local / Google Colab |
 
 **Nielsen Dataset (primary)**:
 - Star schema: `csd_clean_dim_market_v`, `csd_clean_dim_period_v`, `csd_clean_dim_product_v`, `csd_clean_facts_v`
-- History: ~3 years monthly (~36 periods)
-- Scope: Carbonated Soft Drinks (CSD), 28 Danish retailers
+- Access: SQL via Microsoft Fabric — Service Principal auth (pyodbc + azure-identity) — **live and returning data**
+- Scope: Carbonated Soft Drinks (CSD), DVH EXCL. HD market (primary), 28 Danish retailers total
+- History: 42 periods (full calendar 2022–2026), 77 brands after MIN_PERIODS filter
 - Metrics: `sales_value`, `sales_in_liters`, `sales_units`, promo variants, `weighted_distribution`
-- ⚠️ Access modality still to be confirmed with Manifold
+
+**Indeks Danmark (secondary)**:
+- Location: `Thesis/indeksdanmark/` — three CSVs (main 254 MB, codebook 1.8 MB, metadata 1.0 MB)
+- CSD brand variables (K_564/K_565/K_700), retailer shopping frequency (FORR*), attitudinal variables
+- Row-level survey weight: `VEJ_HH24`
 
 ---
 
 ## CURRENT STATUS
 
 ### Completed ✅
-- [x] Indeks Danmark dataset documented (data model available; CSVs still on Google Drive — download pending)
-- [x] Nielsen/Prometheus data model documented (star schema known; actual data access NOT confirmed)
+- [x] Indeks Danmark dataset documented + **CSVs downloaded** (2026-04-13) — located at `Thesis/indeksdanmark/`
+- [x] Nielsen/Prometheus data model documented + **DB connection confirmed** (2026-04-12) — all 4 views returning data
+- [x] `ai_research_framework/data/nielsen_connector.py` — Service Principal auth via pyodbc + azure-identity
 - [x] Literature review: 40 papers + 6 Tier A confirmed + 10 Tier B proposed; gap analysis v3 complete
 - [x] Research questions v2 (4 SRQs) — see docs/literature/rq_evolution.md
 - [x] CBS guidelines extracted and compliance notes written
@@ -75,28 +152,34 @@
 - [x] Ch.1 Introduction prose (21,400 chars) — citation corrected 2026-04-12
 - [x] Ch.2 Literature Review prose (50,500 chars, 22 pages) — written 2026-04-12
 - [x] Ch.3 Methodology prose (27,300 chars, 12 pages) — written 2026-04-12
-- [x] **Nielsen DB connection confirmed** — Microsoft Fabric connector implemented 2026-04-12; all 4 views return data
-- [x] `ai_research_framework/data/nielsen_connector.py` — Service Principal auth via pyodbc + azure-identity
-- [x] **Indeks Danmark CSVs downloaded** — 2026-04-13; located at `Thesis/indeksdanmark/`; CSD brand + retailer variables identified
+- [x] **Phase 1 Data Assessment complete** — preprocessing pipeline, 77 brands, DVH EXCL. HD, 42 periods, feature matrix at `results/phase1/feature_matrix.parquet`
+- [x] **SRQ1 Benchmark complete** — 6 models + ensemble benchmarked with walk-forward CV + held-out test evaluation
+  - Best model: Global LightGBM v2 (Tweedie loss) — **22.5% median MAPE** on validation
+  - Test set evaluation (Sep 2025–Mar 2026): XGBoost 45.5%, LightGBM 46.7%, Ridge 48.4%
+  - Top-10 brands by volume: 20.3% MAPE (Coca-Cola 28%, HANCOCK 3.9%)
+  - Results: `results/phase1/benchmark_summary_v2.md`, `results/phase1/global_v2_summary.md`
+- [x] NotebookLM Phase 0 PASSED (2026-04-13) — auth, source add, and grounded Q&A confirmed working
 
 ### Blocked 🔴
 - [ ] **PENDING REVIEW**: Ch.1, Ch.2, Ch.3, Ch.4 prose in `docs/thesis/writing/` — requires human review before `prose_approved`
 - [ ] **PENDING**: DSR supervisor confirmation (OI-03) — required for Ch.3 compliance sign-off
 
 ### Pending (can proceed now)
-- [ ] Ch.4 Data Assessment — Nielsen connection confirmed; can begin data quality assessment
-- [ ] Ch.5 Framework Design (14pp) — no data required; can begin immediately
+- [ ] Ch.4 Data Assessment writing — data assessment complete, can begin section writing
+- [ ] Ch.5 Framework Design (14pp) — no additional data required
 - [ ] Ch.9 Discussion (8pp) — no data required
 - [ ] Ch.10 Conclusion (6pp) — no data required
+- [ ] NotebookLM Phase 1: create 6 chapter notebooks, populate with 16+ confirmed papers
+- [ ] Literature Scraping Run 2
 - [ ] NotebookLM verification of 25 Ch.2 citations (pending)
+- [ ] CBS compliance checks on chapter skeletons
 
 ### Data-dependent (now unblocked)
-- [ ] Phase 1: Data Assessment (SRQ1–4 precondition) — UNBLOCKED 2026-04-12
-- [ ] Phase 4: Model Benchmark (SRQ1) — requires data assessment complete
-- [ ] Phase 5: Synthesis Module (SRQ2) — requires Phase 4 complete
+- [ ] Phase 5: Synthesis Module (SRQ2) — can begin (Phase 4 benchmark complete)
 - [ ] Phase 6: Evaluation (SRQ3/SRQ4) — requires Phase 5 complete
+- [ ] Indeks Danmark integration as external consumer signal (SRQ3)
 
-> Last updated: 2026-04-12
+> Last updated: 2026-04-13
 
 ---
 
@@ -126,10 +209,17 @@
 | Agent | File | SRQ | Status |
 |---|---|---|---|
 | **Research Coordinator** | `core/coordinator.py` | Orchestrator | ✅ LangGraph StateGraph |
-| **Data Assessment Agent** | `agents/data_assessment_agent.py` | SRQ1–4 precondition | ⬜ Blocked (no data) |
-| **Forecasting Agent** | `agents/forecasting_agent.py` | SRQ1 | ⬜ Blocked (no data) |
-| **Synthesis Agent** | `agents/synthesis_agent.py` | SRQ2 | ⬜ Partial (API implemented) |
-| **Validation Agent** | `agents/validation_agent.py` | SRQ1–4 | ⬜ Blocked (pending A1–A3) |
+| **Data Assessment Agent** | `agents/data_assessment_agent.py` | SRQ1–4 precondition | ✅ Complete — Phase 1 done (77 brands, 42 periods, DVH EXCL. HD) |
+| **Forecasting Agent** | `agents/forecasting_agent.py` | SRQ1 | ✅ Complete — 6 models + ensemble; Global LGB v2 (Tweedie) 22.5% median MAPE |
+| **Synthesis Agent** | `agents/synthesis_agent.py` | SRQ2 | ⬜ Partial (API implemented — Phase 5 pending) |
+| **Validation Agent** | `agents/validation_agent.py` | SRQ1–4 | ⬜ Pending (Phase 6 — requires Phase 5 complete) |
+
+**Key model files (standalone runners, not class-based):**
+- `agents/forecasting_agent.py` — per-brand benchmark (Ridge, LightGBM, XGBoost, ARIMA, Prophet + Ensemble)
+- `agents/global_model.py` — Global LightGBM v1 (28.2% median MAPE)
+- `agents/global_model_v2.py` — Global LightGBM v2, Tweedie loss (22.5% median MAPE) ← **current best**
+- `agents/test_evaluation.py` — held-out test set evaluation (Sep 2025–Mar 2026)
+- `data/preprocessing.py` — Nielsen preprocessing pipeline (feature engineering, train/val/test split)
 
 **Hard constraint**: ≤ 8 GB RAM. Sequential model execution. LangGraph TypedDict state.
 
@@ -179,8 +269,6 @@ Never writes prose or bullet content.
 **Role**: Sole agent responsible for `docs/thesis/references.md`. No other agent writes to this file directly.
 Formats APA 7 citations from any input source (Obsidian notes, DOIs, raw data), verifies via NotebookLM, checks for duplicates, and appends to the references list.
 
-**Do NOT confuse with `/verify-citations`** — that command performs bulk verification of existing prose. This skill handles new citation insertion.
-
 **Reads**:
 - User-provided input (_REV note, DOI, raw metadata)
 - `docs/thesis/references.md` (duplicate check)
@@ -216,7 +304,17 @@ Formats APA 7 citations from any input source (Obsidian notes, DOIs, raw data), 
 ```
 ai_research_framework/          # SYSTEM A — research framework (thesis object of study)
   config.py                     # 8GB RAM constraint, model list, LLM config
-  agents/                       # 4 research agents (skeletons — blocked on data)
+  agents/                       # Research agents (benchmark runners)
+    forecasting_agent.py        # Per-brand benchmark — 6 models + ensemble
+    global_model.py             # Global LGB v1 (28.2% MAPE)
+    global_model_v2.py          # Global LGB v2, Tweedie (22.5% MAPE) ← best
+    test_evaluation.py          # Held-out test set evaluation
+    data_assessment_agent.py    # Phase 1 complete
+    synthesis_agent.py          # SRQ2 (partial)
+    validation_agent.py         # SRQ1–4 (pending)
+  data/
+    nielsen_connector.py        # Microsoft Fabric auth (pyodbc + azure-identity)
+    preprocessing.py            # Feature engineering + train/val/test split
   state/research_state.py       # LangGraph TypedDict (ResearchState)
   core/coordinator.py           # LangGraph StateGraph
 
@@ -224,6 +322,18 @@ thesis_production_system/       # SYSTEM B — thesis writing tooling (not resea
   agents/                       # 10 production agents (all implemented)
   state/thesis_state.py         # Pydantic ThesisState
   core/coordinator.py           # Plan→Execute→Critic loop
+
+results/
+  phase1/                       # Phase 1 outputs (CSV/parquet gitignored)
+    feature_matrix.parquet      # Full feature matrix, all brands — LOCAL ONLY
+    series_index.csv            # Brand-level index — LOCAL ONLY
+    split_dates.json            # Locked train/val/test boundaries
+    preprocessing_report.md     # Data quality summary
+    benchmark_summary.md        # Per-brand model benchmark (v1)
+    benchmark_summary_v2.md     # Per-brand model benchmark (v2, lag_12 added)
+    global_summary.md           # Global LGB v1 results
+    global_v2_summary.md        # Global LGB v2 results (Tweedie, 22.5% MAPE)
+    test_summary.md             # Held-out test set evaluation results
 
 docs/
   context.md                    # Session log (updated every session)
@@ -236,14 +346,15 @@ docs/
     rq_evolution.md             # RQ version history (v1 → v2)
     scraping_log.md             # Literature Scraping Agent log (Run 1 complete)
     papers/                     # 18 annotated papers (12 Tier 1 + 6 Tier A confirmed)
+    guides/                     # NotebookLM-generated study guides (cached Markdown)
   data/
     nielsen_assessment.md       # Nielsen data model + access status
     indeksdanmark_notes.md      # Indeks Danmark structure + memory estimate
   tasks/
     data_assessment.md          # Phase 1 plan
-    model_benchmark.md          # SRQ1 results (empty — pending data)
-    synthesis_module.md         # SRQ2 design (empty — pending Phase 4)
-    validation_report.md        # Validation results (empty — pending Phase 5)
+    model_benchmark.md          # SRQ1 results (empty — use results/phase1/ instead)
+    synthesis_module.md         # SRQ2 design (pending Phase 5)
+    validation_report.md        # Validation results (pending Phase 6)
     thesis_state.json           # ThesisState persistence (System B state)
   experiments/
     experiment_registry.json    # All experiment records (append-only)
@@ -253,12 +364,22 @@ docs/
     figures/                    # Diagram Agent outputs (SVG + PNG)
     tables/                     # Results Tables Agent outputs
     sections/                   # 11 chapter bullet skeletons (all complete)
+    writing/                    # Prose drafts (Ch.1–3 written, pending review)
   compliance/
     cbs_guidelines_notes.md     # CBS formal requirements (extracted from 9 PDFs)
     compliance_checks/          # ComplianceAgent section outputs
 
+papers/                         # PDF source files for NotebookLM ingestion
+  ch2-literature/               # All 16+ confirmed papers (cross-corpus QA)
+  ch3-methodology/              # Tier A ML methodology papers
+  ch4-models/                   # Forecasting model papers
+  ch5-synthesis/                # Consumer signal / sentiment papers
+  ch6-evaluation/               # Calibration + evaluation papers
+  ingestion_manifest.json       # Maps paper slugs → NotebookLM source IDs + notebook IDs
+
 Thesis/                         # Obsidian vault (human knowledge base)
   Thesis Guidelines/            # 9 CBS guideline PDFs
+  indeksdanmark/                # Indeks Danmark CSVs (indeksdanmark_data.csv, codebook, metadata)
   prometheus_data_model-1.md   # Nielsen star schema
   indeksdanmark_data_model-1.md # Indeks Danmark structure
 ```
@@ -267,9 +388,9 @@ Thesis/                         # Obsidian vault (human knowledge base)
 
 ## CBS GUIDELINES
 
-The CBS thesis guidelines PDF files are in the project root.
+The CBS thesis guidelines PDF files are in `Thesis/Thesis Guidelines/`.
 The CBS Compliance Agent must read them at session start and verify every Thesis Writing Agent output against:
-- Citation format (APA/CBS standard)
+- Citation format (APA 7 / CBS standard)
 - Chapter and section structure
 - Methodological requirements
 - Word count and formatting
@@ -296,30 +417,26 @@ PHASE 0 — Setup
   → Shows pre-start checklist
   → Awaits human approval
 
-PHASE 1 — Data Assessment
+PHASE 1 — Data Assessment  ✅ COMPLETE
   → Data Assessment Agent analyses Nielsen + Indeks Danmark
-  → Produces: docs/data/nielsen_assessment.md
-  → Coordinator presents report → HUMAN APPROVAL
+  → Produced: results/phase1/ (feature matrix, preprocessing report, series index)
+  → Nielsen: 77 brands, 42 periods, DVH EXCL. HD market
 
-PHASE 2 — Literature Review & Gap Analysis
+PHASE 2 — Literature Review & Gap Analysis  ✅ COMPLETE
   → Literature Review Agent researches papers, identifies gaps, proposes novelty
-  → Produces: docs/literature/gap_analysis.md + rq_evolution.md
-  → CBS Compliance Agent verifies methods and citations
-  → Coordinator presents output → HUMAN APPROVAL
-  → (Iteration possible until RQs are finalised)
+  → Produced: docs/literature/gap_analysis.md + rq_evolution.md
+  → 40 papers, 6 Tier A confirmed
 
-PHASE 3 — Framework Design
-  → Coordinator (architect persona) designs architecture
-  → Produces: docs/architecture.md
-  → Coordinator presents brief → HUMAN APPROVAL
+PHASE 3 — Framework Design  ✅ COMPLETE
+  → Coordinator (architect persona) designed architecture
+  → Produced: docs/architecture.md, docs/system_architecture_report.md
 
-PHASE 4 — SRQ1: Model Selection & Benchmark
-  → Forecasting Agent tests lightweight models with memory profiling
-  → Produces: docs/tasks/model_benchmark.md
-  → Validation Agent validates results (Level 1: ML accuracy)
-  → Coordinator presents results → HUMAN APPROVAL
+PHASE 4 — SRQ1: Model Selection & Benchmark  ✅ COMPLETE
+  → Forecasting Agent tested 6 models + ensemble with walk-forward CV
+  → Best: Global LightGBM v2 (Tweedie) — 22.5% median MAPE
+  → Results: results/phase1/global_v2_summary.md
 
-PHASE 5 — SRQ2: Synthesis Module
+PHASE 5 — SRQ2: Synthesis Module  ← NEXT
   → Synthesis Agent designs and implements module
   → Produces: docs/tasks/synthesis_module.md
   → Validation Agent validates (Level 2: recommendation quality)
@@ -355,7 +472,7 @@ PHASE 7 — Thesis Writing
 - **No em dashes (—) in any thesis prose.** Rewrite around them using commas, semicolons, colons, or subordinate clauses. Hyphens in compound adjectives (resource-constrained, data-driven) are permitted.
 - Every installed package must be documented in `docs/context.md`
 - `docs/thesis/outline.md` is owned exclusively by the thesis-structuring skill. PlannerAgent reads it. WritingAgent reads it. Neither writes to it.
-- `docs/thesis/references.md` is owned exclusively by the APA Citation Skill (`/cite`). No agent writes to it directly. Use `/cite` for all new reference insertions.
+- `docs/thesis/references.md` is owned exclusively by the APA Citation Skill (`/cite`). No agent writes to it directly.
 - Major restructuring proposed by `/update-outline` requires explicit human approval before PlannerAgent may schedule any writing tasks for affected chapters.
 - WritingAgent may not draft bullets for a chapter not present in `docs/thesis/outline.md`.
 
@@ -388,11 +505,63 @@ PHASE 7 — Thesis Writing
 ## RISK FLAGS
 
 - 🔴 **High complexity**: 7-agent architecture, multi-indicator synthesis module, 3-level validation framework
-- 🔴 **Tight timeline**: 15 May — ~2 months for literature review + implementation + thesis writing
-- 🟡 **High uncertainty**: Nielsen database access TBD, RQs still evolving, novelty to be finalised, SQL vs CSV access modality unclear
-- 🟡 **External dependency**: Manifold AI must confirm data access and modality
+- 🔴 **Tight timeline**: 15 May — ~1 month remaining for SRQ2–4 implementation + thesis writing
+- 🟡 **High uncertainty**: RQs still evolving, novelty to be finalised, Indeks Danmark integration for SRQ3 not yet implemented
+- 🟡 **External dependency**: Manifold AI feedback on framework design pending
 - 🔒 **Security critical**: Nielsen dataset must not leave the local environment; Indeks Danmark contains survey weights
 - 💥 **Context overflow risk**: Literature Review Agent over many papers, Thesis Writing Agent over 120 pages — use `/compact` aggressively
+
+---
+
+## NOTEBOOKLM INTEGRATION
+
+**Status**: Phase 0 PASSED (2026-04-13) — auth, source add, and grounded Q&A confirmed working. Ready for Phase 1 (create 6 chapter notebooks, populate with 16 confirmed papers).
+
+**Library**: `notebooklm-py==0.3.4` (pinned) — unofficial API, fragile by design. Manual UI fallback always available at notebooklm.google.com.
+
+**Auth**: Run once per session expiry — `notebooklm login` (opens Chromium browser). Cookies stored at `~/.notebooklm/storage_state.json`.
+
+**Notebook ID (Enrico's primary)**: `48697de0-f0a5-4e66-918e-531abea82c20`
+
+**Ownership model**: Brian's Google account owns all notebooks. Enrico gets shared access via NotebookLM web UI (`notebooklm.google.com`). Only Brian runs `notebooklm-py` scripts — the API only sees notebooks owned by the authenticated account. `ingestion_manifest.json` holds Brian's notebook IDs as the single source of truth.
+
+### Notebook Map (populate after `notebooklm login` + `notebooklm create`)
+
+| Notebook | NotebookLM ID | Chapter focus |
+|---|---|---|
+| `thesis-ch2-literature` | *(pending login)* | All 16+ confirmed papers — cross-corpus QA |
+| `thesis-ch3-methodology` | *(pending login)* | ML methodology papers (Tier A) |
+| `thesis-ch4-models` | *(pending login)* | Forecasting + benchmark comparison papers |
+| `thesis-ch5-synthesis` | *(pending login)* | Consumer signal / sentiment papers |
+| `thesis-ch6-evaluation` | *(pending login)* | Calibration + evaluation methodology |
+| `thesis-defense` | *(pending login)* | All papers — defense Q&A |
+
+### Mandatory Rules (Non-Negotiable)
+
+1. **Never pass NotebookLM output directly to WritingAgent** without `verified: False` flag cleared by a human.
+2. **All quotes** from NotebookLM must be cross-checked against the actual PDF before entering any draft.
+3. **Study guides / briefing docs** = orientation only. Not citable. They inform the analyst, not the draft.
+4. **Never use NotebookLM output as evidence** in the SRQ3/SRQ4 evaluation sections (quantitative results only).
+5. **If notebooklm-py breaks** → fall back to manual UI. All notebooks remain accessible there. Zero production capability lost.
+
+### Citation Format (when NotebookLM-sourced)
+
+```
+[Claim] (Author, Year, p. X — verified via NotebookLM citation, PDF confirmed)
+```
+`PDF confirmed` tag is mandatory before final submission.
+
+### Approved Workflow Patterns
+
+- **Pattern A** (Literature QA): Ask → get answer + citation passage → flag as `[NOTEBOOKLM — VERIFY]` → human confirms against PDF
+- **Pattern B** (Study Guide): Generate → cache to `docs/literature/guides/` → flag as `[SUMMARY — NOT VERBATIM]`
+- **Pattern C** (Quote Verification): Writing Agent flags claim → NotebookLM locates passage → human confirms
+- **Pattern D** (Defense Prep): Ask defense questions → get grounded answers + challenges → human reviews
+
+### Source Ingestion
+
+Papers live in `papers/<chapter>/`. Run `scripts/notebooklm_ingestion.py` to sync new PDFs to notebooks.
+Manifest at `papers/ingestion_manifest.json` — check before adding (idempotency).
 
 ---
 
@@ -400,12 +569,13 @@ PHASE 7 — Thesis Writing
 
 ```
 [ ] CLAUDE.md read and understood by the Coordinator
-[ ] docs/ structure created (context.md, architecture.md, tasks/, literature/, data/, thesis/, compliance/)
-[ ] CBS guidelines PDF present in project root
+[ ] docs/ structure verified (context.md, architecture.md, tasks/, literature/, data/, thesis/, compliance/)
+[ ] CBS guidelines PDF present in Thesis/Thesis Guidelines/
 [ ] CBS Compliance Agent has read the guidelines
-[ ] Nielsen access modality clarified (direct SQL or CSV export?)
+[ ] Nielsen access confirmed (SQL via Microsoft Fabric — pyodbc + azure-identity)
+[ ] Indeks Danmark CSVs confirmed at Thesis/indeksdanmark/
 [ ] Current RQs documented in docs/literature/rq_evolution.md
-[ ] Human confirmation received before starting Phase 1
+[ ] Human confirmation received before starting any new phase
 ```
 
 ---
@@ -465,10 +635,12 @@ PHASE 7 — Thesis Writing
 - NEVER write prose without human approval
 - NEVER skip compliance check
 - NEVER fabricate citations — use `[CITATION NEEDED]` if source unknown
-- NEVER claim Nielsen/Indeks Danmark results unless Phase 1 confirmed complete
+- NEVER claim Nielsen/Indeks Danmark results unless Phase 1 confirmed complete ✅ (Phase 1 IS complete)
 
 ---
 
 ## LAST UPDATED
 
-2026-04-12 — Added `/write-section` + `/verify-citations` + `/find-papers` commands; `thesis-writer` + `literature-researcher` agents; NotebookLM integration (notebook ID: 48697de0-f0a5-4e66-918e-531abea82c20)
+2026-04-13 — Added navigation hub, tooling rule, build commands, integrity gates, Known TODOs. Bootstrapped .claude/ infrastructure (Pre-Phase complete).
+2026-04-13 — NotebookLM integration: installed notebooklm-py==0.3.4, created papers/ directory structure, added NOTEBOOKLM section to CLAUDE.md, updated requirements.txt and .env.example. Phase 0 smoke test PASSED.
+2026-04-13 — **Major status update (Enrico)**: Nielsen DB confirmed + live (pyodbc + azure-identity), Indeks Danmark CSVs downloaded, Phase 1 Data Assessment complete (77 brands, 42 periods), SRQ1 benchmark complete (Global LightGBM v2 Tweedie = 22.5% median MAPE), Ch.1–3 prose written. STACK and AGENT ARCHITECTURE updated to reflect real project state.
