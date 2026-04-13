@@ -24,20 +24,46 @@ echo $ANTHROPIC_API_KEY
 
 ```bash
 # Start a Claude Code session (always run from project root)
-cd "Thesis Maniflod"
+cd CMT_Codebase
 claude
 
-# Useful slash commands inside Claude Code
+# Context management
 /clear          # Clear context — use at every task change
 /compact        # Compress context — use when >50% full
 /help           # Show all available commands
-/REV            # Activate REV agent (academic paper → Obsidian note)
 
-# REV agent (inline activation)
-# Start your message with _REV followed by paper content
-_REV
-[paste abstract + intro + conclusion here]
+# REV agents
+/REV            # Academic paper → Obsidian note (structured)
+/REV-brian      # Brian's personal variant (Obsidian vault conventions)
+_REV            # Inline activation — start message with _REV
+_REV-brian      # Inline activation — start message with _REV-brian
 ```
+
+---
+
+## Claude Code Skills (Workflows)
+
+```
+# Standup lifecycle
+/log_standup          # Append session entry to project_updates/standup_draft.md
+/prep_standup         # Draft non-technical summary + create clean meeting copy
+/finalize_standup     # Overwrite meeting file with final version + archive draft
+/init_standup         # Initialize new standup draft for next meeting (N+1)
+
+# Commit workflow
+/draft_commit         # Generate ready-to-paste git commit message (never auto-executes)
+
+# Docs workflow
+/update_all_docs      # Update all living docs in order (standup → sections → CLAUDE.md → CHEATSHEET → README → plans → rules)
+
+# Plan lifecycle
+/update_plan [name]   # Append Outcome section to plan file; relocate/rename if needed
+```
+
+**Trigger rules:**
+- All skills execute **once immediately** unless you say "every N minutes"
+- Auto-trigger: `/log_standup` fires automatically at session end if changes were made
+- Plans live in `.claude/plans/YYYY-MM-DD_<short-slug>.md` (never global `~/.claude/plans/`)
 
 ---
 
@@ -391,11 +417,101 @@ assert peak_mb < RAM_BUDGET_MB, f"RAM exceeded: {peak_mb} MB > {RAM_BUDGET_MB} M
 
 ---
 
+## NotebookLM
+
+```bash
+# Authenticate (once per session expiry — opens browser)
+notebooklm login
+
+# Show current context (active notebook + conversation)
+notebooklm status
+
+# Create a notebook
+notebooklm create "thesis-ch2-literature"
+
+# Switch to a notebook by ID (partial ID OK)
+notebooklm use <notebook_id>
+
+# List all notebooks
+notebooklm list
+
+# --- Source management ---
+# Add a PDF (file must exist locally)
+notebooklm source add author_year_title.pdf
+
+# List sources in current notebook (+ their IDs)
+notebooklm source list
+
+# Get per-source AI summary + keywords
+notebooklm source guide
+
+# Export full indexed text of a source (for Claude to verify)
+notebooklm source fulltext <source_id>
+
+# Check for stale/outdated sources (useful for preprints)
+notebooklm source stale
+
+# --- Chat ---
+# Ask a question (grounded, with citations)
+notebooklm ask "What methodology does this paper use?"
+
+# --- Artifacts ---
+# Generate study guide (may take 1–5 min)
+notebooklm generate report study-guide
+
+# Download the generated report as Markdown
+notebooklm download report
+
+# Generate quiz for defense prep
+notebooklm generate quiz
+
+# Generate mind map
+notebooklm generate mind-map
+
+# --- Metadata & export ---
+# Export full notebook metadata incl. source list (JSON) — use for manifest sync
+notebooklm metadata
+
+# --- Research (gap analysis use case) ---
+# Start web research for a given topic (finds sources to add)
+notebooklm research start "multi-agent forecasting retail"
+# (then add found sources to notebook)
+
+# --- Sync new PDFs to a notebook (uses papers/ingestion_manifest.json) ---
+python scripts/notebooklm_ingestion.py
+```
+
+**PDF naming convention:** `author_year_shorttitle.pdf` — e.g. `hevner_2004_design_science.pdf`
+This becomes the citation source name NotebookLM displays inline.
+
+**Locations:**
+```
+papers/ch2-literature/          Ch.2 papers (Literature Review)
+papers/ch3-methodology/         Ch.3 papers (DSR + ML methodology)
+papers/ch4-models/              Ch.4 papers (Forecasting models)
+papers/ch5-synthesis/           Ch.5 papers (Consumer signals)
+papers/ch6-evaluation/          Ch.6 papers (Calibration, evaluation)
+papers/ingestion_manifest.json  Maps slugs → NotebookLM source + notebook IDs
+docs/literature/guides/         Cached study guides (auto-generated; not citable)
+```
+
+**Safety rules:**
+- Never pass NotebookLM output to WritingAgent without `verified: False` cleared
+- All quotes must be confirmed against the actual PDF before entering any draft
+- Study guides = orientation only; not citable; not evidence
+- `notebooklm research` results = leads only; verify sources before adding
+
+---
+
 ## Key File Locations
 
 | What | Path |
 |---|---|
 | Master project instructions | `CLAUDE.md` |
+| Repository map | `dev/repository_map.md` |
+| Tooling issues | `docs/tooling-issues.md` |
+| Architecture decisions | `docs/decisions/ADR-001/002/003` |
+| Standup (live) | `project_updates/standup_draft.md` |
 | Session log | `docs/context.md` |
 | Research state definition | `ai_research_framework/state/research_state.py` |
 | RAM budget config | `ai_research_framework/config.py` |

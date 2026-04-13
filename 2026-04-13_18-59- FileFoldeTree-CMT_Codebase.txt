@@ -1,0 +1,223 @@
+CMT_Codebase
+├── .claude
+│   ├── commands
+│   │   ├── REV-brian.md
+│   │   └── REV.md
+│   └── settings.local.json
+├── .env
+├── .env.example
+├── .gitignore
+├── 2026-03 - CMT - Master Thesis - Literature review - Main Articles (40).csv
+├── ai_research_framework
+│   ├── agents
+│   │   ├── data_assessment_agent.py
+│   │   ├── forecasting_agent.py
+│   │   ├── synthesis_agent.py
+│   │   ├── validation_agent.py
+│   │   └── __init__.py
+│   ├── config.py
+│   ├── core
+│   │   ├── coordinator.py
+│   │   └── __init__.py
+│   ├── data
+│   │   ├── nielsen_connector.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── nielsen_connector.cpython-314.pyc
+│   │       └── __init__.cpython-314.pyc
+│   ├── requirements.txt
+│   ├── state
+│   │   ├── research_state.py
+│   │   └── __init__.py
+│   ├── templates
+│   │   ├── base_config.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   └── __pycache__
+│       ├── config.cpython-314.pyc
+│       └── __init__.cpython-314.pyc
+├── CHEATSHEET.md
+├── CLAUDE (1).md
+├── CLAUDE.md
+├── docs
+│   ├── architecture.md
+│   ├── compliance
+│   │   ├── cbs_guidelines_notes.md
+│   │   └── compliance_checks
+│   │       └── compliance_report_20260315.md
+│   ├── context.md
+│   ├── data
+│   │   ├── indeksdanmark_notes.md
+│   │   ├── ml_usecases.md
+│   │   └── nielsen_assessment.md
+│   ├── DATA_ACCESS_SETUP.md
+│   ├── experiments
+│   │   ├── experiment_registry.json
+│   │   └── experiment_summary.md
+│   ├── experiment_tracking_agent.md
+│   ├── literature
+│   │   ├── gap_analysis.md
+│   │   ├── papers
+│   │   │   ├── agentcompass_workflow_eval.md
+│   │   │   ├── agent_noise_bench.md
+│   │   │   ├── agent_q_autonomous_reasoning.md
+│   │   │   ├── ai_agents_vs_agentic_ai.md
+│   │   │   ├── ai_augmented_decision_making_dsr.md
+│   │   │   ├── ai_based_dsr_framework.md
+│   │   │   ├── ai_enhanced_bi_decision_making.md
+│   │   │   ├── anah_hallucination_eval.md
+│   │   │   ├── artifact_types_dsr.md
+│   │   │   ├── art_multi_step_reasoning.md
+│   │   │   ├── art_tool_use_llm_2023.md
+│   │   │   ├── autoflow_llm_workflow.md
+│   │   │   ├── calibrated_regression_uncertainty.md
+│   │   │   ├── calibrating_uncertainty_regression.md
+│   │   │   ├── consumer_behavior_supermarket_ml.md
+│   │   │   ├── cost_aware_ml_3pl_forecasting.md
+│   │   │   ├── customer_segmentation_sales_prediction.md
+│   │   │   ├── dss4ex_decision_support.md
+│   │   │   ├── dynamic_llm_agent_network.md
+│   │   │   ├── edge_ai_inference_survey.md
+│   │   │   ├── edge_ai_resource_constrained.md
+│   │   │   ├── executable_code_actions.md
+│   │   │   ├── fmcg_demand_forecasting_methods.md
+│   │   │   ├── hevner_design_science_2004.md
+│   │   │   ├── humans_vs_llms_forecasting.md
+│   │   │   ├── hybrid_ai_llm_industrial.md
+│   │   │   ├── hybrid_ai_symbolic_deep_learning.md
+│   │   │   ├── hybrid_mcdm_ml_supplier.md
+│   │   │   ├── langgraph_2024.md
+│   │   │   ├── llms_supply_chain.md
+│   │   │   ├── mcdm_methods_overview.md
+│   │   │   ├── ml_business_decision_making.md
+│   │   │   ├── ml_economic_forecasting_sme.md
+│   │   │   ├── ml_fmcg_demand_forecasting.md
+│   │   │   ├── model_averaging_double_ml.md
+│   │   │   ├── neuro_symbolic_ai_2024.md
+│   │   │   ├── neuro_symbolic_ai_survey_2024.md
+│   │   │   ├── pathways_design_research_ai.md
+│   │   │   ├── peffers_dsr_methodology_2007.md
+│   │   │   ├── prediction_intervals_planning.md
+│   │   │   ├── retail_hybrid_neural_forecasting.md
+│   │   │   ├── retail_ml_tree_ensembles_lstm.md
+│   │   │   ├── sciagent_tool_augmented_llm.md
+│   │   │   ├── scoreflow_llm_workflow.md
+│   │   │   ├── self_verification_sampling_llm.md
+│   │   │   ├── stacked_ensemble_clinical_decision.md
+│   │   │   ├── toolformer.md
+│   │   │   └── toolformer_2023.md
+│   │   ├── rq_evolution.md
+│   │   └── scraping_log.md
+│   ├── PROJECT_OVERVIEW.md
+│   ├── system_architecture_report.md
+│   ├── tasks
+│   │   ├── data_assessment.md
+│   │   ├── model_benchmark.md
+│   │   ├── synthesis_module.md
+│   │   ├── thesis_state.json
+│   │   └── validation_report.md
+│   ├── thesis
+│   │   ├── figures
+│   │   │   ├── .gitkeep
+│   │   │   ├── agent_workflow_v1.png
+│   │   │   ├── agent_workflow_v1.svg
+│   │   │   ├── confidence_score_v1.png
+│   │   │   ├── confidence_score_v1.svg
+│   │   │   ├── data_flow_v1.png
+│   │   │   ├── data_flow_v1.svg
+│   │   │   ├── project_overview_v1.png
+│   │   │   ├── project_overview_v1.svg
+│   │   │   ├── ram_budget_v1.png
+│   │   │   ├── ram_budget_v1.svg
+│   │   │   ├── system_architecture_v1.png
+│   │   │   └── system_architecture_v1.svg
+│   │   ├── outline.md
+│   │   └── sections
+│   │       ├── abstract.md
+│   │       ├── ai_declaration.md
+│   │       ├── ch10_conclusion.md
+│   │       ├── ch1_introduction.md
+│   │       ├── ch2_literature_review.md
+│   │       ├── ch3_methodology.md
+│   │       ├── ch4_data_assessment.md
+│   │       ├── ch5_framework_design.md
+│   │       ├── ch6_model_benchmark.md
+│   │       ├── ch7_synthesis.md
+│   │       ├── ch8_evaluation.md
+│   │       ├── ch9_discussion.md
+│   │       └── frontpage.md
+│   └── thesis_production_architecture.md
+├── generate_figures.py
+├── README.md
+├── README_builder.md
+├── scripts
+│   └── explore_nielsen.py
+├── tests
+│   └── test_builder_integration.py
+├── Thesis
+│   ├── .obsidian
+│   │   ├── app.json
+│   │   ├── appearance.json
+│   │   ├── core-plugins.json
+│   │   ├── graph.json
+│   │   └── workspace.json
+│   ├── indeksdanmark_data_model-1.md
+│   ├── papers
+│   │   ├── A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting.md
+│   │   ├── A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration.md
+│   │   ├── A hybrid multi-criteria decision-making and machine learning approach for explainable supplier selection.md
+│   │   ├── Agent Q Advanced Reasoning and Learning for Autonomous AI Agents.md
+│   │   ├── AgentCompass Towards Reliable Evaluation of Agentic Workflows in Production 1.md
+│   │   ├── AgentCompass Towards Reliable Evaluation of Agentic Workflows in Production.md
+│   │   ├── AgentNoiseBench Benchmarking Robustness of Tool-Using LLM Agents Under Noisy Conditions.md
+│   │   ├── AI Agents vs. Agentic AI A Conceptual Taxonomy, Applications and Challenges.md
+│   │   ├── An information-sharing and cost-aware custom loss machine learning framework for 3PL supply chain forecasting.md
+│   │   ├── ANAH Analytical Annotation of Hallucinations in Large Language Models.md
+│   │   ├── ART Automatic Multi-Step Reasoning and Tool-Use for Large Language Models.md
+│   │   ├── AutoFlow Automated Workflow Generation for Large Language Model Agents.md
+│   │   ├── Executable Code Actions Elicit Better LLM Agents.md
+│   │   ├── Heart Attack Risk Prediction via Stacked Ensemble Metamodeling A Machine Learning Framework for Real-Time Clinical Decision Support.md
+│   │   ├── Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes A Clean-in-Place Case Study.md
+│   │   ├── Innovative machine learning approaches for complexity in economic forecasting and SME growth A comprehensive review.md
+│   │   ├── Measuring Reliability of Large Language Models through Semantic Consistency.md
+│   │   ├── Model Averaging and Double Machine Learning.md
+│   │   ├── Neuro-Symbolic AI in 2024 A Systematic Review.md
+│   │   ├── Overview of Existing Multi-Criteria Decision-Making (MCDM) Methods Used in Industrial Environments.md
+│   │   ├── Sample, Predict, then Proceed Self-Verification Sampling for Tool Use of LLMs.md
+│   │   ├── Schick et al. (2023) - Toolformer Language Models Can Teach Themselves to Use Tools.md
+│   │   ├── SciAgent Tool-Augmented Language Models for Scientific Reasoning.md
+│   │   ├── ScoreFlow Mastering LLM Agent Workflows via Score-based Preference Optimization.md
+│   │   └── Toolformer Language Models Can Teach Themselves to Use Tools.md
+│   ├── prometheus_data_model-1.md
+│   ├── Untitled.md
+│   ├── Visualizza anteprima allegato indeksdanmark.metadata.csvVisualizza anteprima allegato indeksdanmark.metadata.csvindeksdanmark.metadata.csvCondiviso in Drive 2.webloc
+│   ├── Visualizza anteprima allegato indeksdanmark_data.csvVisualizza anteprima allegato indeksdanmark_data.csvindeksdanmark_data.csvScansione virus non eseguita 2.webloc
+│   └── Visualizza anteprima allegato official_codebook.csvVisualizza anteprima allegato official_codebook.csvofficial_codebook.csvCondiviso in Drive 2.webloc
+└── thesis_production_system
+    ├── agents
+    │   ├── builder
+    │   │   ├── architect.py
+    │   │   ├── builder_graph.py
+    │   │   ├── coder.py
+    │   │   ├── evaluator.py
+    │   │   ├── executor.py
+    │   │   ├── experiment_registry.py
+    │   │   └── __init__.py
+    │   ├── compliance_agent.py
+    │   ├── critic_agent.py
+    │   ├── diagram_agent.py
+    │   ├── experiment_tracking_agent.py
+    │   ├── literature_agent.py
+    │   ├── planner_agent.py
+    │   ├── results_tables_agent.py
+    │   ├── results_visualization_agent.py
+    │   ├── writing_agent.py
+    │   └── __init__.py
+    ├── core
+    │   ├── coordinator.py
+    │   └── __init__.py
+    ├── requirements.txt
+    ├── state
+    │   ├── thesis_state.py
+    │   └── __init__.py
+    └── __init__.py

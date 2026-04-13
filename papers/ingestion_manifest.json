@@ -1,0 +1,13 @@
+{
+  "_comment": "NotebookLM ingestion manifest. Maps local paper PDFs to NotebookLM source IDs. Update via scripts/notebooklm_ingestion.py.",
+  "_last_updated": "2026-04-13",
+  "notebooks": {
+    "ch2-literature": null,
+    "ch3-methodology": null,
+    "ch4-models": null,
+    "ch5-synthesis": null,
+    "ch6-evaluation": null,
+    "thesis-defense": null
+  },
+  "sources": {}
+}

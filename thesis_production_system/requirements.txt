@@ -12,3 +12,6 @@ numpy>=1.26.0              # Chart data manipulation
 
 # ── LLM (if used by agents in future) ────────────────────────────────────────
 anthropic>=0.40.0
+
+# ── NotebookLM grounded analysis layer ───────────────────────────────────────
+notebooklm-py[browser]==0.3.4   # Unofficial API — pin strictly; review CHANGELOG before upgrading

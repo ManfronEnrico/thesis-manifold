@@ -37,3 +37,25 @@ Thesis/Thesis\ Guidelines/
 
 # Claude local memory (machine-specific)
 .claude/projects/
+
+# LaTeX build artifacts
+build/
+*.pdf
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+
+# Obsidian workspace (machine-specific)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json

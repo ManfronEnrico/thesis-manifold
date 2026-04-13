@@ -1,6 +1,74 @@
 # CLAUDE.md — Manifold AI Thesis: Predictive Analytics Framework
 > This file is automatically read by Claude Code at every session.
-> Do not edit manually — update only through Claude Code.
+> Navigation hub only — full specs live in `.claude/rules/`. Do not bloat this file.
+
+---
+
+## NAVIGATION
+
+**Read at session start (in order):**
+1. This file (CLAUDE.md) — project context + constraints
+2. [dev/repository_map.md](dev/repository_map.md) — file locations + agent status
+3. [docs/tooling-issues.md](docs/tooling-issues.md) — known env problems (mandatory before any plan)
+
+**Key references:**
+- [docs/decisions/ADR-001-template-strategy.md](docs/decisions/ADR-001-template-strategy.md) — LaTeX template (OPEN)
+- [docs/decisions/ADR-002-build-pipeline.md](docs/decisions/ADR-002-build-pipeline.md) — PDF pipeline (OPEN)
+- [docs/decisions/ADR-003-builder-agent-fate.md](docs/decisions/ADR-003-builder-agent-fate.md) — Builder agent (OPEN)
+- [docs/compliance/cbs_guidelines_notes.md](docs/compliance/cbs_guidelines_notes.md) — CBS requirements
+- [CHEATSHEET.md](CHEATSHEET.md) — quick-reference commands
+
+**Claude workflows (in `.claude/rules/`):**
+- Standup: `/log_standup` → `/prep_standup` → `/finalize_standup` → `/init_standup`
+- Commit: `/draft_commit`
+- Docs: `/update_all_docs`
+- Plans: `/update_plan`
+
+---
+
+## TOOLING RULE
+
+**OneDrive safety**: This repo is on an OneDrive path. **Never** use Edit/Write directly on `.py` files.
+Use the safe patching pattern (temp script → CRLF normalize → write_bytes). See [docs/tooling-issues.md](docs/tooling-issues.md).
+The PreToolUse hook (`.claude/hooks/check_file_edit.py`) enforces this automatically.
+
+---
+
+## BUILD COMMANDS (Phase 3 — not yet set up)
+
+Once the LaTeX pipeline is built (Phase 3):
+```bash
+make pdf      # Markdown → LaTeX → PDF (build/thesis.pdf)
+make check    # Run integrity gates (scripts/check_integrity.py)
+make figures  # Regenerate all figures (generate_figures.py)
+```
+
+---
+
+## INTEGRITY GATES (Phase 4 — not yet set up)
+
+| Gate | When | Checks |
+|------|------|--------|
+| Gate 1 (Pre-Draft) | Before prose expansion | Section completeness, page budget (120p), skeleton approved |
+| Gate 2 (Post-Draft) | After first full draft | APA7 citations, figure references, NotebookLM cross-check |
+| Gate 3 (Pre-Submission) | Before final PDF | 7-mode AI failure checklist, CBS compliance, AI disclosure, 49-citation validation |
+
+Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integrity_checklist.md](docs/compliance/integrity_checklist.md) (TODO Phase 4).
+
+---
+
+## KNOWN TODOs / FROZEN DECISIONS
+
+> These are deliberate choices. **Do not "fix" these without Brian's explicit instruction.**
+
+- **Measurement model**: DSR (Design Science Research) methodology confirmed — do not suggest alternatives
+- **RAM constraint**: 8GB hard limit on all System A models — no exceptions, no suggestions to "just use more RAM"
+- **Writing Agent**: produces ONLY bullet points — never full prose. Prose requires human sign-off
+- **Phase transitions**: every phase requires explicit human approval before proceeding
+- **Nielsen access**: SQL modality not yet confirmed — do not assume CSV or SQL until clarified
+- **RQs v2**: currently the canonical version — do not modify without Brian flagging a change
+- **System A vs System B**: these are separate systems. Never modify System A logic from System B agents
+- **ADR-001/002/003**: open decisions — do not implement Phase 3 before these are resolved
 
 ---
 
@@ -78,6 +146,7 @@
 - [ ] **BLOCKED**: Indeks Danmark CSVs — must download from Google Drive to Thesis/ folder
 
 ### Pending (can proceed without data)
+- [ ] **NotebookLM Phase 0**: Run `notebooklm login`, create 6 chapter notebooks, add one test PDF, generate one study guide — gate decision before Phase 1
 - [ ] Literature Scraping Run 2 (trigger at next session)
 - [ ] Generate architecture figures (requires: pip install graphviz matplotlib)
 - [ ] CBS compliance checks on chapter skeletons
@@ -175,6 +244,7 @@ docs/
     rq_evolution.md             # RQ version history (v1 → v2)
     scraping_log.md             # Literature Scraping Agent log (Run 1 complete)
     papers/                     # 18 annotated papers (12 Tier 1 + 6 Tier A confirmed)
+    guides/                     # NotebookLM-generated study guides (cached Markdown, auto-generated)
   data/
     nielsen_assessment.md       # Nielsen data model + access status
     indeksdanmark_notes.md      # Indeks Danmark structure + memory estimate
@@ -195,6 +265,14 @@ docs/
   compliance/
     cbs_guidelines_notes.md     # CBS formal requirements (extracted from 9 PDFs)
     compliance_checks/          # ComplianceAgent section outputs
+
+papers/                         # PDF source files for NotebookLM ingestion
+  ch2-literature/               # All 16+ confirmed papers (cross-corpus QA)
+  ch3-methodology/              # Tier A ML methodology papers
+  ch4-models/                   # Forecasting model papers
+  ch5-synthesis/                # Consumer signal / sentiment papers
+  ch6-evaluation/               # Calibration + evaluation papers
+  ingestion_manifest.json       # Maps paper slugs → NotebookLM source IDs + notebook IDs
 
 Thesis/                         # Obsidian vault (human knowledge base)
   Thesis Guidelines/            # 9 CBS guideline PDFs
@@ -330,6 +408,54 @@ PHASE 7 — Thesis Writing
 
 ---
 
+## NOTEBOOKLM INTEGRATION
+
+**Status**: Phase 0 PASSED (2026-04-13) — auth, source add, and grounded Q&A confirmed working. Ready for Phase 1 (create 6 chapter notebooks, populate with 16 confirmed papers).
+
+**Library**: `notebooklm-py==0.3.4` (pinned) — unofficial API, fragile by design. Manual UI fallback always available at notebooklm.google.com.
+
+**Auth**: Run once per session expiry — `notebooklm login` (opens Chromium browser). Cookies stored at `~/.notebooklm/storage_state.json`.
+
+### Notebook Map (populate after `notebooklm login` + `notebooklm create`)
+
+| Notebook | NotebookLM ID | Chapter focus |
+|---|---|---|
+| `thesis-ch2-literature` | *(pending login)* | All 16+ confirmed papers — cross-corpus QA |
+| `thesis-ch3-methodology` | *(pending login)* | ML methodology papers (Tier A) |
+| `thesis-ch4-models` | *(pending login)* | Forecasting + benchmark comparison papers |
+| `thesis-ch5-synthesis` | *(pending login)* | Consumer signal / sentiment papers |
+| `thesis-ch6-evaluation` | *(pending login)* | Calibration + evaluation methodology |
+| `thesis-defense` | *(pending login)* | All papers — defense Q&A |
+
+### Mandatory Rules (Non-Negotiable)
+
+1. **Never pass NotebookLM output directly to WritingAgent** without `verified: False` flag cleared by a human.
+2. **All quotes** from NotebookLM must be cross-checked against the actual PDF before entering any draft.
+3. **Study guides / briefing docs** = orientation only. Not citable. They inform the analyst, not the draft.
+4. **Never use NotebookLM output as evidence** in the SRQ3/SRQ4 evaluation sections (quantitative results only).
+5. **If notebooklm-py breaks** → fall back to manual UI. All notebooks remain accessible there. Zero production capability lost.
+
+### Citation Format (when NotebookLM-sourced)
+
+```
+[Claim] (Author, Year, p. X — verified via NotebookLM citation, PDF confirmed)
+```
+`PDF confirmed` tag is mandatory before final submission.
+
+### Approved Workflow Patterns
+
+- **Pattern A** (Literature QA): Ask → get answer + citation passage → flag as `[NOTEBOOKLM — VERIFY]` → human confirms against PDF
+- **Pattern B** (Study Guide): Generate → cache to `docs/literature/guides/` → flag as `[SUMMARY — NOT VERBATIM]`
+- **Pattern C** (Quote Verification): Writing Agent flags claim → NotebookLM locates passage → human confirms
+- **Pattern D** (Defense Prep): Ask defense questions → get grounded answers + challenges → human reviews
+
+### Source Ingestion
+
+Papers live in `papers/<chapter>/`. Run `scripts/notebooklm_ingestion.py` to sync new PDFs to notebooks.
+Manifest at `papers/ingestion_manifest.json` — check before adding (idempotency).
+
+---
+
 ## PRE-START CHECKLIST
 
 ```
@@ -379,4 +505,5 @@ PHASE 7 — Thesis Writing
 
 ## LAST UPDATED
 
-[Claude Code will populate this field at every session]
+2026-04-13 — Added navigation hub, tooling rule, build commands, integrity gates, Known TODOs. Bootstrapped .claude/ infrastructure (Pre-Phase complete).
+2026-04-13 — NotebookLM integration: installed notebooklm-py==0.3.4, created papers/ directory structure, added NOTEBOOKLM section to CLAUDE.md, updated requirements.txt and .env.example. Phase 0 smoke test pending (requires `notebooklm login`).
