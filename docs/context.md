@@ -1,10 +1,71 @@
 # Project Context
 > Updated after every working session.
-> Last updated: 2026-03-15
+> Last updated: 2026-04-12
 
 ---
 
 ## Session Log
+
+### 2026-04-12 — Session 7: Folder reorg + Ch.1 citation fix + Ch.2 prose + Ch.3 prose + Nielsen DB connection
+
+**Actions taken:**
+
+**1. Folder reorganisation**
+- Deleted: `CLAUDE (1).md`, `Thesis/Untitled.md`, `Thesis/Untitled 1.md`, `docs/thesis/writing/~$1_introduction.docx`, `results/`
+- Moved: `Thesis/FILE NAME - Ma et al...md` → `Thesis/papers/`; `2026-03...csv` → `Thesis/`; `README_builder.md` → `thesis_production_system/agents/builder/`
+- Removed duplicate paper notes in `Thesis/papers/` (Toolformer, AgentCompass×1, Klee Untitled, Ahrens duplicate)
+- Renamed: `AgentCompass...1.md` → canonical name; `Model Averaging...md` → `Ahrens et al. (2024) - ...md`
+- Created `Thesis/data-links/` (moved 3 .webloc Google Drive shortcuts); `scripts/` (moved generate_figures.py)
+
+**2. Ch.1 Introduction — citation fix**
+- All 3 instances of `(Information Fusion, 2025)` replaced with `(Sapkota et al., 2025)`
+- Sapkota et al. (2025) entry added to `docs/thesis/references.md` (Information Fusion, DOI: 10.1016/j.inffus.2025.103599)
+- Status: `prose_draft` — awaiting human review
+
+**3. Ch.2 Literature Review — full prose written**
+- ~22 pages prose (~50,500 chars excl. spaces)
+- Sections: 2.1 AI Agents & LLM Orchestration, 2.2 Predictive Modelling, 2.3 Hybrid AI, 2.4 MCDM, 2.5 Resource-Constrained AI, 2.6 Gap Statement
+- 8 unknown-author citations resolved via /find-papers (WebFetch against known DOIs)
+- 28 new entries added to `docs/thesis/references.md`
+- 25 citations still pending NotebookLM verification
+- Exported to `docs/thesis/writing/ch2_literature_review.docx`
+- Status: `prose_draft` — awaiting human review
+
+**4. Ch.3 Methodology — full prose written**
+- ~12 pages prose (~27,300 chars excl. spaces)
+- Sections: 3.1 Philosophy of Science, 3.2 DSR, 3.3 Research Strategy, 3.4 Data Sources, 3.5 Analytical Approach, 3.6 Validity & Reliability, 3.7 Limitations
+- All citations from existing corpus; 0 CITATION NEEDED flags
+- Exported to `docs/thesis/writing/ch3_methodology.docx`
+- Status: `prose_draft` — awaiting human review + DSR supervisor confirmation (OI-03)
+
+**5. Nielsen / Microsoft Fabric connection established**
+- Received Microsoft Fabric credentials via onetimesecret.com
+- Created `ai_research_framework/data/nielsen_connector.py` — Service Principal auth via `azure-identity` + `pyodbc`
+- Created `.env.example` template; actual `.env` created manually by user (gitignored)
+- **Connection confirmed: all 4 Nielsen views return data**
+  - `csd_clean_dim_market_v`: market_id, market_description (DVH EXCL. DISCOUNT/HD etc.)
+  - `csd_clean_dim_period_v`: period_id, period_year, period_month, date_key (2022–2023)
+  - `csd_clean_dim_product_v`: 18 columns (brand, manufacturer, packaging, type, organic, private_label, etc.)
+  - `csd_clean_facts_v`: 10 columns — sales_value, sales_in_liters, sales_units, promo variants, weighted_distribution
+- **BLOCKER RESOLVED**: Nielsen data access is now confirmed
+
+**Packages installed this session (log for docs):**
+- `pyodbc` — Python ODBC connector (pip install pyodbc)
+- `azure-identity` — Microsoft Entra ID token (pip install azure-identity)
+- `python-dotenv` — .env file loading (pip install python-dotenv)
+- `ODBC Driver 18 for SQL Server` — macOS ODBC driver (brew install msodbcsql18)
+
+**Outstanding:**
+- [ ] Log pyodbc/azure-identity/python-dotenv in `docs/context.md` packages table ✅ (done above)
+- [ ] NotebookLM verification: 25 Ch.2 citations pending
+- [ ] Human review of Ch.1, Ch.2, Ch.3 Word documents
+- [ ] DSR supervisor confirmation (OI-03) — critical for Ch.3 compliance
+- [ ] AI Declaration placement confirmation (OI-02)
+- [ ] Indeks Danmark CSVs — still need to download from Google Drive (links in `Thesis/data-links/`)
+- [ ] Ch.4 Data Assessment — now unblocked (Nielsen connection confirmed)
+- [ ] Ch.5 Framework Design — can proceed immediately (no data required)
+
+---
 
 ### 2026-03-15 — Session 6: Run 3 annotations + CBS PDFs + page budget fix + project overview figure
 

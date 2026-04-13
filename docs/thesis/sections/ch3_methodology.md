@@ -1,106 +1,102 @@
 # Chapter 3 — Methodology
-> Thesis Writing Agent output — BULLET POINTS ONLY (no prose)
-> Last updated: 2026-03-14
-> Status: DRAFT — requires human approval before prose writing
+> Status: PROSE DRAFT — bullets approved 2026-04-12; prose written 2026-04-12
+> Author: Claude Code (Sonnet 4.6) — requires human review before finalisation
+> Word count target: ~12 standard CBS pages (~27,300 chars excl. spaces)
+> Compliance note: ⚠️ DSR acceptance by CBS supervisor not yet confirmed (open item OI-03)
 
 ---
 
 ## 3.1 Philosophy of Science
 
-- Thesis adopts a **pragmatist** philosophy of science stance
-  - Knowledge is judged by its practical consequences and usefulness
-  - Aligns with Design Science Research: truth = what works in context
-  - Justification: the thesis builds an artefact (framework) to solve a real problem (predictive decision-support for Manifold AI)
-- Ontology: **moderate realism** — external business realities (sales patterns, consumer behaviour) exist independently, but are accessed through measurement instruments (Nielsen data, Indeks Danmark survey)
-- Epistemology: **empirical** — knowledge claims derived from data and experimental evaluation, not pure theory
-- Contrast with positivism: we do not claim universal laws; findings are context-bounded (Danish CSD retail, 8GB cloud environment)
-- Contrast with interpretivism: quantitative data and reproducible metrics are primary evidence; no qualitative interpretation of meaning
+This thesis adopts a pragmatist philosophy of science, a position that evaluates knowledge claims by their practical consequences and their capacity to generate useful solutions to real-world problems. Pragmatism holds that there is no single, context-independent criterion of truth, and that the adequacy of a theory or framework is properly judged by how well it enables action in the domain it is intended to address. This stance is particularly well-suited to design-oriented research, in which the primary output is an artefact, specifically a multi-agent predictive framework, rather than a universal explanatory theory. For this thesis, the pragmatist criterion for success is not whether the framework reveals deep structural features of retail demand, but whether it enables Manifold AI and similar organisations to generate more reliable, computationally feasible, and managerially actionable demand forecasts than the descriptive systems currently in use.
+
+The ontological position underlying this thesis is moderate realism: external business realities, including demand patterns, consumer preferences, and retailer-level sales dynamics, are held to exist independently of the researcher's observation of them, but are accessible only through measurement instruments that introduce their own assumptions and limitations. The Nielsen scanner panel captures sales volumes and market shares through a structured data collection process that reflects retailer reporting conventions and panel design choices. The Indeks Danmark consumer survey approximates consumer attitudes and behaviours through questionnaire items, sampling procedures, and weighting schemes. Both instruments provide meaningful, reproducible information about underlying market realities, but they do not provide direct, theory-free access to those realities. This ontological position has practical methodological implications: it motivates careful data quality assessment, explicit documentation of measurement assumptions, and conservative interpretation of findings as context-bounded rather than universal.
+
+The epistemological stance is empirical: knowledge claims in this thesis are grounded in data and in the outcomes of controlled evaluations rather than in pure theoretical deduction. The primary epistemic mechanism is prediction and comparison: the thesis generates quantitative forecasts, measures their accuracy against observed outcomes, and compares system performance against a defined baseline. This empirical orientation contrasts with a purely positivist epistemology in two respects. First, the thesis does not claim to discover universal forecasting laws applicable across all contexts; findings are explicitly bounded to the Danish CSD retail market, the eight-gigabyte RAM constraint, and the batch processing mode described in Chapter 4. Second, the thesis does not aspire to purely objective, theory-free observation; the choice of evaluation metrics, the definition of the baseline, and the design of the confidence scoring formula all embed theoretical commitments that are made explicit rather than concealed. The empirical stance equally contrasts with interpretivism: quantitative accuracy metrics and reproducible experimental protocols are the primary evidence, and the thesis does not seek to interpret the subjective meaning that decision-makers attach to forecasts.
+
+The philosophical alignment between pragmatism, moderate realism, and empiricism reflects the internal logic of Design Science Research as an established methodology for information systems and technology research. DSR produces knowledge through the construction and evaluation of artefacts, and judges that knowledge by whether the artefact achieves its design objectives in the target environment. This is precisely the pragmatist criterion: knowledge is what works. The consistency between the philosophical position and the research methodology is not incidental; it reflects the deliberate choice to adopt a methodology whose epistemological foundations are compatible with the pragmatist orientation of the research.
 
 ---
 
-## 3.2 Research Design — Design Science Research (DSR)
+## 3.2 Research Design: Design Science Research
 
-- Adopted framework: **Design Science Research** (Hevner et al., 2004; Peffers et al., 2007)
-  - DSR is the dominant methodology for IS/AI artefact construction research
-  - Produces both an artefact (the framework) and knowledge (design principles, evaluation findings)
-  - Accepted at CBS for business/technology theses — aligns with RQ framing ("How can AI systems be designed...")
-- DSR cycle:
-  1. **Problem identification**: limits of descriptive analytics in resource-constrained environments
-  2. **Objective definition**: reliable predictive decision-support within ≤8GB RAM
-  3. **Design & development**: multi-agent framework (Phases 3–5)
-  4. **Demonstration**: framework runs on real retail data (Phase 6)
-  5. **Evaluation**: comparison with descriptive baseline, 3-level validation (Phase 6)
-  6. **Communication**: thesis chapters
-- Research design type (CBS taxonomy): **Explanatory** — explaining HOW the system achieves decision-support AND why certain design choices produce better outcomes than alternatives
+This thesis adopts Design Science Research (DSR) as its primary research methodology. DSR is the established framework for information systems research that involves the construction of novel artefacts, whether systems, methods, models, or frameworks, and the systematic evaluation of those artefacts against defined performance criteria in a relevant application domain (Hevner et al., 2004). DSR is distinguished from purely behavioural IS research by its dual emphasis on both the construction of a working artefact and the generation of transferable design knowledge that extends beyond the specific instantiation. In the context of this thesis, the artefact is the multi-agent predictive decision-support framework, and the design knowledge takes the form of five generalised design principles derived from the framework evaluation.
+
+Hevner et al. (2004) establish three foundational cycles of DSR activity: the relevance cycle, which connects the research to a real-world problem in a specific application domain; the design cycle, which iterates between construction and evaluation of the artefact; and the rigor cycle, which grounds the design in existing knowledge bases, specifically the academic literature reviewed in Chapter 2. This thesis explicitly engages all three cycles. The relevance cycle is established through the collaboration with Manifold AI, whose operational need to transition from descriptive to predictive analytics defines the problem that the framework addresses. The design cycle is enacted through the iterative development, testing, and refinement of the multi-agent architecture across Chapters 5 through 8. The rigor cycle is enacted through the systematic literature review in Chapter 2, which identifies the theoretical and empirical foundations on which the framework design is built.
+
+Peffers et al. (2007) provide a process model for DSR comprising six sequential activities that structure the research design of this thesis. Problem identification and motivation, the first activity, is addressed in Chapters 1 and 2, where the limits of descriptive analytics in resource-constrained SME environments are documented and the gap in the existing literature is established. The definition of objectives for a solution, the second activity, is formalised through the four subsidiary research questions that specify the design requirements for the framework. Design and development, the third activity, constitutes the core contribution of Chapters 5 and 6, where the multi-agent architecture is specified and the forecasting models are implemented and profiled. Demonstration, the fourth activity, is achieved in Chapter 7, where the Synthesis Module is applied to real Nielsen scanner data to generate demand recommendations. Evaluation, the fifth activity, is conducted in Chapter 8, where the framework's performance is assessed against accuracy, computational efficiency, recommendation quality, and comparison with the descriptive baseline. Communication, the sixth activity, is realised through this thesis and its associated artefact documentation.
+
+The research design type within the CBS taxonomy is explanatory: the thesis is not merely describing what the framework does, but explaining how and why specific architectural choices, specifically sequential model execution, LLM-based synthesis, and calibrated confidence scoring, produce better decision-support outcomes than the descriptive baseline. This explanatory orientation is manifest in the evaluation design, which is structured to isolate the contribution of individual components through controlled comparisons rather than reporting aggregate performance alone. The prototype status of the artefact is explicitly acknowledged: the framework is a research prototype evaluated on historical data under controlled conditions, and is not claimed to be a production-ready deployed system.
 
 ---
 
 ## 3.3 Research Strategy
 
-- **Primary strategy**: quantitative experiment + system evaluation
-  - Model benchmark: controlled experiment (same data, different models)
-  - SRQ3: controlled comparison (with vs without Indeks Danmark contextual signals)
-  - SRQ4: quasi-experimental comparison (framework vs descriptive baseline)
-- **Secondary strategy**: case study (Manifold AI as case organisation)
-  - Provides real-world validation context
-  - CBS case study guidelines apply (confidentiality agreement may be required)
-- Unit of analysis: the multi-agent framework evaluated on Danish CSD retail data
+The primary research strategy is a quantitative experiment combined with a single-case embedded study. The experimental component provides the controlled evaluations that address SRQ1 and SRQ3: in both cases, a single variable, the set of forecasting models in SRQ1 and the presence or absence of Indeks Danmark enrichment in SRQ3, is systematically varied while all other conditions are held constant. This controlled variation enables attribution of performance differences to the manipulated variable rather than to confounding factors, providing the internal validity required to answer the research questions with appropriate confidence.
+
+The single-case embedded study component provides the organisational context that grounds the experimental findings in a real application environment. Manifold AI serves as the case organisation, and the Danish CSD retail market constitutes the empirical context. The case study orientation means that all experimental data, evaluation protocols, and baseline comparisons are anchored in the actual data and operational context of the case rather than in synthetic benchmarks. This design choice reflects the DSR relevance criterion: the framework must be evaluated in a context that is relevant to the problem it addresses. The CBS case study guidelines apply to this research, and a confidentiality agreement may be required before Nielsen data can be used; the data access status is documented in Chapter 4.
+
+The unit of analysis is the multi-agent framework, evaluated on a specific slice of the Nielsen dataset defined by the brand-times-retailer granularity and the Danish CSD market scope. The granularity choice, specifically brand-level data aggregated across retailer-week combinations and collapsed to monthly periods, reflects the operational planning horizon relevant to Manifold AI's client organisations and is consistent with the temporal resolution of the Nielsen panel. The default market definition, DVH EXCL. HD, is adopted in alignment with the market segmentation conventions used by Manifold AI. These choices are documented here as locked design decisions to ensure reproducibility and to prevent retroactive revision based on observed model performance.
 
 ---
 
 ## 3.4 Data Sources
 
-| Source | Type | Role |
-|---|---|---|
-| Nielsen/Prometheus | Proprietary retail panel data | Primary forecasting data (SRQ1, SRQ4) |
-| Indeks Danmark | Consumer survey data | Contextual enrichment signal (SRQ3) |
+This thesis uses two primary data sources: the Nielsen/Prometheus CSD scanner panel and the Indeks Danmark consumer survey. Each source contributes a distinct type of information, and their complementarity is central to SRQ3.
 
-- Nielsen: star schema SQL, CSD category, 28 Danish retailers, ~36 monthly periods
-- Indeks Danmark: 20,134 respondents, 6,364 variables, survey-weighted
+The Nielsen/Prometheus dataset provides longitudinal retail transaction data for the Danish carbonated soft drinks category. Its structure follows a star schema, with a facts table recording sales value, sales in litres, sales units, and weighted distribution at the brand-times-retailer-times-period level, linked to dimension tables for market, period, and product. The panel covers 28 Danish retailers across approximately 36 monthly periods, providing a transaction history of approximately three years. The sales metrics include both base and promotional variants, enabling the identification of promotional uplifts as a feature engineering input. The weighted distribution metric provides a proxy for product availability, which is a meaningful predictor of sales volume for categories with intermittent distribution. Access to the Nielsen dataset requires a confidentiality agreement with Manifold AI, and the status of that agreement is noted as a blocking dependency in the project status documentation.
 
-**Data access**:
-- Nielsen: access pending confirmation from Manifold AI (potential confidentiality agreement)
-- Indeks Danmark: dataset received; CSVs to be downloaded locally
+The Indeks Danmark consumer survey provides consumer-level attitudinal and behavioural data for the Danish market. The survey covers 20,134 respondents and 6,364 variables, including product category usage, brand preferences, shopping frequency, and a range of sociodemographic and psychographic indicators. The survey is weighted to be representative of the Danish adult population. For the purposes of this thesis, the Indeks Danmark dataset serves as the source of consumer enrichment signals for SRQ3: specific survey variables related to CSD category attitudes, purchase frequency, and brand loyalty are selected through a feature engineering process and mapped to retailer-level demand predictions. The dataset has been received; the CSV files require local download before they can be integrated into the preprocessing pipeline.
+
+The two data sources differ substantially in temporal resolution: the Nielsen panel provides monthly aggregates, while the Indeks Danmark survey is cross-sectional, capturing consumer attitudes at a single point in time. This temporal resolution mismatch is a design constraint that limits the type of enrichment possible: Indeks Danmark signals cannot be used as dynamic time-varying predictors but can be used as static demand-level enrichment features that capture structural differences in consumer preferences across the retailer segments covered by the Nielsen panel. This limitation is documented in Section 3.7 and is accounted for in the feature engineering approach described in Section 3.5.
 
 ---
 
 ## 3.5 Analytical Approach
 
-- **Forecasting models**: ARIMA, Prophet, LightGBM, XGBoost, Ridge Regression
-  - Granularity: brand × retailer (DVH EXCL. HD default) × monthly period
-  - Justification: tree-based models (LightGBM, XGBoost) suited for tabular retail data with ~36 periods; ARIMA/Prophet provide interpretable baselines
-- **Consumer segmentation**: PCA + k-means on Indeks Danmark variables → 4–6 consumer segments
-- **Synthesis**: ensemble weighting (inverse-MAPE) + LLM natural language generation (Claude API)
-- **Evaluation metrics**:
-  - Level 1 (ML accuracy): MAPE, RMSE, directional accuracy
-  - Level 2 (recommendation quality): hit rate, LLM-as-judge rubric
-  - Level 3 (agent behaviour): memory footprint, latency, error rate
+The analytical approach is organised around a three-level validation framework that addresses each of the four subsidiary research questions through a distinct evaluation protocol. This multi-level structure is necessary because the thesis evaluates not only forecasting accuracy but also recommendation quality and system behaviour, and these three dimensions require different evidence types and evaluation instruments.
+
+Level 1 validation addresses SRQ1 and concerns ML forecasting accuracy and computational efficiency. Five forecasting models are evaluated on the Nielsen CSD dataset: ARIMA, Prophet, LightGBM, XGBoost, and Ridge Regression. These five models were selected to span the accuracy-efficiency frontier: ARIMA and Ridge Regression provide interpretable statistical and linear baselines with well-understood memory footprints; Prophet provides an additive decomposition approach with explicit seasonality handling; and LightGBM and XGBoost represent the gradient-boosted ensemble methods that have demonstrated state-of-the-art performance in the M5 retail forecasting benchmark (Makridakis et al., 2022). All models are evaluated on a common held-out test set using mean absolute percentage error (MAPE) and root mean squared error (RMSE) as accuracy metrics, peak RAM consumption and runtime as efficiency metrics, and coefficient of variation across repeated runs as a stability metric, following the methodology proposed by Klee and Xia (2025). Memory profiling is conducted using the Python `tracemalloc` module, which tracks all memory allocations during model loading, training, and inference.
+
+Level 2 validation addresses SRQ2 and SRQ3 and concerns recommendation quality and the value of contextual enrichment. The Synthesis Agent combines the outputs of the forecasting models into a confidence-scored natural language recommendation through a five-step process: ensemble aggregation using inverse-MAPE weighting as proposed by Ahrens et al. (2024), prediction interval calibration following Kuleshov et al. (2018), Indeks Danmark signal enrichment, composite confidence scoring, and LLM-based natural language generation via the Claude API at temperature zero. Recommendation quality is assessed using an LLM-as-judge protocol in which a separate LLM evaluator scores each recommendation on a structured rubric covering factual accuracy relative to the source forecasts, clarity for a non-technical business audience, and actionability. The value of Indeks Danmark enrichment is quantified through an ablation design: the framework is run with and without the consumer signal enrichment step under otherwise identical conditions, and the difference in MAPE, RMSE, and LLM-judge recommendation quality scores is measured and tested for statistical significance.
+
+Level 3 validation addresses SRQ4 and concerns the comparative performance of the predictive framework against a descriptive analytics baseline. The baseline is defined as the current Manifold AI Colleagues system output, which provides descriptive historical summaries without forecast or recommendation. Comparison is conducted on defined decision quality metrics, specifically forecast directional accuracy (whether the framework correctly predicts the direction of demand change) and recommendation hit rate (whether the recommended action, such as increasing stock for a specific brand-retailer combination, is directionally correct relative to subsequent observed demand). Consumer segment features are derived through principal component analysis followed by k-means clustering on the selected Indeks Danmark variables, producing four to six consumer segments whose demand signatures are then mapped to the retailer level.
 
 ---
 
-## 3.6 Validity & Reliability
+## 3.6 Validity and Reliability
 
-- **Internal validity**: same training/test split across all models; reproducible random seeds
-- **External validity**: limited to Danish CSD retail context; generalisation to other categories/geographies is a stated limitation
-- **Construct validity**: SRQ3 (contextual information impact) measured by ablation — compare framework with vs without Indeks Danmark signals
-- **Reliability**: all code versioned; data preprocessing steps documented; model hyperparameters logged
+**Internal validity** is maintained through three design choices. First, a common train-test split is applied identically across all five forecasting models, ensuring that performance differences reflect model characteristics rather than differences in the data each model observes. Second, all models are initialised with fixed random seeds and all preprocessing steps are fully documented, enabling exact reproduction of any result. Third, the ablation design used for SRQ3, in which Indeks Danmark signals are added as the sole manipulation while all other conditions remain constant, isolates the enrichment effect from potential confounders.
+
+**External validity** is explicitly bounded. The findings of this thesis are applicable to the Danish CSD retail market under an eight-gigabyte RAM cloud deployment constraint and a monthly batch processing mode. Generalisation to other FMCG categories, other national markets, other RAM budgets, or real-time streaming contexts is a direction for future research rather than a claim of this thesis. The single-case embedded study design strengthens relevance to the Manifold AI operational context but limits statistical generalisation to other case organisations.
+
+**Construct validity** is addressed through the operationalisation of each research question in a defined measurement protocol. SRQ1 is operationalised through MAPE, RMSE, peak RAM, runtime, and stability coefficient, which jointly capture the accuracy-efficiency trade-off. SRQ2 is operationalised through the LLM-as-judge rubric and a structured recommendation quality score. SRQ3 is operationalised through the ablation design measuring the difference in accuracy and recommendation quality with and without consumer enrichment signals. SRQ4 is operationalised through directional accuracy and hit rate in comparison with the descriptive baseline. Each operationalisation is pre-specified before data analysis begins to prevent post-hoc metric selection bias.
+
+**Reliability** is ensured through full code versioning in a dedicated repository, complete documentation of all hyperparameters and preprocessing decisions in the experiment registry maintained by the Experiment Tracking Agent, and fixed random seeds throughout. Any deviation from the documented protocol is recorded as a limitation. The LLM-as-judge evaluation introduces a source of non-determinism: LLM outputs at temperature zero are highly reproducible but not guaranteed to be identical across API versions. To mitigate this, all LLM evaluation calls are logged with their exact prompt and output, enabling retrospective auditing.
 
 ---
 
 ## 3.7 Limitations
 
-- Nielsen data access timeline uncertain — may require fallback to synthetic/public data for SRQ3/SRQ4
-- ~36 monthly periods is borderline for ARIMA (minimum 24 recommended)
-- Consumer-to-retailer segment mapping is a proxy — no direct row-level linkage between Indeks Danmark and Nielsen
-- 8GB RAM constraint limits parallelism; sequential model execution is a design tradeoff
-- Case study generalisability is bounded to Manifold AI's specific operational context
+The methodology described in this chapter is subject to five limitations that bound the scope and generalisability of the findings.
+
+**Data access uncertainty.** The Nielsen/Prometheus dataset requires a confidentiality agreement with Manifold AI, the status of which was unconfirmed at the time of writing. If data access is not secured before the thesis deadline, the empirical chapters will rely on a fallback dataset, such as publicly available M5 competition data, which would limit the direct applicability of the findings to the Manifold AI operational context. The Indeks Danmark dataset has been received but the CSV files require local download; any delay in this step delays the SRQ3 evaluation.
+
+**Training sample size.** Approximately 36 monthly periods is at the lower boundary for reliable time series model estimation. ARIMA models generally require a minimum of 24 periods for stable parameter identification; 36 periods satisfies this requirement but provides limited statistical power for detecting seasonal patterns spanning multiple years. LightGBM and XGBoost are less sensitive to sample size constraints than classical time series models, but the restricted training window limits their ability to learn longer-cycle promotional patterns. This limitation is partially mitigated by the feature engineering approach, which incorporates lagged variables and rolling statistics that increase the effective information content per observation.
+
+**Consumer-to-retailer segment mapping.** The mapping of Indeks Danmark consumer segments to Nielsen retailer-level demand is a proxy construction rather than a direct linkage. There is no row-level correspondence between individual survey respondents and individual retail transactions; the mapping is achieved by aggregating consumer segment profiles at the retailer level using assumptions about the geographic and demographic distribution of the retailer's customer base. This proxy introduces measurement error in the enrichment signals and may understate the true predictive value of consumer survey data relative to a setting where direct linkage is available.
+
+**Sequential model execution constraint.** The eight-gigabyte RAM budget requires models to be executed sequentially rather than in parallel, increasing total pipeline runtime relative to a compute-unconstrained deployment. In a production setting, this latency may be acceptable for monthly batch processing but would be prohibitive for higher-frequency planning cycles. The sequential execution design is a binding architectural constraint of the thesis framework that would need to be re-evaluated for any real-time or sub-monthly deployment.
+
+**Case study generalisability.** The single-case embedded study design provides strong internal relevance to the Manifold AI operational context but limits statistical generalisation to other retail AI providers, other product categories, and other national markets. The design principles derived from the evaluation are intended to be theoretically transferable through the DSR generalisation mechanism, but their applicability to contexts with different data characteristics, regulatory environments, or competitive dynamics requires empirical validation in those contexts.
 
 ---
 
-## CBS Compliance Notes for This Chapter
+## References cited in this chapter
 
-- ✅ Philosophy of science section included (CBS mandatory)
-- ✅ Research design justified against RQ
-- ✅ DSR is an accepted methodology at CBS for technology/IS theses — confirm with supervisor
-- ⚠️ Cite foundational DSR papers: Hevner et al. (2004), Peffers et al. (2007)
-- ⚠️ Confirm with supervisor whether DSR is accepted for this specific programme
+- Ahrens, A., Hansen, C. B., Schaffer, M. E., & Wiemann, T. (2024). Model averaging and double machine learning. *Journal of Applied Econometrics*. https://doi.org/10.48550/arXiv.2401.01645
+- Hevner, A. R., March, S. T., Park, J., & Ram, S. (2004). Design science in information systems research. *MIS Quarterly*, *28*(1), 75–105.
+- Klee, S., & Xia, Y. (2025). Measuring time series forecast stability for demand planning. *KDD '25 Workshop on AI for Supply Chain*.
+- Kuleshov, V., Fenner, N., & Ermon, S. (2018). Accurate uncertainties for deep learning using calibrated regression. In *Proceedings of ICML 2018* (PMLR, Vol. 80).
+- Makridakis, S., Spiliotis, E., & Assimakopoulos, V. (2022). M5 accuracy competition: Results, findings, and conclusions. *International Journal of Forecasting*, *38*(4), 1346–1364.
+- Peffers, K., Tuunanen, T., Rothenberger, M. A., & Chatterjee, S. (2007). A design science research methodology for information systems research. *Journal of Management Information Systems*, *24*(3), 45–77.

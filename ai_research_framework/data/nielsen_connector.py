@@ -1,86 +1,97 @@
 """
-Nielsen / Prometheus Database Connector
-----------------------------------------
-Authenticates via Azure AD service principal (client credentials flow).
-Credentials are loaded from .env — never hardcoded.
+Nielsen / Microsoft Fabric Data Warehouse connector.
+Authenticates using a Service Principal (Entra ID) and returns a pyodbc connection.
 
-Requirements:
-- ODBC Driver 18 for SQL Server must be installed on the machine.
-  Windows: https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
-- pip install pyodbc azure-identity python-dotenv
+Usage:
+    from ai_research_framework.data.nielsen_connector import get_connection
+    conn = get_connection()
+    df = pd.read_sql("SELECT TOP 10 * FROM dbo.csd_clean_facts_v", conn)
+    conn.close()
+
+Requires:
+    - .env file in project root with RU_* credentials
+    - ODBC Driver 18 for SQL Server (brew install msodbcsql18)
+    - pip install pyodbc azure-identity python-dotenv
 """
 
+import os
 import struct
-
-import pandas as pd
 import pyodbc
+from pathlib import Path
 from azure.identity import ClientSecretCredential
+from dotenv import load_dotenv
 
-from ai_research_framework.config import NielsenConnectionConfig, NielsenConfig
+# Load credentials from .env in project root
+_env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(_env_path)
+
+SERVER   = os.environ["RU_SERVER_STRING"]
+DATABASE = os.environ["RU_DATABASE"]
+CLIENT_ID     = os.environ["RU_CLIENT_ID"]
+TENANT_ID     = os.environ["RU_TENANT_ID"]
+CLIENT_SECRET = os.environ["RU_CLIENT_SECRET"]
+
+ODBC_DRIVER = "ODBC Driver 18 for SQL Server"
 
 
-# SQL_COPT_SS_ACCESS_TOKEN — pyodbc attribute key for Azure AD token injection
-_ACCESS_TOKEN_ATTR = 1256
-
-
-def _get_access_token(cfg: NielsenConnectionConfig) -> bytes:
-    """Obtain an Azure AD bearer token for the SQL database scope."""
+def _get_token() -> bytes:
+    """Obtain an Entra ID access token for the Fabric data warehouse."""
     credential = ClientSecretCredential(
-        tenant_id=cfg.tenant_id,
-        client_id=cfg.client_id,
-        client_secret=cfg.client_secret,
+        tenant_id=TENANT_ID,
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
     )
     token = credential.get_token("https://database.windows.net/.default")
+    # pyodbc requires the token packed as a UTF-16-LE byte struct
     token_bytes = token.token.encode("UTF-16-LE")
     return struct.pack(f"<I{len(token_bytes)}s", len(token_bytes), token_bytes)
 
 
-def get_connection(cfg: NielsenConnectionConfig | None = None) -> pyodbc.Connection:
+def get_connection() -> pyodbc.Connection:
     """
-    Return an open pyodbc connection to the Nielsen/Prometheus database.
-
-    Usage:
-        with get_connection() as conn:
-            df = pd.read_sql("SELECT TOP 10 * FROM csd_clean_facts_v", conn)
+    Return an open pyodbc connection to the Nielsen_clean Fabric warehouse.
+    Caller is responsible for closing the connection.
     """
-    if cfg is None:
-        cfg = NielsenConnectionConfig()
-
-    token_struct = _get_access_token(cfg)
-
-    conn_str = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        f"SERVER={cfg.server};"
-        f"DATABASE={cfg.database};"
+    token_struct = _get_token()
+    connection_string = (
+        f"Driver={{{ODBC_DRIVER}}};"
+        f"Server={SERVER};"
+        f"Database={DATABASE};"
+        "Encrypt=yes;"
+        "TrustServerCertificate=no;"
     )
-
-    conn = pyodbc.connect(conn_str, attrs_before={_ACCESS_TOKEN_ATTR: token_struct})
+    # SQL_COPT_SS_ACCESS_TOKEN = 1256
+    conn = pyodbc.connect(connection_string, attrs_before={1256: token_struct})
     return conn
 
 
-def load_table(table: str, cfg: NielsenConnectionConfig | None = None) -> pd.DataFrame:
-    """Load a full Nielsen schema table into a DataFrame."""
-    nielsen_cfg = NielsenConfig()
-    if table not in nielsen_cfg.schema_tables:
-        raise ValueError(
-            f"'{table}' is not a recognised Nielsen table. "
-            f"Valid tables: {nielsen_cfg.schema_tables}"
-        )
-    with get_connection(cfg) as conn:
-        return pd.read_sql(f"SELECT * FROM {table}", conn)
+def test_connection() -> None:
+    """Quick smoke test — prints top-5 rows from each key view."""
+    print(f"Connecting to {SERVER} / {DATABASE} ...")
+    conn = get_connection()
+    print("Connection OK")
 
-
-def test_connection() -> bool:
-    """Quick connectivity check — returns True if login succeeds."""
-    try:
-        with get_connection() as conn:
+    views = [
+        "csd_clean_dim_market_v",
+        "csd_clean_dim_period_v",
+        "csd_clean_dim_product_v",
+        "csd_clean_facts_v",
+    ]
+    for view in views:
+        try:
             cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            print("Connection successful.")
-            return True
-    except Exception as exc:
-        print(f"Connection failed: {exc}")
-        return False
+            cursor.execute(f"SELECT TOP 3 * FROM dbo.{view}")
+            rows = cursor.fetchall()
+            cols = [d[0] for d in cursor.description]
+            print(f"\n--- {view} ({len(cols)} columns) ---")
+            print("Columns:", cols)
+            for row in rows:
+                print(dict(zip(cols, row)))
+        except Exception as e:
+            print(f"  ERROR on {view}: {e}")
+
+    conn.close()
+    print("\nDone.")
 
 
 if __name__ == "__main__":
