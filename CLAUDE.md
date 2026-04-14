@@ -70,7 +70,7 @@ Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integ
 - **RQs v2**: currently the canonical version — do not modify without flagging a change
 - **System A vs System B**: these are separate systems. Never modify System A logic from System B agents
 - **ADR-001/002/003**: open decisions — do not implement Phase 3 before these are resolved
-- **Global LightGBM v2 (Tweedie)**: current best model at 22.5% median MAPE — do not replace without benchmarking
+- **SRQ1 baseline models**: XGBoost 45.5% median MAPE (test), LightGBM 46.7% median MAPE (test) — see `docs/tasks/srq1_verification_report.md` for validation metrics and test/val discrepancy analysis
 - **No em dashes in prose**: rewrite using commas, semicolons, colons, or subordinate clauses (hyphens in compound adjectives permitted)
 
 ---
@@ -154,10 +154,10 @@ Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integ
 - [x] Ch.3 Methodology prose (27,300 chars, 12 pages) — written 2026-04-12
 - [x] **Phase 1 Data Assessment complete** — preprocessing pipeline, 77 brands, DVH EXCL. HD, 42 periods, feature matrix at `results/phase1/feature_matrix.parquet`
 - [x] **SRQ1 Benchmark complete** — 6 models + ensemble benchmarked with walk-forward CV + held-out test evaluation
-  - Best model: Global LightGBM v2 (Tweedie loss) — **22.5% median MAPE** on validation
-  - Test set evaluation (Sep 2025–Mar 2026): XGBoost 45.5%, LightGBM 46.7%, Ridge 48.4%
-  - Top-10 brands by volume: 20.3% MAPE (Coca-Cola 28%, HANCOCK 3.9%)
-  - Results: `results/phase1/benchmark_summary_v2.md`, `results/phase1/global_v2_summary.md`
+  - Validation metrics: LightGBM 31%, XGBoost 33%, Ensemble 32% median MAPE (see `benchmark_summary_v2.md`)
+  - **Test set metrics (authoritative)**: XGBoost 45.5%, LightGBM 46.7%, Ridge 48.4% median MAPE (Sep 2025–Mar 2026)
+  - SeasonalNaive baseline: 66.9% median MAPE on test
+  - Analysis: See `docs/tasks/srq1_verification_report.md` for validation→test discrepancy analysis
 - [x] NotebookLM Phase 0 PASSED (2026-04-13) — auth, source add, and grounded Q&A confirmed working
 
 ### Blocked 🔴
@@ -210,15 +210,15 @@ Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integ
 |---|---|---|---|
 | **Research Coordinator** | `core/coordinator.py` | Orchestrator | ✅ LangGraph StateGraph |
 | **Data Assessment Agent** | `agents/data_assessment_agent.py` | SRQ1–4 precondition | ✅ Complete — Phase 1 done (77 brands, 42 periods, DVH EXCL. HD) |
-| **Forecasting Agent** | `agents/forecasting_agent.py` | SRQ1 | ✅ Complete — 6 models + ensemble; Global LGB v2 (Tweedie) 22.5% median MAPE |
+| **Forecasting Agent** | `agents/forecasting_agent.py` | SRQ1 | ✅ Complete — 6 models + ensemble; test baseline: XGBoost 45.5%, LightGBM 46.7% median MAPE |
 | **Synthesis Agent** | `agents/synthesis_agent.py` | SRQ2 | ⬜ Partial (API implemented — Phase 5 pending) |
 | **Validation Agent** | `agents/validation_agent.py` | SRQ1–4 | ⬜ Pending (Phase 6 — requires Phase 5 complete) |
 
 **Key model files (standalone runners, not class-based):**
 - `agents/forecasting_agent.py` — per-brand benchmark (Ridge, LightGBM, XGBoost, ARIMA, Prophet + Ensemble)
-- `agents/global_model.py` — Global LightGBM v1 (28.2% median MAPE)
-- `agents/global_model_v2.py` — Global LightGBM v2, Tweedie loss (22.5% median MAPE) ← **current best**
-- `agents/test_evaluation.py` — held-out test set evaluation (Sep 2025–Mar 2026)
+- `agents/global_model.py` — Global LightGBM v1 (28.2% validation MAPE)
+- `agents/global_model_v2.py` — Global LightGBM v2 + Tweedie + ensemble (validation: 22–26% MAPE; test: see test_evaluation.py)
+- `agents/test_evaluation.py` — held-out test set evaluation (Sep 2025–Mar 2026); XGBoost 45.5%, LightGBM 46.7% median MAPE
 - `data/preprocessing.py` — Nielsen preprocessing pipeline (feature engineering, train/val/test split)
 
 **Hard constraint**: ≤ 8 GB RAM. Sequential model execution. LangGraph TypedDict state.

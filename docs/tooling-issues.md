@@ -44,3 +44,28 @@ The PreToolUse hook (`.claude/hooks/check_file_edit.py`) blocks direct Edit/Writ
 **Solution**: Before installing any new package, check PyPI for 3.14 compatibility. If a package fails to install, try the latest pre-release or pin to 3.12 using a virtual environment.
 
 **Key lesson**: Verify package 3.14 compatibility before `pip install`.
+
+---
+
+## Issue 4: Enrico's SRQ1 model selection reports validation metrics as if they were test metrics
+
+**Symptom**: CLAUDE.md and `global_v2_summary.md` claim "Global LightGBM v2 (Tweedie) achieves 22.5% median MAPE" — but when cross-checked against `test_summary.md`, the test set MAPE is **46.7%** (LightGBM) / **45.5%** (XGBoost). The 22.5% figure is from the validation set, not the held-out test set.
+
+**Cause**: Two separate evaluation runs produced different narratives:
+1. `global_model_v2.py` reports validation metrics (22.5%, 23.8%, 26.2%) in `global_v2_summary.md`
+2. `test_evaluation.py` reports test metrics (46.7%, 45.5%, 48.4%) in `test_summary.md`
+3. CLAUDE.md was updated with v2 validation results but not re-checked against test results after `test_evaluation.py` ran
+4. Tweedie loss was tested on validation but **never evaluated on the test set** — only MSE/log and Ensemble were tested on test
+
+**Solution**: When reporting SRQ1 results in the thesis, always report **test set metrics** as the ground truth:
+- Best test model: XGBoost 45.5% median MAPE (or LightGBM 46.7%)
+- Baseline (SeasonalNaive): 66.9% median MAPE
+- Note: All models degrade 12–18pp from val → test due to short training window (29 periods)
+- Acknowledge: Tweedie loss was tested on validation (23.8%) but not on test; recommend test validation before claiming superiority
+- Update CLAUDE.md to reflect test numbers, not validation numbers
+
+Do NOT use 22.5% as the final model MAPE in any thesis section. Do NOT claim Tweedie as "best model" without test validation.
+
+**Key lesson**: Validation metrics are for hyperparameter selection only. Test metrics are what you report in the thesis. When an agent runs multiple evaluation scripts, always harmonize the narrative to use the same evaluation set for all claims in CLAUDE.md.
+
+**Impact on SRQ2/SRQ3/SRQ4**: The synthesis module (SRQ2) will be benchmarked against the test baseline (45–47% MAPE), not the inflated validation baseline (22–26%). Budget Phase 5 accordingly.
