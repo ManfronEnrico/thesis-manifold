@@ -4,9 +4,8 @@ authors: Sapra, K.N., Sapra, G., Hada, R., & Pareek, N.
 year: 2025
 venue: arXiv preprint (arXiv:2509.14647v1)
 doi:
-apa7: >
-  Sapra, K. N., Sapra, G., Hada, R., & Pareek, N. (2025). AgentCompass: Towards reliable evaluation
-  of agentic workflows in production. *arXiv preprint arXiv:2509.14647*.
+apa7: |
+  Sapra, K. N., Sapra, G., Hada, R., & Pareek, N. (2025). AgentCompass: Towards reliable evaluation of agentic workflows in production. *arXiv preprint arXiv:2509.14647*.
 read_date: 2026-03-21
 read_depth: full
 ---
@@ -48,11 +47,19 @@ AgentCompass evaluates general-purpose agentic workflows in enterprise IT contex
 
 ## My critical assessment
 
-- Provides a **state-of-the-art perspective on post-deployment evaluation**, highlighting that traditional benchmarks fail to capture real-world failure modes in multi-agent systems
-- Introduces a **structured and systematic evaluation paradigm** (error taxonomy, trace-level analysis, multi-stage diagnostics) that aligns closely with the thesis’s Validation Agent design
-- Key contribution: demonstrates that **errors propagate and compound across agent chains**, reinforcing the need for multi-level validation rather than single-point checks
-- Emphasises the importance of **continuous monitoring and learning (episodic + semantic memory)**, positioning evaluation as an ongoing process rather than a one-time benchmark
-- However, the framework is designed for **enterprise IT workflows** and does not directly address domain-specific evaluation in predictive analytics or forecasting systems
-- Focuses on error detection and monitoring rather than **quantitative decision quality metrics** (e.g., forecast accuracy, confidence calibration) central to the thesis
-- Does not consider **resource-constrained environments** or simplified evaluation pipelines required for lightweight academic implementations
-- Therefore, highly valuable as a **conceptual and methodological reference for evaluating multi-agent systems in production**, but requires adaptation to fit the domain-specific, quantitative evaluation setting of the thesis
+
+- Establishes a **state-of-the-art framework for evaluating multi-agent systems in production**, moving beyond static benchmarks to continuous, real-world monitoring
+    
+- Key insight: **errors propagate and compound across agent chains**, making single-step evaluation insufficient — directly supporting the thesis’s multi-level validation design
+    
+- Introduces a **structured, trace-level evaluation paradigm** (error taxonomy, clustering, diagnostics) that aligns closely with the need for systematic validation in complex agentic workflows
+    
+- Highlights that **standard metrics (accuracy, speed) are insufficient**, reinforcing the thesis’s approach to evaluating recommendation quality beyond point performance
+    
+- However, the framework is tailored to **enterprise IT workflows** and does not address domain-specific evaluation for forecasting-based decision support
+    
+- Lacks integration with **quantitative performance metrics** (e.g., forecast accuracy, confidence calibration) central to the thesis
+    
+- Does not consider **resource-constrained implementations** or simplified evaluation pipelines required in an academic setting
+    
+- Therefore, highly valuable as a **conceptual and methodological benchmark for evaluating agentic systems**, but requires adaptation to fit the domain-specific and quantitative evaluation needs of the thesis
