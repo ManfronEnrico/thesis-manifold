@@ -16,10 +16,23 @@ CMT_Codebase/
 ├── .claude/                        ← Claude Code operating environment
 │   ├── hooks/check_file_edit.py    ← OneDrive .py corruption + .env safety enforcer
 │   ├── rules/                      ← 8 auto-loaded workflow rule files
-│   ├── skills/                     ← 7 slash command skills
+│   ├── skills/                     ← 30 academic research skills (5 original + 25 imported)
+│   │   ├── aeon/, scikit-learn/, pymc/, statsmodels/        ← ML/time series forecasting
+│   │   ├── exploratory-data-analysis/, polars/, shap/       ← Data analysis & explainability
+│   │   ├── matplotlib/, seaborn/                            ← Visualization
+│   │   ├── literature-review/, scholar-evaluation/          ← Research quality
+│   │   ├── hypothesis-generation/, networkx/                ← Synthesis & architecture
+│   │   ├── skill-creator/, denario/                         ← Utilities
+│   │   ├── deep-research/, academic-pipeline/               ← System A (original)
+│   │   ├── academic-paper-reviewer/, peer-review/           ← Evaluation (original)
+│   │   ├── log_standup/, init_standup/, prep_standup/, update_all_docs/, draft_commit/ ← Thesis workflows
+│   │   └── See .claude/SKILLS_INVENTORY.md for complete list
 │   ├── plans/                      ← YYYY-MM-DD dated plan files + Outcomes
 │   ├── memory/                     ← Session memory (consolidated, single source)
 │   ├── commands/                   ← REV, REV-brian agents
+│   ├── IMPORTED_SKILLS_ANALYSIS.md ← Tier classification & import strategy
+│   ├── SKILLS_DEMO_EXAMPLES.md     ← 10 concrete demos with outputs
+│   ├── SKILLS_INVENTORY.md         ← Reference guide (all 30 skills by category)
 │   ├── settings.json               ← PreToolUse hook registration
 │   └── settings.local.json         ← Machine-local permissions (do not overwrite)
 │

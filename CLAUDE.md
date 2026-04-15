@@ -45,6 +45,9 @@
 - [CHEATSHEET.md](CHEATSHEET.md) — CLI commands, trigger phrases
 - [.claude/rules/](. claude/rules/) — workflow automation rules
 - [dev/repository_map.md](dev/repository_map.md) — module inventory
+- [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — tier classification for 30 academic research skills
+- [.claude/SKILLS_DEMO_EXAMPLES.md](.claude/SKILLS_DEMO_EXAMPLES.md) — 10 concrete demos with expected outputs
+- [.claude/SKILLS_INVENTORY.md](.claude/SKILLS_INVENTORY.md) — reference guide for all skills by category
 
 ---
 

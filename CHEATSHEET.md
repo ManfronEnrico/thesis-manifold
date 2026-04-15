@@ -58,7 +58,39 @@ _REV-brian      # Inline activation — start message with _REV-brian
 
 # Plan lifecycle
 /update_plan [name]   # Append Outcome section to plan file; relocate/rename if needed
+
+# Academic research skills (30 total: 5 original + 25 imported)
+# ML/Time Series:
+/aeon                 # Deep learning & ensemble forecasting (DEMO 2: Chapter 6 SRQ1)
+/scikit-learn         # Classical ML baseline comparison (DEMO 3: Chapter 6-7 SRQ4)
+/pymc                 # Bayesian uncertainty quantification (DEMO 4: Chapter 6-8)
+/statsmodels          # Statistical time series modeling
+
+# Data Analysis & Exploration:
+/exploratory-data-analysis  # Nielsen data profiling (DEMO 1: Chapter 4)
+/polars               # High-performance data wrangling
+/hypothesis-generation # Data-driven hypothesis synthesis (DEMO 9: Chapter 5-7)
+/shap                 # Model explainability (DEMO 5: Chapter 8 SRQ2)
+/networkx             # Agent coordination visualization (DEMO 8: Chapter 5)
+
+# Visualization:
+/matplotlib           # Publication-quality figures (DEMO 7: Chapters 1-10)
+/seaborn              # Statistical exploratory plots (DEMO 6: Chapter 4)
+
+# Research Quality:
+/literature-review    # Systematic literature review support
+/scholar-evaluation   # Literature corpus quality assessment (DEMO 10: Chapter 2)
+/research-grants      # Grant writing & funding strategy
+
+# Advanced:
+/skill-creator        # Define new custom skills
+/deep-research        # 13-agent research orchestration (System A framework)
+/academic-pipeline    # 10-stage validation pipeline
+/academic-paper-reviewer # Peer review simulation
 ```
+
+**Quick demo start**: Try `/exploratory-data-analysis` or `/networkx` (5 min each) to see skills in action
+**Full guidance**: See `.claude/SKILLS_DEMO_EXAMPLES.md` for 10 concrete demos with expected outputs
 
 **Trigger rules:**
 - All skills execute **once immediately** unless you say "every N minutes"
