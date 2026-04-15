@@ -1,7 +1,7 @@
 # Repository Map — CMT_Codebase
 
 > Fast session orientation. Read this after CLAUDE.md at the start of every session.
-> Last updated: 2026-04-13
+> Last updated: 2026-04-15
 
 ---
 
@@ -9,16 +9,22 @@
 
 ```
 CMT_Codebase/
+├── .archive/                       ← Archived legacy materials (not version controlled)
+│   ├── Thesis_obsidian_backup/     ← Obsidian vault (old workspace, kept for reference)
+│   └── memory_legacy/              ← Old session memory (consolidated into .claude/memory/)
+│
 ├── .claude/                        ← Claude Code operating environment
 │   ├── hooks/check_file_edit.py    ← OneDrive .py corruption + .env safety enforcer
 │   ├── rules/                      ← 8 auto-loaded workflow rule files
 │   ├── skills/                     ← 7 slash command skills
 │   ├── plans/                      ← YYYY-MM-DD dated plan files + Outcomes
+│   ├── memory/                     ← Session memory (consolidated, single source)
 │   ├── commands/                   ← REV, REV-brian agents
 │   ├── settings.json               ← PreToolUse hook registration
 │   └── settings.local.json         ← Machine-local permissions (do not overwrite)
 │
 ├── ai_research_framework/          ← SYSTEM A: research computation (thesis subject)
+│   ├── .system_a_frozen.md         ← ⚠️  FROZEN: Research artefact, no modifications allowed
 │   ├── config.py                   ← 8GB RAM constraint, model list, LLM config
 │   ├── agents/                     ← 4 research agents (blocked on Nielsen data)
 │   ├── core/coordinator.py         ← LangGraph StateGraph orchestrator
@@ -27,6 +33,7 @@ CMT_Codebase/
 │   └── templates/base_config.py   ← Base configuration template
 │
 ├── thesis_production_system/       ← SYSTEM B: thesis writing tooling (not the thesis)
+│   ├── .system_b_active.md         ← ✅ ACTIVE: Thesis tooling, safe to extend with toggles
 │   ├── agents/                     ← 10 production agents (all implemented)
 │   │   ├── builder/                ← 6-file builder subsystem (ADR-003 decision pending)
 │   │   ├── writing_agent.py        ← Bullet points ONLY — never prose
@@ -34,13 +41,7 @@ CMT_Codebase/
 │   │   ├── literature_agent.py     ← Corpus management, scraping
 │   │   └── [7 other agents]
 │   ├── core/coordinator.py         ← Plan→Execute→Critic loop
-│   └── state/thesis_state.py       ← Pydantic ThesisState
-│
-├── Thesis/                         ← Obsidian vault (human knowledge base)
-│   ├── papers/                     ← 24 annotated Obsidian notes
-│   ├── Thesis Guidelines/          ← CBS guideline PDFs (gitignored)
-│   ├── prometheus_data_model-1.md  ← Nielsen star schema
-│   └── indeksdanmark_data_model-1.md ← Indeks Danmark structure
+│   └── state/thesis_state.py       ← Pydantic ThesisState (extensible, toggle-gated)
 │
 ├── docs/
 │   ├── thesis/
@@ -61,7 +62,8 @@ CMT_Codebase/
 │   │   ├── figures/                ← 6 diagrams (SVG + PNG): agent_workflow, confidence_score, data_flow, project_overview, ram_budget, system_architecture
 │   │   └── outline.md              ← 10-chapter approved structure
 │   ├── literature/
-│   │   ├── papers/                 ← 49 annotated .md files (authoritative citation count)
+│   │   ├── papers/                 ← 48 annotated .md files (authoritative, modern slug naming)
+│   │   ├── ingestion_manifest.json ← NotebookLM source mapping (moved from papers/)
 │   │   ├── guides/                 ← NotebookLM study guide cache (Markdown, auto-generated, NOT citable)
 │   │   ├── gap_analysis.md         ← Gap identification + novelty claim (v3)
 │   │   ├── rq_evolution.md         ← RQ version history (v1 → v2)
