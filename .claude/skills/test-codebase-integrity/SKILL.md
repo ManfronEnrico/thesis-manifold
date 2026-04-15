@@ -206,6 +206,152 @@ import ai_research_framework.agents
 importlib.reload(ai_research_framework.agents)
 ```
 
+## Auto-Diagnosis (NEW!)
+
+When a test fails, the skill now automatically diagnoses the issue and suggests fixes:
+
+### How It Works
+
+1. **Parse the error** — Extract error type and relevant details
+2. **Identify likely files** — Suggest which source files are probably affected
+3. **Suggest 2-3 fix hypotheses** — Ranked by confidence (HIGH, MEDIUM, LOW)
+4. **Show code excerpts** — Display relevant snippets for context
+
+### Depth Levels
+
+Control how deeply the diagnosis reads source code:
+
+| Level | Behavior | Use When |
+|-------|----------|----------|
+| **off** | No diagnosis, just test results | You already know the issue |
+| **paths** | Suggest files only, don't read | Quick feedback, read files yourself |
+| **excerpt** (default) | Read 20-30 lines around problem | Standard debugging workflow |
+| **full** | Read entire files + deep analysis | Complex issues, unfamiliar code |
+
+### Output Formats
+
+Choose how diagnosis results are presented:
+
+| Format | Output | Use When |
+|--------|--------|----------|
+| **text** (default) | Markdown to stdout, human-friendly | Reading during test execution |
+| **json** | Structured JSON to file | Piping to other tools, logging |
+| **both** | Markdown to stdout + JSON to file | Full documentation + programmatic use |
+
+### Example Usage
+
+**Basic:** Full diagnosis with default excerpt depth
+```bash
+python test_runner.py --module all
+```
+
+**Advanced:** Full analysis with JSON output
+```bash
+python test_runner.py --module all --diagnosis full --output-format both --diagnosis-json failures.json
+```
+
+**No Diagnosis:** Just test results
+```bash
+python test_runner.py --module all --diagnosis off
+```
+
+### Example Diagnosis Output
+
+```
+======================================================
+DIAGNOSIS: ImportError in State & Coordinator Import
+======================================================
+
+Likely Files:
+  * ai_research_framework/agents/__init__.py
+  * ai_research_framework/agents/forecasting_agent.py
+
+Suspected Problem:
+  ForecastingAgent class not exported from ai_research_framework.agents
+
+Fix Hypothesis 1 (HIGH confidence):
+  Check __init__.py -- ForecastingAgent missing from imports or __all__
+  Location: ai_research_framework/agents/__init__.py:1-30
+
+  Code excerpt:
+  -- __init__.py ----------------------------------------
+  |   1  from .data_assessment_agent import DataAssessmentAgent
+  |   2  # <- Missing: from .forecasting_agent import ForecastingAgent
+  |   3  from .synthesis_agent import SynthesisAgent
+  |   4  from .validation_agent import ValidationAgent
+  |   5
+  |   6  __all__ = [
+  |   7      "DataAssessmentAgent",
+  |   8      # <- Missing: "ForecastingAgent",
+  |   9      "SynthesisAgent",
+  |  10      "ValidationAgent",
+  |  11  ]
+  --------------------------------------------------
+
+  Action: Add line to imports:
+  from .forecasting_agent import ForecastingAgent
+
+  Add to __all__:
+  'ForecastingAgent'
+
+Fix Hypothesis 2 (MEDIUM confidence):
+  Check forecasting_agent.py -- class definition may not exist
+  Location: ai_research_framework/agents/forecasting_agent.py
+
+  Action: Verify file contains:
+  class ForecastingAgent:
+      def __init__(self): ...
+      def run(self, state: dict) -> dict: ...
+
+Fix Hypothesis 3 (LOW confidence):
+  Python path issue or circular import
+  Location: ai_research_framework/__init__.py
+
+  Action: Run: python -c "import ai_research_framework.agents; print(dir())"
+          Check if ForecastingAgent appears in output
+```
+
+### JSON Diagnosis Output
+
+When using `--output-format json` or `both`, results are saved to a structured JSON file:
+
+```json
+{
+  "test_results": {
+    "total": 10,
+    "passed": 7,
+    "failed": 3,
+    "elapsed_seconds": 45.2
+  },
+  "diagnoses": {
+    "1": {
+      "test_name": "State & Coordinator Import",
+      "error_type": "ImportError",
+      "error_message": "cannot import name 'ForecastingAgent' from 'ai_research_framework.agents'",
+      "likely_files": [
+        "ai_research_framework/agents/__init__.py",
+        "ai_research_framework/agents/forecasting_agent.py"
+      ],
+      "suspected_problem": "ForecastingAgent class not exported from ai_research_framework.agents",
+      "fix_hypotheses": [
+        {
+          "title": "Check __init__.py -- ForecastingAgent missing from imports or __all__",
+          "confidence": "HIGH",
+          "description": "The class ForecastingAgent may not be exported from ai_research_framework.agents",
+          "file_path": "ai_research_framework/agents/__init__.py",
+          "line_range": [1, 30],
+          "code_excerpt": "...",
+          "action": "Add line to imports: ..."
+        },
+        ...
+      ]
+    }
+  }
+}
+```
+
+This JSON can be piped to tools, logged, or archived for later analysis.
+
 ## Related Workflows
 
 - **After running this skill:** Use `/draft_commit` to document findings

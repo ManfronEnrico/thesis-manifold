@@ -15,13 +15,17 @@ Example:
 import sys
 import argparse
 import traceback
+import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import time
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+
+# Import diagnosis engine
+from diagnosis import DiagnosisEngine
 
 # ============================================================================
 # TEST DEFINITIONS & REMEDIATION
@@ -481,6 +485,24 @@ def main():
         help="Module to test",
     )
     parser.add_argument("--verbose", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--diagnosis",
+        choices=["off", "paths", "excerpt", "full"],
+        default="excerpt",
+        help="Auto-diagnosis depth level for failures (default: excerpt)",
+    )
+    parser.add_argument(
+        "--output-format",
+        choices=["text", "json", "both"],
+        default="text",
+        help="Output format for diagnosis (default: text)",
+    )
+    parser.add_argument(
+        "--diagnosis-json",
+        type=str,
+        default="diagnosis_output.json",
+        help="JSON output file path (if using json/both format)",
+    )
     args = parser.parse_args()
 
     tests_to_run = get_tests_to_run(args.module)
@@ -493,6 +515,15 @@ def main():
     start_time = time.time()
     passed = 0
     failures = {}
+    diagnoses = {}
+
+    # Initialize diagnosis engine if needed
+    diagnosis_engine = None
+    if args.diagnosis != "off":
+        diagnosis_engine = DiagnosisEngine(
+            project_root=PROJECT_ROOT,
+            depth=args.diagnosis
+        )
 
     for test_id in tests_to_run:
         test_func = TEST_FUNCTIONS[test_id]
@@ -509,8 +540,47 @@ def main():
             if args.verbose:
                 print(f"         {message}")
 
+            # Run diagnosis if enabled
+            if diagnosis_engine:
+                test_name = TEST_METADATA[test_id]["name"]
+                test_module = TEST_METADATA[test_id]["module"]
+                diagnosis = diagnosis_engine.diagnose(
+                    error_message=message,
+                    error_type=error_type,
+                    test_name=test_name,
+                    test_module=test_module
+                )
+                diagnoses[test_id] = diagnosis
+
+                # Print diagnosis output
+                if args.output_format in ("text", "both"):
+                    print(diagnosis.to_markdown())
+                    print()
+
     elapsed = time.time() - start_time
     print_summary(passed, len(tests_to_run), elapsed, failures)
+
+    # Write JSON diagnosis output if configured
+    if diagnosis_engine and diagnoses and args.output_format in ("json", "both"):
+        json_output = {
+            "test_results": {
+                "total": len(tests_to_run),
+                "passed": passed,
+                "failed": len(tests_to_run) - passed,
+                "elapsed_seconds": elapsed,
+            },
+            "diagnoses": {
+                str(test_id): diag.to_dict()
+                for test_id, diag in diagnoses.items()
+            }
+        }
+
+        output_path = Path(args.diagnosis_json)
+        with open(output_path, 'w') as f:
+            json.dump(json_output, f, indent=2)
+
+        if args.output_format in ("json", "both"):
+            print(f"[JSON] Diagnosis output written to: {output_path}")
 
     # Exit code: 0 if all pass, 1 if any fail
     return 0 if passed == len(tests_to_run) else 1
