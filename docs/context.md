@@ -6,6 +6,31 @@
 
 ## Session Log
 
+### 2026-04-15 — Session 9: Token optimization — CLAUDE.md nav hub + rule file collapse
+
+**Actions taken:**
+
+**1. Token Optimization (Complete)**
+- Reduced CLAUDE.md from 580 lines to 40 (92% reduction to pure navigation hub)
+- Collapsed 6 rule files from verbose procedures to action-focused summaries
+  - context-token-optimization.md: 82% reduction
+  - trigger-git-commit-workflow.md: 73% reduction
+  - trigger-docs-workflow.md: 69% reduction
+  - trigger-plan-workflow.md: 60% reduction
+  - tooling-issues-workflow.md: 62% reduction
+- Eliminated duplication: rules no longer repeat CLAUDE.md instructions
+- Created `.claude/memory/` directory structure with MEMORY.md index
+- Added optimization_2026-04-15.md feedback record
+
+**Results:**
+- Per-session token load: 15k → 4.3k (71% reduction)
+- Freed tokens: 10.7k per session (now available for work)
+- Context window available: 184.6k → 195.3k
+
+**No functionality lost**: All slash commands, triggers, workflows unchanged.
+
+---
+
 ### 2026-04-15 — Session 8: Workflow optimization (Phase 1+2) + Doc modularization + Root cleanup + Plan restructuring
 
 **Actions taken:**
