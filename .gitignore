@@ -32,10 +32,6 @@ Thumbs.db
 .ipynb_checkpoints/
 *.ipynb
 
-# Archived legacy materials (Obsidian vault, old session memory)
-.archive/Thesis_obsidian_backup/
-.archive/memory_legacy/
-
 # Claude local memory (machine-specific)
 .claude/projects/
 
