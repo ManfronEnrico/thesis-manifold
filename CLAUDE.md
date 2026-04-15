@@ -8,21 +8,62 @@
 
 **Read at session start (in order):**
 1. This file (CLAUDE.md) — project context + constraints
-2. [dev/repository_map.md](dev/repository_map.md) — file locations + agent status
-3. [docs/tooling-issues.md](docs/tooling-issues.md) — known env problems (mandatory before any plan)
+2. [docs/architecture.md](docs/architecture.md) — System A/B separation, agent roles, design patterns
+3. [docs/research-questions.md](docs/research-questions.md) — main RQ + 4 SRQs (v2), evolution history
+4. [docs/project-state.md](docs/project-state.md) — frozen decisions, TODOs, constraints
+5. [docs/compliance.md](docs/compliance.md) — CBS requirements, integrity gates, ADR status
+6. [docs/tooling-issues.md](docs/tooling-issues.md) — known environment problems (mandatory before any plan)
+7. [dev/repository_map.md](dev/repository_map.md) — file locations + agent status
 
 **Key references:**
-- [docs/decisions/ADR-001-template-strategy.md](docs/decisions/ADR-001-template-strategy.md) — LaTeX template (OPEN)
-- [docs/decisions/ADR-002-build-pipeline.md](docs/decisions/ADR-002-build-pipeline.md) — PDF pipeline (OPEN)
-- [docs/decisions/ADR-003-builder-agent-fate.md](docs/decisions/ADR-003-builder-agent-fate.md) — Builder agent (OPEN)
-- [docs/compliance/cbs_guidelines_notes.md](docs/compliance/cbs_guidelines_notes.md) — CBS requirements
 - [CHEATSHEET.md](CHEATSHEET.md) — quick-reference commands
+- [docs/context.md](docs/context.md) — session log + package install documentation
 
 **Claude workflows (in `.claude/rules/`):**
 - Standup: `/log_standup` → `/prep_standup` → `/finalize_standup` → `/init_standup`
 - Commit: `/draft_commit`
 - Docs: `/update_all_docs`
-- Plans: `/update_plan`
+- Plans: Write to `~/.claude/plans/` (auto-mirrored to `.claude/plans/plan_files/` with timestamps)
+
+**Plan files organization**: See [.claude/rules/trigger-plan-workflow.md](.claude/rules/trigger-plan-workflow.md) for naming, mirroring, and outcome documentation.
+
+---
+
+## Model Override Convention
+
+**Default**: Haiku across all agents (cost-optimized for thesis writing & analysis)
+
+**Three ways to override:**
+
+1. **`/model <tier>` command** — Session-wide override
+   ```
+   /model sonnet    # upgrade rest of session (complex analyses)
+   /model haiku     # back to default
+   /model opus      # for major architecture decisions
+   ```
+
+2. **Voice/inline phrase** — Per-request override (voice-friendly)
+   ```
+   "use sonnet for this analysis"     # detected and upgraded for this request
+   "switch to opus"                   # recognized pattern
+   "back to haiku" / "use default"    # resets to Haiku
+   ```
+   Particularly useful for voice input; phrase matching is case-insensitive.
+
+3. **Automatic `/model` parsing** — Built into settings
+   Commands like `/model sonnet` work session-wide without needing to restart.
+
+**Rules**:
+- Default = Haiku (cost-optimized for thesis writing + analysis)
+- Inline phrases override for single request only
+- `/model` command overrides for the entire session until you switch again
+- When both `/model` and inline phrase present, inline takes precedence
+
+**When to escalate to Sonnet**:
+- Multi-file refactors (5+ files across System A and System B)
+- Architecture decisions or major design changes
+- Complex literature synthesis requiring deep reasoning
+- Thesis writing at chapter boundaries when decisions intersect
 
 ---
 
@@ -59,19 +100,7 @@ Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integ
 
 ---
 
-## KNOWN TODOs / FROZEN DECISIONS
-
-> These are deliberate choices. **Do not "fix" these without explicit instruction from Enrico or Brian.**
-
-- **Measurement model**: DSR (Design Science Research) methodology confirmed — do not suggest alternatives
-- **RAM constraint**: 8GB hard limit on all System A models — no exceptions, no suggestions to "just use more RAM"
-- **Writing Agent**: produces ONLY bullet points — never full prose. Prose requires human sign-off
-- **Phase transitions**: every phase requires explicit human approval before proceeding
-- **RQs v2**: currently the canonical version — do not modify without flagging a change
-- **System A vs System B**: these are separate systems. Never modify System A logic from System B agents
-- **ADR-001/002/003**: open decisions — do not implement Phase 3 before these are resolved
-- **SRQ1 baseline models**: XGBoost 45.5% median MAPE (test), LightGBM 46.7% median MAPE (test) — see `docs/tasks/srq1_verification_report.md` for validation metrics and test/val discrepancy analysis
-- **No em dashes in prose**: rewrite using commas, semicolons, colons, or subordinate clauses (hyphens in compound adjectives permitted)
+**See [docs/project-state.md](docs/project-state.md) for frozen decisions, constraints, risks, and TODOs.**
 
 ---
 
@@ -89,17 +118,7 @@ Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integ
 
 ---
 
-## RESEARCH QUESTIONS
-> v2 — updated 2026-03-14. Full history in docs/literature/rq_evolution.md
-
-**Main RQ**: How can AI systems be designed to provide reliable predictive decision-support in real-world business environments under computational constraints?
-
-- **SRQ1**: Which predictive modelling approaches provide the best balance between forecasting accuracy and computational efficiency under realistic cloud resource constraints?
-- **SRQ2**: How can a multi-agent architecture coordinate predictive models and heterogeneous data signals to generate actionable managerial recommendations?
-- **SRQ3**: To what extent does additional contextual information improve the predictive and decision-support capabilities of AI systems?
-- **SRQ4**: How does the proposed predictive AI system compare to traditional descriptive analytics approaches used in business intelligence systems?
-
-> ⚠️ RQs are still evolving — Literature Review Agent has an explicit mandate to propose refinements. See docs/literature/rq_evolution.md for open questions.
+**See [docs/research-questions.md](docs/research-questions.md) for main RQ, SRQs (v2), and evolution history.**
 
 ---
 
@@ -183,27 +202,17 @@ Run Gate 3 with `make check`. Run Gate 1/2 manually using [docs/compliance/integ
 
 ---
 
-## DEFINITION OF DONE
-
-| Task | Completion Criterion |
-|---|---|
-| Data Assessment | Written report: Nielsen data quality, missing values, forecasting suitability, recommendation on additional data needs |
-| Literature Review | Finalised RQs + identified academic gap + novelty documented in `docs/literature/gap_analysis.md` |
-| Framework Design | Architecture approved with written brief, agent diagram, justification of choices against 8GB constraint |
-| SRQ1 — Model Selection | Benchmark of ≥3 lightweight models with memory profiling, comparative table of accuracy vs memory footprint |
-| SRQ2 — Synthesis Module | Working module aggregating outputs from multiple models into a confidence-scored recommendation in natural language |
-| SRQ3 — Evaluation | Comparative report: framework vs descriptive baseline on defined metrics (MAPE, decision quality score) |
-| Validation Framework | All 3 levels covered: ML accuracy metrics, recommendation quality (LLM-as-judge or human eval), agent behaviour monitoring |
-| Thesis Writing | Approved bullet points for every paragraph of every section, before any prose is written |
+**See [docs/compliance.md](docs/compliance.md) for definition of done criteria per phase.**
 
 ---
 
-## AGENT ARCHITECTURE
+**See [docs/architecture.md](docs/architecture.md) for full System A/B agent architecture and design.**
 
-> ⚠️ TWO SEPARATE SYSTEMS — do not confuse them.
-> Full documentation: `docs/system_architecture_report.md`
+Full system documentation: [docs/system_architecture_report.md](docs/system_architecture_report.md)
 
-### SYSTEM A — AI Research Framework (`/ai_research_framework/`)
+---
+
+### SYSTEM A — AI Research Framework (`/ai_research_framework/`) — SUMMARY
 *The experimental architecture being evaluated in the thesis. Appears in Chapters 5–8.*
 
 | Agent | File | SRQ | Status |

@@ -1,10 +1,58 @@
 # Project Context
 > Updated after every working session.
-> Last updated: 2026-04-12
+> Last updated: 2026-04-15
 
 ---
 
 ## Session Log
+
+### 2026-04-15 — Session 8: Workflow optimization (Phase 1+2) + Doc modularization + Root cleanup + Plan restructuring
+
+**Actions taken:**
+
+**1. Phase 1 Workflow Optimization (Complete)**
+- Added Model Override Convention to CLAUDE.md (three mechanisms: `/model`, inline phrases, settings parsing)
+- Created memory system: 4 files in `memory/` with feedback rules and project context
+- Verified plan hook ready for auto-timestamps on edits
+- Baseline documentation audit captured
+
+**2. Phase 2 Documentation Refactoring (Complete)**
+- Created 3 new modular docs:
+  - `docs/research-questions.md` — Main RQ + 4 SRQs (v2), evolution history
+  - `docs/project-state.md` — Frozen decisions, constraints, risks, TODOs
+  - `docs/compliance.md` — CBS requirements, integrity gates, ADRs consolidated
+- Added YAML frontmatter with timestamps to `docs/architecture.md`
+- Updated CLAUDE.md navigation to reference new modular structure
+- Reduced CLAUDE.md bloat by removing sections that should be external
+
+**3. Root Directory Cleanup (Complete)**
+- Moved 8 reference/documentation files to `.claude/docs/`:
+  - START_HERE.txt, READ_ME_FIRST.md, QUICK_REFERENCE_Comparison.md, ADAPTATION_GUIDE_2026-04-15.md
+  - IMPLEMENTATION_RECIPE.md, INVESTIGATION_SUMMARY.md, THESIS_ADAPTATION_REPORT.md, DEEP_DIVE_ACTION_PLAN.md
+- Moved orphaned file tree to `dev/`
+- Root now contains only: CLAUDE.md, README.md, CHEATSHEET.md (clean state)
+
+**4. Plan Structure Reorganization (Complete)**
+- Recreated `.claude/rules/trigger-plan-workflow.md` (from pta-cbp-parser reference)
+- Created `.claude/plans/plan_files/` directory (destination for auto-mirrored plans)
+- Created `.claude/plans/outcome_files/` directory (for plan completion records)
+- Moved 4 existing plans from `.claude/plans/` to `.claude/plans/plan_files/`
+- Updated CLAUDE.md and CHEATSHEET.md with new plan directory structure
+
+**5. Documentation Updates**
+- Updated CLAUDE.md: added plan workflow info, navigation references
+- Updated CHEATSHEET.md: clarified plan file locations and structure
+- Will add session log entry to docs/context.md (this session)
+
+**Status:**
+- All improvements staged and ready
+- Root directory clean and organized
+- Plan structure matches pta-cbp-parser pattern
+- Documentation ready for daily use
+
+**Next:** Commit these changes with comprehensive message.
+
+---
 
 ### 2026-04-12 — Session 7: Folder reorg + Ch.1 citation fix + Ch.2 prose + Ch.3 prose + Nielsen DB connection
 

@@ -63,7 +63,9 @@ _REV-brian      # Inline activation — start message with _REV-brian
 **Trigger rules:**
 - All skills execute **once immediately** unless you say "every N minutes"
 - Auto-trigger: `/log_standup` fires automatically at session end if changes were made
-- Plans live in `.claude/plans/YYYY-MM-DD_<short-slug>.md` (never global `~/.claude/plans/`)
+- Plans live in `.claude/plans/plan_files/YYYY-MM-DD_<short-slug>.md` (auto-mirrored from `~/.claude/plans/`)
+- Plan outcomes go in `.claude/plans/outcome_files/YYYY-MM-DD_<short-slug>.md`
+- See [.claude/rules/trigger-plan-workflow.md](.claude/rules/trigger-plan-workflow.md) for full plan workflow
 
 ---
 

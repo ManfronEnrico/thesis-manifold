@@ -1,6 +1,12 @@
+---
+name: Framework Architecture (System A/B Design)
+description: System A/B separation, agent roles, data flow, LangGraph state, core architectural rules
+updated: 2026-04-15
+---
+
 # Framework Architecture
+
 > Phase B — designed by Coordinator (architect persona)
-> Last updated: 2026-03-14
 > Status: DRAFT — awaiting human approval
 
 ---
