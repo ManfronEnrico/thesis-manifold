@@ -56,6 +56,9 @@ _REV-brian      # Inline activation — start message with _REV-brian
 # Docs workflow
 /update_all_docs      # Update all living docs in order (standup → sections → CLAUDE.md → CHEATSHEET → README → plans → rules)
 
+# Zotero integration (Phase 1 complete)
+python test_group.py  # Test group library connection (39 items, 11 papers)
+
 # Testing & validation
 /test-codebase-integrity  # Run integration tests (10 tests: agents, coordination, data_models, forecasting; all/module filtering)
 

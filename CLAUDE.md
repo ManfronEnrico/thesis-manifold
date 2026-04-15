@@ -43,6 +43,9 @@
 
 - [docs/context.md](docs/context.md) — packages, session log
 - [CHEATSHEET.md](CHEATSHEET.md) — CLI commands, trigger phrases
+- [docs/tooling-issues.md](docs/tooling-issues.md) — solved Windows/OneDrive/tooling problems (7 issues)
+- [docs/ZOTERO_SETUP_GUIDE.md](docs/ZOTERO_SETUP_GUIDE.md) — Zotero integration Phase 1 (group library ID: 6479832)
+- [ZOTERO_QUICK_REFERENCE.md](ZOTERO_QUICK_REFERENCE.md) — Quick Zotero copy-paste commands
 - [.claude/rules/](. claude/rules/) — workflow automation rules
 - [dev/repository_map.md](dev/repository_map.md) — module inventory
 - [SKILL_ACTIVATION_SUMMARY.md](SKILL_ACTIVATION_SUMMARY.md) — test-codebase-integrity skill status & usage
