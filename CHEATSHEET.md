@@ -56,6 +56,9 @@ _REV-brian      # Inline activation — start message with _REV-brian
 # Docs workflow
 /update_all_docs      # Update all living docs in order (standup → sections → CLAUDE.md → CHEATSHEET → README → plans → rules)
 
+# Testing & validation
+/test-codebase-integrity  # Run integration tests (10 tests: agents, coordination, data_models, forecasting; all/module filtering)
+
 # Plan lifecycle
 /update_plan [name]   # Append Outcome section to plan file; relocate/rename if needed
 
