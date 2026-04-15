@@ -32,8 +32,9 @@ Thumbs.db
 .ipynb_checkpoints/
 *.ipynb
 
-# CBS Guidelines PDFs (large files, not needed on GitHub)
-Thesis/Thesis\ Guidelines/
+# Archived legacy materials (Obsidian vault, old session memory)
+.archive/Thesis_obsidian_backup/
+.archive/memory_legacy/
 
 # Claude local memory (machine-specific)
 .claude/projects/
