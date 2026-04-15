@@ -22,7 +22,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ai_research_framework.config import NielsenConfig
-from ai_research_framework.data.nielsen_connector import get_connection
+from datasets.nielsen_connector import get_connection
 
 KNOWN_TABLES = NielsenConfig().schema_tables
 

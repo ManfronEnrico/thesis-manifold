@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from ai_research_framework.data.nielsen_connector import get_connection
+from datasets.nielsen_connector import get_connection
 
 
 def q(conn, sql: str) -> pd.DataFrame:

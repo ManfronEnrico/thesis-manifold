@@ -24,7 +24,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from ai_research_framework.data.nielsen_connector import get_connection
+from datasets.nielsen_connector import get_connection
 
 OUT = ROOT / "results" / "phase1"
 OUT.mkdir(parents=True, exist_ok=True)
