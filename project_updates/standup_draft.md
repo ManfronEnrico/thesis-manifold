@@ -311,3 +311,58 @@ Each feature can be implemented independently via its toggle flag.
 - **Demo sequence ready**: DEMO 1 (EDA, 5 min) or DEMO 8 (NetworkX, 5 min) as quick starts
 - **Documentation**: SKILLS_DEMO_EXAMPLES.md provides expected outputs and use cases
 - **Integration complete**: Skills can be invoked directly or run in demos before writing thesis sections
+
+---
+
+## 2026-04-15 21:15 — Codebase Integrity Verification + Tooling Documentation (1h 30min)
+
+### ✅ Test Suite Validation & Tooling Issues Integration
+
+#### Issue Investigation & Resolution
+1. **Diagnosed test failures** (4/10 PASS → 10/10 PASS)
+   - **Root cause**: Corrupted LangGraph installation in venv (version `None`, missing RECORD file)
+   - **Symptom**: ImportError on `StateGraph` from `langgraph.graph`
+   - **Solution**: Manually deleted broken installation + clean reinstall with full dependencies
+   - **Prevention**: Never use `--force-reinstall --no-deps` on corrupted metadata; delete directory first
+
+2. **Test Suite Results**
+   - Test 1: State & Coordinator Import ✅
+   - Test 2: Config Loading ✅
+   - Test 3: Agent Imports ✅
+   - Test 4: Routing Logic ✅
+   - Test 5: Data Models ✅
+   - Test 6: Feature Engineering ✅
+   - Test 7: Metric Functions ✅
+   - Test 8: Model Stability ✅
+   - Test 9: State Transitions ✅
+   - Test 10: Full Integration ✅
+   - **Result: 10/10 PASS (5.95s)** ✅
+
+#### Documentation Enhancements
+3. **Enhanced `/update_all_docs` skill**
+   - Added **Phase 3.5: Tooling Issues** to continuous doc sync workflow
+   - Integrated `docs/tooling-issues.md` into standard documentation update cycle
+   - Renumbered subsequent phases (Phase 4→5, etc., final Phase 10: Rules)
+   - Updated skill description and output format examples
+
+4. **Documented Issue 5** in `docs/tooling-issues.md`
+   - **Title**: LangGraph venv installation corruption — missing RECORD, version None
+   - **Root cause**: Interrupted pip install or corrupted metadata from OneDrive sync
+   - **Solution documented**: Manual delete of broken package + clean reinstall
+   - **Prevention documented**: Delete dir before attempting reinstall
+
+#### Commits Made
+- `a37ee6b`: docs(skill): add AUTO_DIAGNOSIS reference guide for test-codebase-integrity
+- `533425d`: feat(skills): add pyzotero skill for Zotero library integration
+- `c48df71`: feat(docs): integrate tooling-issues into update_all_docs workflow
+
+#### Outcome
+- ✅ All 10 integration tests passing and verified
+- ✅ Auto-diagnosis feature documented (usage guide, flag reference, examples)
+- ✅ Pyzotero skill added (15 reference guides, full API coverage)
+- ✅ Tooling documentation now integrated into continuous sync workflow
+- ✅ 3 commits ahead of origin, ready for push
+- ✅ LangGraph issue documented for future reference
+
+### Key Lesson
+Continuous documentation of tooling problems (including solutions and prevention) prevents knowledge loss and accelerates future debugging. The `/update_all_docs` workflow now ensures `docs/tooling-issues.md` stays current as tools, dependencies, and environments evolve.
