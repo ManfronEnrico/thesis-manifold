@@ -69,3 +69,21 @@ Do NOT use 22.5% as the final model MAPE in any thesis section. Do NOT claim Twe
 **Key lesson**: Validation metrics are for hyperparameter selection only. Test metrics are what you report in the thesis. When an agent runs multiple evaluation scripts, always harmonize the narrative to use the same evaluation set for all claims in CLAUDE.md.
 
 **Impact on SRQ2/SRQ3/SRQ4**: The synthesis module (SRQ2) will be benchmarked against the test baseline (45–47% MAPE), not the inflated validation baseline (22–26%). Budget Phase 5 accordingly.
+
+---
+
+## Issue 5: LangGraph venv installation corruption — missing RECORD, version None
+
+**Symptom**: Tests fail with `ImportError: cannot import name 'StateGraph' from 'langgraph.graph'`. Running `pip list` shows `langgraph` with version `None`. Attempting to upgrade/reinstall fails with `error: uninstall-no-record-file — Cannot uninstall langgraph None`.
+
+**Cause**: The LangGraph package in the venv became corrupted — the dist-info RECORD file was deleted or never written. Pip cannot uninstall packages without a RECORD, preventing reinstallation. This can happen after interrupted installs, forced deletions, or OneDrive sync conflicts.
+
+**Solution**: 
+1. Manually delete the broken installation: `rm -rf .venv/Lib/site-packages/langgraph*`
+2. Reinstall all dependencies: `.venv/Scripts/python.exe -m pip install pyzotero python-dotenv pydantic langgraph langchain`
+3. Verify the import: `.venv/Scripts/python.exe -c "from langgraph.graph import StateGraph, END"`
+4. Run tests to confirm: `python test_runner.py --module all`
+
+**Key lesson**: Never try to force-reinstall or --no-deps a package in a broken venv state. Always manually delete the corrupted directory first, then reinstall with full dependencies. The `pip install --force-reinstall --no-deps` pattern fails on corrupted installations — it needs the full dependency chain to work.
+
+**Prevention**: When seeing pip RECORD errors, immediately delete the package directory and do a clean install. Don't waste time with pip flags that won't work on already-broken metadata.

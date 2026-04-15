@@ -143,7 +143,38 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 4: CLAUDE.md — Project Hub
+### Phase 3.5: Tooling Issues — `docs/tooling-issues.md`
+
+**When to update:**
+- Tool failures were encountered and fixed (Write, Edit, Bash, pip, venv)
+- Windows/OneDrive/CRLF bugs were debugged and workarounds applied
+- Environment constraints (Python version, package compatibility) were discovered
+- LaTeX, Pandoc, or build system issues were resolved
+- Package installation or dependency conflicts occurred
+
+**Action:** Add new issue entry to the registry with symptom, cause, solution, and key lesson learned.
+
+**Files checked:**
+- `docs/tooling-issues.md` (main registry)
+
+**Issue format:**
+```markdown
+## Issue N: <short title>
+**Symptom**: <failure appearance>
+**Cause**: <root cause>
+**Solution**: <safe pattern or fix>
+**Key lesson**: <rule to carry forward>
+```
+
+**Example output:**
+```
+✅ tooling-issues.md — added Issue 5 (LangGraph venv corruption)
+⏭️  tooling-issues.md — skipped (no tool failures this session)
+```
+
+---
+
+### Phase 5: CLAUDE.md — Project Hub
 
 **When to update:**
 - New module or function was added
@@ -162,7 +193,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 5: CHEATSHEET.md — Command Reference
+### Phase 6: CHEATSHEET.md — Command Reference
 
 **When to update:**
 - CLI flags or command syntax changed
@@ -180,7 +211,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 6: README.md — Setup & Overview
+### Phase 7: README.md — Setup & Overview
 
 **When to update:**
 - Installation or setup steps changed
@@ -198,7 +229,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 7: README_builder.md — Builder Agent Docs
+### Phase 8: README_builder.md — Builder Agent Docs
 
 **When to update:**
 - Builder agent behavior or capabilities changed
@@ -215,7 +246,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 8: Plan Files — `.claude/plans/`
+### Phase 9: Plan Files — `.claude/plans/`
 
 **When to update:**
 - Plan was actively discussed, executed, or partially implemented
@@ -255,7 +286,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 9: Rules — `.claude/rules/`
+### Phase 10: Rules — `.claude/rules/`
 
 **When to update:**
 - Rule trigger phrases were changed
@@ -285,7 +316,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ## Output Format
 
-After processing all nine phases, the skill produces a summary table:
+After processing all ten phases, the skill produces a summary table:
 
 ```
 === Documentation Sync Summary ===
@@ -294,6 +325,7 @@ After processing all nine phases, the skill produces a summary table:
   ✅ standup_draft.md — session work logged
   ✅ thesis sections — 01_introduction.md, 03_methodology.md updated
   ⏭️  compliance — skipped (no checks run)
+  ✅ tooling-issues.md — added Issue 5 (LangGraph venv corruption)
   ✅ CLAUDE.md — workflow table updated
   ✅ CHEATSHEET.md — new trigger phrases added
   ⏭️  README.md — skipped (no user-facing changes)
@@ -301,8 +333,8 @@ After processing all nine phases, the skill produces a summary table:
   ✅ plans — 1 outcome appended, 2 files moved
   ✅ rules — 2 stale references fixed
 
-📊 Total: 6 updated, 3 skipped
-⏱️  Completed in 3 min 22 sec
+📊 Total: 7 updated, 3 skipped
+⏱️  Completed in 3 min 45 sec
 🔗 Ready to stage for commit: git add docs/ .claude/ project_updates/ CLAUDE.md CHEATSHEET.md README.md
 ```
 
