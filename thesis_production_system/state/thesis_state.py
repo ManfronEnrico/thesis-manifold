@@ -89,6 +89,10 @@ class ComplianceState(BaseModel):
     page_limit: int = 120
     within_page_limit: bool = True
 
+    # Feature outputs (Phase 1 toggles)
+    citation_verification_report: Dict[str, Any] = Field(default_factory=dict)  # Semantic Scholar API
+    integrity_report: Dict[str, Any] = Field(default_factory=dict)  # Integrity Verification Gates
+
 
 # ── Root state ─────────────────────────────────────────────────────────────────
 
@@ -104,6 +108,23 @@ class ThesisState(BaseModel):
     sections: Dict[str, SectionState] = Field(default_factory=dict)  # chapter_id → state
     figures: Dict[str, FigureState] = Field(default_factory=dict)    # figure_id → state
     compliance_checks: ComplianceState = Field(default_factory=ComplianceState)
+
+    # Feature toggles (Phase 1 — all default OFF, opt-in only)
+    toggles: Dict[str, bool] = Field(
+        default_factory=lambda: {
+            "pipeline_state_machine": False,
+            "anti_leakage_protocol": False,
+            "semantic_scholar_verification": False,
+            "writing_quality_check": False,
+            "style_calibration": False,
+            "integrity_verification_gates": False,
+        }
+    )
+
+    # Feature-specific state fields
+    material_gaps: List[str] = Field(default_factory=list)  # For anti-leakage protocol
+    chapter_states: Dict[str, str] = Field(default_factory=dict)  # For pipeline state machine
+    style_profile: Dict[str, Any] = Field(default_factory=dict)  # For style calibration
 
     # Task tracking
     last_task_plan: Optional[Dict[str, Any]] = None     # Output of the Planner Agent
