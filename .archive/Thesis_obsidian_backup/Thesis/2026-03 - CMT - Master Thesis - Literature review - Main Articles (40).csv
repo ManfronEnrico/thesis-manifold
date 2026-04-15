@@ -1,0 +1,41 @@
+Paper Title,Authors,Keywords,Relevance Score (1-10),Tier,Stars,Relevance for Thesis,Research Angle(s),link
+Executable Code Actions Elicit Better LLM Agents,,code execution with LLM,10,1 - Core Essential,★★★★★,Essential,Cloud Code Execution + LLM,https://openreview.net/forum?id=jJ9BoXAfFa&trk=public_post_comment-text
+"AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges",,,9,1 - Core Essential,★★★★☆,Essential,LLM/Agent Requirements,https://arxiv.org/abs/2505.10468?utm_source=chatgpt.com
+ART: Automatic multi-step reasoning and tool-use for large language models,,tool use in large language models,9,1 - Core Essential,★★★★☆,Essential,LLM/Agent Requirements,[2303.09014] ART: Automatic multi-step reasoning and tool-use for large language models
+A hybrid multi-criteria decision-making and machine learning approach for explainable supplier selection,,,9,1 - Core Essential,★★★★☆,Essential,Multi-Indicator + Prediction,https://www.sciencedirect.com/science/article/pii/S2949863524000177?utm_source=chatgpt.com
+Agent Q: Advanced Reasoning and Learning for Autonomous AI Agents,,autonomous AI agents,8,2 - High Relevance,★★★★☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2408.07199
+AutoFlow: Automated Workflow Generation for Large Language Model Agents,,LLM workflow optimization,8,2 - High Relevance,★★★★☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2407.12821
+"Efficient and Green Large Language Models for Software Engineering: Literature Review, Vision, and the Road Ahead",,efficient ML models,8,2 - High Relevance,★★★★☆,High,Cloud Code Execution + LLM,https://dl.acm.org/doi/full/10.1145/3708525
+Model Averaging and Double Machine Learning,,model averaging,8,2 - High Relevance,★★★★☆,High,Prediction Quality + Multi-Indicator,https://onlinelibrary.wiley.com/doi/full/10.1002/jae.3103
+NumeroLogic: Number Encoding for Enhanced LLMs' Numerical Reasoning,,LLM numerical reasoning,8,2 - High Relevance,★★★★☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2404.00459
+ANAH: Analytical Annotation of Hallucinations in Large Language Models,,LLM hallucination in analytics,8,2 - High Relevance,★★★★☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2405.20315
+Innovative machine learning approaches for complexity in economic forecasting and SME growth: A comprehensive review,,business forecasting models,7,2 - High Relevance,★★★☆☆,High,Prediction Quality,https://www.sciencedirect.com/science/article/pii/S2949948825000010
+Towards End-to-End Optimization of LLM-based Applications with Ayo,,LLM workflow optimization,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://dl.acm.org/doi/abs/10.1145/3676641.3716278
+Large Language Models in Numberland: A Quick Test of Their Numerical Reasoning Abilities,,LLM numerical reasoning,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2504.00226
+Collaborative LLM Numerical Reasoning with Local Data Protection,,LLM numerical reasoning,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2504.00299
+Measuring Reliability of Large Language Models through Semantic Consistency,,reliability of large language models,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2211.05853
+Reasoning Beyond Limits: Advances and Open Problems for LLMs,,LLM reasoning limitations,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2503.22732
+Overview of Existing Multi-Criteria Decision-Making (MCDM) Methods Used in Industrial Environments,,multi-criteria decision making (MCDM),7,2 - High Relevance,★★★☆☆,High,Multi-Indicator Decisions,https://www.mdpi.com/2227-7080/13/10/444
+Heart Attack Risk Prediction via Stacked Ensemble Metamodeling: A Machine Learning Framework for Real-Time Clinical Decision Support,,ensemble decision frameworks,7,2 - High Relevance,★★★☆☆,High,Multi-Indicator + Prediction,https://www.mdpi.com/2227-9709/12/4/110
+ACGraph: An Efficient Asynchronous Out-of-Core Graph Processing Framework,,,,,,,,https://dl.acm.org/doi/abs/10.1145/3769755
+Oasis: An Out-of-core Approximate Graph System via All-Distances Sketches,,,,,,,,https://www.usenix.org/conference/fast25/presentation/yang
+AgentNoiseBench: Benchmarking Robustness of Tool-Using LLM Agents Under Noisy Condition,,,,,,,,https://arxiv.org/abs/2602.11348
+"Sample, Predict, then Proceed: Self-Verification Sampling for Tool Use of LLMs",,,,,,,,https://openreview.net/forum?id=DALpFQM3rE
+AgentCompass: Towards Reliable Evaluation of Agentic Workflows in Production,,,,,,,,https://arxiv.org/abs/2509.14647
+DSS4EX: A Decision Support System framework to explore Artificial Intelligence pipelines with an application in time series forecasting,,,,,,,,https://www.sciencedirect.com/science/article/pii/S0957417425000430
+Efficient Acceleration of Deep Learning Inference on Resource-Constrained Edge Devices: A Review,,,,,,,,https://ieeexplore.ieee.org/abstract/document/9985008
+The True Cost of Containing: A gVisor Case Study,,,,,,,,https://www.usenix.org/conference/hotcloud19/presentation/young
+R-Visor: An Extensible Dynamic Binary Instrumentation and Analysis Framework for Open Instruction Set Architectures,,,,,,,,https://dl.acm.org/doi/abs/10.1145/3735452.3735522
+WebAssembly for Container Runtime: Are We There Yet?,,,,,,,,https://dl.acm.org/doi/full/10.1145/3712197
+An information-sharing and cost-aware custom loss machine learning framework for 3PL supply chain forecasting,,cost-aware machine learning,8,1 - Core Essential,★★★★☆,Essential,Cloud Code Execution,https://www.sciencedirect.com/science/article/pii/S0360835225007193
+Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes,,,10,1 - Core Essential,★★★★★,Essential,Multi-Indicator + LLM/Agent,Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes: A Clean-in-Place Case Study
+Neuro-Symbolic AI in 2024: A Systematic Review,,neuro-symbolic AI,9,1 - Core Essential,★★★★☆,Essential,LLM + ML Integration,https://arxiv.org/abs/2501.05435
+SciAgent: Tool-augmented Language Models for Scientific Reasoning,,tool-augmented language models,8,1 - Core Essential,★★★★☆,Essential,LLM/Agent Requirements,https://arxiv.org/abs/2402.11451
+AutoFlow: Automated Workflow Generation for Large Language Model Agents,,LLM workflow optimization,8,2 - High Relevance,★★★★☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2407.12821
+A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration,,LLM agents,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2310.02170
+HYBRID AI MODELS: INTEGRATING SYMBOLIC REASONING WITH DEEP LEARNING FOR COMPLEX DECISIONMAKI,,AI reasoning and prediction integration,9,1 - Core Essential,★★★★☆,Essential,All Angles,https://www.researchgate.net/profile/Aditya-Mehra-10/publication/393177685_HYBRID_AI_MODELS_INTEGRATING_SYMBOLIC_REASONING_WITH_DEEP_LEARNING_FOR_COMPLEX_DECISION-_MAKING/links/6862f584e9b6c
+Value of Machine Learning and Predictive Modeling in Business Decision-Making,,machine learning in business decision-making,8,1 - Core Essential,★★★★☆,Essential,Prediction Quality,https://pinnaclepubs.com/index.php/EJBEM/article/view/103
+On Accelerating Edge AI: Optimizing Resource-Constrained Environments,,computationally constrained AI,9,1 - Core Essential,★★★★☆,Essential,Cloud Code Execution,https://arxiv.org/abs/2501.15014
+Memory-Efficient WebAssembly Containers                                                                                                                                                                                               ,,,,,,,,https://www.msjansen.com/assets/pdf/education/2024-mkozub-msc_thesis.pdf?utm_source=chatgpt.com   
+ScoreFlow: Mastering LLM Agent Workflows via Score-based Preference Optimization,,LLM workflow optimization,7,2 - High Relevance,★★★☆☆,High,LLM/Agent Requirements,https://arxiv.org/abs/2502.04306
+Toolformer: Language Models Can Teach Themselves to Use Tools,,tool use in large language models,10,1 - Core Essential,★★★★★,Essential,LLM/Agent Requirements,https://proceedings.neurips.cc/paper_files/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html_RE
