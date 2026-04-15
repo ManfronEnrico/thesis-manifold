@@ -65,6 +65,76 @@ LOG_CLIP_MIN = -5.0   # expm1(-5) ~ 0
 
 # ── Feature augmentation (computed at runtime, not in preprocessing) ─────────
 
+
+# ── ForecastingAgent Class (LangGraph Interface) ────────────────────────────
+
+class ForecastingAgent:
+    """
+    Forecasting Benchmark Agent wrapper for LangGraph coordinator.
+
+    This class provides the required run() method for the coordinator's
+    StateGraph. The actual benchmark logic is implemented as standalone
+    functions below (augment_features, run_model, etc.) and can also be
+    invoked via: python3 -m ai_research_framework.agents.forecasting_agent
+    """
+
+    def __init__(self):
+        """Initialize the forecasting agent."""
+        self.name = "ForecastingAgent"
+        self.models = [
+            "seasonal_naive",
+            "arima",
+            "prophet",
+            "ridge",
+            "lightgbm",
+            "xgboost",
+            "ensemble"
+        ]
+
+    def run(self, state: dict) -> dict:
+        """
+        Run the forecasting phase (LangGraph interface).
+
+        In a full implementation, this would load the feature matrix from state,
+        run 7 models in sequence, and store ModelForecast objects.
+
+        For now, this is a placeholder that respects the interface.
+        Actual benchmark logic is in the standalone functions/main() below.
+
+        Args:
+            state: ResearchState from LangGraph coordinator
+
+        Returns:
+            Updated state with model_forecasts populated
+        """
+        # Placeholder: full implementation would call benchmark functions
+        state["current_phase"] = "model_benchmarking"
+        state["model_forecasts"] = {}
+        return state
+
+
+
+# ── ForecastingAgent Class (LangGraph Interface) ────────────────────────────
+
+class ForecastingAgent:
+    """
+    Forecasting Benchmark Agent wrapper for LangGraph coordinator.
+
+    This class provides the required run() method for the coordinator's
+    StateGraph. The actual benchmark logic is implemented as standalone
+    functions below.
+    """
+
+    def __init__(self):
+        self.name = "ForecastingAgent"
+        self.models = ["seasonal_naive", "arima", "prophet", "ridge", "lightgbm", "xgboost", "ensemble"]
+
+    def run(self, state: dict) -> dict:
+        state["current_phase"] = "model_benchmarking"
+        state["model_forecasts"] = {}
+        return state
+
+
 def augment_features(df: pd.DataFrame) -> pd.DataFrame:
     """Add lag_12 and price_per_unit to the loaded feature matrix."""
     df = df.copy()
