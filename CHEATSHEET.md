@@ -65,34 +65,47 @@ python test_group.py  # Test group library connection (39 items, 11 papers)
 # Plan lifecycle
 /update_plan [name]   # Append Outcome section to plan file; relocate/rename if needed
 
-# Academic research skills (30 total: 5 original + 25 imported)
-# ML/Time Series:
+# Academic research skills (35 total: 13 original + 22 newly imported)
+
+# ML & Time Series (Critical for SRQ1 & forecasting):
 /aeon                 # Deep learning & ensemble forecasting (DEMO 2: Chapter 6 SRQ1)
 /scikit-learn         # Classical ML baseline comparison (DEMO 3: Chapter 6-7 SRQ4)
 /pymc                 # Bayesian uncertainty quantification (DEMO 4: Chapter 6-8)
-/statsmodels          # Statistical time series modeling
+/statsmodels          # Statistical time series modeling & ARIMA/GARCH
 
-# Data Analysis & Exploration:
+# Data Analysis & Exploration (Ch. 4 Nielsen data):
 /exploratory-data-analysis  # Nielsen data profiling (DEMO 1: Chapter 4)
 /polars               # High-performance data wrangling
+/statistical-analysis # Guided statistical test selection & reporting
 /hypothesis-generation # Data-driven hypothesis synthesis (DEMO 9: Chapter 5-7)
+
+# Explainability & Interpretation (SRQ2 & Ch. 8):
 /shap                 # Model explainability (DEMO 5: Chapter 8 SRQ2)
 /networkx             # Agent coordination visualization (DEMO 8: Chapter 5)
+/scientific-critical-thinking # Evaluate experimental design & evidence
 
-# Visualization:
-/matplotlib           # Publication-quality figures (DEMO 7: Chapters 1-10)
+# Visualization (Ch. 1-10 publication figures):
+/matplotlib           # Publication-quality figures with full control (DEMO 7)
 /seaborn              # Statistical exploratory plots (DEMO 6: Chapter 4)
+/scientific-visualization # Meta-skill for journal-ready figures
 
-# Research Quality:
-/literature-review    # Systematic literature review support
-/scholar-evaluation   # Literature corpus quality assessment (DEMO 10: Chapter 2)
+# Research Quality & Writing (Ch. 2 literature + final chapters):
+/literature-review    # Systematic literature review across 5+ databases
+/scholar-evaluation   # Literature corpus quality assessment (DEMO 10: Ch. 2)
+/scientific-writing   # Scientific manuscript writing in full paragraphs
 /research-grants      # Grant writing & funding strategy
+/scientific-critical-thinking # Assess claim quality & experimental validity
 
-# Advanced:
+# Advanced Research Pipelines:
+/deep-research        # 13-agent research orchestration (rigorous academic topics)
+/academic-pipeline    # 10-stage validation pipeline (research→write→review→integrity)
+/academic-paper-reviewer # Multi-perspective peer review (5 independent reviewers)
+/academic-paper       # 12-agent academic paper writing (10 modes: full/plan/outline/etc)
+/hypothesis-generation # Structured hypothesis formulation from observations
+
+# Utilities:
 /skill-creator        # Define new custom skills
-/deep-research        # 13-agent research orchestration (System A framework)
-/academic-pipeline    # 10-stage validation pipeline
-/academic-paper-reviewer # Peer review simulation
+/notebooklm           # Query Google NotebookLM for source-grounded answers
 ```
 
 **Quick demo start**: Try `/exploratory-data-analysis` or `/networkx` (5 min each) to see skills in action
