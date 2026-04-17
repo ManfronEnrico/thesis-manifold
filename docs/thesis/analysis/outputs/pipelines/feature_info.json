@@ -1,0 +1,35 @@
+{
+  "numeric_feats": [
+    "weighted_dist",
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_12",
+    "rolling_mean_4",
+    "rolling_std_4",
+    "rolling_mean_13",
+    "month_sin",
+    "month_cos",
+    "months_since_start",
+    "promo_intensity_lag_1",
+    "unit_price_lag_1",
+    "brand_mean_sales",
+    "brand_std_sales",
+    "brand_rank",
+    "channel_mean_sales"
+  ],
+  "cat_feats": [
+    "brand",
+    "channel"
+  ],
+  "target": "log_sales_units",
+  "train_rows": 4435,
+  "output_shape_linear": [
+    4435,
+    95
+  ],
+  "output_shape_tree": [
+    4435,
+    19
+  ]
+}

@@ -24,6 +24,10 @@ env/
 # Exception: literature review CSV is safe to track
 !2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv
 
+# Model artifacts & intermediate binaries (regenerable from notebook)
+*.npy
+*.pkl
+
 # OS
 .DS_Store
 Thumbs.db
@@ -56,3 +60,9 @@ build/
 # Obsidian workspace (machine-specific)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+
+# Exception: thesis notebook + its structured CSV outputs
+# (placed last so they override *.ipynb and *.csv rules above)
+!docs/thesis/analysis/thesis_notebook.ipynb
+!docs/thesis/analysis/outputs/*.csv
+!docs/thesis/analysis/outputs/pipelines/feature_info.json

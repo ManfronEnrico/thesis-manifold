@@ -22,7 +22,7 @@ from azure.identity import ClientSecretCredential
 from dotenv import load_dotenv
 
 # Load credentials from .env in project root
-_env_path = Path(__file__).resolve().parents[2] / ".env"
+_env_path = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(_env_path)
 
 SERVER   = os.environ["RU_SERVER_STRING"]
