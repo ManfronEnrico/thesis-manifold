@@ -42,7 +42,12 @@
       "Bash(tee /tmp/step08b.log)",
       "Bash(tee /tmp/step08c.log)",
       "Bash(tee /tmp/step08d.log)",
-      "Bash(tee /tmp/step08e.log)"
+      "Bash(tee /tmp/step08e.log)",
+      "Bash(uv pip:*)",
+      "Bash(.venv/bin/python -c \"import langchain_anthropic; print\\('OK:', langchain_anthropic.__file__\\)\")",
+      "Bash(ls .venv/bin/python*)",
+      "Bash(ls .venv/lib/python*/site-packages/)",
+      "Bash(/usr/local/bin/python3 -m pip install langchain-anthropic anthropic)"
     ],
     "additionalDirectories": [
       "/Users/enricomanfron/Desktop/Thesis Maniflod"

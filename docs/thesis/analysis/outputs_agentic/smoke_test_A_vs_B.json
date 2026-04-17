@@ -1,0 +1,58 @@
+{
+  "query": "Forecast FEVER TREE in DVH_EXCL_HD for October 2025",
+  "system_A": {
+    "ensemble_forecast": 154373.2816875,
+    "individual_forecasts": {
+      "SeasonalNaive": 147093.3915,
+      "Ridge": 23455.739398253936,
+      "LightGBM": 163564.77880501447,
+      "XGBoost": 161653.171875
+    },
+    "agreement_cv": 0.4709010835292868,
+    "confidence": "low",
+    "anomaly_severity": "none",
+    "recommendations": "\u2022 Protect distribution weight at minimum 0.42 and target a 5pp increase to 0.47 in DVH_EXCL_HD by October 2025 \u2014 weighted_dist is the 3rd-ranked SHAP driver (+0.56) and current penetration of 0.42 leaves meaningful headroom; incremental listings would directly lift the forecast above the 154,373-unit base.\n\n\u2022 Investigate and address the volume step-down from recent trend before October 2025 \u2014 lag_1 (+2.16, value 184,884) and rolling_mean_4 (+0.67, value 206,904) both signal that recent 4-week and prior-month volumes ran ~25\u201334% above the October forecast, indicating a projected deceleration; conduct an SKU-level sell-out review by mid-September 2025 to identify whether ranging cuts or retailer de-stocking are driving the gap and intervene with a targeted 10% uplift incentive to key DVH accounts.\n\n\u2022 Maintain organic demand support with controlled promotional depth (\u226418% promoted volume) for October 2025 \u2014 rolling_mean_13 (+0.41, value 205,950) confirms sustained long-run demand strength, meaning baseline velocity is healthy; avoid deep price promotions that would erode margin without incremental volume gain, and instead redirect spend toward in-store visibility (secondary placement, chiller strips) to defend the 154,373-unit forecast floor.",
+    "latency_s": 13.787142916989978
+  },
+  "system_B": {
+    "ensemble_forecast": 154373.2816875,
+    "individual_forecasts": {
+      "SeasonalNaive": 147093.3915,
+      "Ridge": 23455.739398253936,
+      "LightGBM": 163564.77880501447,
+      "XGBoost": 161653.171875
+    },
+    "agreement_cv": 0.4709010835292868,
+    "confidence": "low",
+    "anomaly_severity": "none",
+    "indeks_context": [
+      {
+        "metric": "brand_tier",
+        "value": "mid-tier (rank #12 of 77)",
+        "source": "nielsen_volume_rank"
+      },
+      {
+        "metric": "channel_position",
+        "value": "core channel (82% of brand volume)",
+        "source": "nielsen_channel_share"
+      },
+      {
+        "metric": "price_tier",
+        "value": "premium (unit price 1.7x category median)",
+        "source": "derived_unit_price"
+      },
+      {
+        "metric": "recent_momentum",
+        "value": "declining (-7.0% last 3m vs trailing 12m)",
+        "source": "derived_rolling_windows"
+      },
+      {
+        "metric": "volatility",
+        "value": "volatile (CV=1.24)",
+        "source": "derived_coefficient_variation"
+      }
+    ],
+    "recommendations": "\u2022 Defend weighted distribution in DVH_EXCL_HD by securing at least 2 additional listings in the lowest-penetration stores within the channel before October 2025, targeting a +5pp improvement from the current 0.42 weighted_dist score \u2014 distribution is the third-strongest positive SHAP driver (+0.56) and, as DVH_EXCL_HD represents 82% of brand volume, even marginal distribution gains here have outsized impact; with volume forecast to drop ~16% from the lag_1 baseline of 184,884 to 154,373 units, protecting shelf presence is the highest-priority lever to arrest the -7% momentum trend.\n\n\u2022 Implement a targeted visibility intervention (secondary placement or chiller-end feature) in the top-20 highest-volume DVH_EXCL_HD stores by mid-September 2025, aiming to recover at least 10,000 units against the October forecast \u2014 the rolling_mean_4 and rolling_mean_13 SHAP values (both ~206K) confirm the brand has recently traded significantly above the 154K forecast, indicating a structural volume gap rather than a seasonal norm; as a premium brand at 1.7x category price, visibility investment preserves price integrity better than promotional discounting, which would erode the premium positioning for a mid-tier rank-#12 player.\n\n\u2022 Stabilise high-CV volatility (CV=1.24) by negotiating a forward-committed volume agreement with the top 3 DVH_EXCL_HD retail partners covering Q4 2025, locking in a baseline order of ~140,000 units \u2014 the month_cos seasonal driver is already applying mild negative pressure (-0.15 SHAP) heading into October, and the brand's high volatility means unmanaged demand swings risk both stockouts and over-supply; a committed baseline reduces forecast error and allows more precise promotional activation without cannibalising the premium price tier.",
+    "latency_s": 14.503346416982822
+  }
+}
