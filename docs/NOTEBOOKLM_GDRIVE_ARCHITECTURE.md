@@ -1,7 +1,8 @@
-# NotebookLM + Google Drive Architecture
+# NotebookLM + Google Drive Architecture (Integrated)
 
 **Date**: 2026-04-18  
-**Status**: Google Drive as source of truth for collaborative research  
+**Status**: Fully integrated via GoogleDriveAPI + NotebookLMAccess  
+**Integration**: `src/google_drive_integration.py` → `scripts/notebooklm_ingestion.py` → `thesis_production_system/research/`  
 **Requirement**: Both collaborators can run code without local PDF dependencies
 
 ---
@@ -9,36 +10,38 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────┐
-│ Google Drive (Shared Folder)    │
-│ /Thesis Papers/                 │
-│  ├── ch2-literature/            │
-│  ├── ch3-methodology/           │
-│  ├── ch4-models/                │
-│  └── ...                         │
-└─────────────────────────────────┘
-         ↑ (file_id + folder_id)
-         │
-┌─────────────────────────────────┐
-│ Ingestion Script                │
-│ (reads Drive via API)           │
-│ - Lists PDFs in each folder     │
-│ - Adds to NotebookLM via Drive  │
-│ - Updates manifest              │
-└─────────────────────────────────┘
-         ↓
-┌─────────────────────────────────┐
-│ NotebookLM Notebooks            │
-│ ch2-literature                  │
-│ ch3-methodology                 │
-│ ...                             │
-└─────────────────────────────────┘
-         ↓
-┌─────────────────────────────────┐
-│ papers/ingestion_manifest.json  │
-│ (tracks which Drive files have  │
-│  been ingested to which NB)     │
-└─────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│ Google Drive (Shared Folder)             │
+│ /Thesis Papers/                          │
+│  ├── 0_not_relevant/ (papers)            │
+│  ├── 1_essential/ (papers)               │
+│  ├── 2_high/ (papers)                    │
+│  └── UNSURE/ (papers)                    │
+│ Accessed via GoogleDriveAPI              │
+└────────────────┬─────────────────────────┘
+                 │ [src/google_drive_integration.py]
+                 │ Lists papers with metadata
+                 ↓
+┌──────────────────────────────────────────┐
+│ NotebookLM Ingestion Script              │
+│ [scripts/notebooklm_ingestion.py]        │
+│                                          │
+│ For each paper:                          │
+│ - List from Drive via GoogleDriveAPI     │
+│ - Add to NotebookLM via NotebookLMAccess │
+│ - Update manifest with metadata          │
+└────────────────┬─────────────────────────┘
+                 ↓ Dual integration
+        ┌────────┴────────┐
+        ↓                 ↓
+    [NotebookLM]  [Manifest JSON]
+    Notebooks      (git-tracked)
+    ch2-...        papers/
+    ch3-...        ingestion_
+    ...            manifest.json
+
+Result: Both collaborators query same notebooks
+        without local PDF storage
 ```
 
 ## Key Points
