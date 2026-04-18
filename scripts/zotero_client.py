@@ -5,7 +5,7 @@ zotero_client.py — Shared Zotero citation client for CMT thesis.
 
 Always makes a live API call to the group library (6479832).
 Returns citation items only — attachments and notes are excluded.
-Auto-syncs citations + BibTeX to docs/literature/ on every call.
+BibTeX is the source of truth. JSON is derived from BibTeX for programmatic access.
 """
 
 import os
@@ -39,33 +39,50 @@ def _extract_year(item_data: dict) -> str | None:
     return date_str[:4] if date_str else None
 
 
-def _normalize(item: dict) -> dict:
-    data = item["data"]
-    creators = data.get("creators", [])
-    authors = ", ".join(
-        f"{c.get('lastName', '')} {c.get('firstName', '')}".strip()
-        for c in creators
-        if c.get("creatorType") == "author"
-    )
-    return {
-        "key": item.get("key") or data.get("key"),
-        "itemType": data.get("itemType"),
-        "title": data.get("title"),
-        "authors": authors or None,
-        "year": _extract_year(data),
-        "venue": data.get("publicationTitle") or data.get("publisher") or data.get("university"),
-        "url": data.get("url"),
-        "doi": data.get("DOI"),
-        "abstract": data.get("abstractNote"),
-        "tags": [t["tag"] for t in data.get("tags", [])],
-    }
+def _extract_month(item_data: dict) -> str | None:
+    """Extract month from date field. Returns abbreviated month name."""
+    date_str = item_data.get("date", "") or ""
+    if not date_str:
+        return None
+    try:
+        if len(date_str) >= 7 and date_str[4] == "-":
+            month_num = int(date_str[5:7])
+            months = ["", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+            return months[month_num] if 1 <= month_num <= 12 else None
+    except (ValueError, IndexError):
+        pass
+    return None
+
+
+def _extract_publisher(item_data: dict) -> str | None:
+    """Extract publisher from publisher field or extra field (for preprints)."""
+    pub = item_data.get("publisher", "").strip()
+    if pub:
+        return pub
+
+    # For preprints, publisher may be in extra field (e.g., "arXiv:2502.04306 [cs]")
+    extra = item_data.get("extra", "").strip()
+    if extra and item_data.get("itemType") == "preprint":
+        if extra.lower().startswith("arxiv"):
+            return "arXiv"
+
+    return None
+
+
+def _to_bibtex_value(val: str | list | None) -> str:
+    """Format a value for BibTeX output."""
+    if val is None or val == "":
+        return ""
+    if isinstance(val, list):
+        val = ", ".join(str(v) for v in val)
+    return str(val)
 
 
 def get_citations(group_id: str | None = None, sync_files: bool = True) -> list[dict]:
     """Fetch all citation items from the Zotero group library (live call).
 
-    Excludes attachments and notes. Returns normalized dicts.
-    If sync_files=True (default), also writes citations.json and bibtex.bib to docs/literature/.
+    Excludes attachments and notes. Returns list of dicts with all available fields.
+    If sync_files=True (default), writes bibtex.bib and derives citations.json.
     """
     env = _load_env()
     gid = group_id or env["group_id"]
@@ -77,60 +94,132 @@ def get_citations(group_id: str | None = None, sync_files: bool = True) -> list[
     )
 
     raw = zot.everything(zot.top(itemType="-attachment"))
-    citations = [
-        _normalize(item)
-        for item in raw
-        if item["data"].get("itemType") in _SCHOLARLY_TYPES
-    ]
+    entries = []
+
+    for item in raw:
+        if item["data"].get("itemType") not in _SCHOLARLY_TYPES:
+            continue
+
+        data = item["data"]
+        creators = data.get("creators", [])
+        authors = ", ".join(
+            f"{c.get('lastName', '')} {c.get('firstName', '')}".strip()
+            for c in creators
+            if c.get("creatorType") == "author"
+        )
+
+        # Build entry with all available fields (except note and file)
+        entry = {
+            "key": item.get("key") or data.get("key"),
+            "itemType": data.get("itemType"),
+            "title": data.get("title"),
+            "shorttitle": data.get("shortTitle"),
+            "volume": data.get("volume"),
+            "numberOfVolumes": data.get("numberOfVolumes"),
+            "copyright": data.get("rights"),
+            "issn": data.get("ISSN"),
+            "isbn": data.get("ISBN"),
+            "url": data.get("url"),
+            "doi": data.get("DOI"),
+            "abstract": data.get("abstractNote"),
+            "language": data.get("language"),
+            "number": data.get("issue"),
+            "urldate": data.get("accessDate"),
+            "journal": data.get("publicationTitle") or data.get("university"),
+            "journalAbbreviation": data.get("journalAbbreviation"),
+            "publisher": _extract_publisher(data),
+            "author": authors,
+            "month": _extract_month(data),
+            "year": _extract_year(data),
+            "pages": data.get("pages"),
+            "numPages": data.get("numPages"),
+            "keywords": [t["tag"] for t in data.get("tags", [])],
+            "series": data.get("series"),
+            "seriesNumber": data.get("seriesNumber"),
+            "seriesTitle": data.get("seriesTitle"),
+            "seriesText": data.get("seriesText"),
+            "section": data.get("section"),
+            "partNumber": data.get("partNumber"),
+            "partTitle": data.get("partTitle"),
+            "archive": data.get("archive"),
+            "archiveID": data.get("archiveID"),
+            "archiveLocation": data.get("archiveLocation"),
+            "repository": data.get("repository"),
+            "genre": data.get("genre"),
+            "format": data.get("format"),
+            "place": data.get("place"),
+            "libraryCatalog": data.get("libraryCatalog"),
+            "callNumber": data.get("callNumber"),
+            "citationKey": data.get("citationKey"),
+            "edition": data.get("edition"),
+            "originalDate": data.get("originalDate"),
+            "originalPlace": data.get("originalPlace"),
+            "originalPublisher": data.get("originalPublisher"),
+            "conferenceName": data.get("conferenceName"),
+            "proceedingsTitle": data.get("proceedingsTitle"),
+            "eventPlace": data.get("eventPlace"),
+            "extra": data.get("extra"),
+        }
+
+        # Remove None/empty values to keep output clean
+        entry = {k: v for k, v in entry.items() if v not in (None, "", [])}
+
+        entries.append(entry)
 
     if sync_files:
-        _write_citation_files(citations, zot)
+        _write_citation_files(entries)
 
-    return citations
+    return entries
 
 
-def _write_citation_files(citations: list[dict], zot: Zotero) -> None:
-    """Write citations.json and bibtex.bib to docs/literature/."""
+def _write_citation_files(entries: list[dict]) -> None:
+    """Write bibtex.bib as source of truth, then derive citations.json."""
     lit_dir = Path(__file__).resolve().parents[1] / "docs" / "literature"
     lit_dir.mkdir(parents=True, exist_ok=True)
 
-    json_file = lit_dir / "citations.json"
-    json_file.write_bytes(
-        json.dumps(citations, indent=2, ensure_ascii=False).encode("utf-8")
-    )
-    print(f"  [OK] Synced citations to {json_file.relative_to(Path.cwd())}")
-
+    # Write BibTeX as source of truth
     bibtex_file = lit_dir / "bibtex.bib"
     bibtex_lines = []
-    for c in citations:
-        key = c.get("key", "unknown")
-        title = c.get("title", "")
-        authors = c.get("authors", "")
-        year = c.get("year", "")
-        venue = c.get("venue", "")
-        doi = c.get("doi", "")
-        url = c.get("url", "")
-        itype = c.get("itemType", "misc")
+
+    # Field order matching Zotero export convention
+    field_order = [
+        "title", "shorttitle", "volume", "numberOfVolumes", "copyright", "issn", "isbn",
+        "url", "doi", "abstract", "language", "number", "urldate", "journal",
+        "journalAbbreviation", "publisher", "author", "month", "year", "pages", "numPages",
+        "keywords", "series", "seriesNumber", "seriesTitle", "seriesText",
+        "section", "partNumber", "partTitle", "archive", "archiveID", "archiveLocation",
+        "repository", "genre", "format", "place", "libraryCatalog", "callNumber",
+        "citationKey", "edition", "originalDate", "originalPlace", "originalPublisher",
+        "conferenceName", "proceedingsTitle", "eventPlace", "extra"
+    ]
+
+    for entry in entries:
+        key = entry.get("key", "unknown")
+        itype = entry.get("itemType", "misc")
 
         bibtex_lines.append(f"@{itype}{{{key},")
-        if title:
-            bibtex_lines.append(f'  title = "{{{title}}},')
-        if authors:
-            bibtex_lines.append(f'  author = {{{authors}}},')
-        if year:
-            bibtex_lines.append(f'  year = {{{year}}},')
-        if venue:
-            bibtex_lines.append(f'  journal = {{{venue}}},')
-        if doi:
-            bibtex_lines.append(f'  doi = {{{doi}}},')
-        if url:
-            bibtex_lines.append(f'  url = {{{url}}},')
+
+        for field in field_order:
+            val = entry.get(field)
+            if val:
+                if isinstance(val, list):
+                    val = ", ".join(str(v) for v in val)
+                bibtex_lines.append(f'  {field} = {{{val}}},')
+
+        # Remove trailing comma from last field
         bibtex_lines[-1] = bibtex_lines[-1].rstrip(",")
         bibtex_lines.append("}")
         bibtex_lines.append("")
 
     bibtex_file.write_bytes("\n".join(bibtex_lines).encode("utf-8"))
     print(f"  [OK] Synced BibTeX to {bibtex_file.relative_to(Path.cwd())}")
+
+    # Derive JSON from BibTeX entries (programmatic access only)
+    json_file = lit_dir / "citations.json"
+    json_file.write_bytes(
+        json.dumps(entries, indent=2, ensure_ascii=False, default=str).encode("utf-8")
+    )
+    print(f"  [OK] Derived citations.json from BibTeX")
 
 
 if __name__ == "__main__":
