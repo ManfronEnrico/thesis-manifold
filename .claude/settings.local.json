@@ -47,7 +47,19 @@
       "Bash(.venv/bin/python -c \"import langchain_anthropic; print\\('OK:', langchain_anthropic.__file__\\)\")",
       "Bash(ls .venv/bin/python*)",
       "Bash(ls .venv/lib/python*/site-packages/)",
-      "Bash(/usr/local/bin/python3 -m pip install langchain-anthropic anthropic)"
+      "Bash(/usr/local/bin/python3 -m pip install langchain-anthropic anthropic)",
+      "Bash(mkdir -p \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-audit/scripts\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/checks_claude.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-audit/scripts/\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/checks_deps.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-audit/scripts/\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/checks_source.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-audit/scripts/\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/audit_runner.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-audit/scripts/\")",
+      "Bash(mkdir -p \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-cleanup/scripts\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/fixers_safe.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-cleanup/scripts/\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/fixers_medium.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-cleanup/scripts/\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/cleanup_runner.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-cleanup/scripts/\")",
+      "Bash(mkdir -p \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/waiver_loader.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts/\")",
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/enforce_runner.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts/\")"
     ],
     "additionalDirectories": [
       "/Users/enricomanfron/Desktop/Thesis Maniflod"

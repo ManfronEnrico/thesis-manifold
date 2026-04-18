@@ -109,6 +109,14 @@ class ThesisState(BaseModel):
     figures: Dict[str, FigureState] = Field(default_factory=dict)    # figure_id → state
     compliance_checks: ComplianceState = Field(default_factory=ComplianceState)
 
+    # NotebookLM integration (Phase 0.5+)
+    notebooklm_context: Dict[str, Any] = Field(
+        default_factory=dict
+    )  # {chapter: {summary, sources, verified, timestamp}}
+    notebooklm_citations: Dict[str, Any] = Field(
+        default_factory=dict
+    )  # {claim_id: {passage, source_id, confidence_level}}
+
     # Feature toggles (Phase 1 — all default OFF, opt-in only)
     toggles: Dict[str, bool] = Field(
         default_factory=lambda: {
