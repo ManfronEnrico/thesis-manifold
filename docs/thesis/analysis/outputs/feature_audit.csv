@@ -1,0 +1,11 @@
+column,class,rationale,usable_now
+brand,identifier,"Brand name (77 unique). Used for grouping, encoded for models in §5.",False
+channel,identifier,Retail channel (DVH/DISCOUNT/CONV). New dimension from expanded scope.,False
+date,identifier,Month (first-of-month). Basis for lags and calendar features.,False
+sales_units,target,What we forecast. Will also be log-transformed (log1p) for stability in §6.,False
+sales_value,leaky,= unit_price_t × sales_units_t. Trivially recovers target if price known.,False
+sales_liters,leaky,= liters_per_unit × sales_units_t. Same leak mechanism.,False
+sales_value_promo,leaky,Subset of sales_value measured only on promoted units. Inherits leak.,False
+sales_units_promo,leaky,Subset of target sold on promo. Direct leak.,False
+promo_intensity,leaky_derived,= sales_units_promo_t / sales_units_t. Ratio of two leaky measures; tells relative promo composition at t. Kept for reference only; causal (lagged) version will be engineered in §3.,False
+weighted_dist,contemporaneous_ok,"% of stores distributing the brand (ACV-weighted). Retailer decision, typically known 1+ months in advance. Slow-moving (rarely changes >5pp/month). Standard in retail forecasting (e.g. Nielsen Marketing Mix models).",True
