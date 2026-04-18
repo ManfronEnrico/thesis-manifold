@@ -59,7 +59,8 @@
       "Bash(mv \"C:/Users/brian/AppData/Local/Temp/cleanup_runner.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-cleanup/scripts/\")",
       "Bash(mkdir -p \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts\")",
       "Bash(mv \"C:/Users/brian/AppData/Local/Temp/waiver_loader.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts/\")",
-      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/enforce_runner.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts/\")"
+      "Bash(mv \"C:/Users/brian/AppData/Local/Temp/enforce_runner.py\" \"C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.claude/skills/workspace-enforce/scripts/\")",
+      "Bash(git *)"
     ],
     "additionalDirectories": [
       "/Users/enricomanfron/Desktop/Thesis Maniflod"
