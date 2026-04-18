@@ -44,6 +44,59 @@ test eval, commit).
 **Owner decision (2026-04-18)**: deferred. Keep as backlog for post-defence
 iteration if time permits. Do NOT block the thesis timeline on this.
 
+## News / media signal integration (NLP exogenous predictor)
+
+**Status**: not implemented. Parked as future work / thesis extension.
+
+**Motivation**: Nielsen captures sales but not the exogenous events that drive demand
+shifts — competitor launches, product recalls, macro trends ("low-sugar" consumer
+movement), local events (festivals, sports), regulatory changes. A news-signal
+integration could capture these as leading indicators, treated as an additional
+"predictor" with dynamic weighting in the ensemble.
+
+**Proposed implementation — three tiers by effort/ambition**:
+
+**Minimal (2-3 days)**:
+1. Scope to top-5 brands with media coverage (HARBOE, COCA COLA, PEPSI, FAXE KONDI, FANTA).
+2. Source: 3 Danish outlets via open RSS/API — DR News, Politiken, Børsen.
+3. Signal: monthly mention count per brand (causal lag-1, no sentiment).
+4. Add as feature to LightGBM, retrain, measure TEST MAPE delta.
+5. Expected impact: +0 to +2pp MAPE on covered brands.
+
+**Ambitious (5-7 days)**:
+1. Above + sentiment classification via Claude Haiku (positive/negative/neutral).
+2. Topic classification (launch / recall / sponsorship / macro-trend) via Claude.
+3. Feature vector per (brand, month): [count, sentiment_mean, topic_distribution].
+4. **News Context Agent** added to the LangGraph: modulates ensemble confidence
+   based on sentiment divergence from forecast trend. If news diverges → confidence
+   downgraded → human-in-the-loop review flagged.
+
+**Research-grade (3-4 weeks)**:
+1. Online learning with recency-weighted ensemble.
+2. Regime-switching layer: news signal weights activate during high-media-volatility
+   months, dormant otherwise.
+3. Formal evaluation framework: Diebold-Mariano tests, bootstrap confidence intervals.
+
+**Thesis value regardless of outcome**:
+- *Positive result (≥1 pp MAPE improvement)*: heterogeneous data integration
+  demonstrated; novel contribution to retail forecasting literature.
+- *Null result*: defensible as methodological finding — Nielsen captures most
+  predictive variance in Danish CSD; news salience is too low for consistent signal.
+- *Negative result*: caveat about signal-to-noise ratio in small-market CPG
+  categories; publishable lesson for production deployments.
+
+**Literature baseline**: mixed results in existing retail forecasting literature.
+Works best for high-media-coverage categories (auto, fashion); works worst for
+low-salience categories (soft drinks, household goods) in small markets. Realistic
+expected impact: +1–3pp MAPE for top-covered brands, 0pp for niche brands.
+
+**Risks**: signal-to-noise ratio (Danish CSD media coverage is sparse), attribution
+challenges (news may be symptom of demand rather than cause), confounders
+(sponsorship mentions are structural not causal), data licensing costs.
+
+**Owner decision (2026-04-18)**: deferred. Scoped tiers documented so any of the
+three can be picked up in a follow-on iteration depending on available time.
+
 ## Other possible extensions
 
 - **SRQ4 — comparison vs traditional descriptive BI**: not yet addressed. Would
