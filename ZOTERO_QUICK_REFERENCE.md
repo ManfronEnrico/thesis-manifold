@@ -1,159 +1,149 @@
-# Zotero Quick Reference Card
+# Zotero Quick Reference
 
-**Print this or bookmark it!**
-
----
-
-## Your Zotero Setup (Discovered 2026-04-15)
-
-```
-Personal Library ID:  15775662
-Group Library ID:     6479832 ← Use this for thesis!
-Group Name:           CMT - CBS Master Thesis
-API Key:              In .env (ZOTERO_API_KEY)
-```
+**For fast lookup — full guide in `docs/ZOTERO_INTEGRATION_SETUP.md`**
 
 ---
 
-## Manual Step (Do This First!)
-
-Edit `.env` and add:
-```
-ZOTERO_GROUP_ID=6479832
-```
-
----
-
-## Test Connection (Copy-Paste in Terminal)
+## Setup (One-Time, 5 minutes)
 
 ```bash
-cd C:\Users\brian\OneDrive\Documents\02\ -\ A\ -\ Areas\MSc.\ Data\ Science\2026-03\ -\ CBS\ Master\ Thesis\CMT_Codebase
+# 1. Get API key: https://www.zotero.org/settings/keys
 
-python << 'EOF'
-import os
-from pathlib import Path
-from pyzotero import Zotero
-from dotenv import load_dotenv
+# 2. Create .env
+echo ZOTERO_API_KEY=<your-key> > .env
+echo ZOTERO_GROUP_ID=6479832 >> .env
 
-load_dotenv(Path.cwd() / ".env")
+# 3. Install
+pip install -e .
 
-zot = Zotero(
-    library_id="6479832",
-    library_type='group',
-    api_key=os.environ['ZOTERO_API_KEY']
-)
-
-items = zot.everything(zot.items(limit=100))
-print(f"Group library: {len(items)} items\n")
-
-for item in items[:10]:
-    title = item["data"].get("title", "Untitled")
-    print(f"  - {title}")
-EOF
+# 4. Test
+python scripts/zotero_client.py
+# Should output:
+# Fetched 25 citation items
+# [OK] Synced BibTeX...
+# [OK] Derived citations.json...
 ```
 
 ---
 
-## What's in Your Group Library
+## Daily Use
 
-| Type | Count |
-|------|-------|
-| Academic Papers (journalArticle) | 5 |
-| Preprints | 6 |
-| PDF Attachments | 23 |
-| Notes | 5 |
-| **Total** | **39** |
-
-### Key Papers
-1. Sample, Predict, then Proceed (Tool Use in LLMs)
-2. Hybrid AI & LLM Decision Support (Industrial)
-3. Cost-Aware ML 3PL Supply Chain Forecasting
-4. DSS4EX: AI Pipeline Decision Support
-5. Toolformer: LMs Teaching Themselves Tools
-
----
-
-## File Locations
-
-| File | Purpose |
-|------|---------|
-| `docs/ZOTERO_SETUP_GUIDE.md` | Full reference (start here) |
-| `.claude/ZOTERO_INTEGRATION_RECOMMENDATION.md` | Strategy & phases |
-| `.claude/SESSION_2026-04-15_ZOTERO_SUMMARY.md` | Session notes |
-| `scripts/zotero_sync_phase1.py` | Test script (personal library) |
-| `memory/project_zotero_integration.md` | Decision context |
-
----
-
-## Next Steps
-
-- [ ] Add `ZOTERO_GROUP_ID=6479832` to `.env` manually
-- [ ] Run the test connection command (above)
-- [ ] Review the 11 papers in your group library
-- [ ] Plan Phase 2 with supervisor (auto-sync papers to thesis?)
-
----
-
-## Phase Timeline
-
-| Phase | Goal | Time | Status |
-|-------|------|------|--------|
-| **Phase 1** | Read-only connection | 2-3h | ✅ DONE |
-| **Phase 2** | Metadata sync (Zotero → Thesis) | 4-6h | ⬜ Next |
-| **Phase 3** | PDF management | 6-8h | ⬜ Later |
-| **Phase 4** | Team collaboration | 2-3h | ⬜ Later |
-
----
-
-## Quick Commands
-
-**Check group library items:**
 ```bash
-python scripts/zotero_sync_phase1.py
-cat docs/zotero_sync_report.md
+# Sync latest papers
+python scripts/zotero_client.py
+
+# Use in Python
+from scripts.zotero_client import get_citations
+cites = get_citations()  # Live API call, always fresh
 ```
 
-**Run Phase 1 comparison:**
-```bash
-python scripts/zotero_sync_phase1.py --output docs/zotero_sync_report.md
-```
+---
 
-**Export as BibTeX:**
+## In Python
+
 ```python
-from pyzotero import Zotero
-import os
-from dotenv import load_dotenv
-from pathlib import Path
+from scripts.zotero_client import get_citations
 
-load_dotenv(Path.cwd() / ".env")
-zot = Zotero("6479832", 'group', os.environ['ZOTERO_API_KEY'])
-zot.add_parameters(format='bibtex')
-bibtex = zot.everything(zot.items(limit=100))
-print(bibtex)
+# Get all citations
+cites = get_citations()  # 25+ papers
+
+# Each has: key, title, author, year, month, journal, publisher,
+#           doi, url, abstract, keywords, archiveID, and 14+ more fields
+
+for c in cites:
+    print(f"{c['author']} - {c['title']} ({c['year']})")
+
+# Filter
+agents = [c for c in cites if 'agent' in c['title'].lower()]
+recent = [c for c in cites if c['year'] == '2025']
 ```
 
 ---
 
-## Common Issues
+## In LaTeX
 
-| Issue | Fix |
-|-------|-----|
-| `ModuleNotFoundError: pyzotero` | `pip install pyzotero` or `uv add pyzotero` |
-| `403 Forbidden` | Check API key at https://www.zotero.org/settings/keys |
-| `ZOTERO_GROUP_ID not found` | Add it to `.env` manually |
-| Unicode errors on Windows | Already fixed in scripts (use UTF-8 encoding) |
+```latex
+\bibliography{docs/literature/bibtex.bib}
+
+\cite{DU89C8T9}
+```
+
+---
+
+## Generated Files
+
+| File | Format | Auto-Generated |
+|------|--------|---|
+| `docs/literature/bibtex.bib` | BibTeX (source of truth) | Yes, every call |
+| `docs/literature/citations.json` | JSON (programmatic) | Yes, every call |
+
+---
+
+## Available Fields (26 total)
+
+**Core:** key, itemType, title, shorttitle, author, year, month
+
+**Publication:** journal, journalAbbreviation, publisher, volume, issue, pages
+
+**Online:** url, urldate, doi, issn, isbn
+
+**Content:** abstract, language, keywords
+
+**Archive:** archiveID, repository, archive, archiveLocation
+
+**Metadata:** copyright, libraryCatalog, callNumber, citationKey, format, genre
+
+**Series:** series, seriesNumber, conferenceName, proceedingsTitle, eventPlace
+
+**Other:** section, partNumber, place, edition, originalDate, originalPublisher, extra
+
+---
+
+## Common Commands
+
+```bash
+# Check config
+cat .env
+
+# Test
+python -c "from scripts.zotero_client import get_citations; print(len(get_citations()))"
+
+# Use in notebook
+import pandas as pd
+from scripts.zotero_client import get_citations
+df = pd.DataFrame(get_citations())
+print(df.groupby('year').size())
+```
+
+---
+
+## Troubleshooting
+
+```bash
+# Missing key?
+# → Generate at https://www.zotero.org/settings/keys
+
+# 401 Unauthorized?
+# → Check key is correct in .env
+
+# No citations?
+# → Verify you're member of group 6479832
+# → Check https://www.zotero.org/groups/6479832/
+
+# Permission denied on .env?
+# → Ensure write access: chmod 600 .env
+```
 
 ---
 
 ## Resources
 
-- **Pyzotero Docs**: https://pyzotero.readthedocs.io/
-- **Zotero API v3**: https://www.zotero.org/support/dev/web_api/v3/start
-- **Your Group Library**: https://www.zotero.org/groups/6479832/cmt-cbs-master-thesis
-- **API Settings**: https://www.zotero.org/settings/keys
+- **Full Setup:** `docs/ZOTERO_INTEGRATION_SETUP.md`
+- **Group Library:** https://www.zotero.org/groups/6479832/
+- **API Keys:** https://www.zotero.org/settings/keys
+- **Pyzotero:** https://pyzotero.readthedocs.io/
 
 ---
 
-**Last Updated**: 2026-04-15  
-**Status**: Phase 1 Complete ✅  
-**Next Session**: Phase 2 Planning
+**Last Updated:** 2026-04-18  
+**Status:** ✅ Complete — 25 papers, 26 fields, live sync
