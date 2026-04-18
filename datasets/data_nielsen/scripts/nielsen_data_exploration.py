@@ -1,7 +1,7 @@
 """
 Nielsen Database Explorer
 --------------------------
-First-look script — run this once to understand what data we're working with.
+First-look script â€” run this once to understand what data we're working with.
 
 Usage:
     python scripts/explore_nielsen.py
@@ -22,7 +22,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ai_research_framework.config import NielsenConfig
-from datasets.nielsen_connector import get_connection
+from datasets.data_nielsen.scripts.nielsen_connector import get_connection
 
 KNOWN_TABLES = NielsenConfig().schema_tables
 
@@ -42,7 +42,7 @@ def main() -> None:
     conn = get_connection()
     print("Connected.\n")
 
-    # ── 1. All visible tables/views ───────────────────────────────────────────
+    # â”€â”€ 1. All visible tables/views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     section("1. All visible tables / views")
     tables_df = run_query(conn, """
         SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
@@ -51,7 +51,7 @@ def main() -> None:
     """)
     print(tables_df.to_string(index=False))
 
-    # ── 2. Column info for each known table ───────────────────────────────────
+    # â”€â”€ 2. Column info for each known table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     section("2. Column names + data types (known tables)")
     for table in KNOWN_TABLES:
         print(f"\n--- {table} ---")
@@ -66,16 +66,16 @@ def main() -> None:
         else:
             print(cols_df.to_string(index=False))
 
-    # ── 3. Row counts ─────────────────────────────────────────────────────────
+    # â”€â”€ 3. Row counts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     section("3. Row counts")
     for table in KNOWN_TABLES:
         try:
             count_df = run_query(conn, f"SELECT COUNT(*) AS row_count FROM {table}")
             print(f"  {table}: {count_df['row_count'].iloc[0]:,} rows")
         except Exception as exc:
-            print(f"  {table}: ERROR — {exc}")
+            print(f"  {table}: ERROR â€” {exc}")
 
-    # ── 4. Date range (period dimension) ─────────────────────────────────────
+    # â”€â”€ 4. Date range (period dimension) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     section("4. Date / period range")
     try:
         period_df = run_query(conn, """
@@ -87,7 +87,7 @@ def main() -> None:
     except Exception as exc:
         print(f"  Could not query period dimension: {exc}")
 
-    # ── 5. Market / retailer count ────────────────────────────────────────────
+    # â”€â”€ 5. Market / retailer count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     section("5. Markets / retailers")
     try:
         market_df = run_query(conn, """
@@ -107,7 +107,7 @@ def main() -> None:
     except Exception as exc:
         print(f"  Could not query market dimension: {exc}")
 
-    # ── 6. Product count ─────────────────────────────────────────────────────
+    # â”€â”€ 6. Product count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     section("6. Products")
     try:
         product_df = run_query(conn, """
@@ -126,8 +126,8 @@ def main() -> None:
     except Exception as exc:
         print(f"  Could not query product dimension: {exc}")
 
-    # ── 7. Facts table — first 10 rows ────────────────────────────────────────
-    section("7. csd_clean_facts_v — first 10 rows (head)")
+    # â”€â”€ 7. Facts table â€” first 10 rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    section("7. csd_clean_facts_v â€” first 10 rows (head)")
     try:
         facts_df = run_query(conn, "SELECT TOP 10 * FROM csd_clean_facts_v")
         pd.set_option("display.max_columns", None)
@@ -136,8 +136,8 @@ def main() -> None:
     except Exception as exc:
         print(f"  Could not query facts table: {exc}")
 
-    # ── 8. Facts — null check on key metrics ─────────────────────────────────
-    section("8. Null check — key metrics in facts table")
+    # â”€â”€ 8. Facts â€” null check on key metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    section("8. Null check â€” key metrics in facts table")
     try:
         null_df = run_query(conn, """
             SELECT

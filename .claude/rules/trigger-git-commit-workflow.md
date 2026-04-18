@@ -5,18 +5,33 @@ paths:
 
 # Git Commit Workflow
 
-**Trigger**: `/draft_commit` generates a ready-to-paste commit message.
+**Trigger**: `/draft_commit` — generates ready-to-paste commit message
 
-**Steps**:
-1. Reconstruct session work from conversation context (what changed, why)
-2. Run `git status` to verify files on disk
-3. Read `project_updates/standup_draft.md` for uncommitted work (timestamp comparison)
-4. Merge session context + standup into unified changes list
-5. Draft message: `<type>: <subject>` + bullets + session timestamps
+**Pre-step**: Automatically invoke `/log_errors` to capture any session tooling issues before drafting.
 
-**Types**: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`
-**Subject**: Imperative, ≤60 chars, no period
+## Algorithm
+1. **Log errors** (NEW): Run `/log_errors` to scan conversation and append any tooling issues to `docs/tooling-issues.md`
+2. **Session context** (PRIMARY): What files changed & why (from conversation)
+3. **Git status**: `git status --short` — confirm changed files on disk
+4. **Last commit**: `git log -1 --format="%H %ai %s"` — cutoff for uncommitted work
+5. **Standup entries**: Extract `HH-MM-SS` entries from `project_updates/standup_draft.md` dated after last commit
+6. **Cross-reference**: Merge context + standup → unified list of changes
+7. **Draft**: Format as `<type>: <subject> ≤60 chars` + bullets + `Sessions: HH-MM-SS`
 
-**Output**: Single code block, copy-paste ready. List which standup entries included.
+## Format
+```
+<type>: <imperative subject, ≤60 chars>
 
-See `.claude/skills/draft_commit.md` for skill implementation.
+- <what changed and why, one line per logical unit>
+- <...>
+
+Sessions: HH-MM-SS (timestamps of included standup entries)
+```
+
+**Types**: `feat` (new feature), `fix` (bug), `refactor` (structure), `chore`/`docs` (non-code)
+
+## Output
+Present in single code block (copy-paste ready). Add note if:
+- Standup entries were ambiguous
+- Files in `git status` have no session record
+- `??-??-??` placeholders are unresolved
