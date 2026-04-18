@@ -3,7 +3,7 @@ Nielsen / Microsoft Fabric Data Warehouse connector.
 Authenticates using a Service Principal (Entra ID) and returns a pyodbc connection.
 
 Usage:
-    from ai_research_framework.data.nielsen_connector import get_connection
+    from datasets.data_nielsen.scripts.nielsen_connector import get_connection
     conn = get_connection()
     df = pd.read_sql("SELECT TOP 10 * FROM dbo.csd_clean_facts_v", conn)
     conn.close()
@@ -22,7 +22,7 @@ from azure.identity import ClientSecretCredential
 from dotenv import load_dotenv
 
 # Load credentials from .env in project root
-_env_path = Path(__file__).resolve().parents[1] / ".env"
+_env_path = Path(__file__).resolve().parents[3] / ".env"
 load_dotenv(_env_path)
 
 SERVER   = os.environ["RU_SERVER_STRING"]
@@ -66,7 +66,7 @@ def get_connection() -> pyodbc.Connection:
 
 
 def test_connection() -> None:
-    """Quick smoke test — prints top-5 rows from each key view."""
+    """Quick smoke test â€” prints top-5 rows from each key view."""
     print(f"Connecting to {SERVER} / {DATABASE} ...")
     conn = get_connection()
     print("Connection OK")

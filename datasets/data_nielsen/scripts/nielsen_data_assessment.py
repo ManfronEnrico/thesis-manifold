@@ -1,11 +1,11 @@
 """
-Nielsen Data Assessment Script — Phase 1
+Nielsen Data Assessment Script â€” Phase 1
 Connects to the Nielsen_clean Microsoft Fabric warehouse and runs
 a comprehensive data quality + coverage assessment across all 4 views.
 
 Usage:
     cd /Users/enricomanfron/Desktop/Thesis\ Maniflod
-    python3 -m ai_research_framework.data.nielsen_data_assessment
+    cd CMT_Codebase && python -m datasets.data_nielsen.scripts.nielsen_data_assessment
 """
 
 import sys
@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from datasets.nielsen_connector import get_connection
+from datasets.data_nielsen.scripts.nielsen_connector import get_connection
 
 
 def q(conn, sql: str) -> pd.DataFrame:
@@ -36,7 +36,7 @@ def sub(title: str) -> None:
     print(f"\n--- {title} ---")
 
 
-# ── 4.1 DIM MARKET ────────────────────────────────────────────────────────────
+# â”€â”€ 4.1 DIM MARKET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def assess_dim_market(conn):
     section("4.1  DIM MARKET  (csd_clean_dim_market_v)")
@@ -52,7 +52,7 @@ def assess_dim_market(conn):
     print(f"\nNULL counts: {nulls}")
 
 
-# ── 4.2 DIM PERIOD ────────────────────────────────────────────────────────────
+# â”€â”€ 4.2 DIM PERIOD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def assess_dim_period(conn):
     section("4.2  DIM PERIOD  (csd_clean_dim_period_v)")
@@ -75,7 +75,7 @@ def assess_dim_period(conn):
     return df
 
 
-# ── 4.3 DIM PRODUCT ───────────────────────────────────────────────────────────
+# â”€â”€ 4.3 DIM PRODUCT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def assess_dim_product(conn):
     section("4.3  DIM PRODUCT  (csd_clean_dim_product_v)")
@@ -107,7 +107,7 @@ def assess_dim_product(conn):
     return df
 
 
-# ── 4.4 FACTS ─────────────────────────────────────────────────────────────────
+# â”€â”€ 4.4 FACTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def assess_facts(conn):
     section("4.4  FACTS  (csd_clean_facts_v)")
@@ -127,7 +127,7 @@ def assess_facts(conn):
         pct = 100 * cnt / row_count if row_count > 0 else 0
         print(f"  {col:<35}: {cnt:>7,} nulls  ({pct:.2f}%)")
 
-    sub("Descriptive statistics — key numeric columns")
+    sub("Descriptive statistics â€” key numeric columns")
     numeric_cols = ["sales_value", "sales_in_liters", "sales_units",
                     "sales_value_any_promo", "sales_in_liters_any_promo",
                     "sales_units_any_promo", "weighted_distribution"]
@@ -151,7 +151,7 @@ def assess_facts(conn):
     promo = int(q(conn, "SELECT COUNT(*) AS n FROM dbo.csd_clean_facts_v WHERE sales_units_any_promo > 0").iloc[0, 0])
     print(f"  Promo rows: {promo:,}  ({100*promo/row_count:.2f}%)")
 
-    sub("Coverage — distinct keys")
+    sub("Coverage â€” distinct keys")
     for dim, col in [("Markets", "market_id"), ("Periods", "period_id"), ("Products", "product_id")]:
         n = int(q(conn, f"SELECT COUNT(DISTINCT [{col}]) AS n FROM dbo.csd_clean_facts_v").iloc[0, 0])
         print(f"  Distinct {dim}: {n}")
@@ -179,12 +179,12 @@ def assess_facts(conn):
     return row_count, cols
 
 
-# ── 4.5 FORECASTING SUITABILITY ───────────────────────────────────────────────
+# â”€â”€ 4.5 FORECASTING SUITABILITY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def assess_forecasting_suitability(conn, period_df: pd.DataFrame):
     section("4.5  FORECASTING SUITABILITY")
 
-    sub("Top 15 brand × market combinations by total sales_units")
+    sub("Top 15 brand Ã— market combinations by total sales_units")
     df_top = q(conn, """
         SELECT TOP 15
             p.brand,
@@ -201,7 +201,7 @@ def assess_forecasting_suitability(conn, period_df: pd.DataFrame):
     """)
     print(df_top.to_string(index=False))
 
-    sub("Time-series length distribution (periods per brand × market series)")
+    sub("Time-series length distribution (periods per brand Ã— market series)")
     df_len = q(conn, """
         SELECT period_count, COUNT(*) AS n_series
         FROM (
@@ -223,18 +223,18 @@ def assess_forecasting_suitability(conn, period_df: pd.DataFrame):
     print(f"  Total periods : {total}")
     print(f"  Train (~70%)  : period_id {period_df['period_id'].iloc[0]} "
           f"({period_df['period_year'].iloc[0]}-{period_df['period_month'].iloc[0]:02d}) "
-          f"→ {period_df['period_id'].iloc[t_end-1]} "
+          f"â†’ {period_df['period_id'].iloc[t_end-1]} "
           f"({period_df['period_year'].iloc[t_end-1]}-{period_df['period_month'].iloc[t_end-1]:02d})")
     print(f"  Val  (~15%)   : period_id {period_df['period_id'].iloc[t_end]} "
           f"({period_df['period_year'].iloc[t_end]}-{period_df['period_month'].iloc[t_end]:02d}) "
-          f"→ {period_df['period_id'].iloc[v_end-1]} "
+          f"â†’ {period_df['period_id'].iloc[v_end-1]} "
           f"({period_df['period_year'].iloc[v_end-1]}-{period_df['period_month'].iloc[v_end-1]:02d})")
     print(f"  Test (~15%)   : period_id {period_df['period_id'].iloc[v_end]} "
           f"({period_df['period_year'].iloc[v_end]}-{period_df['period_month'].iloc[v_end]:02d}) "
-          f"→ {period_df['period_id'].iloc[-1]} "
+          f"â†’ {period_df['period_id'].iloc[-1]} "
           f"({period_df['period_year'].iloc[-1]}-{period_df['period_month'].iloc[-1]:02d})")
 
-    sub("DVH EXCL. HD scope — brand-level completeness")
+    sub("DVH EXCL. HD scope â€” brand-level completeness")
     df_dvh = q(conn, """
         SELECT
             p.brand,
@@ -253,10 +253,10 @@ def assess_forecasting_suitability(conn, period_df: pd.DataFrame):
     print(df_dvh.to_string(index=False))
 
 
-# ── MAIN ──────────────────────────────────────────────────────────────────────
+# â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def main():
-    print("Nielsen Data Assessment — Phase 1")
+    print("Nielsen Data Assessment â€” Phase 1")
     print("Connecting...")
     conn = get_connection()
     print("Connection OK")
