@@ -15,3 +15,9 @@ anthropic>=0.40.0
 
 # ── NotebookLM grounded analysis layer ───────────────────────────────────────
 notebooklm-py[browser]==0.3.4   # Unofficial API — pin strictly; review CHANGELOG before upgrading
+
+# ── Google Drive integration for paper management ──────────────────────────────
+google-auth>=2.28.0             # OAuth authentication
+google-auth-oauthlib>=1.2.0     # OAuth flow for user authentication
+google-auth-httplib2>=0.2.0     # HTTP transport for auth
+google-api-python-client>=2.108.0  # Google Drive API
