@@ -1,3 +1,0 @@
-system,n_queries,mean_specificity,mean_lever_diversity,mean_context_mentions,mean_word_count,mean_latency_s
-A,20,1.0,3.95,0.85,170.35,9.502
-B,20,1.0,4.2,7.25,224.85,12.233

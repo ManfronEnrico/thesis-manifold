@@ -12,7 +12,7 @@ priority: "high"
 - **Primary reference:** [repository_map.md](../../docs/dev/repository_map.md) — complete file-to-purpose mapping
 - **Thesis workflow:** [CLAUDE.md](../../CLAUDE.md) — session entry point and workflow phases
 - **Architecture:** [docs/architecture.md](../../docs/architecture.md) — System A/B architecture decisions
-- **Compliance:** [thesis/compliance/cbs_guidelines_notes.md](../../thesis/compliance/cbs_guidelines_notes.md) — CBS thesis requirements
+- **Compliance:** [thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md](../../thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md) — CBS thesis requirements
 
 ## When to Use This Rule
 
