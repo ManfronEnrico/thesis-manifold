@@ -1,7 +1,7 @@
 """
 System B — Thesis Production System diagram.
 Clean top-to-bottom flow, no overlaps.
-Output: docs/thesis/figures/system_b_overview.{svg,png}
+Output: thesis/writing/figures/system_b_overview.{svg,png}
 Run: python3 scripts/generate_systemB_diagram.py
 """
 
@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
-OUTPUT_DIR = "docs/thesis/figures"
+OUTPUT_DIR = "thesis/writing/figures"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 NAVY   = "#1B3A5C"

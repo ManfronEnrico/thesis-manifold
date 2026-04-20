@@ -85,7 +85,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        papers_dir = Path("docs/literature/papers")
+        papers_dir = Path("thesis/literature/papers")
         print("Loading thesis papers...", end="", flush=True)
         thesis_papers = load_thesis_papers(papers_dir)
         print(f" OK ({len(thesis_papers)} papers)")

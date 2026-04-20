@@ -159,7 +159,12 @@ This protects against accidental commits of secrets and API keys.''',
 
         deny_list = data['permissions']['deny']
         required_patterns = ['.env*', '*.pem', '*.key', 'credentials*', 'secret*']
-        missing = [p for p in required_patterns if p not in deny_list]
+        # Accept bare patterns or tool-prefixed variants (e.g. "Read(.env*)", "Edit(*.key)")
+        def _pattern_covered(p, deny_list):
+            if p in deny_list:
+                return True
+            return any(entry.endswith(f'({p})') for entry in deny_list)
+        missing = [p for p in required_patterns if not _pattern_covered(p, deny_list)]
 
         if missing:
             findings.append({

@@ -69,6 +69,95 @@ def _extract_publisher(item_data: dict) -> str | None:
     return None
 
 
+
+def generate_citation_key(creators: list, title: str, year: str) -> str:
+    """Generate citation key in Zotero format: firstname_firstword_year (all lowercase).
+
+    Args:
+        creators: List of creator dicts with 'lastName' field
+        title: Paper title
+        year: Year as string
+
+    Returns:
+        Citation key like 'avramova_overview_2025'
+    """
+    # Get first author's last name
+    if creators and isinstance(creators, list) and len(creators) > 0:
+        first_author = creators[0].get('lastName', '').lower()
+    else:
+        first_author = 'unknown'
+
+    # Get first word of title
+    if title:
+        title_words = str(title).split()
+        first_word = title_words[0].lower() if title_words else 'unknown'
+    else:
+        first_word = 'unknown'
+
+    # Get year
+    year_str = str(year).strip() if year else 'unknown'
+
+    return f"{first_author}_{first_word}_{year_str}"
+
+
+
+def _normalize_author_name(name: str) -> str:
+    """Normalize author name by replacing hyphens and spaces with underscores.
+
+    Examples:
+        'al-karkhi' -> 'al_karkhi'
+        'Al Karkhi' -> 'Al_Karkhi'
+    """
+    if not name:
+        return 'unknown'
+    normalized = name.replace('-', '_').replace(' ', '_')
+    return normalized
+
+
+def generate_gdrive_filename(item_data: dict) -> str:
+    """Generate standardized Google Drive filename from Zotero item data.
+
+    Pattern: FirstAuthor-SecondAuthor_or_et_al-Year-Title_with_underscores.pdf
+
+    Rules:
+    - 2 authors or fewer: list both separated by hyphen
+    - 3+ authors: FirstAuthor-et_al
+    - Within author names: replace hyphens/spaces with underscores
+    - Within title: replace spaces with underscores
+    - Separators between blocks (authors, year, title): hyphen
+
+    Args:
+        item_data: Zotero item data dict with creators, title, date fields
+
+    Returns:
+        Filename string like 'Avramova-et_al-2025-Overview_of_Existing_Multi_Criteria.pdf'
+    """
+    creators = item_data.get('creators', [])
+    title = item_data.get('title', '')
+    date_str = item_data.get('date', '')
+
+    year = date_str[:4] if date_str else 'unknown'
+
+    if len(creators) == 0:
+        author_part = 'Unknown'
+    elif len(creators) == 1:
+        author_part = _normalize_author_name(creators[0].get('lastName', 'Unknown'))
+    elif len(creators) == 2:
+        author1 = _normalize_author_name(creators[0].get('lastName', 'Unknown'))
+        author2 = _normalize_author_name(creators[1].get('lastName', 'Unknown'))
+        author_part = f"{author1}-{author2}"
+    else:
+        first_author = _normalize_author_name(creators[0].get('lastName', 'Unknown'))
+        author_part = f"{first_author}-et_al"
+
+    if title:
+        title_clean = str(title)[:60].replace(' ', '_').replace('-', '_')
+    else:
+        title_clean = 'Unknown'
+
+    filename = f"{author_part}-{year}-{title_clean}.pdf"
+    return filename
+
 def _to_bibtex_value(val: str | list | None) -> str:
     """Format a value for BibTeX output."""
     if val is None or val == "":
@@ -110,7 +199,7 @@ def get_citations(group_id: str | None = None, sync_files: bool = True) -> list[
 
         # Build entry with all available fields (except note and file)
         entry = {
-            "key": item.get("key") or data.get("key"),
+            "key": data.get("citationKey") or item.get("key"),
             "itemType": data.get("itemType"),
             "title": data.get("title"),
             "shorttitle": data.get("shortTitle"),

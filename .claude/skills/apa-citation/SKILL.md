@@ -7,7 +7,7 @@ description: >
   "add this reference", "format this in APA", "insert citation for", or pastes a paper title,
   DOI, or _REV note. Produces an in-text citation AND a formatted References section entry,
   verifies both against NotebookLM, and writes output to the active section file and to
-  docs/thesis/references.md. Do NOT use for /verify-citations (that command handles
+  thesis/writing/references.md. Do NOT use for /verify-citations (that command handles
   bulk citation checking on existing prose — this skill handles new citation insertion).
 ---
 
@@ -40,15 +40,15 @@ Operates within System B (thesis_production_system). Never touches System A.
 | File | Purpose |
 |---|---|
 | User-provided _REV note or raw input | Primary citation data |
-| `docs/thesis/references.md` | Existing reference list — check for duplicates before appending |
-| `docs/thesis/sections/{chapter_id}.md` | Active section — for in-text citation placement |
+| `thesis/writing/references.md` | Existing reference list — check for duplicates before appending |
+| `thesis/writing/sections/{chapter_id}.md` | Active section — for in-text citation placement |
 
 ## Files This Skill Writes
 
 | File | What |
 |---|---|
-| `docs/thesis/sections/{chapter_id}.md` | In-text citation inserted at the correct position |
-| `docs/thesis/references.md` | Full APA 7 reference appended (if not already present) |
+| `thesis/writing/sections/{chapter_id}.md` | In-text citation inserted at the correct position |
+| `thesis/writing/references.md` | Full APA 7 reference appended (if not already present) |
 
 ---
 
@@ -121,7 +121,7 @@ Read `references/apa7-rules.md` for edge cases (books, chapters, conference pape
 
 ## Step 4 — Check for Duplicate
 
-Before appending to `docs/thesis/references.md`:
+Before appending to `thesis/writing/references.md`:
 - Search for the DOI or author+year combination in the existing file.
 - If already present → use the existing formatted entry, do not append again.
 - If present but formatted differently → flag the discrepancy, ask user which to keep.
@@ -146,8 +146,8 @@ Last, F. I., Last, F. I., & Last, F. I. (Year). Title. Journal, Volume, pages. h
 **Verification**: ✅ VERIFIED / ⚠️ IMPRECISE [note] / ❌ NOT FOUND [action required]
 
 **Written to**:
-- docs/thesis/sections/{chapter_id}.md — in-text citation inserted
-- docs/thesis/references.md — reference appended
+- thesis/writing/sections/{chapter_id}.md — in-text citation inserted
+- thesis/writing/references.md — reference appended
 ```
 
 Then write to both files. Do not write if verification status is ❌ — show output for human review first.
@@ -157,7 +157,7 @@ Then write to both files. Do not write if verification status is ❌ — show ou
 ## Mandatory Rules
 
 - Never invent author names, years, volume numbers, page ranges, or DOIs
-- Always check `docs/thesis/references.md` for duplicates before appending
+- Always check `thesis/writing/references.md` for duplicates before appending
 - ❌ NOT FOUND citations must never be written to files without human approval
 - APA 7 formatting is non-negotiable — sentence case for titles, title case for journals
 - If the user provides a phrase/sentence to cite, insert the in-text citation at the end of that sentence

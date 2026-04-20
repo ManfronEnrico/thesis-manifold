@@ -221,7 +221,7 @@ papers/
 
 ### No Zotero Bridge (Phase 0/1)
 
-For now, paper metadata lives in the existing `docs/literature/papers/*.md` files and the master CSV. A future Zotero bridge (Phase 3+) would export `.bib` and map to ingestion slugs, but this is **post-deadline scope**.
+For now, paper metadata lives in the existing `thesis/literature/papers/*.md` files and the master CSV. A future Zotero bridge (Phase 3+) would export `.bib` and map to ingestion slugs, but this is **post-deadline scope**.
 
 ---
 
@@ -231,7 +231,7 @@ For now, paper metadata lives in the existing `docs/literature/papers/*.md` file
 
 **Pattern A — Literature Review QA**
 ```
-1. Claude Code reads docs/literature/gap_analysis.md (existing)
+1. Claude Code reads thesis/literature/gap_analysis.md (existing)
 2. Claude Code calls notebooklm_client.chat.ask("What do the sources say about X?", notebook_id=CH2_ID)
 3. NotebookLM returns answer + citations (source UUID + text passage)
 4. Claude Code formats citations → [Author, Year, NotebookLM citation ref]

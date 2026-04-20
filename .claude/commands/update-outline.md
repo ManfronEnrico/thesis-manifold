@@ -1,6 +1,6 @@
 # /update-outline
 
-Triggers the thesis-structuring skill to assess and optionally update `docs/thesis/outline.md`.
+Triggers the thesis-structuring skill to assess and optionally update `thesis/writing/outline.md`.
 
 ## When to use
 - After receiving supervisor feedback that implies structural changes
@@ -13,15 +13,15 @@ Triggers the thesis-structuring skill to assess and optionally update `docs/thes
 - New context: paste supervisor comments, updated RQ, methodology notes, or nothing (skill reads state automatically)
 
 ## What happens
-1. Skill reads: `docs/thesis/outline.md`, `docs/tasks/thesis_state.json`, `docs/thesis/sections/*.md`, `.claude/agents/thesis-writer.md` (page budgets), `docs/context.md`
+1. Skill reads: `thesis/writing/outline.md`, `docs/tasks/thesis_state.json`, `thesis/writing/sections/*.md`, `.claude/agents/thesis-writer.md` (page budgets), `docs/project-management/context.md`
 2. Skill determines change level: no change / minor revision / major restructuring
 3. Skill produces: updated outline, page budget table, rationale, open questions, and next action for System B
 4. If change level = **major restructuring**: output is shown for human approval — pipeline does NOT proceed automatically
-5. If change level = **no change** or **minor revision**: `docs/thesis/outline.md` is updated and PlannerAgent may proceed
+5. If change level = **no change** or **minor revision**: `thesis/writing/outline.md` is updated and PlannerAgent may proceed
 
 ## Output written to
-- `docs/thesis/outline.md` (always confirmed/updated)
-- `docs/thesis/sections/{chapter_id}.md` stubs (only if new chapters are added)
+- `thesis/writing/outline.md` (always confirmed/updated)
+- `thesis/writing/sections/{chapter_id}.md` stubs (only if new chapters are added)
 
 ## Hard rules
 - Never restructures `prose_approved` sections

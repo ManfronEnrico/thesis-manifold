@@ -18,7 +18,7 @@ Ask the user:
 ## Quick reference — workflow
 
 ```
-1. Check existing corpus (docs/literature/papers/ + thesis_state.json)
+1. Check existing corpus (thesis/literature/papers/ + thesis_state.json)
 2. Search NotebookLM:
      notebooklm use 48697de0-f0a5-4e66-918e-531abea82c20
      notebooklm ask "<targeted query>"
