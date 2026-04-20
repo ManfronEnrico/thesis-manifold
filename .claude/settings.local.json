@@ -8,7 +8,14 @@
       "Bash(git log*)",
       "Bash(git diff*)",
       "Bash(git add*)",
-      "Bash(git commit*)"
+      "Bash(git commit*)",
+      "Bash([ -d \"$BASE/draft-commit\" ])",
+      "Bash(mv 'C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.cc/worktrees/skill-rename/.claude/skills/draft-commit' 'C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.cc/worktrees/skill-rename/.claude/skills/git-draft-commit')",
+      "Bash([ -d \"$BASE/draft_commit\" ])",
+      "Bash(mv 'C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.cc/worktrees/skill-rename/.claude/skills/draft_commit' 'C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.cc/worktrees/skill-rename/.claude/skills/git-draft-commit-underscore')",
+      "Bash([ -d \"$BASE/using-git-worktrees\" ])",
+      "Bash(rm -rf 'C:/Users/brian/OneDrive/Documents/02 - A - Areas/MSc. Data Science/2026-03 - CBS Master Thesis/CMT_Codebase/.cc/worktrees/skill-rename/.claude/skills/git-draft-commit-underscore')",
+      "Bash([ -d \"$AGENTS/using-git-worktrees\" ])"
     ]
   }
 }
