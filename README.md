@@ -200,12 +200,30 @@ pip install -r thesis_production_system/requirements.txt
 
 > For Prophet on Apple Silicon: `brew install cmake` may be required first.
 
-### 4. Install Claude Code (for AI-assisted development)
+### 4. Install Claude Code and GitHub CLI (for AI-assisted development)
 
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude  # run from project root
 ```
+
+**GitHub CLI** (`gh`) is required for creating draft PRs at the end of each session:
+
+```powershell
+# Windows (PowerShell) — run once, then restart your terminal
+winget install --id GitHub.cli
+```
+
+After restarting, authenticate with your own GitHub account (one-time setup per machine):
+
+```powershell
+gh auth login
+# Choose: GitHub.com → HTTPS → Yes → Login with web browser
+# A one-time code appears — paste it in the browser when prompted
+# Requires a GitHub account that has access to this repo
+```
+
+> Each collaborator runs this independently with their own account. `gh` is a system tool, not a Python package — it does not go in `requirements.txt`.
 
 ### 5. Generate architecture figures
 

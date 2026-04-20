@@ -22,7 +22,7 @@ Your role is to find new academic papers when the thesis requires additional sou
 **SRQ3**: Value of contextual/consumer signals in forecasting
 **SRQ4**: Predictive AI vs. traditional descriptive BI
 
-**Active corpus**: `docs/literature/papers/` (18+ annotated papers)
+**Active corpus**: `thesis/literature/papers/` (18+ annotated papers)
 **Registry**: `docs/tasks/thesis_state.json` → `literature_state.papers`
 **NotebookLM notebook ID**: `48697de0-f0a5-4e66-918e-531abea82c20`
 
@@ -42,7 +42,7 @@ This agent is activated when:
 ```
 STEP 1 — UNDERSTAND THE NEED
   → Read the request: what topic, SRQ, or specific claim needs a paper?
-  → Check existing corpus first (docs/literature/papers/ and thesis_state.json)
+  → Check existing corpus first (thesis/literature/papers/ and thesis_state.json)
   → If an existing paper covers the claim: report it to the user — no new search needed
 
 STEP 2 — NOTEBOOKLM SEARCH
@@ -82,9 +82,9 @@ STEP 6 — HUMAN APPROVAL GATE
   → Do NOT add to corpus automatically
 
 STEP 7 — ADD TO CORPUS (only after approval)
-  → Create annotation file: docs/literature/papers/{slug}.md (use REV template)
+  → Create annotation file: thesis/literature/papers/{slug}.md (use REV template)
   → Update docs/tasks/thesis_state.json: add entry to literature_state.papers
-  → Append to docs/literature/scraping_log.md
+  → Append to thesis/literature/scraping_log.md
   → If paper is loaded as a source: notebooklm source add <url_or_path>
   → Report: "Added {N} papers to corpus ✅"
 ```
@@ -143,7 +143,7 @@ notebooklm ask "Key gaps in literature on [topic] — what is missing?"
 ## SOURCES ALREADY IN NOTEBOOK
 
 Before searching, always check `docs/tasks/thesis_state.json` for the full confirmed paper list.
-If a paper is already annotated in `docs/literature/papers/`, do not propose it again.
+If a paper is already annotated in `thesis/literature/papers/`, do not propose it again.
 
 ---
 

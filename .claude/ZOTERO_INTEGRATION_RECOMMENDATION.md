@@ -19,7 +19,7 @@ Your thesis can integrate Zotero via **pyzotero** (official Python API client), 
 ### Your Thesis Literature System (System B — Thesis Production)
 | Aspect | Current Approach | Status |
 |--------|-----------------|--------|
-| Paper records | 48 confirmed papers in `/docs/literature/papers/*.md` | ✅ Stable |
+| Paper records | 48 confirmed papers in `/thesis/literature/papers/*.md` | ✅ Stable |
 | Metadata | YAML frontmatter (title, authors, year, venue, tier, score, angles, SRQs) | ✅ Comprehensive |
 | Scraping strategy | 6 research angles (Ch2–Ch6), manual human confirmation | ✅ Working |
 | Source of truth | Markdown files + NotebookLM ingestion manifest | ✅ Single source |
@@ -96,7 +96,7 @@ Your thesis can integrate Zotero via **pyzotero** (official Python API client), 
 1. Set up Zotero API credentials (5 min)
 2. Create `scripts/zotero_sync.py` using pyzotero to:
    - Fetch all items from your Zotero library
-   - Compare against `/docs/literature/papers/` metadata
+   - Compare against `/thesis/literature/papers/` metadata
    - Flag missing/updated items
    - Generate sync report (no write yet)
 3. Add to `.claude/skills/` or as a standalone script
@@ -118,7 +118,7 @@ Your thesis can integrate Zotero via **pyzotero** (official Python API client), 
 
 **Steps**:
 1. Extend `zotero_sync.py` to:
-   - Write paper record metadata back to `/docs/literature/papers/*.md` YAML frontmatter
+   - Write paper record metadata back to `/thesis/literature/papers/*.md` YAML frontmatter
    - Sync Zotero collections → thesis `angles` field
    - Sync Zotero tags → thesis `srqs` / `tier` fields
    - Auto-update `status` field when Zotero items marked as "CONFIRMED"
@@ -364,7 +364,7 @@ zotero_items = zot.everything(zot.items())
 print(f"Found {len(zotero_items)} items in Zotero")
 
 # Load thesis paper records
-papers_dir = Path("docs/literature/papers")
+papers_dir = Path("thesis/literature/papers")
 thesis_papers = {p.stem: p for p in papers_dir.glob("*.md")}
 print(f"Found {len(thesis_papers)} papers in thesis")
 

@@ -6,13 +6,14 @@
 
 ## Quick Start
 
-**Read these in order:**
-1. [docs/architecture.md](docs/architecture.md) — System A/B design
-2. [docs/research-questions.md](docs/research-questions.md) — RQs v2
-3. [docs/project-state.md](docs/project-state.md) — frozen decisions
-4. [docs/compliance.md](docs/compliance.md) — CBS requirements
-5. [docs/tooling-issues.md](docs/tooling-issues.md) — known environment problems
-6. [dev/repository_map.md](dev/repository_map.md) — file locations
+**Read these in order:** architecture → RQs → project-state → compliance → tooling → repo-map
+
+- [docs/codebase/architecture.md](docs/codebase/architecture.md) — System A/B design
+- [thesis/thesis-docs/research-questions.md](thesis/thesis-docs/research-questions.md) — RQs v2
+- [thesis/thesis-docs/project-state.md](thesis/thesis-docs/project-state.md) — frozen decisions
+- [thesis/thesis-docs/compliance.md](thesis/thesis-docs/compliance.md) — CBS requirements
+- [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) — known environment problems
+- [docs/dev/repository_map.md](docs/dev/repository_map.md) — file locations
 
 ---
 
@@ -20,9 +21,10 @@
 
 | Command | Purpose |
 |---------|---------|
-| `/draft_commit` | Generate commit message from session |
-| `/update_all_docs` | Update all living project documents |
-| `/log_standup` | Log standup entry to draft |
+| `/draft-git-commit` | Generate commit message from session |
+| `/git-commit` | Stage and submit an approved commit message |
+| `/update-all-docs` | Update all living project documents |
+| `/log-standup` | Log standup entry to draft |
 | `/update-outline` | Update thesis structure + stubs |
 | `/write-section <id>` | Convert bullets to prose (manual approve before) |
 | `/cite` | Add APA 7 citation to references |
@@ -36,19 +38,20 @@
 - **Tools**: Read, Grep, Glob (not cat/rg/find); Bash for system commands
 - **Thesis**: Bullets only—never prose without human approval
 - **Every phase transition**: Requires explicit human approval
+- **Git**: Each session gets its own worktree + branch. Warn on `main`. Never push directly to `main`. Use draft PRs for backup. → [git-branch-strategy.md](docs/reference/git-branch-strategy.md) · [worktree guide](docs/reference/git-worktrees-and-parallel-sessions.md)
 
 ---
 
 ## Quick References
 
-- [docs/context.md](docs/context.md) — packages, session log
-- [CHEATSHEET.md](CHEATSHEET.md) — CLI commands, trigger phrases
-- [docs/tooling-issues.md](docs/tooling-issues.md) — solved Windows/OneDrive/tooling problems (7 issues)
-- [docs/ZOTERO_SETUP_GUIDE.md](docs/ZOTERO_SETUP_GUIDE.md) — Zotero integration Phase 1 (group library ID: 6479832)
-- [ZOTERO_QUICK_REFERENCE.md](ZOTERO_QUICK_REFERENCE.md) — Quick Zotero copy-paste commands
-- [.claude/rules/](. claude/rules/) — workflow automation rules
-- [dev/repository_map.md](dev/repository_map.md) — module inventory
-- [SKILL_ACTIVATION_SUMMARY.md](SKILL_ACTIVATION_SUMMARY.md) — test-codebase-integrity skill status & usage
+- [docs/project-management/context.md](docs/project-management/context.md) — packages, session log
+- [docs/reference/cheatsheet.md](docs/reference/cheatsheet.md) — CLI commands, trigger phrases
+- [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) — solved Windows/OneDrive/tooling problems (7 issues)
+- [docs/integrations/zotero-integration-setup.md](docs/integrations/zotero-integration-setup.md) — Zotero integration setup (group library ID: 6479832)
+- [docs/reference/zotero-quick-reference.md](docs/reference/zotero-quick-reference.md) — Quick Zotero copy-paste commands
+- [.claude/rules/](.claude/rules/) — workflow automation rules
+- [docs/dev/repository_map.md](docs/dev/repository_map.md) — module inventory
+- [docs/claude-tooling/skill-activation-summary.md](docs/claude-tooling/skill-activation-summary.md) — test-codebase-integrity skill status & usage
 - [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — **22 NEW SKILLS IMPORTED** (Apr 16) — tier classification + integration strategy
 - [.claude/SKILLS_DEMO_EXAMPLES.md](.claude/SKILLS_DEMO_EXAMPLES.md) — 10 concrete demos with expected outputs (try each in 5-8 min)
 - [.claude/SKILLS_INVENTORY.md](.claude/SKILLS_INVENTORY.md) — complete reference for all 35 skills by category + use cases

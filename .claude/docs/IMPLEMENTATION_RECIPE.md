@@ -128,7 +128,7 @@ Copy the template below and fill in your actual numbers:
 |------|-------|--------|----------|
 | CLAUDE.md | XXX | Too large (>300) | P1 |
 | docs/architecture.md | XXX | OK if <300, else split | P? |
-| docs/compliance/cbs_guidelines_notes.md | XXX | Check consolidation | P? |
+| thesis/compliance/cbs_guidelines_notes.md | XXX | Check consolidation | P? |
 | docs/decisions/ADR-001.md | XXX | Check consolidation | P? |
 | docs/decisions/ADR-002.md | XXX | Check consolidation | P? |
 | docs/decisions/ADR-003.md | XXX | Check consolidation | P? |

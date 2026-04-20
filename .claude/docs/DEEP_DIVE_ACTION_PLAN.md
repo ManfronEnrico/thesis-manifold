@@ -94,7 +94,7 @@ Location: `CMT_Codebase/.claude/MODULARIZATION_AUDIT.md`
 | docs/system_architecture_report.md | 986 | Very large | Review for consolidation |
 | docs/PROJECT_OVERVIEW.md | 271 | Consolidate? | Merge into project-state or architecture |
 | docs/thesis_production_architecture.md | 261 | OK | Keep as-is |
-| docs/context.md | 310 | Borderline | Consider splitting by phase |
+| docs/project-management/context.md | 310 | Borderline | Consider splitting by phase |
 | docs/architecture.md | 171 | OK | Keep, may receive content from CLAUDE.md |
 | docs/experiment_tracking_agent.md | 223 | OK | Keep as-is |
 | docs/DATA_ACCESS_SETUP.md | 219 | OK | Keep as-is |
@@ -306,10 +306,10 @@ These tasks require planning and refactoring. Do them when you have 2-3 uninterr
    # Compliance & Architecture Decisions
 
    ## CBS Guidelines
-   [Copy from docs/compliance/cbs_guidelines_notes.md]
+   [Copy from thesis/compliance/cbs_guidelines_notes.md]
 
    ## Integrity Gates
-   [Copy from docs/tooling-issues.md or docs/context.md if documented]
+   [Copy from docs/tooling-issues.md or docs/project-management/context.md if documented]
 
    ## Open Architectural Decisions (ADRs)
 
@@ -352,7 +352,7 @@ These tasks require planning and refactoring. Do them when you have 2-3 uninterr
 3. [docs/compliance.md](docs/compliance.md) — CBS requirements, integrity gates, ADR status
 4. [docs/research-questions.md](docs/research-questions.md) — main RQ + 4 SRQs, evolution history
 5. [docs/project-state.md](docs/project-state.md) — frozen decisions, TODOs, limitations
-6. [dev/repository_map.md](dev/repository_map.md) — file locations, agent status
+6. [docs/dev/repository_map.md](docs/dev/repository_map.md) — file locations, agent status
 7. [docs/tooling-issues.md](docs/tooling-issues.md) — known environment issues
 
 **Key references:**
@@ -380,7 +380,7 @@ updated: {{YYYY-MM-DD}}
 - `docs/compliance.md` (new, consolidation)
 - `docs/research-questions.md` (new, from CLAUDE.md)
 - `docs/project-state.md` (new, from CLAUDE.md)
-- `docs/context.md` (add frontmatter if missing)
+- `docs/project-management/context.md` (add frontmatter if missing)
 - `docs/PROJECT_OVERVIEW.md` (add frontmatter if missing)
 - Any other docs > 150 lines
 
