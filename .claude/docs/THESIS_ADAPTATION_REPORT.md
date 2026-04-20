@@ -192,7 +192,7 @@ wc -l CLAUDE.md docs/*.md .claude/rules/*.md 2>/dev/null | sort -n | tail -20
 ```
 CLAUDE.md             646 lines (36KB) ← target for split
 docs/system_architecture_report.md  986 lines ← very large
-docs/context.md       310 lines ← consolidate?
+docs/project-management/context.md       310 lines ← consolidate?
 docs/thesis_production_architecture.md  261 lines ← keep
 docs/PROJECT_OVERVIEW.md  271 lines ← consolidate?
 ```

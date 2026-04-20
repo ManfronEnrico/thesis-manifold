@@ -186,7 +186,7 @@ Systems, 24(3), 45–77. https://doi.org/10.2753/MIS0742-1222240302
 ```
 
 ### arXiv preprints (flag all)
-Any arXiv source must be flagged with `[PREPRINT — not peer-reviewed]` in `docs/thesis/references.md`.
+Any arXiv source must be flagged with `[PREPRINT — not peer-reviewed]` in `thesis/writing/references.md`.
 Confirm with supervisor before citing in final submission.
 
 ---
@@ -198,4 +198,4 @@ Confirm with supervisor before citing in final submission.
 3. **No numbering**: APA uses alphabetical list, not numbered
 4. **Double-spaced** in the final Word document (python-docx handles this via paragraph spacing)
 5. **"References"** as heading — not "Bibliography", not "Works Cited"
-6. All entries in `docs/thesis/references.md` are the single source of truth — cross-referenced by `/verify-citations`
+6. All entries in `thesis/writing/references.md` are the single source of truth — cross-referenced by `/verify-citations`

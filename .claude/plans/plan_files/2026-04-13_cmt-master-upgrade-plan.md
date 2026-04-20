@@ -76,12 +76,12 @@ Key facts that correct or refine the forked repo plan's audit:
 | `docs/experiments/` exists (experiment_registry.json + experiment_summary.md) | Add to repository_map.md |
 | `ai_research_framework/templates/` exists (base_config.py) | Do NOT overwrite; thesis `templates/` is a NEW top-level dir |
 | `Thesis/papers/` has **24** Obsidian notes | Correct "37 papers" references in plan |
-| `docs/literature/papers/` has **49** annotated `.md` files | Authoritative literature count; use 49 in bibliography validation |
+| `thesis/literature/papers/` has **49** annotated `.md` files | Authoritative literature count; use 49 in bibliography validation |
 | `thesis_production_system/agents/builder/` has 6 substantive files (architect, builder_graph, coder, evaluator, executor, experiment_registry) | Builder is more developed than "unclear purpose" implies; decision needed but lean toward keep + SKILL.md |
 | `.env` and `.env.example` both present | Hook must block `.env` writes (already in PTA hook design) |
 | `.claude/settings.local.json` exists | Create `.claude/settings.json` as NEW file (separate from local); do not overwrite settings.local.json |
 | `CLAUDE (1).md` confirmed present | Safe to delete |
-| `docs/compliance/` has `cbs_guidelines_notes.md` + `compliance_report_20260315.md` | Add `integrity_checklist.md` here in Phase 4 |
+| `thesis/compliance/` has `cbs_guidelines_notes.md` + `compliance_report_20260315.md` | Add `integrity_checklist.md` here in Phase 4 |
 
 ---
 
@@ -191,7 +191,7 @@ System A (LangGraph agents)
         ▼ research findings + data analysis
 System B WritingAgent
         │
-        ▼ Markdown sections (docs/thesis/sections/)
+        ▼ Markdown sections (thesis/writing/sections/)
 [INTEGRITY GATE 1 — Pre-Draft]
   • Section completeness check
   • Page budget validation (120-page limit)
@@ -223,7 +223,7 @@ System B WritingAgent
 
 ```
 Session start:
-  CLAUDE.md → dev/repository_map.md → docs/tooling-issues.md (mandatory read)
+  CLAUDE.md → docs/dev/repository_map.md → docs/tooling-issues.md (mandatory read)
 
 Session work:
   Log progress to project_updates/standup_draft.md
@@ -262,7 +262,7 @@ Docs update:
 | File | Source | Action | Notes |
 |---|---|---|---|
 | `context-token-optimization.md` | PTA | Copy directly | Model tier, compact timing, session checklist |
-| `repository-map-reference.md` | PTA | Adapt | Point to `dev/repository_map.md` |
+| `repository-map-reference.md` | PTA | Adapt | Point to `docs/dev/repository_map.md` |
 | `tooling-issues-workflow.md` | PTA | Copy directly | Mandatory pre-task read of tooling-issues.md |
 | `trigger-standup-workflow.md` | PTA | Adapt | Rename supervisor field; adjust PRIMARY=writing/SECONDARY=infra |
 | `trigger-plan-workflow.md` | PTA | Copy directly | Plan lifecycle identical |
@@ -285,7 +285,7 @@ Docs update:
 ### `CLAUDE.md` — Updated Structure (Merged)
 
 **Add to existing CLAUDE.md:**
-1. **Navigation section** (new): link to `dev/repository_map.md`, `docs/THESIS_WORKFLOW.md` (if created)
+1. **Navigation section** (new): link to `docs/dev/repository_map.md`, `docs/THESIS_WORKFLOW.md` (if created)
 2. **Build/render instructions** (new): `make pdf`, `make check`, `make figures` commands
 3. **Integrity gate triggers** (new): conditions under which Gate 1/2/3 must run
 4. **Checkpoint definitions** (new): FULL / SLIM / MANDATORY modes (adapted from academic-research-skills)
@@ -336,7 +336,7 @@ Block conditions:
 | Create 8 rule files in `.claude/rules/` | PTA |
 | Create 7 skill files in `.claude/skills/` | PTA |
 | Create `project_updates/` with standup_draft.md initialized | PTA |
-| Create `dev/repository_map.md` (map current repo structure) | PTA |
+| Create `docs/dev/repository_map.md` (map current repo structure) | PTA |
 | Create `docs/tooling-issues.md` (seed with known env issues) | PTA |
 | Update CLAUDE.md: add navigation hub structure, frozen decisions | Both |
 
@@ -398,7 +398,7 @@ Block conditions:
 | Task | Source |
 |---|---|
 | Create `scripts/check_integrity.py` (Gate 1/2/3 logic) | forked-repo |
-| Create `docs/compliance/integrity_checklist.md` (7-mode AI failure) | forked-repo |
+| Create `thesis/compliance/integrity_checklist.md` (7-mode AI failure) | forked-repo |
 | Add `make check` target to Makefile (calls check_integrity.py) | forked-repo |
 | Create `scripts/export_notebooklm.py` (batch Markdown → PDF export) | forked-repo |
 | Add Gate trigger conditions to CLAUDE.md | forked-repo |
@@ -416,7 +416,7 @@ Block conditions:
 |---|---|
 | Modularize `generate_figures.py` (per-figure scripts/functions) | forked-repo |
 | Add pre-commit hook or script that runs `make check` on commit | forked-repo |
-| Full bibliography validation (49 docs/literature/papers/ + 24 Obsidian notes vs. bibliography.bib) | forked-repo |
+| Full bibliography validation (49 thesis/literature/papers/ + 24 Obsidian notes vs. bibliography.bib) | forked-repo |
 | Final end-to-end test (all 13 sections → PDF) | forked-repo |
 | Defense prep NotebookLM export workflow | forked-repo |
 | Adapt `/update_all_docs` skill to include integrity_checklist.md | PTA |
@@ -439,7 +439,7 @@ Block conditions:
 | SKILL.md per agent | forked-repo | Agent discovery; self-documenting architecture |
 | Zotero Better BibTeX auto-export | forked-repo | Eliminates manual .bib maintenance |
 | Tooling-issues registry | PTA | Prevents re-solving known env problems |
-| Repository map (dev/repository_map.md) | PTA | Reduces session startup re-exploration |
+| Repository map (docs/dev/repository_map.md) | PTA | Reduces session startup re-exploration |
 | Known TODOs / frozen decisions in CLAUDE.md | PTA | Prevents Claude overriding deliberate choices |
 
 ### Nice-to-Have (adopt if bandwidth allows)
@@ -499,9 +499,9 @@ Ordered by impact and unblocked status. Actions 1–5 require no prior decisions
 
 4. **[NOW] Initialize `project_updates/` standup infrastructure** — Create `standup_draft.md`, `standup_draft_archive.md`, `standup_draft_formatting.md`. Start using `/log_standup` from this session forward. (~20 min)
 
-5. **[NOW] Create `dev/repository_map.md`** — Map current CMT_Codebase structure (use 2026-04-13 FileFolderTree as source). Reduces re-exploration cost in every future session. (~45 min)
+5. **[NOW] Create `docs/dev/repository_map.md`** — Map current CMT_Codebase structure (use 2026-04-13 FileFolderTree as source). Reduces re-exploration cost in every future session. (~45 min)
 
-6. **[Phase 1] Confirm CBS formatting requirements** — Extract precise specs from `Thesis/Thesis Guidelines/` PDFs (or CBS guidelines in `docs/compliance/`). A4, font, margins, page numbering, frontpage requirements. Unblocks Phase 3 template work.
+6. **[Phase 1] Confirm CBS formatting requirements** — Extract precise specs from `Thesis/Thesis Guidelines/` PDFs (or CBS guidelines in `thesis/compliance/`). A4, font, margins, page numbering, frontpage requirements. Unblocks Phase 3 template work.
 
 7. **[Phase 1] Decide Builder Agent fate** — Builder has 6 substantive files (architect, builder_graph, coder, evaluator, executor, experiment_registry). Lean toward KEEP + add SKILL.md. Write ADR-003 to record the decision.
 
@@ -546,7 +546,7 @@ _Completed: 2026-04-13_
 - Created 8 rule files in `.claude/rules/`: context-token-optimization, repository-map-reference, tooling-issues-workflow, trigger-standup-workflow, trigger-plan-workflow, trigger-git-commit-workflow, trigger-docs-workflow, one-off-execution
 - Created 7 skill files in `.claude/skills/`: log_standup, prep_standup, finalize_standup, init_standup, draft_commit, update_plan, update_all_docs
 - Initialized `project_updates/` standup infrastructure: standup_draft.md (Meeting 1), standup_draft_formatting.md, standup_draft_archive.md
-- Created `dev/repository_map.md` from 2026-04-13 FileFolderTree
+- Created `docs/dev/repository_map.md` from 2026-04-13 FileFolderTree
 - Created `docs/tooling-issues.md` with 3 seeded issues
 - Created `docs/decisions/` with ADR-001/002/003 stubs
 

@@ -80,7 +80,7 @@ Documented **three model-override mechanisms** in `CLAUDE.md`:
    - `docs/logging.md` — per-phase log locations, JSON schemas, state persistence
    - `docs/project-state.md` — structured limitations, disabled features, TODOs
 
-3. **Moved repository map**: `dev/repository_map.md` (timestamped) → `docs/repository-map.md` (canonical)
+3. **Moved repository map**: `docs/dev/repository_map.md` (timestamped) → `docs/repository-map.md` (canonical)
    - Added YAML frontmatter with `updated: YYYY-MM-DD HH:MM` timestamp
    - Canonical file decouples from filename
 
@@ -95,7 +95,7 @@ Documented **three model-override mechanisms** in `CLAUDE.md`:
 
 **Current state**: Thesis has similar bloat:
 - Large CLAUDE.md (36KB, mixes structural facts with ADRs)
-- dev/repository_map.md exists but isn't canonical
+- docs/dev/repository_map.md exists but isn't canonical
 - docs/ has scattered ADRs, compliance, decisions, but no unified structure
 - No YAML frontmatter timestamps
 
@@ -121,7 +121,7 @@ Target: Move 15-20KB from CLAUDE.md to modular docs.
 - `CLAUDE.md` → keep only navigation + project context (~5KB)
 - `docs/architecture.md` — System A/B architecture, agent roles, data flow (NEW)
 - `docs/research-questions.md` — RQ evolution, v1→v2 changes (NEW)
-- `docs/compliance.md` — CBS guidelines, integrity gates, ADR status (consolidate from `docs/compliance/` + `docs/decisions/`)
+- `docs/compliance.md` — CBS guidelines, integrity gates, ADR status (consolidate from `thesis/compliance/` + `docs/decisions/`)
 - `docs/project-state.md` — TODOs, frozen decisions, known limitations (NEW)
 - `docs/repository-map.md` — canonical file map with timestamps (move from dev/)
 

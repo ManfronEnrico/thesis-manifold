@@ -11,9 +11,9 @@ ingested via the manifest and skips them.
 Workflow:
   GoogleDriveAPI (src/google_drive_integration.py)
     ↓ (lists papers with metadata)
-  NotebookLMAccess (thesis_production_system/research/notebooklm_access.py)
+  NotebookLMAccess (thesis/thesis/thesis_production_system/research/notebooklm_access.py)
     ↓ (adds papers to notebooks)
-  Manifest (papers/ingestion_manifest.json)
+  Manifest (thesis/literature/ingestion_manifest.json)
     ↓ (persists ingestion state)
   Git
 """
@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 
 # Import NotebookLM access layer
 try:
-    from thesis_production_system.research import NotebookLMAccess
+    from thesis.thesis_production_system.research import NotebookLMAccess
 except ImportError:
-    logger.error("NotebookLMAccess not found. Ensure thesis_production_system is in PYTHONPATH.")
+    logger.error("NotebookLMAccess not found. Ensure thesis/thesis_production_system is in PYTHONPATH.")
     exit(1)
 
 # Import Google Drive API
@@ -53,7 +53,7 @@ class NotebookLMIngestFromDrive:
 
     Uses:
     - GoogleDriveAPI (src/google_drive_integration.py) to list papers
-    - NotebookLMAccess (thesis_production_system/research/) to add to notebooks
+    - NotebookLMAccess (thesis/thesis_production_system/research/) to add to notebooks
     """
 
     # Chapter-to-notebook mapping
@@ -85,7 +85,7 @@ class NotebookLMIngestFromDrive:
             manifest_path: Path to ingestion_manifest.json
         """
         self.repo_root = repo_root
-        self.manifest_path = Path(manifest_path or repo_root / "papers" / "ingestion_manifest.json")
+        self.manifest_path = Path(manifest_path or repo_root / "thesis" / "literature" / "ingestion_manifest.json")
         self.nlm_client = None
         self.drive_api = None
         self.manifest = None

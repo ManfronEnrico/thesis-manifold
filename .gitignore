@@ -69,3 +69,5 @@ build/
 !docs/thesis/analysis/outputs/pipelines/feature_info.json
 !docs/thesis/analysis/outputs_agentic/*.csv
 !docs/thesis/analysis/outputs_agentic/*.json
+.claude/settings.local.json
+.claude/logs/

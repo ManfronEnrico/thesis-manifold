@@ -1,0 +1,40 @@
+{
+  "_comment": "NotebookLM ingestion manifest. Maps papers across Zotero (citation_key) -> Google Drive (gdrive_filename, file_id) -> NotebookLM (source_ids).",
+  "_last_updated": "2026-04-19",
+  "_schema_version": "2.0",
+  "notebooks": {
+    "ch2-literature": null,
+    "srq1-models": null,
+    "srq2-agents": null,
+    "srq3-context": null,
+    "srq4-comparison": null,
+    "thesis-defense": null
+  },
+  "sources": {
+    "_example": {
+      "gdrive_file_id": "file_xyz_123",
+      "citation_key": "avramova_overview_2025",
+      "gdrive_filename": "Avramova_et_al-2025-Overview_of_Existing_Multi_Criteria_Decision_Making_MCDM_Methods_Used_in_Industrial_Environments.pdf",
+      "match_confidence": 1.0,
+      "srqs": [
+        "SRQ1",
+        "SRQ3"
+      ],
+      "notebooks": [
+        "ch2-literature",
+        "srq1-models",
+        "srq3-context",
+        "thesis-defense"
+      ],
+      "notebooklm_source_ids": {
+        "ch2-literature": "src-uuid-abc1",
+        "srq1-models": "src-uuid-abc2",
+        "srq3-context": "src-uuid-abc3",
+        "thesis-defense": "src-uuid-abc4"
+      },
+      "ingested_at": "2026-04-19T14:30:00Z",
+      "verified": false,
+      "verification_notes": ""
+    }
+  }
+}

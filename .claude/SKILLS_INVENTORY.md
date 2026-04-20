@@ -379,6 +379,15 @@ Quick reference organized by category with chapter alignment and use cases.
 - **Status**: All 10 tests passing
 - **Read first**: `.claude/skills/test-codebase-integrity/SKILL.md`
 
+### /audit-ml-repo
+**Evidence-Driven ML Repository Verification**
+- **Description**: Treats every Claude Code claim as a hypothesis to test. Staged audits (quick/standard/forensic) across code executability, data reality, training authenticity, and metric validity. Produces claim verdicts, findings JSON, evidence manifest, and audit report.
+- **Use for**: Before model releases, after heavy Claude Code sessions, when ML metrics need independent verification, pre-merge gate for ML workflows
+- **Key features**: Claim extraction + per-claim verdicts, hallucination detection rubric (12 checks), weight-delta training proof, metric recomputation from frozen predictions, 100-point scoring rubric, `audit_artifacts/` evidence bundle
+- **Levels**: `quick` (15–30 min, PRs) | `standard` (2–6h, releases) | `forensic` (1–3 days, high-stakes)
+- **Trigger**: "audit ml repo", "quick audit", "verify training", "hallucination check", "verify metrics"
+- **Read first**: `.claude/skills/audit-ml-repo/SKILL.md`
+
 ### /thesis-structuring
 **Outline Evolution**
 - **Description**: Maintain thesis outline in pattern-aware, disciplined way

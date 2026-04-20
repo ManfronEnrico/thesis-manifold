@@ -160,7 +160,7 @@ CMT_Codebase/
 
 ### 6.1 End-State Overview
 ```
-Markdown Sections (docs/thesis/sections/)
+Markdown Sections (thesis/writing/sections/)
          │
          ▼
   [Pandoc + CBS LaTeX template]
@@ -266,7 +266,7 @@ Adapted from academic-research-skills (not full 10-stage, but key gates):
 REPO                                    NOTEBOOKLM
 ────────────────────                    ────────────────────────
 Markdown sections        ──export──►    Source documents
-(docs/thesis/sections/)                 (upload as PDF/text)
+(thesis/writing/sections/)                 (upload as PDF/text)
 
 Obsidian paper notes     ──export──►    Literature corpus
 (Thesis/papers/)                        (upload annotations)
@@ -424,7 +424,7 @@ Experiment results       ──export──►    Findings verification
    - Gate 1 (pre-draft): section completeness, page budget validation
    - Gate 2 (post-draft): citation format spot check (APA7 pattern match), figure reference validation
    - Gate 3 (pre-submission): AI usage disclosure present, CBS compliance checks
-2. **Create `docs/compliance/integrity_checklist.md`**
+2. **Create `thesis/compliance/integrity_checklist.md`**
    - 7-mode AI failure checklist (adapted from academic-research-skills Stage 2.5/4.5)
    - Thesis-specific modes: CBS compliance, page budget, data integrity claims
 3. **Add integrity check to Makefile** (`make check`)
@@ -438,7 +438,7 @@ Experiment results       ──export──►    Findings verification
 
 **Key files to create:**
 - `scripts/check_integrity.py`
-- `docs/compliance/integrity_checklist.md`
+- `thesis/compliance/integrity_checklist.md`
 
 **Dependencies:** Phase 3 (PDF pipeline must exist to test)
 **Risk:** Low — checks are additive; no existing behavior changes
@@ -548,7 +548,7 @@ These are small, isolated, low-risk improvements that could be done immediately:
 
 **P3 — Phase 4 Integrity (Week 3–4):**
 16. Create `scripts/check_integrity.py` (Gate 1/2/3 checks)
-17. Create `docs/compliance/integrity_checklist.md`
+17. Create `thesis/compliance/integrity_checklist.md`
 18. Add adaptive checkpoints to CLAUDE.md
 19. First NotebookLM export package (batch Markdown → PDF)
 
