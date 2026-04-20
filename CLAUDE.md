@@ -21,9 +21,11 @@
 
 | Command | Purpose |
 |---------|---------|
-| `/draft_commit` | Generate commit message from session |
-| `/update_all_docs` | Update all living project documents |
-| `/log_standup` | Log standup entry to draft |
+| `/git-draft-commit` | Generate commit message from session |
+| `/git-commit` | Stage and submit an approved commit message |
+| `/git-worktrees` | Set up isolated worktree for this session |
+| `/docs-update-all` | Update all living project documents |
+| `/standup-log` | Log standup entry to draft |
 | `/update-outline` | Update thesis structure + stubs |
 | `/write-section <id>` | Convert bullets to prose (manual approve before) |
 | `/cite` | Add APA 7 citation to references |
