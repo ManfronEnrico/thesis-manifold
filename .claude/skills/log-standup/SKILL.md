@@ -42,7 +42,7 @@ a disciplined, timestamped history of what was accomplished.
 ## Usage
 
 ```
-/log_standup
+/log-standup
 ```
 
 The skill will:
