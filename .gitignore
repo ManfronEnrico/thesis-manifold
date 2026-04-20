@@ -1,3 +1,6 @@
+# Worktrees
+.cc/
+
 # Python
 __pycache__/
 *.py[cod]
