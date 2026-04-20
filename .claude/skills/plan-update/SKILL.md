@@ -39,9 +39,9 @@ This creates an audit trail for future reference and allows the plan system to t
 ## Invocation
 
 ```bash
-/update_plan
-/update_plan <plan-name-or-partial-filename>
-/update_plan YYYY-MM-DD_my-plan-slug
+/update-plan
+/update-plan <plan-name-or-partial-filename>
+/update-plan YYYY-MM-DD_my-plan-slug
 ```
 
 If no plan name is provided, Claude searches for recently-touched plans in `.claude/plans/`.
@@ -145,7 +145,7 @@ All plan files live in the **project's own directory**:
 
 1. **Created:** `2026-04-10_system-refactor.md` in `.claude/plans/plan_files/`
 2. **Executed:** You run the plan over 3 days, discover adjustments
-3. **Logged:** You run `/update_plan system-refactor`
+3. **Logged:** You run `/update-plan system-refactor`
 4. **Result:** Plan file gains `## Outcome` section; a mirrored outcome entry is created at `.claude/plans/outcome_files/2026-04-10_system-refactor.md`
 
 ## Common Workflows
@@ -155,7 +155,7 @@ All plan files live in the **project's own directory**:
 You've just finished a small focused plan with no surprises:
 
 ```
-/update_plan my-plan-name
+/update-plan my-plan-name
 ```
 
 Skill will:
@@ -169,7 +169,7 @@ Skill will:
 You've completed a plan with significant adjustments and dropped phases:
 
 ```
-/update_plan YYYY-MM-DD_big-refactor
+/update-plan YYYY-MM-DD_big-refactor
 ```
 
 Skill will:
@@ -184,7 +184,7 @@ Skill will:
 This skill connects to:
 - **`.claude/rules/trigger-plan-workflow.md`** — Plan creation, naming, and outcome documentation standards
 - **`docs/project-state.md`** — Frozen decisions and plan execution context
-- **`/draft_commit`** skill — Uses outcome files to generate accurate commit messages
+- **`/draft-commit`** skill — Uses outcome files to generate accurate commit messages
 
 ## Examples
 
@@ -272,4 +272,4 @@ _Completed: 2026-04-14_
 
 ---
 
-**Related:** `.claude/rules/trigger-plan-workflow.md` | `/draft_commit` | `docs/project-state.md`
+**Related:** `.claude/rules/trigger-plan-workflow.md` | `/draft-commit` | `docs/project-state.md`

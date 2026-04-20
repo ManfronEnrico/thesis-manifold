@@ -22,10 +22,10 @@ A `UserPromptSubmit` hook fires on every opening message and runs
 
 The hook is registered in `~/.claude/settings.json` (global, not in repo).
 
-### Branch mismatch detection (used by `/draft-commit`)
+### Branch mismatch detection (used by `/draft-git-commit`)
 
 `branch_guard.py` exports `extract_keywords`, `pick_prefix`, `slugify`, and
-`branch_matches_topic` for use by the draft-commit skill. At commit time,
+`branch_matches_topic` for use by the draft-git-commit skill. At commit time,
 the skill re-derives the session topic and checks the current branch using
 two-level matching:
 
@@ -85,7 +85,7 @@ chore/<cleanup-topic>    # refactoring, reorganization
 ## Committing on a feature branch
 
 On a feature branch, `git add -A` is safe — the branch is isolated by design.
-The draft-commit skill and all git workflows can proceed without restriction.
+The draft-git-commit skill and all git workflows can proceed without restriction.
 
 ## Merging back to `main`
 

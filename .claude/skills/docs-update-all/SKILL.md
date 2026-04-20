@@ -16,7 +16,7 @@ Synchronize all living project documentation after completing significant work, 
 ## Quick Start
 
 ```
-/update_all_docs
+/update-all-docs
 ```
 
 **No arguments required.** The skill auto-detects what changed this session and updates only affected documents.
@@ -25,7 +25,7 @@ Synchronize all living project documentation after completing significant work, 
 
 ## When to Use This Skill
 
-Use `/update_all_docs` when you:
+Use `/update-all-docs` when you:
 
 - **Complete major work**: After finishing a chapter, refactoring session, or feature implementation
 - **Change project structure**: After moving files, renaming modules, or reorganizing directories
@@ -66,7 +66,7 @@ The skill activates when you use any of these phrases:
 - Write: All of the above locations
 
 **Git integration:**
-- Does not require git operations; complements `git status` and `/draft_commit`
+- Does not require git operations; complements `git status` and `/draft-commit`
 - Works on any branch; output can be committed separately
 
 ---
@@ -88,7 +88,7 @@ The skill processes documents in this strict order, updating only those affected
 **Example entry:**
 ```
 ## 2026-04-15 14:30 — Docs Workflow Expansion (30min)
-- Rewrote update_all_docs.md with trigger phrases, compatibility section
+- Rewrote update-all-docs.md with trigger phrases, compatibility section
 - Added "When to use" guidance and expanded examples
 - Updated repository_map reference in trigger-docs-workflow.md
 ```
@@ -188,7 +188,7 @@ The skill processes documents in this strict order, updating only those affected
 
 **Example output:**
 ```
-✅ CLAUDE.md — added new /update_all_docs workflow description
+✅ CLAUDE.md — added new /update-all-docs workflow description
 ```
 
 ---
@@ -206,7 +206,7 @@ The skill processes documents in this strict order, updating only those affected
 
 **Example output:**
 ```
-✅ CHEATSHEET.md — added /update_all_docs trigger phrase list
+✅ CHEATSHEET.md — added /update-all-docs trigger phrase list
 ```
 
 ---
@@ -265,7 +265,7 @@ The skill processes documents in this strict order, updating only those affected
 **Timestamp:** 2026-04-15 14:30 (completed)
 
 ### ✅ Completed
-- Rewrote update_all_docs.md with improved trigger phrases
+- Rewrote update-all-docs.md with improved trigger phrases
 - Added compatibility and "When to use" sections
 
 ### 🔄 Adjusted
@@ -308,7 +308,7 @@ The skill processes documents in this strict order, updating only those affected
 
 **Example output:**
 ```
-✅ trigger-docs-workflow.md — updated to reference expanded update_all_docs.md
+✅ trigger-docs-workflow.md — updated to reference expanded update-all-docs.md
 ⏭️  context-token-optimization.md — skipped (no stale refs found)
 ```
 
@@ -344,18 +344,18 @@ After processing all ten phases, the skill produces a summary table:
 
 This skill is part of the **Thesis Production System** and works alongside:
 
-- **`/draft_commit`** — Generates commit messages from session + standup records
+- **`/draft-commit`** — Generates commit messages from session + standup records
 - **`/write-section`** — Converts bullets to prose (outputs feed into Phase 2)
 - **`/update-outline`** — Modifies thesis structure (triggering Phase 2 updates)
-- **`/log_standup`** — Manual standup logging (feeds Phase 1)
+- **`/log-standup`** — Manual standup logging (feeds Phase 1)
 
 **Typical flow:**
 ```
 1. /write-section 02_lit_review
    ↓ (outputs approved prose)
-2. /update_all_docs
+2. /update-all-docs
    ↓ (syncs all docs)
-3. /draft_commit
+3. /draft-commit
    ↓ (stages files)
 4. git push
 ```
@@ -374,16 +374,16 @@ This skill is part of the **Thesis Production System** and works alongside:
 - Plans must follow `YYYY-MM-DD_<slug>.md` naming. The skill auto-renames during Phase 8.
 
 **Q: "CLAUDE.md Quick Start order doesn't match my workflow"**
-- Edit CLAUDE.md manually to reorder, then `/update_all_docs` will preserve that order.
+- Edit CLAUDE.md manually to reorder, then `/update-all-docs` will preserve that order.
 
 ---
 
 ## Notes & Best Practices
 
-- **Run before committing**: Use `/update_all_docs` → `/draft_commit` → `git add` → `git push` workflow
+- **Run before committing**: Use `/update-all-docs` → `/draft-commit` → `git add` → `git push` workflow
 - **Skip full sync on minor edits**: You can manually edit single files (e.g., CHEATSHEET.md) without invoking this skill
 - **Combine with standup**: This skill auto-includes standup entries from `project_updates/standup_draft.md`
-- **Plan outcomes are manual**: The skill appends the outcome section; you provide the content via `/log_standup` or manual entry
+- **Plan outcomes are manual**: The skill appends the outcome section; you provide the content via `/log-standup` or manual entry
 
 ---
 
@@ -392,5 +392,5 @@ This skill is part of the **Thesis Production System** and works alongside:
 - `.claude/rules/trigger-docs-workflow.md` — Complete workflow spec
 - `CLAUDE.md` — Project navigation hub
 - `docs/dev/repository_map.md` — File and module inventory
-- `/draft_commit` — Generate commit messages from updated docs
+- `/draft-commit` — Generate commit messages from updated docs
 - `/write-section` — Thesis writing workflow that feeds docs updates
