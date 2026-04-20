@@ -182,9 +182,9 @@ Example:
 
 This skill is part of the CBS Master Thesis standup system:
 
-- **`/log_standup`** — Log session work and meeting results (run during/after a meeting)
-- **`/init_standup`** — Prepare for the next meeting by archiving and resetting (run after logging is complete)
-- **`/draft_commit`** — Bundle standup notes into git commits (run when ready to commit)
+- **`/log-standup`** — Log session work and meeting results (run during/after a meeting)
+- **`/init-standup`** — Prepare for the next meeting by archiving and resetting (run after logging is complete)
+- **`/draft-commit`** — Bundle standup notes into git commits (run when ready to commit)
 
 The three skills form a cycle: **Log → Initialize → Commit → Log again**.
 
@@ -348,29 +348,29 @@ Over three meetings, your backlog grows as ideas accumulate. init_standup preser
 
 ### Week 1: Meeting 1
 ```
-User: /log_standup → Records kickoff tasks
-User: /init_standup → Prepares Meeting 2 (empty PRIMARY, fresh start)
+User: /log-standup → Records kickoff tasks
+User: /init-standup → Prepares Meeting 2 (empty PRIMARY, fresh start)
 ```
 
 ### Week 2: Meeting 2
 ```
 User: Completes first set of deliverables
-User: /log_standup → Records progress, feedback
-User: /init_standup → Prepares Meeting 3 with carried-over items
+User: /log-standup → Records progress, feedback
+User: /init-standup → Prepares Meeting 3 with carried-over items
 ```
 
 ### Week 3: Meeting 3
 ```
 User: Works through carried-over items, completes most
-User: /log_standup → Records near-complete status
-User: /init_standup → Prepares Meeting 4 with remaining items
+User: /log-standup → Records near-complete status
+User: /init-standup → Prepares Meeting 4 with remaining items
 ```
 
 ### Week 4: Meeting 4
 ```
 User: Finishes last items, supervisor assigns new sprint
-User: /log_standup → Records completion + new deliverables
-User: /init_standup → Prepares Meeting 5 with fresh tasks
+User: /log-standup → Records completion + new deliverables
+User: /init-standup → Prepares Meeting 5 with fresh tasks
 ```
 
 ## Integration with version control
@@ -379,10 +379,10 @@ The standup system is designed to live **outside** git commits. However, when yo
 
 **Workflow:**
 ```
-1. /log_standup → Update standup_draft.md during/after meeting
-2. /init_standup → Prepare next meeting
+1. /log-standup → Update standup_draft.md during/after meeting
+2. /init-standup → Prepare next meeting
 3. Work session → Update standup_draft.md with progress
-4. /draft_commit → Extracts standup notes into conventional commit
+4. /draft-commit → Extracts standup notes into conventional commit
 5. git add, git commit → Commit the code (not standup files, typically)
 ```
 
@@ -416,14 +416,14 @@ If you accidentally overwrite standup_draft.md:
 
 **Session 1: Supervisor Meeting (Meeting 3)**
 ```
-User: "Log today's work to standup" → /log_standup
+User: "Log today's work to standup" → /log-standup
 Claude: Records deliverables, blockers, next steps
 Result: standup_draft.md updated with Meeting 3 details
 ```
 
 **Session 2: After logging is done**
 ```
-User: "Init standup" → /init_standup
+User: "Init standup" → /init-standup
 Claude: Archives Meeting 3, prepares for Meeting 4
 Result: standup_draft.md refreshed with unchecked items from Meeting 3
 ```
@@ -435,7 +435,7 @@ User: Completes tasks, logs progress to standup_draft.md
 
 **Session 4: Ready to commit**
 ```
-User: "Prepare a commit message" → /draft_commit
+User: "Prepare a commit message" → /draft-commit
 Claude: Includes standup notes in commit message
 Result: Ready-to-paste conventional commit
 ```

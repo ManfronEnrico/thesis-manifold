@@ -467,7 +467,7 @@ Your output must be runnable by a competent engineer without further AI assistan
 ## Related Workflows
 
 - **Before running:** Use `test-codebase-integrity` to confirm basic imports and tests pass
-- **After audit FAIL:** Use `/log_errors` to record findings as tooling issues
-- **After audit PASS:** Use `/draft_commit` to document the audit as part of the commit
+- **After audit FAIL:** Use `/log-errors` to record findings as tooling issues
+- **After audit PASS:** Use `/draft-commit` to document the audit as part of the commit
 - **For new ML modules:** Reference the Pre-Hoc Instructions above before writing code
 - **For thesis model results:** Use this skill before reporting metrics in any thesis section
