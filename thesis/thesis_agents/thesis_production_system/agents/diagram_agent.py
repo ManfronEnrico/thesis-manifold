@@ -4,7 +4,7 @@ Diagram Agent — Thesis Production System (System B)
 Generates all thesis figures as reproducible, code-generated artifacts.
 Every figure is produced by a Python function, not drawn manually.
 
-Output directory: thesis/writing/figures/
+Output directory: thesis/thesis-writing/figures/
 Output formats: SVG + PNG (both generated for each figure)
 
 Available figure types:
@@ -23,7 +23,7 @@ from typing import Dict, List, Optional
 from ..state.thesis_state import FigureState, ThesisState
 
 
-FIGURES_DIR = Path("thesis/writing/figures")
+FIGURES_DIR = Path("thesis/thesis-writing/figures")
 
 
 class DiagramAgent:

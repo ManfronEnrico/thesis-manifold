@@ -1,7 +1,7 @@
 # Repository Map — CMT_Codebase
 
 > Fast session orientation. Read this after CLAUDE.md at the start of every session.
-> Last updated: 2026-04-19
+> Last updated: 2026-04-20
 
 ---
 
@@ -26,7 +26,7 @@ CMT_Codebase/
 │   └── SKILLS_INVENTORY.md            ← Complete skills reference
 │
 ├── scripts/                           ← Utility scripts (run from repo root)
-│   ├── generate_figures.py            ← Generates thesis diagrams → thesis/writing/figures/
+│   ├── generate_figures.py            ← Generates thesis diagrams → thesis/thesis-writing/figures/
 │   ├── generate_systemB_diagram.py    ← System B architecture diagram
 │   ├── notebooklm_ingestion.py        ← Batch ingest papers → NotebookLM notebooks
 │   ├── zotero_client.py               ← Zotero API client
@@ -48,26 +48,33 @@ CMT_Codebase/
 │   └── standup_draft_archive.md       ← Archived standup entries
 │
 ├── thesis/                            ← ALL THESIS-FACING WORK
-│   ├── ai_research_framework/         ← SYSTEM A: research computation (thesis subject)
-│   │   ├── .system_a_frozen.md        ← FROZEN: no modifications allowed
-│   │   ├── config.py                  ← 8GB RAM constraint, model list, LLM config
-│   │   ├── agents/                    ← 4 research agents (blocked on Nielsen data)
-│   │   ├── core/coordinator.py        ← LangGraph StateGraph orchestrator
-│   │   └── state/research_state.py    ← LangGraph TypedDict (ResearchState)
+│   ├── thesis_agents/                 ← Python agent packages (importable)
+│   │   ├── ai_research_framework/     ← SYSTEM A: research computation (thesis subject)
+│   │   │   ├── .system_a_frozen.md    ← FROZEN: no modifications allowed
+│   │   │   ├── config.py              ← 8GB RAM constraint, model list, LLM config
+│   │   │   ├── agents/                ← 4 research agents (blocked on Nielsen data)
+│   │   │   ├── core/coordinator.py    ← LangGraph StateGraph orchestrator
+│   │   │   └── state/research_state.py ← LangGraph TypedDict (ResearchState)
+│   │   │
+│   │   └── thesis_production_system/  ← SYSTEM B: thesis writing tooling
+│   │       ├── .system_b_active.md    ← ACTIVE: safe to extend with toggles
+│   │       ├── agents/                ← 10 production agents
+│   │       ├── core/coordinator.py    ← Plan→Execute→Critic orchestrator
+│   │       └── state/thesis_state.py  ← Pydantic ThesisState
 │   │
-│   ├── thesis_production_system/      ← SYSTEM B: thesis writing tooling
-│   │   ├── .system_b_active.md        ← ACTIVE: safe to extend with toggles
-│   │   ├── agents/                    ← 10 production agents
-│   │   ├── core/coordinator.py        ← Plan→Execute→Critic orchestrator
-│   │   └── state/thesis_state.py      ← Pydantic ThesisState
-│   │
-│   ├── writing/                       ← Thesis document content
-│   │   ├── sections/                  ← 10 chapter .md files (bullet skeletons)
+│   ├── thesis-writing/                ← Thesis document content
+│   │   ├── sections-drafts/           ← 11 chapter .md files (kebab-case, bullet skeletons)
+│   │   ├── sections-final/            ← Approved Word .docx exports (kebab-case)
 │   │   ├── figures/                   ← Thesis diagrams (SVG + PNG)
-│   │   ├── prose/                     ← Word + PDF drafts of approved sections
 │   │   ├── analysis/                  ← Jupyter notebooks & outputs
 │   │   ├── outline.md                 ← Chapter structure & page budgets
-│   │   └── references.md             ← APA 7 bibliography (living doc)
+│   │   └── references.md              ← APA 7 bibliography (living doc)
+│   │
+│   ├── thesis-context/                ← Thesis scope & formal requirements
+│   │   ├── research-questions/        ← Main RQ + 4 SRQs (v2)
+│   │   ├── thesis-topic/              ← Project state, overview, defense notes
+│   │   ├── formal-requirements/       ← CBS guidelines, compliance reports
+│   │   └── chapters/                  ← Ch2 literature review draft (context stub)
 │   │
 │   ├── literature/                    ← Paper corpus & citation management
 │   │   ├── bibtex.bib                 ← BibTeX database (48+ entries)
@@ -77,33 +84,22 @@ CMT_Codebase/
 │   │   ├── scraping_log.md            ← Paper confirmation log
 │   │   └── obisdian_paper_analysis/   ← 50+ annotated paper summaries
 │   │
-│   ├── compliance/                    ← CBS formal requirements
-│   │   ├── cbs_guidelines_notes.md    ← CBS guidelines extracted
-│   │   └── compliance_checks/         ← Compliance audit reports
-│   │
-│   ├── data/                          ← Data sources & pipelines
-│   │   ├── nielsen/                   ← Nielsen SQL connector & scripts
-│   │   │   ├── scripts/               ← connector, loader, exploration scripts
-│   │   │   └── description/           ← nielsen-prometheus_data_model.md
-│   │   ├── indeksdanmark/             ← SPSS/CSV loader & data
-│   │   │   ├── scripts/               ← spss_indeksdanmark_loader.py
-│   │   │   ├── description/           ← spss_indeksdanmark_data_model.md
-│   │   │   └── .csv/                  ← 254MB CSV data files (gitignored)
-│   │   ├── preprocessing/             ← Combined preprocessing pipeline
-│   │   └── assessment/                ← Data notes, ML use cases, migration docs
-│   │
-│   └── thesis-docs/                   ← Thesis reference docs
-│       ├── PROJECT_OVERVIEW.md        ← Problem statement, RQs, gaps, timeline
-│       ├── research-questions.md      ← Main RQ + 4 SRQs (v2)
-│       ├── project-state.md           ← Frozen decisions, constraints, risks
-│       └── CITATION_VERIFICATION_SOP.md ← Citation trust levels & workflow
+│   └── data/                          ← Data sources & pipelines
+│       ├── nielsen/                   ← Nielsen SQL connector & scripts
+│       │   ├── scripts/               ← connector, loader, exploration scripts
+│       │   └── description/           ← nielsen-prometheus_data_model.md
+│       ├── indeksdanmark/             ← SPSS/CSV loader & data
+│       │   ├── scripts/               ← spss_indeksdanmark_loader.py
+│       │   └── description/           ← spss_indeksdanmark_data_model.md
+│       ├── preprocessing/             ← Combined preprocessing pipeline
+│       └── assessment/                ← Data notes, ML use cases, migration docs
 │
 └── docs/                              ← CODEBASE & TOOLING DOCS
     ├── codebase/                      ← System architecture documents
     │   ├── architecture.md            ← System A/B design overview
-    │   ├── system_architecture_report.md ← Comprehensive technical report
+    │   ├── system-architecture-report.md ← Comprehensive technical report
     │   ├── thesis_production_architecture.md ← Production system design
-    │   └── experiment_tracking_agent.md ← Experiment registry agent spec
+    │   └── experiment-tracking-agent.md ← Experiment registry agent spec
     ├── tooling/                       ← Environment & tooling docs
     │   └── tooling-issues.md          ← Solved Windows/OneDrive issues (living log)
     ├── integrations/                  ← Integration setup & architecture docs
@@ -155,12 +151,12 @@ CMT_Codebase/
 | What | Where |
 |------|-------|
 | Session start (read first) | `CLAUDE.md` |
-| Research questions | `thesis/thesis-docs/research-questions.md` |
-| Project state & constraints | `thesis/thesis-docs/project-state.md` |
-| CBS compliance requirements | `thesis/compliance/cbs_guidelines_notes.md` |
+| Research questions | `thesis/thesis-context/research-questions/research-questions.md` |
+| Project state & constraints | `thesis/thesis-context/thesis-topic/project-state.md` |
+| CBS compliance requirements | `thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md` |
 | System A/B architecture | `docs/codebase/architecture.md` |
 | Tooling issues (living log) | `docs/tooling/tooling-issues.md` |
-| Thesis chapter sections | `thesis/writing/sections/` |
+| Thesis chapter sections | `thesis/thesis-writing/sections-drafts/` |
 | Paper corpus | `thesis/literature/obisdian_paper_analysis/` |
 | BibTeX bibliography | `thesis/literature/bibtex.bib` |
 | Experiment outputs | `results/phase1/` |
@@ -176,7 +172,7 @@ CMT_Codebase/
 
 | | System A | System B |
 |--|----------|----------|
-| **Location** | `thesis/ai_research_framework/` | `thesis/thesis_production_system/` |
+| **Location** | `thesis/thesis_agents/ai_research_framework/` | `thesis/thesis_agents/thesis_production_system/` |
 | **Status** | FROZEN (research artefact) | ACTIVE (thesis tooling) |
 | **Purpose** | The thing being evaluated in the thesis | Tooling that helps write the thesis |
 | **Modify?** | No — would invalidate results | Yes — toggle-gated features |

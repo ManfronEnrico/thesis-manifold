@@ -47,7 +47,7 @@ class ThesisCoordinator:
         self.literature_agent = LiteratureAgent(project_root)
         self.writing_agent = WritingAgent(project_root)
         self.compliance_agent = ComplianceAgent(project_root)
-        self.diagram_agent = DiagramAgent(project_root / "thesis/writing/figures")
+        self.diagram_agent = DiagramAgent(project_root / "thesis/thesis-writing/figures")
 
     # ── Main entry point ──────────────────────────────────────────────────────
 

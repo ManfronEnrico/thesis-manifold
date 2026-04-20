@@ -4,7 +4,7 @@ Writing Agent — Thesis Production System (System B)
 Produces BULLET POINTS for thesis sections. Never writes prose directly.
 Every bullet point output must pass the Critic Agent before state update.
 
-Output location: thesis/writing/sections/{chapter_id}.md
+Output location: thesis/thesis-writing/sections-drafts/{chapter_id}.md
 Output format: Markdown bullet points with 'Cite:' placeholders.
 
 MANDATORY RULE: This agent produces bullet points ONLY.
@@ -37,7 +37,7 @@ class WritingAgent:
     ) -> ThesisState:
         """
         Generate bullet point skeletons for the specified chapters.
-        Writes to thesis/writing/sections/{chapter_id}.md.
+        Writes to thesis/thesis-writing/sections-drafts/{chapter_id}.md.
         Updates SectionState to 'bullets_draft' for each chapter.
         Does NOT set 'bullets_approved' — human approval required.
         """
@@ -72,7 +72,7 @@ class WritingAgent:
         this handles any chapter not yet written.
         """
         templates = {
-            "ch4_data_assessment": self._ch4_template,
+            "ch4-data-assessment": self._ch4_template,
         }
         generator = templates.get(chapter_id)
         if generator:

@@ -44,7 +44,7 @@ class LiteratureState(BaseModel):
 
 class SectionState(BaseModel):
     """State managed by the Writing Agent — one entry per chapter section."""
-    chapter: str                            # e.g., "ch6_model_benchmark"
+    chapter: str                            # e.g., "ch6-model-benchmark"
     status: Literal[
         "not_started",
         "bullets_draft",

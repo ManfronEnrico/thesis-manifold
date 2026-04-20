@@ -6,9 +6,9 @@ tables for direct inclusion in thesis sections.
 
 All tables are reproducible — regenerated from experiment_registry.json.
 Tables are appended to the relevant chapter section files or written to
-standalone files in thesis/writing/tables/.
+standalone files in thesis/thesis-writing/tables/.
 
-Output: thesis/writing/tables/table_*.md
+Output: thesis/thesis-writing/tables/table_*.md
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional
 from .experiment_tracking_agent import ExperimentTrackingAgent
 
 
-TABLES_DIR = Path("thesis/writing/tables")
+TABLES_DIR = Path("thesis/thesis-writing/tables")
 
 
 class ResultsTablesAgent:

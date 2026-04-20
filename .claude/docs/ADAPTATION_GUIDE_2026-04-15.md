@@ -121,7 +121,7 @@ Target: Move 15-20KB from CLAUDE.md to modular docs.
 - `CLAUDE.md` → keep only navigation + project context (~5KB)
 - `docs/architecture.md` — System A/B architecture, agent roles, data flow (NEW)
 - `docs/research-questions.md` — RQ evolution, v1→v2 changes (NEW)
-- `docs/compliance.md` — CBS guidelines, integrity gates, ADR status (consolidate from `thesis/compliance/` + `docs/decisions/`)
+- `docs/compliance.md` — CBS guidelines, integrity gates, ADR status (consolidate from `thesis/thesis-context/formal-requirements/` + `docs/decisions/`)
 - `docs/project-state.md` — TODOs, frozen decisions, known limitations (NEW)
 - `docs/repository-map.md` — canonical file map with timestamps (move from dev/)
 

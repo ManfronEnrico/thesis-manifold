@@ -411,8 +411,8 @@ cat docs/literature/scraping_log.md
 ls docs/thesis/sections/
 
 # Read a specific chapter
-cat docs/thesis/sections/ch5_framework_design.md
-cat docs/thesis/sections/ch2_literature_review.md
+cat docs/thesis/sections/ch5-framework-design.md
+cat docs/thesis/sections/ch2-literature-review.md
 
 # Check compliance report
 cat docs/compliance/compliance_checks/compliance_report_20260315.md
@@ -571,7 +571,7 @@ docs/literature/guides/         Cached study guides (auto-generated; not citable
 | System A coordinator | `ai_research_framework/core/coordinator.py` |
 | System B coordinator | `thesis_production_system/core/coordinator.py` |
 | Thesis state (JSON) | `docs/tasks/thesis_state.json` |
-| Architecture report | `docs/system_architecture_report.md` |
+| Architecture report | `docs/system-architecture-report.md` |
 | Gap analysis | `docs/literature/gap_analysis.md` |
 | Thesis outline | `docs/thesis/outline.md` |
 | Chapter skeletons | `docs/thesis/sections/` |

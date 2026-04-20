@@ -55,7 +55,7 @@ class PlannerAgent:
     - ThesisState (from docs/tasks/thesis_state.json)
     - docs/context.md (session log and blockers)
     - thesis/literature/scraping_log.md (pending paper confirmations)
-    - thesis/writing/outline.md (chapter status)
+    - thesis/thesis-writing/outline.md (chapter status)
 
     Produces: TaskPlan (JSON-serialisable)
     """
@@ -64,7 +64,7 @@ class PlannerAgent:
         "docs/context.md",
         "thesis/literature/scraping_log.md",
         "thesis/literature/gap_analysis.md",
-        "thesis/writing/outline.md",
+        "thesis/thesis-writing/outline.md",
     ]
 
     def __init__(self, project_root: Path = Path(".")) -> None:

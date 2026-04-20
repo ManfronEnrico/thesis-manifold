@@ -649,8 +649,8 @@ Thesis Maniflod/
 ├── docs/                             ← Agent memory + thesis outputs (persistent)
 │   ├── context.md                    ← Session log (updated every session)
 │   ├── architecture.md               ← Framework architecture (draft → approved)
-│   ├── system_architecture_report.md ← This document
-│   ├── experiment_tracking_agent.md  ← Experiment Tracking Agent documentation
+│   ├── system-architecture-report.md ← This document
+│   ├── experiment-tracking-agent.md  ← Experiment Tracking Agent documentation
 │   ├── thesis_production_architecture.md ← System B architecture documentation
 │   │
 │   ├── experiments/
@@ -679,15 +679,15 @@ Thesis Maniflod/
 │   │   ├── figures/                  ← Diagram Agent outputs (SVG + PNG)
 │   │   └── sections/                 ← Chapter bullet point files
 │   │       ├── frontpage.md
-│   │       ├── ch1_introduction.md
-│   │       ├── ch2_literature_review.md
-│   │       ├── ch3_methodology.md
-│   │       ├── ch5_framework_design.md
-│   │       ├── ch6_model_benchmark.md
-│   │       ├── ch7_synthesis.md
-│   │       ├── ch8_evaluation.md
-│   │       ├── ch9_discussion.md
-│   │       └── ch10_conclusion.md
+│   │       ├── ch1-introduction.md
+│   │       ├── ch2-literature-review.md
+│   │       ├── ch3-methodology.md
+│   │       ├── ch5-framework-design.md
+│   │       ├── ch6-model-benchmark.md
+│   │       ├── ch7-synthesis.md
+│   │       ├── ch8-evaluation.md
+│   │       ├── ch9-discussion.md
+│   │       └── ch10-conclusion.md
 │   │
 │   └── compliance/
 │       ├── cbs_guidelines_notes.md   ← CBS formal requirements (extracted from 9 PDFs)
@@ -932,16 +932,16 @@ Thesis Maniflod/
 | Chapter | File | Status |
 |---|---|---|
 | Front page | `frontpage.md` | ✅ Skeleton |
-| Ch.1 Introduction | `ch1_introduction.md` | ✅ Skeleton |
-| Ch.2 Literature Review | `ch2_literature_review.md` | ✅ Skeleton |
-| Ch.3 Methodology | `ch3_methodology.md` | ✅ Skeleton |
+| Ch.1 Introduction | `ch1-introduction.md` | ✅ Skeleton |
+| Ch.2 Literature Review | `ch2-literature-review.md` | ✅ Skeleton |
+| Ch.3 Methodology | `ch3-methodology.md` | ✅ Skeleton |
 | Ch.4 Data Assessment | *(Writing Agent template)* | ⬜ Pending — blocked on data access |
-| Ch.5 Framework Design | `ch5_framework_design.md` | ✅ Skeleton |
-| Ch.6 Model Benchmark | `ch6_model_benchmark.md` | ✅ Skeleton |
-| Ch.7 Synthesis Module | `ch7_synthesis.md` | ✅ Skeleton |
-| Ch.8 Evaluation | `ch8_evaluation.md` | ✅ Skeleton |
-| Ch.9 Discussion | `ch9_discussion.md` | ✅ Skeleton |
-| Ch.10 Conclusion | `ch10_conclusion.md` | ✅ Skeleton |
+| Ch.5 Framework Design | `ch5-framework-design.md` | ✅ Skeleton |
+| Ch.6 Model Benchmark | `ch6-model-benchmark.md` | ✅ Skeleton |
+| Ch.7 Synthesis Module | `ch7-synthesis.md` | ✅ Skeleton |
+| Ch.8 Evaluation | `ch8-evaluation.md` | ✅ Skeleton |
+| Ch.9 Discussion | `ch9-discussion.md` | ✅ Skeleton |
+| Ch.10 Conclusion | `ch10-conclusion.md` | ✅ Skeleton |
 
 ---
 
