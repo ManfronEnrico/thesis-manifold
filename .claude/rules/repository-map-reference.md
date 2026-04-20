@@ -9,10 +9,10 @@ priority: "high"
 
 ## Quick Links
 
-- **Primary reference:** [repository_map.md](../../dev/repository_map.md) — complete file-to-purpose mapping
+- **Primary reference:** [repository_map.md](../../docs/dev/repository_map.md) — complete file-to-purpose mapping
 - **Thesis workflow:** [CLAUDE.md](../../CLAUDE.md) — session entry point and workflow phases
 - **Architecture:** [docs/architecture.md](../../docs/architecture.md) — System A/B architecture decisions
-- **Compliance:** [docs/compliance/cbs_guidelines_notes.md](../../docs/compliance/cbs_guidelines_notes.md) — CBS thesis requirements
+- **Compliance:** [thesis/compliance/cbs_guidelines_notes.md](../../thesis/compliance/cbs_guidelines_notes.md) — CBS thesis requirements
 
 ## When to Use This Rule
 

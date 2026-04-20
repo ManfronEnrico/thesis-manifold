@@ -69,6 +69,37 @@ def _extract_publisher(item_data: dict) -> str | None:
     return None
 
 
+
+def generate_citation_key(creators: list, title: str, year: str) -> str:
+    """Generate citation key in Zotero format: firstname_firstword_year (all lowercase).
+
+    Args:
+        creators: List of creator dicts with 'lastName' field
+        title: Paper title
+        year: Year as string
+
+    Returns:
+        Citation key like 'avramova_overview_2025'
+    """
+    # Get first author's last name
+    if creators and isinstance(creators, list) and len(creators) > 0:
+        first_author = creators[0].get('lastName', '').lower()
+    else:
+        first_author = 'unknown'
+
+    # Get first word of title
+    if title:
+        title_words = str(title).split()
+        first_word = title_words[0].lower() if title_words else 'unknown'
+    else:
+        first_word = 'unknown'
+
+    # Get year
+    year_str = str(year).strip() if year else 'unknown'
+
+    return f"{first_author}_{first_word}_{year_str}"
+
+
 def _to_bibtex_value(val: str | list | None) -> str:
     """Format a value for BibTeX output."""
     if val is None or val == "":
@@ -110,7 +141,7 @@ def get_citations(group_id: str | None = None, sync_files: bool = True) -> list[
 
         # Build entry with all available fields (except note and file)
         entry = {
-            "key": item.get("key") or data.get("key"),
+            "key": data.get("citationKey") or item.get("key"),
             "itemType": data.get("itemType"),
             "title": data.get("title"),
             "shorttitle": data.get("shortTitle"),

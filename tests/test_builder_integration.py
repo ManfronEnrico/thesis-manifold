@@ -36,14 +36,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from thesis_production_system.agents.builder.experiment_registry import (
+from thesis.thesis_production_system.agents.builder.experiment_registry import (
     BuilderRegistry,
     BuilderState,
     TrialConfig,
     TrialResult,
 )
-from thesis_production_system.agents.builder.executor import Executor
-from thesis_production_system.agents.builder.evaluator import Evaluator
+from thesis.thesis_production_system.agents.builder.executor import Executor
+from thesis.thesis_production_system.agents.builder.evaluator import Evaluator
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────

@@ -29,8 +29,8 @@ def test_1_state_coordinator_import():
     print_header("TEST 1: State Initialization & Coordinator Import")
 
     try:
-        from ai_research_framework.core.coordinator import build_research_graph
-        from ai_research_framework.state.research_state import ResearchState
+        from thesis.ai_research_framework.core.coordinator import build_research_graph
+        from thesis.ai_research_framework.state.research_state import ResearchState
         print_pass("ResearchState and build_research_graph imported")
 
         state = {
@@ -73,7 +73,7 @@ def test_2_config_loading():
     print_header("TEST 2: Config Loading")
 
     try:
-        from ai_research_framework.config import (
+        from thesis.ai_research_framework.config import (
             NielsenConfig,
             IndeksDanmarkConfig,
             RAM_BUDGET_MB,
@@ -116,13 +116,13 @@ def test_3_agent_imports():
     print_header("TEST 3: Agent Imports & Initialization")
 
     try:
-        from ai_research_framework.agents import (
+        from thesis.ai_research_framework.agents import (
             DataAssessmentAgent,
             ForecastingAgent,
             SynthesisAgent,
             ValidationAgent,
         )
-        from ai_research_framework.config import NielsenConfig, IndeksDanmarkConfig
+        from thesis.ai_research_framework.config import NielsenConfig, IndeksDanmarkConfig
 
         nielsen_cfg = NielsenConfig()
         indeks_cfg = IndeksDanmarkConfig()
@@ -156,7 +156,7 @@ def test_4_routing_logic():
     print_header("TEST 4: LangGraph Routing Logic")
 
     try:
-        from ai_research_framework.core.coordinator import (
+        from thesis.ai_research_framework.core.coordinator import (
             _should_continue_after_data,
             _should_continue_after_forecasting,
             _should_continue_after_synthesis,
@@ -200,7 +200,7 @@ def test_5_data_models():
     print_header("TEST 5: Data Models Instantiation")
 
     try:
-        from ai_research_framework.state.research_state import (
+        from thesis.ai_research_framework.state.research_state import (
             ModelForecast,
             SynthesisOutput,
             ValidationReport,
@@ -405,7 +405,7 @@ def test_9_coordinator_state_transitions():
     print_header("TEST 9: Coordinator State Transitions")
 
     try:
-        from ai_research_framework.core.coordinator import build_research_graph
+        from thesis.ai_research_framework.core.coordinator import build_research_graph
 
         graph = build_research_graph()
         print_pass("Graph compiled with checkpoints")
@@ -453,15 +453,15 @@ def test_10_integration():
     print_header("TEST 10: Full Integration Check")
 
     try:
-        from ai_research_framework.core.coordinator import build_research_graph
-        from ai_research_framework.agents import (
+        from thesis.ai_research_framework.core.coordinator import build_research_graph
+        from thesis.ai_research_framework.agents import (
             DataAssessmentAgent,
             ForecastingAgent,
             SynthesisAgent,
             ValidationAgent,
         )
-        from ai_research_framework.config import NielsenConfig, IndeksDanmarkConfig, RAM_BUDGET_MB
-        from ai_research_framework.state.research_state import ResearchState
+        from thesis.ai_research_framework.config import NielsenConfig, IndeksDanmarkConfig, RAM_BUDGET_MB
+        from thesis.ai_research_framework.state.research_state import ResearchState
 
         print_pass("All imports successful")
 

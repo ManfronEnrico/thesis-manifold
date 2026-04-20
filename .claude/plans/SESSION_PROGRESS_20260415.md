@@ -29,7 +29,7 @@
 
 **Codebase**: Clean, organized, ready for feature integration
 - Root structure: 9 folders (no clutter)
-- Papers: 48 confirmed (docs/literature/papers/)
+- Papers: 48 confirmed (thesis/literature/papers/)
 - Memory: Unified (5 files in .claude/memory/)
 - Systems: Clearly marked (System A frozen, System B active)
 

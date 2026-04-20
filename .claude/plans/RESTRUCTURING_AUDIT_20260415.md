@@ -19,7 +19,7 @@ The repository has **two overlapping paper collections, three potential agent sy
 
 ### 1.1 Paper Collections (CRITICAL REDUNDANCY)
 
-**Location A**: `docs/literature/papers/` (48 .md files)
+**Location A**: `thesis/literature/papers/` (48 .md files)
 - Format: Slugified names (`agent_q_autonomous_reasoning.md`)
 - Origin: NotebookLM extraction + Brian's refactoring workflow
 - Status: **Authoritative** (used in citations across thesis)
@@ -133,12 +133,12 @@ Thesis/
 
 | Issue | Impact | Effort to Fix | Risk |
 |-------|--------|---|---|
-| `Thesis/papers/` duplicates `docs/literature/papers/` (different naming) | Confusion, citation errors, merge conflicts | 2–3 hours | Low |
+| `Thesis/papers/` duplicates `thesis/literature/papers/` (different naming) | Confusion, citation errors, merge conflicts | 2–3 hours | Low |
 | `papers/` folder is orphaned (structure with no content) | Unused structure, maintenance burden | 0.5 hours | Minimal |
 | Obsidian vault checked into git (`.obsidian/`) | Git bloat, workspace pollution | 1 hour | Low |
 | CSV file `Thesis/*.csv` not referenced anywhere | Orphaned data | 0.5 hours | Low |
 
-**Recommendation**: Consolidate to single source (`docs/literature/papers/` with modern slug naming).
+**Recommendation**: Consolidate to single source (`thesis/literature/papers/` with modern slug naming).
 
 ---
 
@@ -169,7 +169,7 @@ Thesis/
 **Objective**: Single source of truth for paper metadata.
 
 ```
-docs/literature/papers/        ← AUTHORITATIVE (48 papers, modern slugs)
+thesis/literature/papers/        ← AUTHORITATIVE (48 papers, modern slugs)
 ├── agent_q_autonomous_reasoning.md
 ├── calibrating_uncertainty_regression.md
 ├── cost_aware_ml_3pl_forecasting.md
@@ -185,7 +185,7 @@ papers/                        ← REPURPOSE (for PDF originals if needed later)
 ```
 
 **Action**: 
-1. Verify all 48 papers in `docs/literature/papers/` are current
+1. Verify all 48 papers in `thesis/literature/papers/` are current
 2. Delete `Thesis/papers/` 
 3. Delete `Thesis/.obsidian/`
 4. Keep `papers/` structure (ready for PDFs); move manifest to `docs/literature/`
@@ -319,8 +319,8 @@ mv memory/ .archive/memory_legacy/
 ### Step 2️⃣: Consolidate Papers (30 min)
 
 ```bash
-# Verify all 48 papers are in docs/literature/papers/
-# Spot-check that Thesis/papers/* match docs/literature/papers/* 
+# Verify all 48 papers are in thesis/literature/papers/
+# Spot-check that Thesis/papers/* match thesis/literature/papers/* 
 #   (they should, just with different names)
 
 # Then DELETE Thesis/papers (already moved to archive)
@@ -381,7 +381,7 @@ git commit -m "refactor: consolidate duplicate paper collections, archive legacy
 
 - Move Thesis/ vault to .archive/Thesis_obsidian_backup (keep as reference)
 - Move memory/ to .archive/memory_legacy (audit: legacy session state)
-- Consolidate paper metadata: single source in docs/literature/papers/ (48 papers, modern slugs)
+- Consolidate paper metadata: single source in thesis/literature/papers/ (48 papers, modern slugs)
 - Remove Thesis/.obsidian/ (workspace config, not part of codebase)
 - Add System A frozen + System B active boundary markers
 - Keep papers/ folder structure (ready for PDFs); move ingestion_manifest to docs/literature/
@@ -430,7 +430,7 @@ From your repo map:
 
 **Recommendation**: Archive it (now done in Step 1). Keep as reference, but:
 - Don't edit in Obsidian going forward (sync will break)
-- All active work is in `docs/thesis/sections/` + `.claude/` infrastructure
+- All active work is in `thesis/writing/sections/` + `.claude/` infrastructure
 
 **This is finalized** in the restructuring above.
 
@@ -487,7 +487,7 @@ From your repo map:
 Once you approve:
 1. Execute the restructuring plan
 2. Create outcome file documenting what was moved/deleted
-3. Update `dev/repository_map.md` to reflect new structure
+3. Update `docs/dev/repository_map.md` to reflect new structure
 4. Verify System A/B are properly isolated and marked
 5. Confirm integration plan alignment (no code changes needed)
 
@@ -498,7 +498,7 @@ Once you approve:
 ### Files to Delete
 - `Thesis/` (move to archive)
 - `Thesis/.obsidian/` (included in Thesis/)
-- `Thesis/papers/` (duplicates docs/literature/papers/)
+- `Thesis/papers/` (duplicates thesis/literature/papers/)
 - Root `memory/` (consolidate to `.claude/memory/`)
 
 ### Files to Move
@@ -512,14 +512,14 @@ Once you approve:
 
 ### Files to Update
 - `.gitignore` (add archive paths)
-- `dev/repository_map.md` (reflect new structure)
+- `docs/dev/repository_map.md` (reflect new structure)
 - `CLAUDE.md` (if needed; likely no changes)
 
 ---
 
 ## Appendix: Paper Collection Verification
 
-**docs/literature/papers/** (48 papers, authoritative):
+**thesis/literature/papers/** (48 papers, authoritative):
 ```
 agent_noise_bench.md
 agent_q_autonomous_reasoning.md

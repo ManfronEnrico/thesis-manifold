@@ -30,7 +30,7 @@ _Completed: 2026-04-15 17:50:00_
 - ✅ Final state: `.claude/memory/` has 5 files (all feedback + optimization records)
 
 ### Step 4: Paper Consolidation
-- ✅ Verified authoritative location: `docs/literature/papers/`
+- ✅ Verified authoritative location: `thesis/literature/papers/`
   - Count: 48 papers (all modern slug naming)
   - Status: Complete and up-to-date
 - ✅ Moved `papers/ingestion_manifest.json` → `docs/literature/ingestion_manifest.json`

@@ -153,7 +153,7 @@ Patterns not labeled as Claude-specific but that significantly improve Claude's 
 
 ### 4a. Repository Map as a Separate File
 
-`dev/repository_map.md` is a dedicated file mapping every module to its purpose, line count, and role in the pipeline. This keeps CLAUDE.md shorter and lets Claude quickly orientate in a new session without re-reading source files.
+`docs/dev/repository_map.md` is a dedicated file mapping every module to its purpose, line count, and role in the pipeline. This keeps CLAUDE.md shorter and lets Claude quickly orientate in a new session without re-reading source files.
 
 ### 4b. Dated, Phase-Named Output Directories
 
@@ -362,7 +362,7 @@ Parser source files are hashed. Cache is auto-discarded on hash mismatch. Remove
 | Git commit deduction workflow | `trigger-git-commit-workflow.md` | Automation mechanism | Accurate commit messages across sessions | High | Low | Low | **Adopt directly** |
 | Docs update ordered workflow | `trigger-docs-workflow.md` | Automation mechanism | Consistent documentation maintenance | High | Low | Low | **Adopt directly** |
 | Tooling-issues registry | `docs/tooling-issues.md` + rule | Human process + automation | Prevent re-solving known env problems | High | Low | Low | **Adopt directly** |
-| Repository map as separate file | `dev/repository_map.md` | Implicit convention | Reduces session startup cost | High | Low | Low | **Adopt directly** |
+| Repository map as separate file | `docs/dev/repository_map.md` | Implicit convention | Reduces session startup cost | High | Low | Low | **Adopt directly** |
 | One-off execution default | `one-off-execution.md` | Explicit Claude rule | Prevents unintended automation | High | Low | Low | **Adopt directly** |
 | Context optimization guide | `context-token-optimization.md` | Explicit Claude rule | Cost + quality management | High | Low | Low | **Adopt directly** |
 | Known TODOs section in CLAUDE.md | `CLAUDE.md` | Implicit convention | Prevents Claude from "fixing" frozen decisions | High | Low | Low | **Adopt directly** |
@@ -407,7 +407,7 @@ This section describes how to port the best patterns into a thesis-writing repos
 ### Step 2 — Write CLAUDE.md for the Thesis Project (1–2 hours)
 
 Adapt the CLAUDE.md structure:
-- **Navigation section**: link to a `dev/repository_map.md` (to be created) and a `docs/THESIS_WORKFLOW.md`
+- **Navigation section**: link to a `docs/dev/repository_map.md` (to be created) and a `docs/THESIS_WORKFLOW.md`
 - **Key conventions**: chapter naming, citation format, output structure, analysis scripts
 - **Run commands**: any Python analysis scripts or build commands
 - **Known frozen decisions**: deliberate methodological choices Claude should not second-guess
@@ -426,7 +426,7 @@ Copy and adapt these rule files (rename references and adjust project-specific d
 | `tooling-issues-workflow.md` | Copy directly — env issue registry applies anywhere |
 | `context-token-optimization.md` | Copy directly — model tier strategy is universal |
 | `one-off-execution.md` | Copy directly |
-| `repository-map-reference.md` | Adapt: reference thesis `dev/repository_map.md` |
+| `repository-map-reference.md` | Adapt: reference thesis `docs/dev/repository_map.md` |
 
 ### Step 4 — Port and Adapt Skills (1–2 hours)
 
@@ -451,7 +451,7 @@ Copy these skill files and adapt project-specific references:
 
 2. **`docs/tooling-issues.md`** — start with any known env issues
 
-3. **`dev/repository_map.md`** — map thesis repo structure (chapters, scripts, data, output)
+3. **`docs/dev/repository_map.md`** — map thesis repo structure (chapters, scripts, data, output)
 
 ### Step 6 — Validate (30 min)
 
@@ -468,7 +468,7 @@ If time is short, implement in this order:
 2. `.claude/rules/trigger-standup-workflow.md` + 4 standup skills — highest operational value
 3. `.claude/rules/trigger-plan-workflow.md` — essential for structured work
 4. `docs/tooling-issues.md` — prevents repeated env debugging
-5. `dev/repository_map.md` — reduces session startup cost
+5. `docs/dev/repository_map.md` — reduces session startup cost
 6. Git commit workflow — valuable once work accumulates
 7. Docs update workflow — valuable once docs become complex
 
@@ -500,7 +500,7 @@ In rank order (value / adaptation effort ratio):
 
 4. **`docs/tooling-issues.md` + mandatory pre-task read** — prevents spending time re-solving known environment problems. 30 minutes to bootstrap. Immediate value.
 
-5. **`dev/repository_map.md`** — fast orientation in new sessions. 30–60 minutes to write. Reduces re-exploration.
+5. **`docs/dev/repository_map.md`** — fast orientation in new sessions. 30–60 minutes to write. Reduces re-exploration.
 
 6. **Git commit deduction workflow** — generates accurate commit messages even across multi-session work. 15 minutes to port. Adopt directly.
 

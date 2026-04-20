@@ -31,7 +31,7 @@ This agent is activated when:
 - The user runs `/write-section <chapter_id>` (e.g., `/write-section ch2_literature_review`)
 - Or explicitly asks to write / expand a thesis section
 
-**Chapter IDs** (map to files in `docs/thesis/sections/`):
+**Chapter IDs** (map to files in `thesis/writing/sections/`):
 - `frontpage`, `abstract`, `ai_declaration`
 - `ch1_introduction`, `ch2_literature_review`, `ch3_methodology`
 - `ch4_data_assessment`, `ch5_framework_design`, `ch6_model_benchmark`
@@ -43,7 +43,7 @@ This agent is activated when:
 
 ```
 STEP 1 — READ BULLETS
-  → Read docs/thesis/sections/{chapter_id}.md
+  → Read thesis/writing/sections/{chapter_id}.md
   → Confirm status is 'bullets_approved' (not just 'bullets_draft')
   → If status is 'bullets_draft': STOP. Tell the user the bullets have not been approved yet.
   → If file does not exist: STOP. Ask user to generate bullets first.
@@ -94,7 +94,7 @@ STEP 6 — WRITE TO WORD
   → Only after explicit user approval in STEP 4
   → Run the Python script below (adapt for the specific chapter)
   → Confirm: "Section {chapter_id} written to Thesis/thesis_draft.docx ✅"
-  → Update the section status in docs/thesis/sections/{chapter_id}.md:
+  → Update the section status in thesis/writing/sections/{chapter_id}.md:
       Change "> Status: ..." line to "> Status: PROSE APPROVED — written {date}"
 ```
 
@@ -152,7 +152,7 @@ checks = {
 }
 ```
 
-**Chapter page budgets** (from docs/thesis/outline.md — total ≤ 120 pages):
+**Chapter page budgets** (from thesis/writing/outline.md — total ≤ 120 pages):
 
 | Chapter | Target pages |
 |---|---|
@@ -179,7 +179,7 @@ Use this script template to write/append to the Word file. Adapt heading level, 
 """
 Thesis Writing Agent — Word output script
 Run from project root: ~/Desktop/Thesis Maniflod/
-Requires: pip install python-docx  (log in docs/context.md if first install)
+Requires: pip install python-docx  (log in docs/project-management/context.md if first install)
 """
 from pathlib import Path
 from docx import Document
@@ -241,7 +241,7 @@ print(f"✅ Saved: {THESIS_DOCX}")
 | Bullet file not found | STOP — tell user to run Writing Agent to create bullets first |
 | Status is 'bullets_draft' (not approved) | STOP — tell user bullets need human approval before prose |
 | Compliance check fails | Fix issues, show revised draft, re-run checks — do not write to Word until clean |
-| python-docx not installed | Run `pip install python-docx`, log in `docs/context.md`, then proceed |
+| python-docx not installed | Run `pip install python-docx`, log in `docs/project-management/context.md`, then proceed |
 | Word file write error | Report error, show prose in chat so user can copy manually |
 | Chapter would exceed page budget | Warn user with exact overage, suggest which paragraphs to trim |
 
