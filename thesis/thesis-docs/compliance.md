@@ -36,7 +36,7 @@ All ADRs are open decisions requiring explicit approval before Phase 3 implement
 ### ADR-001: LaTeX Template Strategy
 
 **Status**: OPEN  
-**File**: [docs/decisions/ADR-001-template-strategy.md](decisions/ADR-001-template-strategy.md)
+**File**: [docs/decisions/2026_04_13-adr_001_template_strategy.md](decisions/2026_04_13-adr_001_template_strategy.md)
 
 **Summary**: Choosing between:
 1. Pandoc + custom LaTeX template (control, complexity, maintenance)
@@ -48,7 +48,7 @@ All ADRs are open decisions requiring explicit approval before Phase 3 implement
 ### ADR-002: Build Pipeline Strategy
 
 **Status**: OPEN  
-**File**: [docs/decisions/ADR-002-build-pipeline.md](decisions/ADR-002-build-pipeline.md)
+**File**: [docs/decisions/2026_04_13-adr_002_build_pipeline.md](decisions/2026_04_13-adr_002_build_pipeline.md)
 
 **Summary**: Designing Markdown → LaTeX → PDF pipeline with reproducibility gates.
 
@@ -57,7 +57,7 @@ All ADRs are open decisions requiring explicit approval before Phase 3 implement
 ### ADR-003: Builder Agent Fate
 
 **Status**: OPEN  
-**File**: [docs/decisions/ADR-003-builder-agent-fate.md](decisions/ADR-003-builder-agent-fate.md)
+**File**: [docs/decisions/2026_04_13-adr_003_builder_agent_fate.md](decisions/2026_04_13-adr_003_builder_agent_fate.md)
 
 **Summary**: Whether to implement System B "Builder Agent" for automated thesis assembly or rely on manual compilation.
 

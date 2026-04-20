@@ -1,3 +1,10 @@
+---
+title: "ADR-002: Thesis Build Pipeline (Markdown → PDF)"
+type: decision
+status: draft
+created: 2026-04-13
+---
+
 # ADR-002: Thesis Build Pipeline (Markdown → PDF)
 
 **Status**: OPEN — decision pending

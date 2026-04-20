@@ -1,7 +1,8 @@
 ---
-name: Indeks Danmark Data Integration
-date: 2026-04-18
-timestamp: 2026-04-18T16:45:00Z
+title: Indeks Danmark Data Integration Plan
+type: plan
+status: active
+created: 2026-04-18
 context: SRQ3 implementation for agentic notebook System C (real demographics)
 ---
 

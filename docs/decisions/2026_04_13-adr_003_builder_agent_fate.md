@@ -1,3 +1,10 @@
+---
+title: "ADR-003: Builder Agent Fate (Keep or Remove)"
+type: decision
+status: draft
+created: 2026-04-13
+---
+
 # ADR-003: Builder Agent Fate (Keep or Remove)
 
 **Status**: OPEN — decision pending

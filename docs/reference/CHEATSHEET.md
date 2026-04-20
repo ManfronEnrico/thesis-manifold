@@ -563,7 +563,7 @@ docs/literature/guides/         Cached study guides (auto-generated; not citable
 | Master project instructions | `CLAUDE.md` |
 | Repository map | `dev/repository_map.md` |
 | Tooling issues | `docs/tooling-issues.md` |
-| Architecture decisions | `docs/decisions/ADR-001/002/003` |
+| Architecture decisions | `docs/decisions/2026_04_13-adr_00[123]*.md` |
 | Standup (live) | `project_updates/standup_draft.md` |
 | Session log | `docs/context.md` |
 | Research state definition | `ai_research_framework/state/research_state.py` |

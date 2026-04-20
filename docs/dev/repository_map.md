@@ -111,7 +111,8 @@ CMT_Codebase/
     │   ├── ZOTERO_INTEGRATION_SETUP.md ← Zotero full setup guide
     │   ├── GOOGLE_DRIVE_*.md          ← Google Drive setup docs
     │   ├── ENRICO_*.md                ← Enrico-specific setup guides
-    │   └── INDEKS_INTEGRATION_PLAN*.md ← Indeks Danmark integration plan
+    ├── planning/                      ← Implementation plans (time-bound)
+    │   └── 2026_04_18-indeks_integration_plan.md ← Indeks Danmark integration plan
     ├── reference/                     ← Quick-reference cards (daily use)
     │   ├── CHEATSHEET.md              ← CLI commands, workflow triggers
     │   ├── ZOTERO_QUICK_REFERENCE.md  ← Zotero API quick commands
