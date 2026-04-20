@@ -11,7 +11,7 @@ ingested via the manifest and skips them.
 Workflow:
   GoogleDriveAPI (src/google_drive_integration.py)
     ↓ (lists papers with metadata)
-  NotebookLMAccess (thesis/thesis/thesis_production_system/research/notebooklm_access.py)
+  NotebookLMAccess (thesis/thesis_agents/thesis_production_system/research/notebooklm_access.py)
     ↓ (adds papers to notebooks)
   Manifest (thesis/literature/ingestion_manifest.json)
     ↓ (persists ingestion state)
@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 
 # Import NotebookLM access layer
 try:
-    from thesis.thesis_production_system.research import NotebookLMAccess
+    from thesis.thesis_agents.thesis_production_system.research import NotebookLMAccess
 except ImportError:
-    logger.error("NotebookLMAccess not found. Ensure thesis/thesis_production_system is in PYTHONPATH.")
+    logger.error("NotebookLMAccess not found. Ensure thesis/thesis_agents/thesis_production_system is in PYTHONPATH.")
     exit(1)
 
 # Import Google Drive API
@@ -53,7 +53,7 @@ class NotebookLMIngestFromDrive:
 
     Uses:
     - GoogleDriveAPI (src/google_drive_integration.py) to list papers
-    - NotebookLMAccess (thesis/thesis_production_system/research/) to add to notebooks
+    - NotebookLMAccess (thesis/thesis_agents/thesis_production_system/research/) to add to notebooks
     """
 
     # Chapter-to-notebook mapping

@@ -81,7 +81,7 @@ Key facts that correct or refine the forked repo plan's audit:
 | `.env` and `.env.example` both present | Hook must block `.env` writes (already in PTA hook design) |
 | `.claude/settings.local.json` exists | Create `.claude/settings.json` as NEW file (separate from local); do not overwrite settings.local.json |
 | `CLAUDE (1).md` confirmed present | Safe to delete |
-| `thesis/compliance/` has `cbs_guidelines_notes.md` + `compliance_report_20260315.md` | Add `integrity_checklist.md` here in Phase 4 |
+| `thesis/thesis-context/formal-requirements/` has `cbs_guidelines_notes.md` + `compliance_report_20260315.md` | Add `integrity_checklist.md` here in Phase 4 |
 
 ---
 
@@ -191,7 +191,7 @@ System A (LangGraph agents)
         ▼ research findings + data analysis
 System B WritingAgent
         │
-        ▼ Markdown sections (thesis/writing/sections/)
+        ▼ Markdown sections (thesis/thesis-writing/sections-drafts/)
 [INTEGRITY GATE 1 — Pre-Draft]
   • Section completeness check
   • Page budget validation (120-page limit)
@@ -398,7 +398,7 @@ Block conditions:
 | Task | Source |
 |---|---|
 | Create `scripts/check_integrity.py` (Gate 1/2/3 logic) | forked-repo |
-| Create `thesis/compliance/integrity_checklist.md` (7-mode AI failure) | forked-repo |
+| Create `thesis/thesis-context/formal-requirements/integrity_checklist.md` (7-mode AI failure) | forked-repo |
 | Add `make check` target to Makefile (calls check_integrity.py) | forked-repo |
 | Create `scripts/export_notebooklm.py` (batch Markdown → PDF export) | forked-repo |
 | Add Gate trigger conditions to CLAUDE.md | forked-repo |
@@ -501,7 +501,7 @@ Ordered by impact and unblocked status. Actions 1–5 require no prior decisions
 
 5. **[NOW] Create `docs/dev/repository_map.md`** — Map current CMT_Codebase structure (use 2026-04-13 FileFolderTree as source). Reduces re-exploration cost in every future session. (~45 min)
 
-6. **[Phase 1] Confirm CBS formatting requirements** — Extract precise specs from `Thesis/Thesis Guidelines/` PDFs (or CBS guidelines in `thesis/compliance/`). A4, font, margins, page numbering, frontpage requirements. Unblocks Phase 3 template work.
+6. **[Phase 1] Confirm CBS formatting requirements** — Extract precise specs from `Thesis/Thesis Guidelines/` PDFs (or CBS guidelines in `thesis/thesis-context/formal-requirements/`). A4, font, margins, page numbering, frontpage requirements. Unblocks Phase 3 template work.
 
 7. **[Phase 1] Decide Builder Agent fate** — Builder has 6 substantive files (architect, builder_graph, coder, evaluator, executor, experiment_registry). Lean toward KEEP + add SKILL.md. Write ADR-003 to record the decision.
 

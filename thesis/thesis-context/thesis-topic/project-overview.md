@@ -266,6 +266,6 @@ The combined System A + System B overview figure is at `docs/thesis/figures/proj
 
 ---
 
-*For full technical detail: see `docs/system_architecture_report.md`*
+*For full technical detail: see `docs/system-architecture-report.md`*
 *For CBS compliance status: see `docs/compliance/compliance_checks/compliance_report_20260315.md`*
 *For literature details: see `docs/literature/gap_analysis.md` and `docs/literature/papers/`*

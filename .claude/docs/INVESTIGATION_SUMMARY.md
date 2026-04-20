@@ -91,7 +91,7 @@ All files ready for action in `CMT_Codebase/` root and subdirectories:
 
 ### Finding 1: Context Efficiency Gap
 - **pta-cbp-parser baseline**: Achieved 58% context reduction in audit session
-- **Thesis current**: CLAUDE.md 646 lines (36KB), system_architecture_report.md 986 lines (very large)
+- **Thesis current**: CLAUDE.md 646 lines (36KB), system-architecture-report.md 986 lines (very large)
 - **Estimated potential**: 15-20% per-session reduction = 1.75K tokens saved per session
 - **Compound value**: By May 15 (30 days, ~4 weeks), ~5K tokens saved per week
 

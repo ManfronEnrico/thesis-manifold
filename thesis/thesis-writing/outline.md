@@ -99,7 +99,7 @@
 | 2.5 Resource-Constrained AI Deployment | Edge AI, SME compute, RAM profiling, stability | Edge AI survey, Klee & Xia 2025, Ng 2017, Niculescu-Mizil & Caruana | SRQ1 |
 | 2.6 Gap Summary and Novelty Claim | Explicit gap statement, novelty v4 | All | All |
 
-> Note: v2 outline listed 5 key content areas; v3 refines to 5 thematic sections + gap summary. Subsection structure consistent with existing `docs/thesis/sections/ch2_literature_review.md`.
+> Note: v2 outline listed 5 key content areas; v3 refines to 5 thematic sections + gap summary. Subsection structure consistent with existing `docs/thesis/sections/ch2-literature-review.md`.
 
 ---
 
@@ -250,7 +250,7 @@
 
 | # | Item | Priority |
 |---|---|---|
-| OI-01 | `thesis_state.json` records ch1_introduction as `bullets_draft` — should be `prose_draft`. Update via Coordinator. | Medium |
+| OI-01 | `thesis_state.json` records ch1-introduction as `bullets_draft` — should be `prose_draft`. Update via Coordinator. | Medium |
 | OI-02 | AI Declaration placement not confirmed with supervisor. | Medium |
 | OI-03 | DSR acceptance with CBS supervisor not confirmed (CRITICAL-CH3-01). | High |
 | OI-04 | Budget is exactly 120pp — any expansion requires explicit trade-off. | Ongoing |

@@ -110,7 +110,7 @@ class CriticAgent:
             issues.append("No citation placeholder found. Every bullet section needs at least one 'Cite:' marker.")
 
         # Must reference at least one SRQ
-        if "SRQ" not in content and chapter not in ("ch1_introduction", "ch3_methodology", "ch9_discussion", "ch10_conclusion"):
+        if "SRQ" not in content and chapter not in ("ch1-introduction", "ch3-methodology", "ch9-discussion", "ch10-conclusion"):
             issues.append(f"Section {chapter} does not reference any SRQ.")
 
         confidence = max(0.0, 1.0 - len(issues) * 0.2)
@@ -152,7 +152,7 @@ class CriticAgent:
         figure_ids = context.get("figure_ids", [])
         for fig_id in figure_ids:
             for fmt in ("svg", "png"):
-                expected = Path(f"thesis/writing/figures/{fig_id}.{fmt}")
+                expected = Path(f"thesis/thesis-writing/figures/{fig_id}.{fmt}")
                 if not expected.exists():
                     issues.append(f"Figure file missing: {expected}")
 
