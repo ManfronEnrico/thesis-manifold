@@ -1,8 +1,8 @@
 ---
-name: Git-Ignore Strategy for Feature Matrix
-date: 2026-04-18
-timestamp: 2026-04-18T16:30:00Z
-author: Claude + Brian (investigation)
+title: Git-Ignore Strategy for Feature Matrix
+type: note
+status: active
+created: 2026-04-18
 ---
 
 # Git-Ignore Strategy: Should `feature_matrix.parquet` Be Tracked?

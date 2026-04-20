@@ -404,3 +404,26 @@ A: Not recommended. It's auto-generated. If you need manual edits, do it in Zote
 | 2026-04-18 | Restructured to make BibTeX source of truth, JSON derived |
 | 2026-04-18 | Fixed publisher extraction for preprints (arXiv detection) |
 | 2026-04-15 | Initial Phase 1 setup guide |
+
+---
+
+## Your Zotero Configuration (Brian)
+
+| Property | Value |
+|----------|-------|
+| **Personal Library ID** | 15775662 |
+| **Group Library ID** | 6479832 |
+| **Group Name** | CMT - CBS Master Thesis |
+| **API Key** | In `.env` (ZOTERO_API_KEY) |
+| **Personal Library Items** | 170 (with titles), 178 total |
+| **Group Library Items** | 35 (with titles), 39 total |
+
+### Environment Variables (Add to `.env`)
+
+```bash
+ZOTERO_API_KEY=ZtTh8WsMUW4QJPmiRyJLIos9
+ZOTERO_USER_ID=15775662
+ZOTERO_GROUP_ID=6479832
+```
+
+**Note**: `.env` is in `.gitignore` — never commit it.

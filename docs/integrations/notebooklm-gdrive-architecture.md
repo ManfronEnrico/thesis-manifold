@@ -177,6 +177,93 @@ python scripts/notebooklm_ingestion.py
 # 2026-04-20 10:15:46 [INFO] Manifest saved to papers/ingestion_manifest.json
 # 2026-04-20 10:15:47 [INFO] Verifying manifest integrity...
 # 2026-04-20 10:15:48 [INFO] Manifest integrity verified.
+
+
+---
+
+## Phase 1: Unified Sync Workflow (2026-04-20)
+
+**New**: Zotero ↔ Google Drive ↔ NotebookLM cross-system sync with manifest-based tracking.
+
+### Added Components
+
+| Component | Purpose | Location |
+|-----------|---------|----------|
+| `generate_gdrive_filename()` | Generate standard PDF names from Zotero metadata | `scripts/zotero_client.py` |
+| `fuzzy_match_gdrive_to_zotero()` | Fuzzy match filenames to citation keys (fallback) | `scripts/gdrive_citation_matcher.py` |
+| `unified_sync_check.py` | Orchestrate 3-system scan and manifest update | `scripts/unified_sync_check.py` |
+| `zotero_gdrive_filename_validator.py` | Validate Drive filenames against Zotero | `scripts/zotero_gdrive_filename_validator.py` |
+| Manifest schema v2.1 | Add status tracking across systems | `thesis/literature/ingestion_manifest.json` |
+
+### Filename Standard
+
+All Google Drive PDFs now follow a standardized naming pattern:
+
+```
+FirstAuthor-SecondAuthor_or_et_al-Year-Title_with_underscores.pdf
+```
+
+Examples:
+- Single author: `Smith-2024-Title_of_Paper.pdf`
+- Two authors: `Smith-Jones-2024-Title_of_Paper.pdf`
+- 3+ authors: `Avramova-et_al-2025-Overview_of_Multi_Criteria.pdf`
+
+**Why**: Enables reliable matching between Zotero citation keys and Drive filenames via simple string comparison + fuzzy matching.
+
+### Cross-System Sync Status
+
+Each paper now tracks status across all three systems:
+
+```json
+{
+  "citation_key": "avramova_overview_2025",
+  "zotero_status": "active",
+  "gdrive_status": "found",
+  "notebooklm_status": "ingested",
+  "sync_status": "COMPLETE",
+  "last_checked": "2026-04-20T12:00:00Z"
+}
+```
+
+**Status values**:
+- `zotero_status`: active, archived, removed, missing
+- `gdrive_status`: found, missing, misnamed, pending_rename
+- `notebooklm_status`: ingested, ingested_partial, pending, missing, error
+
+**Computed sync_status**:
+- `COMPLETE`: All 3 systems have the paper
+- `PARTIAL`: 2 of 3 systems have it
+- `NEW_ZOTERO`: In Zotero only
+- `NEW_GDRIVE`: In Drive only
+- `MISNAMED`: In all systems but Drive filename is wrong
+- `ORPHAN_NOTEBOOKLM`: Ingested but not in Zotero/Drive
+
+### Running Sync Checks
+
+**Basic check** (no changes):
+```bash
+python scripts/unified_sync_check.py --check-only
+```
+
+**Live update** (update manifest):
+```bash
+python scripts/unified_sync_check.py
+```
+
+**Verbose** (show match details):
+```bash
+python scripts/unified_sync_check.py --verbose
+```
+
+### User Guide
+
+See `docs/reference/SYNC_CHECK_GUIDE.md` for:
+- Detailed workflow documentation
+- Troubleshooting
+- Manual SRQ tagging (Phase 2 preview)
+- API integration timeline
+
+---
 # 2026-04-20 10:15:49 [INFO] Ingestion complete. All papers verified.
 ```
 

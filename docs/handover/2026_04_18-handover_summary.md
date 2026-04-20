@@ -1,3 +1,10 @@
+---
+title: Integration Handover Summary
+type: handover
+status: active
+created: 2026-04-18
+---
+
 # Integration Handover Summary
 **Critical Issues Identified & Resolved**
 

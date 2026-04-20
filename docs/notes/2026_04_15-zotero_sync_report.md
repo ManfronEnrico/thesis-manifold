@@ -1,3 +1,10 @@
+---
+title: Zotero Sync Report - Phase 1
+type: note
+status: active
+created: 2026-04-15
+---
+
 # Zotero Sync Report - Phase 1
 
 **Generated**: 2026-04-15T19:47:34.467038
