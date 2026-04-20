@@ -293,7 +293,7 @@ Next action:
   Lines: +47, -12
   
   .claude/skills/git-worktree-merge/SKILL.md (new)
-  thesis/writing/sections/phase-2-design.md (modified)
+  thesis/thesis-writing/sections-drafts/phase-2-design.md (modified)
   docs/dev/repository_map.md (modified)
 
 ❌ No overlap detected with other open branches.

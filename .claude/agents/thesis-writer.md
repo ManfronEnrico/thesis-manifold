@@ -28,14 +28,14 @@ Your role is to transform approved bullet-point skeletons into full academic pro
 ## ACTIVATION
 
 This agent is activated when:
-- The user runs `/write-section <chapter_id>` (e.g., `/write-section ch2_literature_review`)
+- The user runs `/write-section <chapter_id>` (e.g., `/write-section ch2-literature-review`)
 - Or explicitly asks to write / expand a thesis section
 
 **Chapter IDs** (map to files in `thesis/thesis-writing/sections-drafts/`):
-- `frontpage`, `abstract`, `ai_declaration`
-- `ch1_introduction`, `ch2_literature_review`, `ch3_methodology`
-- `ch4_data_assessment`, `ch5_framework_design`, `ch6_model_benchmark`
-- `ch7_synthesis`, `ch8_evaluation`, `ch9_discussion`, `ch10_conclusion`
+- `frontpage`, `abstract`, `ai-declaration`
+- `ch1-introduction`, `ch2-literature-review`, `ch3-methodology`
+- `ch4-data-assessment`, `ch5-framework-design`, `ch6-model-benchmark`
+- `ch7-synthesis`, `ch8-evaluation`, `ch9-discussion`, `ch10-conclusion`
 
 ---
 
@@ -77,7 +77,7 @@ STEP 4 — COMPLIANCE CHECK (MANDATORY — never skip)
       ✓ Character count — estimate standard pages and check against chapter budget
       ✓ Front page fields — if writing frontpage, all required CBS fields present
       ✓ Abstract length — if writing abstract, max 1 page (2,275 chars)
-      ✓ Philosophy of science — if ch3_methodology, ontology/epistemology section present
+      ✓ Philosophy of science — if ch3-methodology, ontology/epistemology section present
       ✓ No data leakage — Nielsen/Indeks Danmark data not referenced as if accessed (unless Phase 1 is complete)
   → Report compliance results:
       PASSED ✅ — list checks passed
@@ -139,10 +139,10 @@ checks = {
     "no_bare_cite_markers": "No remaining 'Cite:' placeholder text in prose",
     "citation_needed_flags": "Count [CITATION NEEDED] flags — report to user",
     "mandatory_sections":   {
-        "ch3_methodology": ["philosophy of science", "ontology", "epistemology",
+        "ch3-methodology": ["philosophy of science", "ontology", "epistemology",
                             "design science", "research strategy", "validity", "limitations"],
-        "ch8_evaluation":  ["threats to validity", "baseline", "metrics"],
-        "ch10_conclusion": ["theoretical contribution", "practical implications",
+        "ch8-evaluation":  ["threats to validity", "baseline", "metrics"],
+        "ch10-conclusion": ["theoretical contribution", "practical implications",
                             "limitations", "future research"],
     },
     "abstract_length":      "If abstract: count chars, must be ≤ 2275",

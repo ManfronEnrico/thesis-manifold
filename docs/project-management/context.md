@@ -84,7 +84,7 @@
 **Actions taken:**
 
 **1. Folder reorganisation**
-- Deleted: `CLAUDE (1).md`, `Thesis/Untitled.md`, `Thesis/Untitled 1.md`, `docs/thesis/writing/~$1_introduction.docx`, `results/`
+- Deleted: `CLAUDE (1).md`, `Thesis/Untitled.md`, `Thesis/Untitled 1.md`, `docs/thesis/thesis-writing/~$1_introduction.docx`, `results/`
 - Moved: `Thesis/FILE NAME - Ma et al...md` → `Thesis/papers/`; `2026-03...csv` → `Thesis/`; `README_builder.md` → `thesis_production_system/agents/builder/`
 - Removed duplicate paper notes in `Thesis/papers/` (Toolformer, AgentCompass×1, Klee Untitled, Ahrens duplicate)
 - Renamed: `AgentCompass...1.md` → canonical name; `Model Averaging...md` → `Ahrens et al. (2024) - ...md`
@@ -101,14 +101,14 @@
 - 8 unknown-author citations resolved via /find-papers (WebFetch against known DOIs)
 - 28 new entries added to `docs/thesis/references.md`
 - 25 citations still pending NotebookLM verification
-- Exported to `docs/thesis/writing/ch2_literature_review.docx`
+- Exported to `docs/thesis/thesis-writing/ch2-literature-review.docx`
 - Status: `prose_draft` — awaiting human review
 
 **4. Ch.3 Methodology — full prose written**
 - ~12 pages prose (~27,300 chars excl. spaces)
 - Sections: 3.1 Philosophy of Science, 3.2 DSR, 3.3 Research Strategy, 3.4 Data Sources, 3.5 Analytical Approach, 3.6 Validity & Reliability, 3.7 Limitations
 - All citations from existing corpus; 0 CITATION NEEDED flags
-- Exported to `docs/thesis/writing/ch3_methodology.docx`
+- Exported to `docs/thesis/thesis-writing/ch3-methodology.docx`
 - Status: `prose_draft` — awaiting human review + DSR supervisor confirmation (OI-03)
 
 **5. Nielsen / Microsoft Fabric connection established**
@@ -255,7 +255,7 @@
 - [x] Execute Literature Scraping Run 2 ✅ — 10/10 papers created 2026-03-15
 - [x] Align main RQ wording (Ch.10 fixed) ✅ 2026-03-15
 - [x] Add design principles table to Ch.9 ✅ 2026-03-15
-- [x] Draft AI use declaration ✅ `docs/thesis/sections/ai_declaration.md`
+- [x] Draft AI use declaration ✅ `docs/thesis/sections/ai-declaration.md`
 - [x] Update Ch.2 with paper-specific arguments ✅ sections 2.1–2.4, 2.6 now reference corpus
 - [x] Update gap_analysis.md to v4 ✅ 2026-03-15
 - [x] Fix author list in `neuro_symbolic_ai_2024.md` (corrected to Colelough & Regli) ✅ 2026-03-15
@@ -317,11 +317,11 @@
   - `ai_based_dsr_framework.md` (Methodology)
   - `pathways_design_research_ai.md` (Methodology — INFORMS ISR)
 - Updated `scraping_log.md` with annotation status table
-- Built Chapter 6 skeleton → `docs/thesis/sections/ch6_model_benchmark.md`
-- Built Chapter 7 skeleton → `docs/thesis/sections/ch7_synthesis.md`
-- Built Chapter 8 skeleton → `docs/thesis/sections/ch8_evaluation.md`
-- Built Chapter 9 skeleton → `docs/thesis/sections/ch9_discussion.md`
-- Built Chapter 10 skeleton → `docs/thesis/sections/ch10_conclusion.md`
+- Built Chapter 6 skeleton → `docs/thesis/sections/ch6-model-benchmark.md`
+- Built Chapter 7 skeleton → `docs/thesis/sections/ch7-synthesis.md`
+- Built Chapter 8 skeleton → `docs/thesis/sections/ch8-evaluation.md`
+- Built Chapter 9 skeleton → `docs/thesis/sections/ch9-discussion.md`
+- Built Chapter 10 skeleton → `docs/thesis/sections/ch10-conclusion.md`
 - Built front page template → `docs/thesis/sections/frontpage.md`
 
 **All pre-data thesis sections now have skeletons.** Full 10-chapter structure complete.

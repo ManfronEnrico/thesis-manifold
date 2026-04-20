@@ -17,7 +17,7 @@ Triggers the APA Citation Skill to format, verify, and insert a citation into th
 
 ```
 /cite                          # paste paper data in the next message
-/cite ch2_literature_review    # specify target section
+/cite ch2-literature-review    # specify target section
 /cite [paste _REV note here]   # inline input
 ```
 

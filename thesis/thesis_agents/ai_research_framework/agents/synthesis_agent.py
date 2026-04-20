@@ -19,7 +19,7 @@ from ..config import LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS
 from ..state.research_state import ModelForecast, SynthesisOutput, ResearchState
 
 
-# ── Confidence score weights (from thesis/thesis-writing/sections-drafts/ch7_synthesis.md) ────
+# ── Confidence score weights (from thesis/thesis-writing/sections-drafts/ch7-synthesis.md) ────
 
 WEIGHT_INTERVAL_WIDTH = 0.40        # Narrower calibrated interval → higher confidence
 WEIGHT_INTER_MODEL_AGREEMENT = 0.30 # Lower spread across models → higher confidence
@@ -161,7 +161,7 @@ class SynthesisAgent:
     ) -> tuple[float, Literal["High", "Moderate", "Low"]]:
         """
         Composite confidence score (0–100) using 3 weighted components.
-        See thesis/thesis-writing/sections-drafts/ch7_synthesis.md for design rationale.
+        See thesis/thesis-writing/sections-drafts/ch7-synthesis.md for design rationale.
         """
         # Interval width score: narrower relative interval → higher score
         interval_relative = (upper - lower) / point if point != 0 else 1.0

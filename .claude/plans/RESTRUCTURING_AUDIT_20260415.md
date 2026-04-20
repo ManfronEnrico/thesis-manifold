@@ -430,7 +430,7 @@ From your repo map:
 
 **Recommendation**: Archive it (now done in Step 1). Keep as reference, but:
 - Don't edit in Obsidian going forward (sync will break)
-- All active work is in `thesis/writing/sections/` + `.claude/` infrastructure
+- All active work is in `thesis/thesis-writing/sections-drafts/` + `.claude/` infrastructure
 
 **This is finalized** in the restructuring above.
 
