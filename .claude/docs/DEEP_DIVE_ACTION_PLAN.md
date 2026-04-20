@@ -91,12 +91,12 @@ Location: `CMT_Codebase/.claude/MODULARIZATION_AUDIT.md`
 | File | Lines | Status | Action |
 |------|-------|--------|--------|
 | CLAUDE.md | 646 | Too large (>300) | Split into nav + architecture + state |
-| docs/system_architecture_report.md | 986 | Very large | Review for consolidation |
+| docs/system-architecture-report.md | 986 | Very large | Review for consolidation |
 | docs/PROJECT_OVERVIEW.md | 271 | Consolidate? | Merge into project-state or architecture |
 | docs/thesis_production_architecture.md | 261 | OK | Keep as-is |
 | docs/project-management/context.md | 310 | Borderline | Consider splitting by phase |
 | docs/architecture.md | 171 | OK | Keep, may receive content from CLAUDE.md |
-| docs/experiment_tracking_agent.md | 223 | OK | Keep as-is |
+| docs/experiment-tracking-agent.md | 223 | OK | Keep as-is |
 | docs/DATA_ACCESS_SETUP.md | 219 | OK | Keep as-is |
 | .claude/rules/*.md | ~500 total | OK | Each file <200 lines |
 
@@ -306,7 +306,7 @@ These tasks require planning and refactoring. Do them when you have 2-3 uninterr
    # Compliance & Architecture Decisions
 
    ## CBS Guidelines
-   [Copy from thesis/compliance/cbs_guidelines_notes.md]
+   [Copy from thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md]
 
    ## Integrity Gates
    [Copy from docs/tooling-issues.md or docs/project-management/context.md if documented]

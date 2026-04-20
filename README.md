@@ -124,7 +124,7 @@ Thesis Maniflod/
 ├── docs/
 │   ├── context.md                  # Session log
 │   ├── architecture.md             # Framework architecture decisions
-│   ├── system_architecture_report.md
+│   ├── system-architecture-report.md
 │   ├── literature/
 │   │   ├── gap_analysis.md         # Research gap + novelty (v3)
 │   │   ├── rq_evolution.md         # RQ version history
@@ -319,7 +319,7 @@ Phase 7 — Thesis Writing            [bullets only → human approval → prose
 | Master instructions | `CLAUDE.md` | Read by Claude Code at every session |
 | Quick reference | `CHEATSHEET.md` | Common commands and workflows |
 | Session log | `docs/context.md` | What happened in each session |
-| Architecture report | `docs/system_architecture_report.md` | Full 10-section technical report |
+| Architecture report | `docs/system-architecture-report.md` | Full 10-section technical report |
 | Gap analysis | `docs/literature/gap_analysis.md` | Research gap + novelty claim |
 | RQ evolution | `docs/literature/rq_evolution.md` | Version history of research questions |
 | Thesis outline | `docs/thesis/outline.md` | 10-chapter structure |

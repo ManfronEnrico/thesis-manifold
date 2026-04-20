@@ -348,52 +348,52 @@
         "target_pages": 1
       },
       {
-        "id": "ch1_introduction",
+        "id": "ch1-introduction",
         "title": "Chapter 1 \u2014 Introduction",
         "target_pages": 8
       },
       {
-        "id": "ch2_literature_review",
+        "id": "ch2-literature-review",
         "title": "Chapter 2 \u2014 Literature Review",
         "target_pages": 20
       },
       {
-        "id": "ch3_methodology",
+        "id": "ch3-methodology",
         "title": "Chapter 3 \u2014 Methodology",
         "target_pages": 12
       },
       {
-        "id": "ch4_data_assessment",
+        "id": "ch4-data-assessment",
         "title": "Chapter 4 \u2014 Data Assessment",
         "target_pages": 10
       },
       {
-        "id": "ch5_framework_design",
+        "id": "ch5-framework-design",
         "title": "Chapter 5 \u2014 Framework Design",
         "target_pages": 15
       },
       {
-        "id": "ch6_model_benchmark",
+        "id": "ch6-model-benchmark",
         "title": "Chapter 6 \u2014 Model Benchmark & Selection",
         "target_pages": 15
       },
       {
-        "id": "ch7_synthesis",
+        "id": "ch7-synthesis",
         "title": "Chapter 7 \u2014 Context-Aware Decision Synthesis",
         "target_pages": 12
       },
       {
-        "id": "ch8_evaluation",
+        "id": "ch8-evaluation",
         "title": "Chapter 8 \u2014 Experimental Evaluation",
         "target_pages": 15
       },
       {
-        "id": "ch9_discussion",
+        "id": "ch9-discussion",
         "title": "Chapter 9 \u2014 Discussion",
         "target_pages": 8
       },
       {
-        "id": "ch10_conclusion",
+        "id": "ch10-conclusion",
         "title": "Chapter 10 \u2014 Conclusion",
         "target_pages": 5
       }
@@ -418,86 +418,86 @@
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0
     },
-    "ch1_introduction": {
-      "chapter": "ch1_introduction",
+    "ch1-introduction": {
+      "chapter": "ch1-introduction",
       "status": "prose_draft",
-      "bullet_file": "docs/thesis/sections/ch1_introduction.md",
+      "bullet_file": "docs/thesis/sections/ch1-introduction.md",
       "compliance_checked": false,
       "compliance_note": "Em dashes removed 2026-04-12. Citation corrected 2026-04-12 (Sapkota et al., 2025). Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 21400
     },
-    "ch2_literature_review": {
-      "chapter": "ch2_literature_review",
+    "ch2-literature-review": {
+      "chapter": "ch2-literature-review",
       "status": "prose_draft",
-      "bullet_file": "docs/thesis/sections/ch2_literature_review.md",
+      "bullet_file": "docs/thesis/sections/ch2-literature-review.md",
       "compliance_checked": true,
       "compliance_note": "Written 2026-04-12. All 8 unknown-author citations resolved via /find-papers. 25 citations still pending NotebookLM verification. Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 50500
     },
-    "ch3_methodology": {
-      "chapter": "ch3_methodology",
+    "ch3-methodology": {
+      "chapter": "ch3-methodology",
       "status": "prose_draft",
-      "bullet_file": "docs/thesis/sections/ch3_methodology.md",
+      "bullet_file": "docs/thesis/sections/ch3-methodology.md",
       "compliance_checked": true,
       "compliance_note": "Written 2026-04-12. All citations from existing corpus. DSR supervisor confirmation still pending (OI-03). Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 27300
     },
-    "ch4_data_assessment": {
-      "chapter": "ch4_data_assessment",
+    "ch4-data-assessment": {
+      "chapter": "ch4-data-assessment",
       "status": "prose_draft",
-      "bullet_file": "docs/thesis/sections/ch4_data_assessment.md",
+      "bullet_file": "docs/thesis/sections/ch4-data-assessment.md",
       "compliance_checked": true,
       "compliance_note": "Written 2026-04-12 from live Nielsen query results. Nielsen sections fully grounded in data. Indeks Danmark sections based on documented data model (CSVs pending download). Awaiting human review before prose_approved.",
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 22700
     },
-    "ch5_framework_design": {
-      "chapter": "ch5_framework_design",
+    "ch5-framework-design": {
+      "chapter": "ch5-framework-design",
       "status": "bullets_draft",
-      "bullet_file": "docs/thesis/sections/ch5_framework_design.md",
+      "bullet_file": "docs/thesis/sections/ch5-framework-design.md",
       "compliance_checked": true,
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0
     },
-    "ch6_model_benchmark": {
-      "chapter": "ch6_model_benchmark",
+    "ch6-model-benchmark": {
+      "chapter": "ch6-model-benchmark",
       "status": "bullets_draft",
-      "bullet_file": "docs/thesis/sections/ch6_model_benchmark.md",
+      "bullet_file": "docs/thesis/sections/ch6-model-benchmark.md",
       "compliance_checked": true,
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0
     },
-    "ch7_synthesis": {
-      "chapter": "ch7_synthesis",
+    "ch7-synthesis": {
+      "chapter": "ch7-synthesis",
       "status": "bullets_draft",
-      "bullet_file": "docs/thesis/sections/ch7_synthesis.md",
+      "bullet_file": "docs/thesis/sections/ch7-synthesis.md",
       "compliance_checked": true,
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0
     },
-    "ch8_evaluation": {
-      "chapter": "ch8_evaluation",
+    "ch8-evaluation": {
+      "chapter": "ch8-evaluation",
       "status": "bullets_draft",
-      "bullet_file": "docs/thesis/sections/ch8_evaluation.md",
+      "bullet_file": "docs/thesis/sections/ch8-evaluation.md",
       "compliance_checked": true,
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0
     },
-    "ch9_discussion": {
-      "chapter": "ch9_discussion",
+    "ch9-discussion": {
+      "chapter": "ch9-discussion",
       "status": "bullets_draft",
-      "bullet_file": "docs/thesis/sections/ch9_discussion.md",
+      "bullet_file": "docs/thesis/sections/ch9-discussion.md",
       "compliance_checked": true,
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0
     },
-    "ch10_conclusion": {
-      "chapter": "ch10_conclusion",
+    "ch10-conclusion": {
+      "chapter": "ch10-conclusion",
       "status": "bullets_draft",
-      "bullet_file": "docs/thesis/sections/ch10_conclusion.md",
+      "bullet_file": "docs/thesis/sections/ch10-conclusion.md",
       "compliance_checked": true,
       "compliance_report": "docs/compliance/compliance_checks/compliance_report_20260315.md",
       "word_count_estimate": 0

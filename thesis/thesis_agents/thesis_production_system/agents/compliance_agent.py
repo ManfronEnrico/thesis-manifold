@@ -3,7 +3,7 @@ Compliance Agent — Thesis Production System (System B)
 -------------------------------------------------------
 Validates thesis content against CBS formal requirements.
 Reads guidelines from Thesis/Thesis Guidelines/ PDFs (already extracted
-to thesis/compliance/cbs_guidelines_notes.md).
+to thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md).
 
 Checks per section:
 - Citation format (APA 7)
@@ -22,7 +22,7 @@ from typing import Dict, List, Optional
 from ..state.thesis_state import ComplianceCheck, ComplianceState, ThesisState
 
 
-# CBS formal constants (from thesis/compliance/cbs_guidelines_notes.md)
+# CBS formal constants (from thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md)
 CHARS_PER_STANDARD_PAGE = 2_275   # characters excluding spaces
 MAX_STANDARD_PAGES = 120
 GUIDELINES_NOTES = Path("thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md")
@@ -65,7 +65,7 @@ class ComplianceAgent:
         # ── APA 7 citation format ──────────────────────────────────────────────
         # Look for citation placeholders — Cite: [Author Year] or (Author, Year)
         if "Cite:" not in content and not re.search(r"\([A-Z][a-z]+,?\s+\d{4}\)", content):
-            if chapter_id not in ("frontpage", "ch1_introduction"):
+            if chapter_id not in ("frontpage", "ch1-introduction"):
                 issues.append(
                     "No citation placeholders found. Add 'Cite: [Author Year]' markers "
                     "or APA-format in-text citations."
@@ -100,19 +100,19 @@ class ComplianceAgent:
     def _mandatory_sections(self, chapter_id: str) -> List[str]:
         """Return list of required sub-sections for each chapter."""
         requirements: Dict[str, List[str]] = {
-            "ch3_methodology": [
+            "ch3-methodology": [
                 "philosophy of science",
                 "design science",
                 "research strategy",
                 "validity",
                 "limitations",
             ],
-            "ch8_evaluation": [
+            "ch8-evaluation": [
                 "threats to validity",
                 "baseline",
                 "metrics",
             ],
-            "ch10_conclusion": [
+            "ch10-conclusion": [
                 "theoretical contribution",
                 "practical implications",
                 "limitations",

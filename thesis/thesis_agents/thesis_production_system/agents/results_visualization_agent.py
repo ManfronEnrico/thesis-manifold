@@ -8,7 +8,7 @@ are generated from the experiment_registry.json, not drawn manually.
 Complements the Diagram Agent (B7), which generates structural diagrams.
 This agent generates data-driven results charts.
 
-Output: thesis/writing/figures/results_*.{svg,png}
+Output: thesis/thesis-writing/figures/results_*.{svg,png}
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional
 from .experiment_tracking_agent import ExperimentTrackingAgent
 
 
-FIGURES_DIR = Path("thesis/writing/figures")
+FIGURES_DIR = Path("thesis/thesis-writing/figures")
 
 
 class ResultsVisualizationAgent:
