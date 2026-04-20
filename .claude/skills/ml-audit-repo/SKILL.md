@@ -1,5 +1,5 @@
 ---
-name: audit-ml-repo
+name: ml-audit-repo
 description: |
   Evidence-driven ML repository verification skill. Treats every Claude Code claim as a hypothesis to test, not a statement to trust. Runs staged audits (quick / standard / forensic) across code executability, data reality, training authenticity, and metric validity. Produces claim verdicts, findings JSON, evidence manifest, and a human-readable audit report. Use before merging ML code, before model releases, or whenever AI-generated code claims need independent verification.
   Triggers on: "audit ml repo", "verify claims", "audit this repo", "check training is real", "verify metrics", "run quick audit", "run standard audit", "forensic audit", "hallucination check", "evidence-driven audit", "verify model training".

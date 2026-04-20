@@ -20,7 +20,7 @@ Invoke when:
 - Before `git worktree remove` is run
 
 **Prerequisite**: Work must be committed on a feature branch or worktree.
-**Upstream skills**: `/git-worktrees` (setup), `/draft-git-commit` (message), `/git-commit` (staging)
+**Upstream skills**: `/git-worktrees` (setup), `/git-draft-commit` (message), `/git-commit` (staging)
 
 ---
 
@@ -44,7 +44,7 @@ git status --short
 
 **Case C — On main**:
 - Stop. You should not be merging FROM main.
-- Delegate to `/using-git-worktrees` if branch is not yet created
+- Delegate to `/git-worktrees` if branch is not yet created
 
 ---
 
@@ -278,7 +278,7 @@ Worktree removed: [Yes | No]
 Next action:
   - If GitHub PR: Monitor PR for approval, then merge via GitHub UI
   - If local merge: Branch is live on main; can safely delete remote branch
-  - If kept worktree: Continue with /draft-git-commit and /git-commit
+  - If kept worktree: Continue with /git-draft-commit and /git-commit
 ```
 
 ---
@@ -342,7 +342,7 @@ See: docs/reference/git-worktrees-and-parallel-sessions.md#reconcile-workflow
 ## Reference docs
 
 - Worktree setup: `/git-worktrees`
-- Commit message generation: `/draft-git-commit`
+- Commit message generation: `/git-draft-commit`
 - Single-commit staging: `/git-commit`
 - Branch strategy: `.claude/rules/trigger-branch-strategy.md`
 - Full worktree guide: `docs/reference/git-worktrees-and-parallel-sessions.md`
