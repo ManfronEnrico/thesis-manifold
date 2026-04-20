@@ -22,6 +22,19 @@ A `UserPromptSubmit` hook fires on every opening message and runs
 
 The hook is registered in `~/.claude/settings.json` (global, not in repo).
 
+### Branch mismatch detection (used by `/draft-commit`)
+
+`branch_guard.py` exports `extract_keywords`, `pick_prefix`, `slugify`, and
+`branch_matches_topic` for use by the draft-commit skill. At commit time,
+the skill re-derives the session topic and checks the current branch using
+two-level matching:
+
+| Level | Condition | Result |
+|-------|-----------|--------|
+| **Strict** | prefix matches AND ≥1 keyword in slug | Proceed silently |
+| **Loose** | ≥1 keyword anywhere in branch name | Proceed, note loose match |
+| **None** | Neither condition met | Flag mismatch, ask user to resolve |
+
 ## Layer B — Rule fallback (backup)
 
 If the hook output is somehow absent, Claude must still perform the branch
