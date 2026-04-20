@@ -1,5 +1,5 @@
 ---
-name: prep-standup
+name: standup-prep
 description: |
   Prepares the standup draft for supervisor meetings by drafting the Non-Technical Summary and producing a clean presentation-ready copy. Triggered by: "prep standup", "prepare standup", "prepare for standup", "get ready for supervisor meeting", "before supervisor meeting".
 compatibility:
