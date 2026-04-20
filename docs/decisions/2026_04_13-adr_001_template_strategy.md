@@ -1,3 +1,10 @@
+---
+title: "ADR-001: CBS Thesis LaTeX Template Strategy"
+type: decision
+status: draft
+created: 2026-04-13
+---
+
 # ADR-001: CBS Thesis LaTeX Template Strategy
 
 **Status**: OPEN — decision pending
