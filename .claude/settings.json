@@ -23,7 +23,50 @@
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
-        "hooks": [{ "type": "command", "command": "python \".claude/hooks/check_file_edit.py\"" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \".claude/hooks/check_file_edit.py\""
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/brian/OneDrive/Documents/03 - R - Resources/fork-context-mode/cli.bundle.mjs\" hook pre-tool-use"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/brian/OneDrive/Documents/03 - R - Resources/fork-context-mode/cli.bundle.mjs\" hook post-tool-use"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/brian/OneDrive/Documents/03 - R - Resources/fork-context-mode/cli.bundle.mjs\" hook pre-compact"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/brian/OneDrive/Documents/03 - R - Resources/fork-context-mode/cli.bundle.mjs\" hook session-start"
+          }
+        ]
       }
     ]
   }
