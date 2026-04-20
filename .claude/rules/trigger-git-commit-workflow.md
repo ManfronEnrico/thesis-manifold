@@ -5,9 +5,10 @@ paths:
 
 # Git Commit Workflow
 
-**Trigger**: `/draft_commit` — generates ready-to-paste commit message
+**Trigger**: `/git-draft-commit` — generates ready-to-paste commit message
+**Execution**: `/git-commit` — stages files and runs the commit from an approved message
 
-**Pre-step**: Automatically invoke `/log_errors` to capture any session tooling issues before drafting.
+**Pre-step**: Automatically invoke `/errors-log` to capture any session tooling issues before drafting.
 
 ## Algorithm
 0. **Branch check**: Run `git branch --show-current` — if on `main`, warn the user and suggest creating a branch (see `.claude/rules/trigger-branch-strategy.md`). Ask for explicit confirmation before proceeding. If on a feature branch, proceed freely.

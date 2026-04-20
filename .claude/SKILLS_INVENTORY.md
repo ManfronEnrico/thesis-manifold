@@ -1,11 +1,11 @@
 ---
 name: Complete Skills Inventory
-description: Reference guide for all 35 available skills by category and use case
-version: 1.0
-date: 2026-04-16
+description: Reference guide for all skills by category and use case
+version: 2.0
+date: 2026-04-20
 ---
 
-# Complete Skills Inventory — 35 Available Skills
+# Complete Skills Inventory
 
 Quick reference organized by category with chapter alignment and use cases.
 
@@ -27,7 +27,7 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ## ML & Time Series Forecasting
 
-**Category**: Core research (SRQ1, Chapter 6)  
+**Category**: Core research (SRQ1, Chapter 6)
 **Priority**: Tier 1 (Critical)
 
 ### /aeon
@@ -70,17 +70,17 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ## Data Analysis & Exploration
 
-**Category**: Data preparation (Chapter 4)  
+**Category**: Data preparation (Chapter 4)
 **Priority**: Tier 1 (Critical)
 
-### /exploratory-data-analysis
+### /data-eda
 **Automated Data Profiling**
 - **Description**: Comprehensive EDA on 200+ file formats (CSV, Excel, Parquet, etc.)
 - **Use for**: Ch. 4 — Nielsen data quality assessment, missing values, outliers
 - **Key features**: Auto-profiling, missing value analysis, distribution visualization
 - **Chapter alignment**: Chapter 4 ("Data Characteristics")
 - **Demo**: Profile 120K SKU dataset in ~30 seconds
-- **Read first**: `.claude/skills/exploratory-data-analysis/SKILL.md`
+- **Read first**: `.claude/skills/data-eda/SKILL.md`
 
 ### /polars
 **High-Performance Data Wrangling**
@@ -91,29 +91,20 @@ Quick reference organized by category with chapter alignment and use cases.
 - **Demo**: Aggregate 2M rows to 1K summary rows
 - **Read first**: `.claude/skills/polars/SKILL.md`
 
-### /statistical-analysis
+### /stats-analysis
 **Statistical Test Selection**
 - **Description**: Guided statistics with automatic test selection (ANOVA, t-test, Kruskal-Wallis)
 - **Use for**: Ch. 6-8 — Compare forecasting methods statistically
 - **Key features**: Test selection guide, reporting, effect sizes
 - **Chapter alignment**: SRQ4 (statistical comparison protocols)
 - **Demo**: Run Wilcoxon signed-rank test on method A vs. B
-- **Read first**: `.claude/skills/statistical-analysis/SKILL.md`
-
-### /hypothesis-generation
-**Data-Driven Hypothesis Synthesis**
-- **Description**: Automatically generate hypotheses from observed data patterns
-- **Use for**: Ch. 5-7 — Discover unexpected findings, structure research
-- **Key features**: Pattern detection, hypothesis formulation, novelty assessment
-- **Chapter alignment**: Chapter 5 (System A coordination)
-- **Demo**: Generate 5 hypotheses from Nielsen + forecast mismatch analysis
-- **Read first**: `.claude/skills/hypothesis-generation/SKILL.md`
+- **Read first**: `.claude/skills/stats-analysis/SKILL.md`
 
 ---
 
 ## Explainability & Interpretation
 
-**Category**: Model explanation (SRQ2, Chapter 8)  
+**Category**: Model explanation (SRQ2, Chapter 8)
 **Priority**: Tier 1 (Critical)
 
 ### /shap
@@ -147,7 +138,7 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ## Visualization & Figures
 
-**Category**: Publication-ready figures (Chapters 1-10)  
+**Category**: Publication-ready figures (Chapters 1-10)
 **Priority**: Tier 1 (Critical)
 
 ### /matplotlib
@@ -181,7 +172,7 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ## Research Quality & Writing
 
-**Category**: Literature, writing, quality assurance (Chapters 2, 9-10)  
+**Category**: Literature, writing, quality assurance (Chapters 2, 9-10)
 **Priority**: Tier 1-2 (High-Value)
 
 ### /literature-review
@@ -193,14 +184,14 @@ Quick reference organized by category with chapter alignment and use cases.
 - **Demo**: Search for "deep learning + retail forecasting" across all databases
 - **Read first**: `.claude/skills/literature-review/SKILL.md`
 
-### /scholar-evaluation
+### /research-scholar-evaluation
 **Literature Quality Assessment**
 - **Description**: Systematically rank papers by relevance, impact, citation network
 - **Use for**: Ch. 2 — Assess which papers are truly essential
 - **Key features**: ScholarEval framework, citation analysis, venue rankings
 - **Chapter alignment**: Chapter 2 (Literature curation)
 - **Demo**: Rank current 37 papers by relevance to thesis
-- **Read first**: `.claude/skills/scholar-evaluation/SKILL.md`
+- **Read first**: `.claude/skills/research-scholar-evaluation/SKILL.md`
 
 ### /scientific-writing
 **Full Manuscript Writing**
@@ -220,30 +211,39 @@ Quick reference organized by category with chapter alignment and use cases.
 - **Demo**: Draft NSF proposal on "Retail Forecasting with 8GB RAM"
 - **Read first**: `.claude/skills/research-grants/SKILL.md`
 
-### /apa-citation
+### /citation-apa
 **APA 7 Citation Formatting**
 - **Description**: Format, verify, and insert APA 7 citations
 - **Use for**: All chapters — Ensure citation compliance
 - **Key features**: Format conversion, DOI lookup, plagiarism check
 - **Chapter alignment**: Compliance (CBS requirement)
 - **Demo**: Format and insert citation from DOI
-- **Read first**: `.claude/skills/apa-citation/SKILL.md`
+- **Read first**: `.claude/skills/citation-apa/SKILL.md`
 
 ---
 
 ## Advanced Research Pipelines
 
-**Category**: Orchestrated multi-agent workflows  
+**Category**: Orchestrated multi-agent workflows
 **Priority**: Tier 2-3 (Specialized)
 
-### /deep-research
+### /research-deep
 **13-Agent Research Orchestration**
 - **Description**: Universal deep research team for rigorous academic investigation
 - **Use for**: Deep dives on specific topics (e.g., "retail forecasting with constraints")
 - **Key features**: Parallel agent research, synthesis, novelty detection
 - **Chapter alignment**: Extended literature work (if time permits)
 - **Demo**: Research "time series with memory constraints" across 13 perspectives
-- **Read first**: `.claude/skills/deep-research/SKILL.md`
+- **Read first**: `.claude/skills/research-deep/SKILL.md`
+
+### /research-hypothesis-generation
+**Data-Driven Hypothesis Synthesis**
+- **Description**: Automatically generate hypotheses from observed data patterns
+- **Use for**: Ch. 5-7 — Discover unexpected findings, structure research
+- **Key features**: Pattern detection, hypothesis formulation, novelty assessment
+- **Chapter alignment**: Chapter 5 (System A coordination)
+- **Demo**: Generate 5 hypotheses from Nielsen + forecast mismatch analysis
+- **Read first**: `.claude/skills/research-hypothesis-generation/SKILL.md`
 
 ### /academic-pipeline
 **10-Stage Research Validation Pipeline**
@@ -256,7 +256,7 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ### /academic-paper-reviewer
 **5-Perspective Peer Review**
-- **Description**: Simulate peer review from 5 independent perspectives (methodologist, statistician, domain expert, etc.)
+- **Description**: Simulate peer review from 5 independent perspectives
 - **Use for**: Pre-submission review (catch issues before supervisor sees them)
 - **Key features**: Role-based reviewers, structured feedback, severity ranking
 - **Chapter alignment**: Final review (1 week before deadline)
@@ -276,46 +276,46 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ## Standup & Project Management
 
-**Category**: Session tracking and documentation  
+**Category**: Session tracking and documentation
 **Priority**: Tier 1 (Required)
 
-### /init_standup
+### /standup-init
 **Initialize Standup Draft**
 - **Description**: Create new standup draft for next supervisor meeting
 - **Use for**: Start of multi-session work block
 - **Key features**: Auto-carry forward unchecked tasks, backlog items
 - **Trigger**: "init standup", "initialize standup"
-- **Read first**: `.claude/skills/init_standup/SKILL.md`
+- **Read first**: `.claude/skills/standup-init/SKILL.md`
 
-### /log_standup
+### /standup-log
 **Log Session to Standup**
 - **Description**: Append current session entry to standup_draft.md
 - **Use for**: End of every session to track progress
 - **Key features**: Auto-timestamp, work summary, blockers
 - **Trigger**: "log standup" (auto-fires at session end if changes detected)
-- **Read first**: `.claude/skills/log_standup/SKILL.md`
+- **Read first**: `.claude/skills/standup-log/SKILL.md`
 
-### /prep_standup
+### /standup-prep
 **Prepare Standup for Meeting**
 - **Description**: Draft non-technical summary and create meeting-ready copy
 - **Use for**: 1 day before supervisor meeting
 - **Key features**: Summary generation, formatting, clean copy
 - **Trigger**: "prep standup", "prepare standup"
-- **Read first**: `.claude/skills/prep_standup/SKILL.md`
+- **Read first**: `.claude/skills/standup-prep/SKILL.md`
 
-### /finalize_standup
+### /standup-finalize
 **Finalize Standup**
 - **Description**: Overwrite meeting file with final version, archive draft
 - **Use for**: Right before supervisor meeting
 - **Key features**: Archive previous version, update CLAUDE.md
 - **Trigger**: "finalize standup"
-- **Read first**: `.claude/skills/finalize_standup/SKILL.md`
+- **Read first**: `.claude/skills/standup-finalize/SKILL.md`
 
 ---
 
 ## Literature & Reference Management
 
-**Category**: Zotero integration and academic sources  
+**Category**: Zotero integration and academic sources
 **Priority**: Tier 1 (In Progress)
 
 ### /pyzotero
@@ -338,36 +338,60 @@ Quick reference organized by category with chapter alignment and use cases.
 
 ## Utilities & Tools
 
-**Category**: Infrastructure and meta-skills  
+**Category**: Infrastructure and meta-skills
 **Priority**: Tier 1 (Required)
 
-### /draft_commit
+### /git-draft-commit
 **Generate Git Commit Message**
-- **Description**: Create ready-to-paste commit message from session changes
-- **Use for**: End of work session
-- **Key features**: Conventional commits, change summary, timestamps
-- **Trigger**: "draft commit", "git commit message"
-- **Read first**: `.claude/skills/draft_commit/SKILL.md`
+- **Description**: Create ready-to-paste commit message from session changes; delegates worktree setup to /git-worktrees
+- **Use for**: End of work session — generate and review the message
+- **Key features**: Conventional commits, trailers, branch/worktree check
+- **Trigger**: "draft commit", "git commit message", "prepare commit"
+- **Read first**: `.claude/skills/git-draft-commit/SKILL.md`
 
-### /update_all_docs
+### /git-commit
+**Execute Git Commit**
+- **Description**: Stage files and submit an approved commit message (PowerShell-safe)
+- **Use for**: After /git-draft-commit message is approved
+- **Key features**: Staging choices, confirmation gate, post-commit checklist
+- **Trigger**: "commit this", "run the commit", "submit the commit"
+- **Read first**: `.claude/skills/git-commit/SKILL.md`
+
+### /git-worktrees
+**Git Worktree Session Setup**
+- **Description**: Create isolated `.cc/worktrees/<slug>` workspace with project branch conventions
+- **Use for**: Start of any session needing isolation
+- **Key features**: Gitignore check, branch naming, mismatch detection
+- **Trigger**: "set up worktree", "create worktree", "isolate session"
+- **Read first**: `.claude/skills/git-worktrees/SKILL.md`
+
+### /docs-update-all
 **Update Living Documentation**
 - **Description**: Sync all project docs in order (sections → compliance → CLAUDE.md → plans)
 - **Use for**: End of phase to keep docs current
 - **Key features**: Phase-aware updates, change tracking
-- **Trigger**: "update all docs", "update_all_docs"
-- **Read first**: `.claude/skills/update_all_docs/SKILL.md`
+- **Trigger**: "update all docs"
+- **Read first**: `.claude/skills/docs-update-all/SKILL.md`
 
-### /update_plan
+### /plan-update
 **Log Plan Outcome**
 - **Description**: Finalize plan by documenting completed/adjusted/dropped items
 - **Use for**: After plan execution
 - **Key features**: Outcome file creation, auto-relocation to proper directory
 - **Trigger**: "update plan [name]"
-- **Read first**: `.claude/skills/update_plan/SKILL.md`
+- **Read first**: `.claude/skills/plan-update/SKILL.md`
+
+### /errors-log
+**Log Tooling Issues**
+- **Description**: Scan conversation for error→solution sequences, append to JSONL
+- **Use for**: Capture Windows/OneDrive/tooling issues for future reference
+- **Key features**: Deduplication, JSONL schema, markdown rebuild
+- **Trigger**: "log errors", "update tooling"
+- **Read first**: `.claude/skills/errors-log/SKILL.md`
 
 ### /skill-creator
 **Create Custom Skills**
-- **Description**: Define new skills, modify existing skills, run evals
+- **Description**: Define new skills, modify existing skills, run evals (community skill)
 - **Use for**: If extending thesis capabilities
 - **Key features**: Skill definition templates, eval framework
 - **Read first**: `.claude/skills/skill-creator/SKILL.md`
@@ -379,14 +403,14 @@ Quick reference organized by category with chapter alignment and use cases.
 - **Status**: All 10 tests passing
 - **Read first**: `.claude/skills/test-codebase-integrity/SKILL.md`
 
-### /audit-ml-repo
+### /ml-audit-repo
 **Evidence-Driven ML Repository Verification**
-- **Description**: Treats every Claude Code claim as a hypothesis to test. Staged audits (quick/standard/forensic) across code executability, data reality, training authenticity, and metric validity. Produces claim verdicts, findings JSON, evidence manifest, and audit report.
-- **Use for**: Before model releases, after heavy Claude Code sessions, when ML metrics need independent verification, pre-merge gate for ML workflows
-- **Key features**: Claim extraction + per-claim verdicts, hallucination detection rubric (12 checks), weight-delta training proof, metric recomputation from frozen predictions, 100-point scoring rubric, `audit_artifacts/` evidence bundle
-- **Levels**: `quick` (15–30 min, PRs) | `standard` (2–6h, releases) | `forensic` (1–3 days, high-stakes)
-- **Trigger**: "audit ml repo", "quick audit", "verify training", "hallucination check", "verify metrics"
-- **Read first**: `.claude/skills/audit-ml-repo/SKILL.md`
+- **Description**: Treats every Claude Code claim as a hypothesis to test. Staged audits across code executability, data reality, training authenticity, and metric validity.
+- **Use for**: Before model releases, after heavy Claude Code sessions, pre-merge gate for ML workflows
+- **Key features**: Claim verdicts, hallucination detection (12 checks), 100-point scoring rubric
+- **Levels**: `quick` (15–30 min) | `standard` (2–6h) | `forensic` (1–3 days)
+- **Trigger**: "audit ml repo", "quick audit", "verify training"
+- **Read first**: `.claude/skills/ml-audit-repo/SKILL.md`
 
 ### /thesis-structuring
 **Outline Evolution**
@@ -395,14 +419,28 @@ Quick reference organized by category with chapter alignment and use cases.
 - **Key features**: Bullet-to-prose conversion tracking
 - **Read first**: `.claude/skills/thesis-structuring/SKILL.md`
 
+### /workspace-audit
+**Repository Health Audit (read-only)**
+- **Read first**: `.claude/skills/workspace-audit/SKILL.md`
+
+### /workspace-cleanup
+**Repository Fixer**
+- **Read first**: `.claude/skills/workspace-cleanup/SKILL.md`
+
+### /workspace-enforce
+**CI Gate for Workspace Health**
+- **Read first**: `.claude/skills/workspace-enforce/SKILL.md`
+
+### /repo-hygiene
+**Repository Root & Markdown Hygiene**
+- **Read first**: `.claude/skills/repo-hygiene/SKILL.md`
+
 ---
 
 ## Quick Activation Reference
 
-### By Use Case
-
 **"I need to explore Nielsen data"**
-→ `/exploratory-data-analysis`, then `/seaborn`
+→ `/data-eda`, then `/seaborn`
 
 **"I need to compare forecasting methods"**
 → `/scikit-learn`, `/aeon`, then `/statsmodels`
@@ -414,35 +452,17 @@ Quick reference organized by category with chapter alignment and use cases.
 → `/matplotlib` or `/seaborn`, then `/scientific-visualization`
 
 **"I need to review my literature"**
-→ `/literature-review`, then `/scholar-evaluation`
+→ `/literature-review`, then `/research-scholar-evaluation`
 
 **"I need to simulate peer review"**
 → `/academic-paper-reviewer`
 
 **"I need deep research on a topic"**
-→ `/deep-research` (13-agent orchestration)
+→ `/research-deep` (13-agent orchestration)
+
+**"I need to commit my work"**
+→ `/git-draft-commit` → approve → `/git-commit`
 
 ---
 
-## Import Status
-
-| Source | Skills | Status |
-|--------|--------|--------|
-| scientific-agent-skills | 18 | ✅ Imported Apr 16 |
-| academic-research-skills | 4 | ✅ Imported Apr 16 |
-| Original thesis skills | 13 | ✅ Existing |
-| **TOTAL** | **35** | **✅ All Active** |
-
----
-
-## Next Steps
-
-1. **Week 1**: Use Tier 1 skills (exploratory-data-analysis, scikit-learn, matplotlib)
-2. **Week 2-3**: Add Tier 2 skills as needed (literature-review, scholar-evaluation)
-3. **Week 4-5**: Use Tier 3 pipelines (academic-paper-reviewer, academic-pipeline)
-4. **Final week**: Run /academic-paper-reviewer 1 week before submission
-
----
-
-**Generated**: 2026-04-16  
-**All skills imported and verified**: ✅
+**Updated**: 2026-04-20 — skills renamed for domain grouping
