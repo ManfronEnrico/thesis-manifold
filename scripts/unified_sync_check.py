@@ -7,7 +7,7 @@ Updates ingestion_manifest.json with current state and status.
 
 Phase 2 enhancements:
 - Create NotebookLM notebooks (real API, not placeholders)
-- Sync context markdown files from thesis/thesis-components/ to each notebook
+- Sync context markdown files from thesis/thesis-context/ to each notebook
 - Ingest all papers from Google Drive to all NotebookLM notebooks
 - Verify ingestion via queries
 - Track actual source IDs in manifest
@@ -158,7 +158,7 @@ async def _setup_notebooklm_notebooks(manifest: dict, verbose: bool = False) -> 
 
 async def _sync_context_files(notebook_ids: Dict[str, str], verbose: bool = False) -> Tuple[int, List[str]]:
     """
-    Sync context markdown files from thesis/thesis-components/ to NotebookLM notebooks.
+    Sync context markdown files from thesis/thesis-context/ to NotebookLM notebooks.
 
     Returns:
         (count_synced, errors)
@@ -171,7 +171,7 @@ async def _sync_context_files(notebook_ids: Dict[str, str], verbose: bool = Fals
     nlm = NotebookLMAccess()
     await nlm.initialize()
 
-    context_dir = Path("thesis/thesis-components")
+    context_dir = Path("thesis/thesis-context")
     if not context_dir.exists():
         return 0, [f"Context directory not found: {context_dir}"]
 

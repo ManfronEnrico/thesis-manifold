@@ -19,7 +19,7 @@ from typing import List, Optional
 from ..state.thesis_state import SectionState, ThesisState
 
 
-SECTIONS_DIR = Path("thesis/writing/sections")
+SECTIONS_DIR = Path("thesis/thesis-writing/sections-drafts")
 
 
 class WritingAgent:
