@@ -1,5 +1,5 @@
 ---
-name: log-errors
+name: errors-log
 description: This skill should be used when the user asks to "log errors", "log tooling issues", or "/log-errors". Scans session conversation history for tool failures, Windows/OneDrive issues, CRLF problems, and encoding errors, then logs them to .claude/logs/tooling-issues.jsonl (source of truth), triggering automatic markdown rebuild.
 version: 0.2.0
 ---
