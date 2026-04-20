@@ -24,7 +24,34 @@ The skill never auto-executes — you copy the message from the code block and s
 
 This skill reconstructs what was done in the session using this algorithm:
 
-0. **Branch check** — Run `git branch --show-current`. If on `main`, warn the user: suggest `git checkout -b session/<topic>` and ask for explicit confirmation before proceeding. If on a feature branch, proceed freely — `git add -A` is safe on an isolated branch.
+0. **Branch check** — Run `git branch --show-current`, then:
+
+   **Case A — on `main`:**
+   Warn the user, derive a suggested branch name from session context (same
+   keyword extraction as `branch_guard.py`), and present the interactive
+   choice block before drafting the commit message:
+   ```
+   You're on `main`. Suggested: `<prefix>/<slug>`
+     [1] Create and switch  [2] Different name  [3] Stay on main
+   ```
+
+   **Case B — on a feature branch (strict check first, loose fallback):**
+   Extract topic keywords and prefix from the session conversation summary.
+   Compare against the current branch name using two-level matching:
+
+   - **Strict match**: branch prefix == session topic prefix AND at least one
+     session keyword appears verbatim in the branch slug → proceed silently
+   - **Loose match** (fallback if strict fails): at least one session keyword
+     appears anywhere in the branch name → proceed, but note the loose match
+   - **No match**: neither condition met → flag the mismatch and ask:
+     ```
+     You're on `<branch>` but this session looks like `<suggested>`.
+     Commit to current branch anyway, or switch first?
+       [1] Commit to `<branch>` as-is
+       [2] Switch to `<suggested>` first, then commit
+       [3] Enter a different branch name
+     ```
+
 1. **Reconstruct session context** — Review the conversation to understand what was changed and why
 2. **Get current git state** — Run `git status` to see modified, staged, and untracked files
 3. **Find the cutoff** — Determine the last commit timestamp to identify what's uncommitted
