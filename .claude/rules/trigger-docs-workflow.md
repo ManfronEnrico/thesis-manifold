@@ -5,7 +5,7 @@ paths:
 
 # Docs Workflow
 
-**Trigger**: `/update_all_docs` reviews session and updates relevant documents in order.
+**Trigger**: `/docs-update-all` reviews session and updates relevant documents in order.
 
 **Order**: 
 1. Thesis sections (`thesis/thesis-writing/sections-drafts/`) — if bullet/outline changes
@@ -18,4 +18,4 @@ paths:
 
 **Output**: List what was updated and what was skipped (with reason).
 
-See `.claude/skills/update_all_docs.md` for implementation.
+See `.claude/skills/docs-update-all/SKILL.md` for implementation.
