@@ -5,11 +5,11 @@ paths:
 
 # Docs Workflow
 
-**Trigger**: `/update-all-docs` reviews session and updates relevant documents in order.
+**Trigger**: `/docs-update-all` reviews session and updates relevant documents in order.
 
 **Order**: 
-1. Thesis sections (`thesis/writing/sections/`) — if bullet/outline changes
-2. Compliance (`thesis/compliance/`) — if checks ran
+1. Thesis sections (`thesis/thesis-writing/sections-drafts/`) — if bullet/outline changes
+2. Compliance (`thesis/thesis-context/formal-requirements/`) — if checks ran
 3. CLAUDE.md — if structure/rules changed
 4. CHEATSHEET.md — if commands/triggers changed
 5. README.md — if setup/behavior changed
@@ -18,4 +18,4 @@ paths:
 
 **Output**: List what was updated and what was skipped (with reason).
 
-See `.claude/skills/update-all-docs/SKILL.md` for implementation.
+See `.claude/skills/docs-update-all/SKILL.md` for implementation.

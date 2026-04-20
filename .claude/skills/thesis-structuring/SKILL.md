@@ -7,12 +7,12 @@ description: >
   sections, new literature), asks whether the structure still makes sense, or requests a
   /restructure-section or /update-outline operation. Also activate before WritingAgent
   drafts bullets for a chapter that has no approved structural skeleton yet.
-  Do NOT use for writing content. Only for managing thesis/writing/outline.md and chapter stubs.
+  Do NOT use for writing content. Only for managing thesis/thesis-writing/outline.md and chapter stubs.
 ---
 
 # Thesis Structuring Skill
 
-Manages `thesis/writing/outline.md` and chapter skeleton stubs within System B (thesis_production_system).
+Manages `thesis/thesis-writing/outline.md` and chapter skeleton stubs within System B (thesis_production_system).
 Does not write prose. Does not interact with System A (ai_research_framework).
 Conservative by design: restructures only when conceptually justified.
 
@@ -24,11 +24,11 @@ This skill operates at two points in the existing pipeline:
 
 **Point 1 — Pre-bullets gate (between PlannerAgent P2 and WritingAgent)**
 Before WritingAgent drafts bullets for any chapter, verify that chapter has an approved
-structural skeleton in `thesis/writing/outline.md`. If not, run this skill first.
+structural skeleton in `thesis/thesis-writing/outline.md`. If not, run this skill first.
 
 **Point 2 — Slash command `/update-outline`**
 User-triggered. Reads all current section files and state, then decides whether the outline
-needs updating. Produces a restructuring decision and updates `thesis/writing/outline.md`.
+needs updating. Produces a restructuring decision and updates `thesis/thesis-writing/outline.md`.
 
 ---
 
@@ -36,9 +36,9 @@ needs updating. Produces a restructuring decision and updates `thesis/writing/ou
 
 | File | Purpose |
 |---|---|
-| `thesis/writing/outline.md` | Current target structure — primary input |
+| `thesis/thesis-writing/outline.md` | Current target structure — primary input |
 | `docs/tasks/thesis_state.json` | Section statuses (no_bullets / bullets_draft / bullets_approved / prose_approved) |
-| `thesis/writing/sections/*.md` | Existing bullet skeletons and their content |
+| `thesis/thesis-writing/sections-drafts/*.md` | Existing bullet skeletons and their content |
 | `.claude/agents/thesis-writer.md` lines 154–169 | Chapter page budget table |
 | `docs/project-management/context.md` | Thesis framing, RQ, methodology |
 
@@ -46,14 +46,14 @@ needs updating. Produces a restructuring decision and updates `thesis/writing/ou
 
 | File | Condition |
 |---|---|
-| `thesis/writing/outline.md` | Always — even if "no change", confirm current version is valid |
-| `thesis/writing/sections/{chapter_id}.md` | Only when creating a new stub (status → `no_bullets`) |
+| `thesis/thesis-writing/outline.md` | Always — even if "no change", confirm current version is valid |
+| `thesis/thesis-writing/sections-drafts/{chapter_id}.md` | Only when creating a new stub (status → `no_bullets`) |
 
 ---
 
 ## Two Modes
 
-**Initial structuring** — `thesis/writing/outline.md` is empty or missing. Given `docs/project-management/context.md`
+**Initial structuring** — `thesis/thesis-writing/outline.md` is empty or missing. Given `docs/project-management/context.md`
 and archetype inference, propose a first complete outline with page budget allocation.
 
 **Restructuring** — outline exists. Given new inputs, decide whether to preserve, refine,
@@ -65,7 +65,7 @@ or restructure. Always compare against the page budget table before proposing sp
 
 ```
 1. Read docs/tasks/thesis_state.json → note which sections exist and their statuses
-2. Read thesis/writing/outline.md → current structure
+2. Read thesis/thesis-writing/outline.md → current structure
 3. Read .claude/agents/thesis-writer.md lines 154–169 → page budgets per chapter
 4. Read docs/project-management/context.md → RQ, methodology, thesis framing
 5. Read any new input provided by the user
@@ -152,7 +152,7 @@ Sections with `no_bullets` or `bullets_draft` are free to restructure.
    2.1 ...
 ```
 
-Use chapter names from existing `thesis/writing/outline.md` unless renaming is justified.
+Use chapter names from existing `thesis/thesis-writing/outline.md` unless renaming is justified.
 Do not create sections without argumentative or page-budget justification.
 
 ---
@@ -161,6 +161,6 @@ Do not create sections without argumentative or page-budget justification.
 
 - Never auto-proceed after proposing major restructuring — output must say "Await human approval"
 - Never touch `prose_approved` sections
-- Never write to `thesis/writing/sections/` except to create new stubs (status `no_bullets`)
+- Never write to `thesis/thesis-writing/sections-drafts/` except to create new stubs (status `no_bullets`)
 - Page budget must be checked before every split or addition proposal
 - Output must always include "Next Action for System B" so PlannerAgent has a clear signal

@@ -9,9 +9,9 @@
 **Read these in order:** architecture → RQs → project-state → compliance → tooling → repo-map
 
 - [docs/codebase/architecture.md](docs/codebase/architecture.md) — System A/B design
-- [thesis/thesis-docs/research-questions.md](thesis/thesis-docs/research-questions.md) — RQs v2
-- [thesis/thesis-docs/project-state.md](thesis/thesis-docs/project-state.md) — frozen decisions
-- [thesis/thesis-docs/compliance.md](thesis/thesis-docs/compliance.md) — CBS requirements
+- [thesis/thesis-context/research-questions/research-questions.md](thesis/thesis-context/research-questions/research-questions.md) — RQs v2
+- [thesis/thesis-context/thesis-topic/project-state.md](thesis/thesis-context/thesis-topic/project-state.md) — frozen decisions
+- [thesis/thesis-context/formal-requirements/compliance.md](thesis/thesis-context/formal-requirements/compliance.md) — CBS requirements
 - [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) — known environment problems
 - [docs/dev/repository_map.md](docs/dev/repository_map.md) — file locations
 
@@ -21,10 +21,11 @@
 
 | Command | Purpose |
 |---------|---------|
-| `/draft-git-commit` | Generate commit message from session |
+| `/git-draft-commit` | Generate commit message from session |
 | `/git-commit` | Stage and submit an approved commit message |
-| `/update-all-docs` | Update all living project documents |
-| `/log-standup` | Log standup entry to draft |
+| `/git-worktrees` | Set up isolated worktree for this session |
+| `/docs-update-all` | Update all living project documents |
+| `/standup-log` | Log standup entry to draft |
 | `/update-outline` | Update thesis structure + stubs |
 | `/write-section <id>` | Convert bullets to prose (manual approve before) |
 | `/cite` | Add APA 7 citation to references |
