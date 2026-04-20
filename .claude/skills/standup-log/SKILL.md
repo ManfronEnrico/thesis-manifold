@@ -1,5 +1,5 @@
 ---
-name: log-standup
+name: standup-log
 description: |
   Append a timestamped session entry to the standup draft, classifying work as PRIMARY 
   (thesis deliverables) or SECONDARY (infrastructure/tooling). Maintains date/priority/time 

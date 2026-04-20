@@ -1,5 +1,5 @@
 ---
-name: update-plan
+name: plan-update
 trigger_phrases:
   - "update plan"
   - "log plan outcome"

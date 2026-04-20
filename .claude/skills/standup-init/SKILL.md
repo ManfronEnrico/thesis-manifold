@@ -1,5 +1,5 @@
 ---
-name: init-standup
+name: standup-init
 description: Initialize a new standup draft for the next supervisor meeting. Automatically carries over unchecked tasks, backlog items, and performance snapshots. Trigger phrases include "init standup", "initialize standup", "start new standup", "next meeting prep", "/standup_done", or immediately after a supervisor meeting concludes. Use this skill to prepare the next meeting's task structure by archiving the completed meeting and setting up fresh PRIMARY and SECONDARY task sections.
 compatibility:
   tools: [Read, Write]

@@ -1,5 +1,5 @@
 ---
-name: update-all-docs
+name: docs-update-all
 description: >
   Comprehensive documentation sync workflow that reviews the current session and 
   updates all affected project documents in validated order. Ensures thesis sections, 

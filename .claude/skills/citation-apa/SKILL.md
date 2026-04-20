@@ -1,5 +1,5 @@
 ---
-name: apa-citation
+name: citation-apa
 description: >
   Format, verify, and insert APA 7 citations into the thesis. Activate whenever the user
   provides a paper to cite — from an Obsidian _REV note, a NotebookLM source, a DOI,

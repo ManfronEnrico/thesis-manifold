@@ -1,5 +1,5 @@
 ---
-name: draft-commit
+name: git-draft-commit
 description: Generate a ready-to-paste git commit message from the current session. Trigger whenever the user mentions committing changes, preparing a git message, or wants to submit work. Includes worktree awareness, commit discipline check, optional trailers, draft PR reminder, and session summary. Works in any git repo — collaborative features activate automatically when a multi-person context is detected.
 compatibility:
   tools: [Bash, Read, Grep]

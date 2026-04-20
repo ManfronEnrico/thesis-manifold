@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Execute a git commit from an approved draft message. Handles staging, PowerShell-safe commit command, and post-commit checklist. Always verify worktree isolation before committing. Pairs with /draft-git-commit (message generation) and /using-git-worktrees (workspace setup).
+description: Execute a git commit from an approved draft message. Handles staging, PowerShell-safe commit command, and post-commit checklist. Always verify worktree isolation before committing. Pairs with /git-draft-commit (message generation) and /using-git-worktrees (workspace setup).
 compatibility:
   tools: [Bash, Read]
   requires: git repository
@@ -10,7 +10,7 @@ compatibility:
 
 Execute a git commit from an approved draft message. This skill handles the submission half of the commit workflow — staging files and running the commit command.
 
-**Upstream:** Use `/draft-git-commit` first to generate and approve the message.
+**Upstream:** Use `/git-draft-commit` first to generate and approve the message.
 **Prerequisite:** Worktree must be verified or `/using-git-worktrees` must have been run.
 
 ---
@@ -19,7 +19,7 @@ Execute a git commit from an approved draft message. This skill handles the subm
 
 Invoke when:
 - The user says "commit this", "run the commit", "submit", "execute the commit"
-- A `/draft-git-commit` message has been reviewed and approved
+- A `/git-draft-commit` message has been reviewed and approved
 - The user wants to stage + commit in one step
 
 This skill **does** run `git commit`. It will ask for confirmation before executing.
@@ -43,7 +43,7 @@ git worktree list
 
 ### Step 1 — Confirm the draft message
 
-If the user provides a message directly, use it. If not, locate the most recent `/draft-git-commit` output in the conversation and display it for confirmation:
+If the user provides a message directly, use it. If not, locate the most recent `/git-draft-commit` output in the conversation and display it for confirmation:
 
 ```
 Commit message to submit:
@@ -132,7 +132,7 @@ Next steps:
   [ ] Or continue working and commit again at the next checkpoint
 ```
 
-If this is end-of-session, suggest running `/draft-git-commit` Step 8 for the session summary.
+If this is end-of-session, suggest running `/git-draft-commit` Step 8 for the session summary.
 
 ---
 
@@ -164,7 +164,7 @@ Status: In progress"
 
 ## Reference docs
 
-- Message generation: `/draft-git-commit`
+- Message generation: `/git-draft-commit`
 - Worktree setup: `/using-git-worktrees`
 - Full worktree guide: `docs/reference/git-worktrees-and-parallel-sessions.md`
 - Branch strategy: `docs/reference/git-branch-strategy.md`

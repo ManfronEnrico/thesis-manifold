@@ -1,5 +1,5 @@
 ---
-name: finalize-standup
+name: standup-finalize
 description: Clean and finalize the standup draft for supervisor delivery, removing internal Claude notes and archiving the source. Triggers on: "finalize standup", "clean up standup", "prepare standup for delivery", "send standup to supervisor"
 trigger_phrases:
   - finalize standup
