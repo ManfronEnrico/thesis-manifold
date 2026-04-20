@@ -95,7 +95,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 2: Thesis Sections — `thesis/writing/sections/`
+### Phase 2: Thesis Sections — `thesis/thesis-writing/sections-drafts/`
 
 **When to update:**
 - Bullet points were expanded with new content
@@ -106,11 +106,11 @@ The skill processes documents in this strict order, updating only those affected
 **Action:** Update affected section files with new bullets, mark prose passages with status.
 
 **Files checked:**
-- `thesis/writing/sections/00_abstract.md`
-- `thesis/writing/sections/01_introduction.md`
-- `thesis/writing/sections/02_literature_review.md`
-- `thesis/writing/sections/03_methodology.md`
-- `thesis/writing/sections/04_system_a.md` through `13_*.md` (all system sections)
+- `thesis/thesis-writing/sections-drafts/00_abstract.md`
+- `thesis/thesis-writing/sections-drafts/01_introduction.md`
+- `thesis/thesis-writing/sections-drafts/02_literature_review.md`
+- `thesis/thesis-writing/sections-drafts/03_methodology.md`
+- `thesis/thesis-writing/sections-drafts/04_system_a.md` through `13_*.md` (all system sections)
 
 **Example output:**
 ```
@@ -120,7 +120,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 3: Compliance — `thesis/compliance/`
+### Phase 3: Compliance — `thesis/thesis-context/formal-requirements/`
 
 **When to update:**
 - CBS compliance checks ran (with pass/fail/review results)
@@ -131,9 +131,9 @@ The skill processes documents in this strict order, updating only those affected
 **Action:** Update compliance tracking files with check results and sign-off.
 
 **Files checked:**
-- `thesis/compliance/cbs_guidelines_notes.md`
-- `thesis/compliance/compliance_checklist.md`
-- `thesis/compliance/integrity_gates.md`
+- `thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md`
+- `thesis/thesis-context/formal-requirements/compliance.md`
+- `thesis/thesis-context/formal-requirements/compliance_report_20260315.md`
 
 **Example output:**
 ```

@@ -7,7 +7,7 @@ Triggers the APA Citation Skill to format, verify, and insert a citation into th
 - You pasted a _REV or _REV-brian note and want the citation extracted
 - You have a DOI, title, or raw bibliographic data to format
 - You want to insert a citation into a specific section file
-- You want to add a paper to `thesis/writing/references.md`
+- You want to add a paper to `thesis/thesis-writing/references.md`
 
 ## Do NOT use for
 - Bulk verification of existing citations in a prose section → use `/verify-citations` instead
@@ -31,9 +31,9 @@ Triggers the APA Citation Skill to format, verify, and insert a citation into th
 1. Skill extracts metadata from input
 2. Skill verifies against NotebookLM notebook `48697de0-f0a5-4e66-918e-531abea82c20`
 3. Skill formats in-text citation + full References entry (APA 7)
-4. Skill checks `thesis/writing/references.md` for duplicates
+4. Skill checks `thesis/thesis-writing/references.md` for duplicates
 5. Skill shows full output in chat — **awaits confirmation before writing to files**
-6. On confirmation: appends to `thesis/writing/references.md` + inserts in-text citation in section file (if specified)
+6. On confirmation: appends to `thesis/thesis-writing/references.md` + inserts in-text citation in section file (if specified)
 
 ## Output
 - In-text citation: `(Author et al., Year)`
@@ -43,5 +43,5 @@ Triggers the APA Citation Skill to format, verify, and insert a citation into th
 ## Hard rules
 - Never writes to files without showing output first
 - ❌ NOT FOUND citations are never written to files without explicit human approval
-- Duplicates in `thesis/writing/references.md` are flagged, not silently skipped
+- Duplicates in `thesis/thesis-writing/references.md` are flagged, not silently skipped
 - APA 7 sentence case for titles, title case for journals — always

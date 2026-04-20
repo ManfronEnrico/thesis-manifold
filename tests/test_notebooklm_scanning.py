@@ -61,7 +61,7 @@ def manifest_path():
 @pytest.fixture
 def thesis_components_path():
     """Path to thesis components directory."""
-    return Path("thesis/thesis-components")
+    return Path("thesis/thesis-context/chapters")
 
 
 # ============================================================================
@@ -115,7 +115,7 @@ async def test_thesis_components_exist(thesis_components_path):
     Verify thesis components directory and context files exist.
 
     This test:
-    - Checks thesis/thesis-components/ exists
+    - Checks thesis/thesis-context/chapters/ exists
     - Verifies all required context files exist
     """
     assert thesis_components_path.exists(), f"Thesis components directory not found: {thesis_components_path}"

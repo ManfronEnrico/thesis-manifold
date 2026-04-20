@@ -10,7 +10,7 @@ This routine is part of the **Thesis Writing Agent** workflow and uses NotebookL
 
 ### STEP 1 — READ THE SECTION
 If a chapter ID was provided in $ARGUMENTS, read the file:
-`thesis/writing/sections/{chapter_id}.md`
+`thesis/thesis-writing/sections-drafts/{chapter_id}.md`
 
 If no chapter ID was given, ask the user to specify which section to verify, or paste the prose directly.
 
@@ -93,7 +93,7 @@ For each ⚠️ or ❌ citation:
 
 Show the full report + proposed corrections.
 State: "Awaiting your approval before updating the section file."
-Only update `thesis/writing/sections/{chapter_id}.md` after explicit user OK.
+Only update `thesis/thesis-writing/sections-drafts/{chapter_id}.md` after explicit user OK.
 
 ---
 

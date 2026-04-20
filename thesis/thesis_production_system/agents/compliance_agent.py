@@ -25,7 +25,7 @@ from ..state.thesis_state import ComplianceCheck, ComplianceState, ThesisState
 # CBS formal constants (from thesis/compliance/cbs_guidelines_notes.md)
 CHARS_PER_STANDARD_PAGE = 2_275   # characters excluding spaces
 MAX_STANDARD_PAGES = 120
-GUIDELINES_NOTES = Path("thesis/compliance/cbs_guidelines_notes.md")
+GUIDELINES_NOTES = Path("thesis/thesis-context/formal-requirements/cbs_guidelines_notes.md")
 
 
 class ComplianceAgent:

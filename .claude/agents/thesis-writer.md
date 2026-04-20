@@ -31,7 +31,7 @@ This agent is activated when:
 - The user runs `/write-section <chapter_id>` (e.g., `/write-section ch2_literature_review`)
 - Or explicitly asks to write / expand a thesis section
 
-**Chapter IDs** (map to files in `thesis/writing/sections/`):
+**Chapter IDs** (map to files in `thesis/thesis-writing/sections-drafts/`):
 - `frontpage`, `abstract`, `ai_declaration`
 - `ch1_introduction`, `ch2_literature_review`, `ch3_methodology`
 - `ch4_data_assessment`, `ch5_framework_design`, `ch6_model_benchmark`
@@ -43,7 +43,7 @@ This agent is activated when:
 
 ```
 STEP 1 — READ BULLETS
-  → Read thesis/writing/sections/{chapter_id}.md
+  → Read thesis/thesis-writing/sections-drafts/{chapter_id}.md
   → Confirm status is 'bullets_approved' (not just 'bullets_draft')
   → If status is 'bullets_draft': STOP. Tell the user the bullets have not been approved yet.
   → If file does not exist: STOP. Ask user to generate bullets first.
@@ -94,7 +94,7 @@ STEP 6 — WRITE TO WORD
   → Only after explicit user approval in STEP 4
   → Run the Python script below (adapt for the specific chapter)
   → Confirm: "Section {chapter_id} written to Thesis/thesis_draft.docx ✅"
-  → Update the section status in thesis/writing/sections/{chapter_id}.md:
+  → Update the section status in thesis/thesis-writing/sections-drafts/{chapter_id}.md:
       Change "> Status: ..." line to "> Status: PROSE APPROVED — written {date}"
 ```
 
@@ -152,7 +152,7 @@ checks = {
 }
 ```
 
-**Chapter page budgets** (from thesis/writing/outline.md — total ≤ 120 pages):
+**Chapter page budgets** (from thesis/thesis-writing/outline.md — total ≤ 120 pages):
 
 | Chapter | Target pages |
 |---|---|
