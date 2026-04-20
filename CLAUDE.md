@@ -37,7 +37,7 @@
 - **Tools**: Read, Grep, Glob (not cat/rg/find); Bash for system commands
 - **Thesis**: Bullets only—never prose without human approval
 - **Every phase transition**: Requires explicit human approval
-- **Git**: Check branch at session start — warn if on `main`, work on a feature branch, merge to `main` only when integrating completed work → [git-branch-strategy.md](docs/reference/git-branch-strategy.md)
+- **Git**: Each session gets its own worktree + branch. Warn on `main`. Never push directly to `main`. Use draft PRs for backup. → [git-branch-strategy.md](docs/reference/git-branch-strategy.md) · [worktree guide](docs/reference/git-worktrees-and-parallel-sessions.md)
 
 ---
 

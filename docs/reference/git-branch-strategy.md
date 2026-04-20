@@ -1,168 +1,210 @@
-# Git Branch Strategy — Multi-Chat Claude Code Workflow
+# Git Branch Strategy — Multi-Session Claude Code Workflow
 
-## Core idea
+> For Brian and Enrico. Full worktree guide: `docs/reference/git-worktrees-and-parallel-sessions.md`
 
-Each Claude Code chat session works on its own isolated branch.
-Nothing a chat does touches `main` until you explicitly decide to merge it.
+---
+
+## Core model: branch-per-session, worktree-per-session, PR-per-task
+
+Each Claude Code session gets:
+- Its **own branch** — isolated commit history
+- Its **own worktree** — a physically separate folder on disk, its own staging area
+- Its **own draft PR** — remote backup + audit trail on GitHub
+
+Nothing a session does can bleed into `main` or another session's work.
 
 ```
-main
- ├── session/config-fix          ← Chat A
- ├── thesis/ch3-methodology      ← Chat B
- └── data/nielsen-preprocessing  ← Chat C
-          ↓ reviewed and merged into main separately
+main (GitHub — protected, never pushed to directly)
+ ├── cc/20260420-1530-br/config-fix       ← Brian's Chat A (worktree: .cc/worktrees/config-fix)
+ ├── cc/20260420-1605-en/thesis-ch3       ← Enrico's Chat B (worktree: his machine)
+ └── cc/20260420-1720-br/data-cache       ← Brian's Chat C (worktree: .cc/worktrees/data-cache)
+          ↓ each reviewed via draft PR, then merged to main separately
 ```
 
 ---
 
-## Git concepts (plain language)
+## Git concepts — plain language
 
 | Term | What it means |
-|------|--------------|
+|---|---|
 | **Repository** | The tracked project folder (`CMT_Codebase`) |
-| **Branch** | A parallel version of the repo — changes here don't affect other branches |
-| **`main`** | The primary branch — stable, confirmed work lives here |
-| **`git checkout -b name`** | Create a new branch and switch into it |
-| **Commit** | A saved snapshot on the current branch |
-| **Merge** | Bring commits from one branch into another |
-| **Pull Request (PR)** | GitHub UI checkpoint to review a branch before merging to main |
-| **`git stash`** | Temporarily shelve uncommitted changes so you can switch branches |
-| **Staging area** | The holding area between editing and committing — `git add` moves files here |
+| **Branch** | A logical parallel version — commits here don't affect other branches |
+| **Worktree** | A physically separate folder, each with its own branch and staging area |
+| **`main`** | The primary branch — stable, reviewed work only |
+| **Staging area** | The holding zone between editing and committing — `git add` moves files here |
+| **Commit** | A saved snapshot with a message, saved on the current branch |
+| **Draft PR** | A GitHub pull request locked from merging — for backup and visibility only |
+| **Merge commit** | Brings a branch into `main` while preserving all branch commits |
+| **Reconcile branch** | A temporary branch for combining two overlapping branches before merging |
 
 ---
 
-## Session startup — run this at the start of every new chat
+## Session startup — run this at the start of every Claude Code session
 
 ```bash
-git checkout main
-git pull                          # sync if you push to remote
-git checkout -b session/<topic>   # isolated branch for this chat
+# 1. Sync with remote
+cd "C:/Users/.../CMT_Codebase"
+git fetch origin && git checkout main && git pull
+
+# 2. Create worktree + branch (one command)
+git worktree add .cc/worktrees/<short-name> cc/<date-time-initials>/<slug>
+
+# Example — Brian starting a config session at 15:30 on 2026-04-20:
+git worktree add .cc/worktrees/config-fix cc/20260420-1530-br/config-fix
+
+# 3. Move into the worktree — all work happens here
+cd .cc/worktrees/config-fix
 ```
 
-### Naming conventions
+### Branch naming convention
 
-```bash
-git checkout -b session/settings-permissions
-git checkout -b thesis/ch3-methodology-bullets
-git checkout -b data/nielsen-cache-fix
-git checkout -b config/notebooklm-integration
-git checkout -b chore/skills-reorganization
 ```
+cc/<YYYYMMDD-HHMM-initials>/<slug>
+
+cc/20260420-1530-br/config-permissions    ← Brian
+cc/20260420-1605-en/thesis-ch3-bullets    ← Enrico
+cc/20260420-1720-br/data-nielsen-cache    ← Brian, second session
+cc/20260420-1800-br/reconcile-ch3-config  ← reconcile branch
+```
+
+**Initials:** `br` = Brian, `en` = Enrico
 
 ---
 
-## Committing during a session
+## Committing — checkpoint rule
 
-Because the branch is isolated, you can safely add everything the chat touched:
+**Do not commit after every file edit.** Commit at logical checkpoints only.
 
-```bash
-git add -A                        # safe — branch is isolated by nature
-git commit -m "fix: descriptive message"
+**Commit when:**
+- The diff has **one clear purpose** — one commit, one story
+- The code is in a stable, reviewable state
+- Before a risky operation (rebase, major restructure)
+- Before handing off to the other person
+- At **end of session** — always commit before closing
+
+**The test:** If you can't write a one-line message explaining why all these changes belong together, don't commit yet.
+
+### Commit message format
+
+```
+<type>: <subject, ≤60 chars>
+
+<optional body — why this change exists>
+
+Session-ID: cc-20260420-1530-br
+Agent: claude-code
+Operator: brianrohde
+Base-Commit: abc1234
 ```
 
-Or add specific files if you want a tighter commit:
+The bottom lines are **trailers** — structured metadata for traceability. Recommended for this collaborative repo.
 
-```bash
-git add .claude/settings.json
-git commit -m "chore: fix git permissions"
-```
-
-Multiple small commits per session is fine.
+| Type | When |
+|---|---|
+| `feat` | New feature or capability |
+| `fix` | Bug or error correction |
+| `refactor` | Restructuring, no behavior change |
+| `chore` | Config, tooling, settings |
+| `docs` | Documentation only |
+| `thesis` | Thesis content (bullets, sections) |
+| `data` | Data scripts or pipeline |
 
 ---
 
-## End-of-session decision: what goes to main?
+## Draft PRs — push early, merge late
 
-| Change type | Rule |
-|-------------|------|
-| Config / tooling / settings | Merge immediately — low risk |
-| Thesis content (bullets, sections) | Review diff first, then merge |
-| Data scripts | Verify no broken imports, then merge |
-| Unfinished work | Leave branch open, continue next session |
-
-### To review before merging
+As soon as you reach the first checkpoint, push and open a draft PR:
 
 ```bash
-git diff main..session/settings-permissions   # see what changed
+git push -u origin cc/20260420-1530-br/config-fix
+
+gh pr create --draft \
+  --title "[cc 20260420-1530-br] Config permissions fix" \
+  --body "Objective: ...
+Files touched: ...
+Status: In progress"
 ```
 
-### To merge when ready
+A draft PR cannot be merged accidentally. It gives you remote backup, a full diff view, and a permanent audit record of what the session did.
 
+When the session work is reviewed and ready:
 ```bash
-git checkout main
-git merge session/settings-permissions
-```
-
----
-
-## Why this matters for concurrent Claude Code chats
-
-**The problem without branches:** all chats share one staging area on `main`.
-If chat-A runs `git add -A` and doesn't commit, then chat-B commits, it picks up chat-A's staged files too — exactly what happened with the 300-file commit.
-
-**With branches:** each chat's staging area is scoped to its own branch.
-`git add -A` on `session/config-fix` cannot bleed into `thesis/ch3-methodology`.
-
----
-
-## Claude Code + VS Code multi-terminal setup
-
-When running multiple Claude Code agents in parallel VS Code PowerShell terminals:
-
-1. **Each terminal = one branch.** Before starting work in a terminal, run the session startup command above.
-2. **Each agent commits to its own branch.** The `/draft-commit` skill and `git add -A` are safe because the branch is isolated.
-3. **Merge to main asynchronously.** After a session ends, switch to main and merge. No need to coordinate between live terminals.
-4. **Check your current branch any time:**
-   ```bash
-   git branch        # lists all branches, * marks current
-   git status        # also shows current branch at top
-   ```
-
-### Recommended terminal workflow
-
-```
-Terminal 1 (Chat A) → branch: thesis/ch3-methodology
-Terminal 2 (Chat B) → branch: config/zotero-integration  
-Terminal 3 (Chat C) → branch: data/nielsen-preprocessing
-
-Each terminal commits freely.
-You merge to main when each task is done.
+gh pr ready   # promote to ready-for-review
+# then merge via GitHub UI — never push directly to main
 ```
 
 ---
 
-## Quick reference card
+## Merge strategy — always use Merge Commit
+
+| GitHub option | Use? | Why |
+|---|---|---|
+| **Merge commit** | ✅ Default | Preserves all branch commits; visible integration event; full audit trail |
+| **Squash and merge** | Only if branch has messy micro-commits | Collapses to one commit — simpler but loses detail |
+| **Rebase and merge** | ❌ Never | Rewrites commit SHAs — breaks traceability and signed commits |
+
+---
+
+## Overlap detection — before merging any PR
+
+Check whether another open branch touched the same files:
+
+```bash
+# Files changed in branch A
+git diff --name-only main..cc/20260420-1530-br/config-fix
+
+# Files changed in branch B
+git diff --name-only main..cc/20260420-1605-en/thesis-ch3
+```
+
+If any file appears in both lists → use the reconcile workflow (see `git-worktrees-and-parallel-sessions.md`).
+
+---
+
+## End-of-session checklist
+
+```
+[ ] Committed all session work (at logical checkpoint)
+[ ] Pushed branch to remote
+[ ] Draft PR open and description updated
+[ ] Removed local worktree: git worktree remove .cc/worktrees/<name>
+[ ] Branch stays alive on GitHub until PR is merged — don't delete it yet
+```
+
+---
+
+## Quick reference
 
 ```bash
 # Start session
-git checkout main && git checkout -b session/<topic>
+git fetch origin && git pull
+git worktree add .cc/worktrees/<name> cc/<date-id>/<slug>
+cd .cc/worktrees/<name>
 
-# Commit everything on current branch (safe — isolated)
-git add -A && git commit -m "<type>: <message>"
+# During session — commit at checkpoints
+git add -A
+git commit -m "<type>: <message>"
 
-# See what branch you're on
-git branch
+# Push and open draft PR
+git push -u origin <branch>
+gh pr create --draft --title "[cc <id>] <title>" --body "..."
 
-# See diff vs main before merging
-git diff main..<branch-name>
+# End session
+cd ../..
+git worktree remove .cc/worktrees/<name>
 
-# Merge to main
-git checkout main && git merge <branch-name>
+# Check all active worktrees
+git worktree list
 
-# List all branches
-git branch -a
+# Check overlap before merging
+git diff --name-only main..<branch-a>
+git diff --name-only main..<branch-b>
 ```
 
 ---
 
-## Commit message types
+## Why this matters — the 300-file incident
 
-| Type | When to use |
-|------|-------------|
-| `feat` | New feature or capability |
-| `fix` | Bug or error fix |
-| `refactor` | Restructuring without behavior change |
-| `chore` | Config, tooling, settings |
-| `docs` | Documentation only |
-| `thesis` | Thesis content changes |
-| `data` | Data scripts or pipeline changes |
+Before this strategy was in place, two Claude sessions were both working in the main `CMT_Codebase` folder on `main`. Session A ran `git add -A` and left files staged. Session B then committed — and swept up all of Session A's staged files too. Result: a 300-file commit that had nothing to do with the intended change.
+
+Worktrees eliminate this entirely. Each session has its own staging area. It is physically impossible for one to sweep up another's staged files.
