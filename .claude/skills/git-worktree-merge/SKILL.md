@@ -20,7 +20,7 @@ Invoke when:
 - Before `git worktree remove` is run
 
 **Prerequisite**: Work must be committed on a feature branch or worktree.
-**Upstream skills**: `/using-git-worktrees` (setup), `/draft-git-commit` (message), `/git-commit` (staging)
+**Upstream skills**: `/git-worktrees` (setup), `/draft-git-commit` (message), `/git-commit` (staging)
 
 ---
 
@@ -341,7 +341,7 @@ See: docs/reference/git-worktrees-and-parallel-sessions.md#reconcile-workflow
 
 ## Reference docs
 
-- Worktree setup: `/using-git-worktrees`
+- Worktree setup: `/git-worktrees`
 - Commit message generation: `/draft-git-commit`
 - Single-commit staging: `/git-commit`
 - Branch strategy: `.claude/rules/trigger-branch-strategy.md`

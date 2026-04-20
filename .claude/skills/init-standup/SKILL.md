@@ -214,7 +214,7 @@ The skill stops before overwriting. Restore from git or a backup. Never overwrit
 
 Here's a concrete example showing what carries over from one meeting to the next.
 
-### Meeting 3's final state (before init_standup)
+### Meeting 3's final state (before init-standup)
 ```
 ## Meeting 3
 
@@ -244,7 +244,7 @@ Here's a concrete example showing what carries over from one meeting to the next
 | 3       | 8/10 (80%)      | 5           | 420           | System A demo done |
 ```
 
-### Meeting 4's state (after init_standup)
+### Meeting 4's state (after init-standup)
 ```
 ## Meeting 4
 
@@ -297,7 +297,7 @@ If you add a new section to the meeting draft (e.g., "EXPERIMENTS" or "RISKS"), 
 - [x] Benchmark Transformer v2
 ```
 
-**Meeting 4 draft (after init_standup):**
+**Meeting 4 draft (after init-standup):**
 ```
 ### EXPERIMENTS
 - [ ] Test new attention mechanism
@@ -306,18 +306,18 @@ If you add a new section to the meeting draft (e.g., "EXPERIMENTS" or "RISKS"), 
 The checked item drops; the unchecked item carries.
 
 ### Supervisor-requested removals
-If during Meeting 3, your supervisor explicitly says "remove the adversarial training item from backlog", you manually delete it from standup_draft.md **before** calling init_standup. When init_standup runs, it only carries items that exist in the archive, so removed items don't reappear.
+If during Meeting 3, your supervisor explicitly says "remove the adversarial training item from backlog", you manually delete it from standup_draft.md **before** calling init-standup. When init-standup runs, it only carries items that exist in the archive, so removed items don't reappear.
 
 ## Common patterns and best practices
 
 ### Pattern 1: High-velocity week
-You complete 80% of your work. Call init_standup:
+You complete 80% of your work. Call init-standup:
 - Most of your PRIMARY and SECONDARY sections clear
 - A few unchecked items carry over
 - You start the new meeting with a short "housekeeping" phase, then pivot to fresh deliverables
 
 ### Pattern 2: Blocked work
-You're blocked on a dependency. Call init_standup:
+You're blocked on a dependency. Call init-standup:
 - All PRIMARY items carry (they're not done, they're waiting)
 - Unchecked SECONDARY items carry (you couldn't get to them)
 - You start the new meeting with blocker discussion
@@ -339,7 +339,7 @@ Your supervisor adds new tasks during the meeting. Example:
 The new tasks appear first, making them obvious anchors for the meeting.
 
 ### Pattern 4: Backlog evolution
-Over three meetings, your backlog grows as ideas accumulate. init_standup preserves all backlog items. You can then:
+Over three meetings, your backlog grows as ideas accumulate. init-standup preserves all backlog items. You can then:
 - Prioritize them with your supervisor during the next meeting
 - Explicitly drop items that no longer make sense
 - Promote items to PRIMARY when ready
@@ -394,7 +394,7 @@ This keeps:
 ## Security and data safety
 
 ### Pre-flight file checks
-Before making any modifications, init_standup verifies that:
+Before making any modifications, init-standup verifies that:
 - All three infrastructure files exist and are readable
 - Archive file is not empty (has prior meeting history)
 - Draft file is not corrupted (valid Markdown)
@@ -402,15 +402,15 @@ Before making any modifications, init_standup verifies that:
 If any check fails, the skill stops without touching any files.
 
 ### Backup strategy
-Because init_standup overwrites standup_draft.md, the archive file (standup_draft_archive.md) is the source of truth. Always:
+Because init-standup overwrites standup_draft.md, the archive file (standup_draft_archive.md) is the source of truth. Always:
 - Commit the archive to git regularly (weekly)
 - Never manually edit the archive (let the system manage it)
-- Test init_standup in a dry-run on a copy if unsure
+- Test init-standup in a dry-run on a copy if unsure
 
 ### Recovery procedure
 If you accidentally overwrite standup_draft.md:
 1. Restore standup_draft_archive.md from git history
-2. Re-run init_standup to recreate the draft
+2. Re-run init-standup to recreate the draft
 
 ## Example workflow
 
