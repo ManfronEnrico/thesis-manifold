@@ -10,7 +10,8 @@ paths:
 **Pre-step**: Automatically invoke `/log_errors` to capture any session tooling issues before drafting.
 
 ## Algorithm
-1. **Log errors** (NEW): Run `/log_errors` to scan conversation and append any tooling issues to `docs/tooling-issues.md`
+0. **Branch check**: Run `git branch --show-current` — if on `main`, warn the user and suggest creating a branch (see `.claude/rules/trigger-branch-strategy.md`). Ask for explicit confirmation before proceeding. If on a feature branch, proceed freely.
+1. **Log errors**: Run `/log_errors` to scan conversation and append any tooling issues to `docs/tooling-issues.md`
 2. **Session context** (PRIMARY): What files changed & why (from conversation)
 3. **Git status**: `git status --short` — confirm changed files on disk
 4. **Last commit**: `git log -1 --format="%H %ai %s"` — cutoff for uncommitted work
