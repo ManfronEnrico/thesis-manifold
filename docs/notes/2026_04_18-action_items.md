@@ -1,8 +1,8 @@
 ---
-name: Quality Audit Action Items
-date: 2026-04-18
-timestamp: 2026-04-18T17:00:00Z
-priority: CRITICAL (blocks thesis reproducibility)
+title: Quality Audit Action Items
+type: note
+status: active
+created: 2026-04-18
 ---
 
 # Action Items: Notebook Quality Audit Follow-Up

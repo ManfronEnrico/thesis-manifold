@@ -1,8 +1,8 @@
 ---
-name: Notebook Quality Audit (SRQ1/SRQ2/SRQ3)
-date: 2026-04-18
-timestamp: 2026-04-18T16:00:00Z
-auditor: Claude Haiku 4.5
+title: "Notebook Quality Audit (SRQ1/SRQ2/SRQ3)"
+type: note
+status: active
+created: 2026-04-18
 ---
 
 # Quality Audit: SRQ1 + SRQ2/SRQ3 Notebooks

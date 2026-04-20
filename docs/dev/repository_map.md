@@ -107,38 +107,39 @@ CMT_Codebase/
     ├── tooling/                       ← Environment & tooling docs
     │   └── tooling-issues.md          ← Solved Windows/OneDrive issues (living log)
     ├── integrations/                  ← Integration setup & architecture docs
-    │   ├── NOTEBOOKLM_*.md            ← NotebookLM integration (7 files)
-    │   ├── ZOTERO_INTEGRATION_SETUP.md ← Zotero full setup guide
-    │   ├── GOOGLE_DRIVE_*.md          ← Google Drive setup docs
-    │   ├── ENRICO_*.md                ← Enrico-specific setup guides
+    │   ├── notebooklm-*.md            ← NotebookLM integration (7 files)
+    │   ├── zotero-integration-setup.md ← Zotero full setup guide (canonical)
+    │   ├── google-drive-*.md          ← Google Drive setup docs
+    │   ├── enrico-*.md                ← Enrico-specific setup guides
     ├── planning/                      ← Implementation plans (time-bound)
     │   └── 2026_04_18-indeks_integration_plan.md ← Indeks Danmark integration plan
     ├── reference/                     ← Quick-reference cards (daily use)
-    │   ├── CHEATSHEET.md              ← CLI commands, workflow triggers
-    │   ├── ZOTERO_QUICK_REFERENCE.md  ← Zotero API quick commands
-    │   ├── ZOTERO_SETUP_GUIDE.md      ← Zotero config reference
-    │   ├── TESTING_QUICK_REFERENCE.md ← System A test quick card
-    │   └── INTEGRATION_QUICK_REFERENCE.md ← All integrations status table
+    │   ├── cheatsheet.md              ← CLI commands, workflow triggers
+    │   ├── zotero-quick-reference.md  ← Zotero API quick commands
+    │   ├── testing-quick-reference.md ← System A test quick card
+    │   ├── integration-quick-reference.md ← All integrations status table
+    │   └── git-branch-strategy.md    ← Git branching conventions
     ├── claude-tooling/                ← Claude Code skill/workflow docs
-    │   ├── SKILL_ACTIVATION_SUMMARY.md
-    │   └── SKILL_CREATION_SUMMARY.md
+    │   ├── skill-activation-summary.md
+    │   └── skill-creation-summary.md
     ├── project-management/            ← Project state & planning docs
-    │   ├── IMPLEMENTATION_CHECKLIST.md
+    │   ├── implementation-checklist.md
     │   └── context.md                 ← Session log & package installs
     ├── codebase-testing/              ← Codebase test plans & results
-    │   ├── TEST_SUMMARY_2026-04-15.md
-    │   ├── TEST_GROUP_SCRIPT_README.md
-    │   ├── agent_system_test_scenarios.md
-    │   ├── PRE_SYNC_TEST_GUIDE.md
-    │   ├── TEST_EXECUTION_CHECKLIST.md
-    │   └── VALIDATION_COMPLETE_2026-04-15.md
-    ├── sessions/                      ← Dated session artifacts (YYYY-MM-DD_HH-MM_slug.md)
-    │   ├── 2026-04-15_19-58_zotero-sync-report.md
-    │   ├── 2026-04-18_17-58_integration-audit-and-handover.md
-    │   ├── 2026-04-18_18-44_notebook-quality-audit.md
-    │   ├── 2026-04-18_18-45_gitignore-strategy.md
-    │   ├── 2026-04-18_18-46_action-items.md
-    │   └── 2026-04-18_21-10_handover-summary.md
+    │   ├── test-summary-2026-04-15.md
+    │   ├── test-group-script-readme.md
+    │   ├── agent-system-test-scenarios.md
+    │   ├── pre-sync-test-guide.md
+    │   ├── test-execution-checklist.md
+    │   └── validation-complete-2026-04-15.md
+    ├── notes/                         ← Dated session notes (YYYY_MM_DD-slug.md)
+    │   ├── 2026_04_15-zotero_sync_report.md
+    │   ├── 2026_04_18-notebook_quality_audit.md
+    │   ├── 2026_04_18-gitignore_strategy.md
+    │   └── 2026_04_18-action_items.md
+    ├── handover/                      ← Dated handover docs (YYYY_MM_DD-slug.md)
+    │   ├── 2026_04_18-integration_audit_handover.md
+    │   └── 2026_04_18-handover_summary.md
     ├── memory/                        ← Legacy memory (live memory is in .claude/memory/)
     ├── dev/                           ← Development reference
     │   └── repository_map.md          ← THIS FILE
@@ -165,9 +166,9 @@ CMT_Codebase/
 | Experiment outputs | `results/phase1/` |
 | Nielsen data scripts | `thesis/data/nielsen/scripts/` |
 | Indeks Danmark scripts | `thesis/data/indeksdanmark/scripts/` |
-| CLI quick reference | `docs/reference/CHEATSHEET.md` |
-| Zotero quick reference | `docs/reference/ZOTERO_QUICK_REFERENCE.md` |
-| Integration status | `docs/reference/INTEGRATION_QUICK_REFERENCE.md` |
+| CLI quick reference | `docs/reference/cheatsheet.md` |
+| Zotero quick reference | `docs/reference/zotero-quick-reference.md` |
+| Integration status | `docs/reference/integration-quick-reference.md` |
 
 ---
 
