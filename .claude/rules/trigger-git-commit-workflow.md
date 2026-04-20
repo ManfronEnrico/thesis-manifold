@@ -5,7 +5,8 @@ paths:
 
 # Git Commit Workflow
 
-**Trigger**: `/draft_commit` — generates ready-to-paste commit message
+**Trigger**: `/draft-git-commit` — generates ready-to-paste commit message
+**Execution**: `/git-commit` — stages files and runs the commit from an approved message
 
 **Pre-step**: Automatically invoke `/log_errors` to capture any session tooling issues before drafting.
 

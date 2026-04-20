@@ -279,37 +279,37 @@ Quick reference organized by category with chapter alignment and use cases.
 **Category**: Session tracking and documentation  
 **Priority**: Tier 1 (Required)
 
-### /init_standup
+### /init-standup
 **Initialize Standup Draft**
 - **Description**: Create new standup draft for next supervisor meeting
 - **Use for**: Start of multi-session work block
 - **Key features**: Auto-carry forward unchecked tasks, backlog items
 - **Trigger**: "init standup", "initialize standup"
-- **Read first**: `.claude/skills/init_standup/SKILL.md`
+- **Read first**: `.claude/skills/init-standup/SKILL.md`
 
-### /log_standup
+### /log-standup
 **Log Session to Standup**
 - **Description**: Append current session entry to standup_draft.md
 - **Use for**: End of every session to track progress
 - **Key features**: Auto-timestamp, work summary, blockers
 - **Trigger**: "log standup" (auto-fires at session end if changes detected)
-- **Read first**: `.claude/skills/log_standup/SKILL.md`
+- **Read first**: `.claude/skills/log-standup/SKILL.md`
 
-### /prep_standup
+### /prep-standup
 **Prepare Standup for Meeting**
 - **Description**: Draft non-technical summary and create meeting-ready copy
 - **Use for**: 1 day before supervisor meeting
 - **Key features**: Summary generation, formatting, clean copy
 - **Trigger**: "prep standup", "prepare standup"
-- **Read first**: `.claude/skills/prep_standup/SKILL.md`
+- **Read first**: `.claude/skills/prep-standup/SKILL.md`
 
-### /finalize_standup
+### /finalize-standup
 **Finalize Standup**
 - **Description**: Overwrite meeting file with final version, archive draft
 - **Use for**: Right before supervisor meeting
 - **Key features**: Archive previous version, update CLAUDE.md
 - **Trigger**: "finalize standup"
-- **Read first**: `.claude/skills/finalize_standup/SKILL.md`
+- **Read first**: `.claude/skills/finalize-standup/SKILL.md`
 
 ---
 
@@ -341,29 +341,37 @@ Quick reference organized by category with chapter alignment and use cases.
 **Category**: Infrastructure and meta-skills  
 **Priority**: Tier 1 (Required)
 
-### /draft_commit
+### /draft-git-commit
 **Generate Git Commit Message**
-- **Description**: Create ready-to-paste commit message from session changes
-- **Use for**: End of work session
-- **Key features**: Conventional commits, change summary, timestamps
-- **Trigger**: "draft commit", "git commit message"
-- **Read first**: `.claude/skills/draft_commit/SKILL.md`
+- **Description**: Create ready-to-paste commit message from session changes; delegates worktree setup to /using-git-worktrees
+- **Use for**: End of work session — generate and review the message
+- **Key features**: Conventional commits, change summary, timestamps, trailers
+- **Trigger**: "draft commit", "git commit message", "prepare commit"
+- **Read first**: `.claude/skills/draft-git-commit/SKILL.md`
 
-### /update_all_docs
+### /git-commit
+**Execute Git Commit**
+- **Description**: Stage files and submit an approved commit message (PowerShell-safe)
+- **Use for**: After /draft-git-commit message is approved
+- **Key features**: Staging choices, confirmation gate, post-commit checklist
+- **Trigger**: "commit this", "run the commit", "submit the commit"
+- **Read first**: `.claude/skills/git-commit/SKILL.md`
+
+### /update-all-docs
 **Update Living Documentation**
 - **Description**: Sync all project docs in order (sections → compliance → CLAUDE.md → plans)
 - **Use for**: End of phase to keep docs current
 - **Key features**: Phase-aware updates, change tracking
-- **Trigger**: "update all docs", "update_all_docs"
-- **Read first**: `.claude/skills/update_all_docs/SKILL.md`
+- **Trigger**: "update all docs", "update-all-docs"
+- **Read first**: `.claude/skills/update-all-docs/SKILL.md`
 
-### /update_plan
+### /update-plan
 **Log Plan Outcome**
 - **Description**: Finalize plan by documenting completed/adjusted/dropped items
 - **Use for**: After plan execution
 - **Key features**: Outcome file creation, auto-relocation to proper directory
 - **Trigger**: "update plan [name]"
-- **Read first**: `.claude/skills/update_plan/SKILL.md`
+- **Read first**: `.claude/skills/update-plan/SKILL.md`
 
 ### /skill-creator
 **Create Custom Skills**

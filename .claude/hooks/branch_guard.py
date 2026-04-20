@@ -5,7 +5,7 @@ UserPromptSubmit hook: branch guard
 - Output: JSON additionalSystemPrompt or empty exit
 
 Shared functions (extract_keywords, pick_prefix, slugify, branch_matches_topic)
-are importable by other scripts (e.g. draft-commit mismatch check).
+are importable by other scripts (e.g. draft-git-commit mismatch check).
 """
 import sys
 import json
