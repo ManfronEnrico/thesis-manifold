@@ -24,6 +24,7 @@ The skill never auto-executes — you copy the message from the code block and s
 
 This skill reconstructs what was done in the session using this algorithm:
 
+0. **Branch check** — Run `git branch --show-current`. If on `main`, warn the user: suggest `git checkout -b session/<topic>` and ask for explicit confirmation before proceeding. If on a feature branch, proceed freely — `git add -A` is safe on an isolated branch.
 1. **Reconstruct session context** — Review the conversation to understand what was changed and why
 2. **Get current git state** — Run `git status` to see modified, staged, and untracked files
 3. **Find the cutoff** — Determine the last commit timestamp to identify what's uncommitted
