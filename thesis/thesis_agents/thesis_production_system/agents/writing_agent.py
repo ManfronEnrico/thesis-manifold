@@ -92,14 +92,14 @@ class WritingAgent:
 - Star schema: 4 tables (dim_market, dim_period, dim_product, facts)
 - Scope: 28 Danish retailers, ~36 monthly periods, CSD category
 - Key metrics: sales_value, sales_in_liters, sales_units, promo flags, weighted_distribution
-- ⚠️ Access status: NOT YET OBTAINED — pending Manifold AI confirmation
+- [OK] Data status: CSV exports available locally at thesis/data/nielsen/.csv/
 - Cite: docs/data/nielsen_assessment.md; Xu et al. 2024 (3PL forecasting)
 
 ## 4.2 Indeks Danmark consumer survey
 
 - 20,134 respondents × 6,364 variables
 - 3 CSV files: main data (~970MB), codebook, metadata
-- ⚠️ Status: CSVs on Google Drive — not yet downloaded locally
+- [OK] Status: Available locally at thesis/data/spss_indeksdanmark/.csv/
 - Consumer segmentation: PCA + k-means → retailer-level demand indices
 - Cite: docs/data/indeksdanmark_notes.md; Customer Segmentation + Sales Prediction 2023
 
@@ -120,6 +120,6 @@ class WritingAgent:
 
 ## Outstanding
 - [ ] Confirm Nielsen access modality (SQL vs CSV export)
-- [ ] Download Indeks Danmark 3 CSVs from Google Drive
+- [OK] Indeks Danmark CSVs available at thesis/data/spss_indeksdanmark/.csv/
 - [ ] Sign confidentiality agreement with Manifold AI (CBS requirement)
 """
