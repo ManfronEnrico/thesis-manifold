@@ -29,13 +29,22 @@
   - Removed all "Google Drive" references from bullets and outstanding items
   - Updated outstanding tasks checklist to reflect current data availability
 
-#### Verification
+#### Verification & Testing
 - ✅ All three files verified with automated checks (11/11 passes)
 - ✅ No placeholder assumptions remaining (no hallucinations detected)
 - ✅ Relative paths work for both Brian's local setup and Enrico's future setup
 - ✅ Safe patterns applied throughout (env var fallbacks, path validation)
+- ✅ Created comprehensive testing documentation: `TESTING_AGENTS.md`
+  - Quick test: Config and data loading (1 minute)
+  - Full pipeline test: LangGraph invocation (2 minutes)
+  - Manual testing examples for debugging
+  - Troubleshooting guide for common errors
+- ✅ Verified test execution:
+  - `test_agents.py` passes: Nielsen loads 2.5M rows, Indeks loads 20K × 6.3K
+  - `test_langgraph_pipeline.py` passes: LangGraph builds, graph invokes, data flows
+  - Both datasets confirmed available and readable via pandas
 
-**Impact**: Both System A agents and System B writing agent now properly reference actual data instead of stale placeholders.
+**Impact**: Both System A agents and System B writing agent now properly reference actual data instead of stale placeholders. Full test suite available for future verification.
 
 ---
 
