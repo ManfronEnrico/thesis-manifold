@@ -82,23 +82,47 @@ class DataAssessmentAgent:
 
     def _assess_nielsen(self) -> Tuple[Any, Dict]:
         """Load Nielsen data and run quality checks."""
-        if not self.nielsen_cfg.access_confirmed:
-            raise RuntimeError(
-                "Nielsen database access not yet confirmed. "
-                "Contact Manifold AI to obtain credentials."
+        import pandas as pd
+
+        csv_files = list(self.nielsen_cfg.csv_dir.glob("csd_clean_facts_v.csv"))
+
+        if not csv_files:
+            raise FileNotFoundError(
+                f"Nielsen data not found at {self.nielsen_cfg.csv_dir.resolve()}\n"
+                f"Expected files: csd_clean_*.csv\n"
+                f"Place Nielsen CSV exports in: thesis/data/nielsen/.csv/"
             )
-        # Placeholder: actual SQL/CSV loading implemented once access is confirmed
-        raise NotImplementedError("Nielsen loading: pending data access confirmation.")
+
+        df = pd.read_csv(csv_files[0])
+        report = {
+            "source": "CSV export",
+            "file": str(csv_files[0]),
+            "rows": len(df),
+            "columns": len(df.columns),
+        }
+        return df, report
 
     def _assess_indeks_danmark(self) -> Tuple[Any, Dict]:
         """Load Indeks Danmark CSVs and run quality checks."""
-        if not self.indeks_cfg.local_available:
-            raise RuntimeError(
-                "Indeks Danmark CSVs not found locally. "
-                "Download the 3 CSVs from Google Drive to Thesis/ folder."
+        import pandas as pd
+
+        csv_files = list(self.indeks_cfg.csv_dir.glob("indeksdanmark_data.csv"))
+
+        if not csv_files:
+            raise FileNotFoundError(
+                f"Indeks Danmark data not found at {self.indeks_cfg.csv_dir.resolve()}\n"
+                f"Expected files: indeksdanmark_data.csv, indeksdanmark_metadata.csv, official_codebook.csv\n"
+                f"Place files in: thesis/data/spss_indeksdanmark/.csv/"
             )
-        # Placeholder: actual CSV loading implemented once files are local
-        raise NotImplementedError("Indeks Danmark loading: CSVs not yet downloaded.")
+
+        df = pd.read_csv(csv_files[0])
+        report = {
+            "source": "SPSS Indeks Danmark export",
+            "file": str(csv_files[0]),
+            "rows": len(df),
+            "columns": len(df.columns),
+        }
+        return df, report
 
     def _engineer_features(
         self, nielsen_df: Any, indeks_df: Any
