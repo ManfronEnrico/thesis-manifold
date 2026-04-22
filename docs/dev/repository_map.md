@@ -86,7 +86,13 @@ CMT_Codebase/
 │   │
 │   └── data/                          ← Data sources & pipelines
 │       ├── nielsen/                   ← Nielsen SQL connector & scripts
-│       │   ├── scripts/               ← connector, loader, exploration scripts
+│       │   ├── scripts/               ← Production scripts (audit, export, connection)
+│       │   │   ├── nielsen_connector.py ← Power BI/Fabric API connection (fixed)
+│       │   │   ├── audit_datasets.py ← Discover all 52 Fabric objects
+│       │   │   ├── save_all_datasets.py ← Batch export to CSV + manifest
+│       │   │   └── exploration scripts ← Data profiling utilities
+│       │   ├── exported/              ← CSV backups (29 files, 1.9 GB, manifest.json)
+│       │   ├── README.md              ← Colleague onboarding guide
 │       │   └── description/           ← nielsen-prometheus_data_model.md
 │       ├── indeksdanmark/             ← SPSS/CSV loader & data
 │       │   ├── scripts/               ← spss_indeksdanmark_loader.py

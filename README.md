@@ -64,7 +64,7 @@ ResearchCoordinator (LangGraph StateGraph)
 
 | Dataset | Format | Status |
 |---|---|---|
-| Nielsen/Prometheus CSD | SQL star schema (4 tables, ~36 months, 28 retailers) | 🟡 Credentials received — see [setup guide](docs/DATA_ACCESS_SETUP.md) |
+| Nielsen/Prometheus CSD | Power BI/Fabric API (52 objects, 29 CSV exports, 1.9 GB backup) | ✅ Active — see [Nielsen guide](thesis/data/nielsen/README.md) |
 | Indeks Danmark | CSV (20,134 respondents × 6,364 variables) | 🔴 Blocked — download pending |
 
 ### RAM Budget
