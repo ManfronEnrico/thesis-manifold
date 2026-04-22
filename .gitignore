@@ -1,5 +1,6 @@
 # Worktrees
 .cc/
+worktrees/*
 
 # Python
 __pycache__/
@@ -23,6 +24,7 @@ env/
 *.feather
 *.db
 *.sqlite
+*.7z
 
 # Exception: literature review CSV is safe to track
 !2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv

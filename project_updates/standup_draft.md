@@ -510,6 +510,55 @@ Continuous documentation of tooling problems (including solutions and prevention
 
 ---
 
+## 2026-04-22 — Configuration Cleanup: Hook Error Resolution (30min)
+
+### ✅ Resolved Persistent Hook Failures & Encoding Issues
+
+#### Phase 1: Root Cause Analysis
+- ✅ Diagnosed silent hook failures on all tool calls
+  - **Symptom**: PreToolUse and PostToolUse hooks failing with "non-blocking status code" on every Bash and Read operation
+  - **Root cause**: context-mode MCP integration hook (node cli.bundle.mjs) crashing without stderr output
+  - **Impact**: Constant noise in logs, though not blocking execution
+  
+- ✅ Fixed Unicode character encoding issue
+  - **Original error**: `UnicodeEncodeError: 'charmap' codec can't encode character '✓'`
+  - **Context**: Python output trying to print ✓ and ✗ characters on Windows cp1252 console
+  - **Fix**: Added `PYTHONIOENCODING=utf-8` to `.claude/settings.json` env section
+  - **Verification**: Tested with `python -c "print('✓ Test'); print('✗ Test')"` — works perfectly
+
+#### Phase 2: Hook Cleanup
+- ✅ Removed broken context-mode hooks entirely (deferred for future integration)
+  - **Removed**: PreToolUse, PostToolUse, PreCompact, SessionStart hooks (all context-mode node commands)
+  - **Kept**: File-edit safety check on PreToolUse (essential for OneDrive protection)
+  - **Result**: Clean, silent operation; no more hook noise
+  
+- ✅ Verified all remaining settings
+  - **Global settings** (~/.claude/settings.json): No changes needed
+  - **Project settings** (.claude/settings.json): PYTHONIOENCODING=utf-8 ✅, hooks cleaned ✅
+  - **Local settings**: None (not needed)
+
+#### Phase 3: Testing & Verification
+- ✅ Confirmed no encoding errors in Python output
+- ✅ Confirmed hooks no longer fire on every tool call
+- ✅ Verified clean, silent operation on Bash and Read operations
+
+### Impact
+- **Developer experience**: Eliminated constant "Failed with non-blocking status code" noise from logs
+- **Reliability**: Context-mode integration can be set up properly in future session without rush
+- **Encoding**: Python can now output Unicode characters safely on Windows
+
+### Files Modified
+- `.claude/settings.json`
+  - Added: `"env": { "PYTHONIOENCODING": "utf-8" }`
+  - Removed: context-mode hooks (PreToolUse, PostToolUse, PreCompact, SessionStart)
+  - Kept: File-edit safety check (PreToolUse/Edit|Write matcher)
+
+### Next Steps
+- Context-mode MCP integration can be revisited when there's time for proper debugging
+- All other development now proceeds without hook-related distractions
+
+---
+
 ## 2026-04-22 — Nielsen Dataset Schema Enhancement & Auto-Generation (1h 45min)
 
 ### ✅ Enhanced Audit + Auto-Generated Schema Documentation
