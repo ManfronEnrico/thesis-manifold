@@ -6,6 +6,16 @@
       "sourceType": "github",
       "computedHash": "0dd00b635a9daee1ba0e4ab4cbf009b3e84864001c8ae11fa453b9204482b55d"
     },
+    "forecasting-time-series-data": {
+      "source": "jeremylongshore/claude-code-plugins-plus-skills",
+      "sourceType": "github",
+      "computedHash": "6ac5d80c725896d644cce5c8e2ccc5cd1dd8bf0256685dc3164698e8ec9992f7"
+    },
+    "format-docs": {
+      "source": "jorgemuza/orbit",
+      "sourceType": "github",
+      "computedHash": "5660a450d4601819e85d5debeb4ec15b5fac62a73ccc7c29d57a0fc868fe75c9"
+    },
     "notebooklm": {
       "source": "pleaseprompto/notebooklm-skill",
       "sourceType": "github",
@@ -15,6 +25,11 @@
       "source": "anthropics/skills",
       "sourceType": "github",
       "computedHash": "57f470f512f45bdac598e302bc72fd62bf2b649fc7fad032efe97720149cde4d"
+    },
+    "unit-test-bean-validation": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "computedHash": "41c4b7635cfb8e5977b308b5b100b6f630ca2e799ceb3392f6464fd66c63039e"
     },
     "using-git-worktrees": {
       "source": "obra/superpowers",
