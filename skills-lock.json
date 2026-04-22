@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "Feature Engineering": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0dd00b635a9daee1ba0e4ab4cbf009b3e84864001c8ae11fa453b9204482b55d"
+    },
     "notebooklm": {
       "source": "pleaseprompto/notebooklm-skill",
       "sourceType": "github",
