@@ -47,7 +47,9 @@
 
 - [docs/project-management/context.md](docs/project-management/context.md) — packages, session log
 - [docs/reference/cheatsheet.md](docs/reference/cheatsheet.md) — CLI commands, trigger phrases
-- [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) — solved Windows/OneDrive/tooling problems (7 issues)
+- [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) — solved Windows/OneDrive/tooling problems (6 documented)
+- [thesis/data/nielsen/README.md](thesis/data/nielsen/README.md) — Nielsen data access guide (52 objects cataloged, 29 CSV exports)
+- [thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md](thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md) — Auto-generated schema reference (all 52 objects, columns, row counts)
 - [docs/integrations/zotero-integration-setup.md](docs/integrations/zotero-integration-setup.md) — Zotero integration setup (group library ID: 6479832)
 - [docs/reference/zotero-quick-reference.md](docs/reference/zotero-quick-reference.md) — Quick Zotero copy-paste commands
 - [.claude/rules/](.claude/rules/) — workflow automation rules

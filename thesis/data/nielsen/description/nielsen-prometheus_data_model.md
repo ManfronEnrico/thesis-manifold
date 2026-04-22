@@ -1,7 +1,18 @@
+# Nielsen Data Model (CSD Focus)
+
+> **Updated:** 2026-04-22
+> 
+> **Note:** This document focuses on CSD (Core Soft Drinks) as the primary dataset for your thesis. For complete schema including all 5 categories (CSD, TotalBeer, EnergyDrink, DanskVand, RTD), see `SCHEMA_SNAPSHOT.md` in the `.csv/` folder. This snapshot is auto-generated when running `audit_datasets.py` and includes all column names and row counts.
+
+---
+
+## Overview
+
 The data is organized in a star schema with dimension tables and a central facts table.
 
 **Database**: `Nielsen_clean`
 **Schema**: `dbo`
+**Categories**: 5 (CSD, TotalBeer, EnergyDrink, DanskVand, RTD) — each with identical structure
 
 | Table Type | Table Name                | Description               |
 | ---------- | ------------------------- | ------------------------- |
@@ -16,7 +27,7 @@ The data is organized in a star schema with dimension tables and a central facts
 
 ### csd_clean_dim_market_v
 
-Market/retailer dimension table.
+Market/retailer dimension table (28 markets).
 
 | Column               | Type    | Description                          | Sample Values                 |
 | -------------------- | ------- | ------------------------------------ | ----------------------------- |
@@ -55,7 +66,7 @@ Market/retailer dimension table.
 | SUPERBRUGSEN             |
 | TOTAL DISCOUNT           |
 
-**Important**: Unless the user specifies a particular market, always use **DVH EXCL. HD** (Dagligvarehandel excluding hard discount) as the default, remember to explain to the user what EXCL. HD means.
+**Important**: Unless the user specifies a particular market, always use **DVH EXCL. HD** (Dagligvarehandel excluding hard discount) as the default.
 
 **Danish Retail Landscape** (external group relationships):
 
@@ -69,20 +80,20 @@ Market/retailer dimension table.
 
 ### csd_clean_dim_period_v
 
-Time period dimension table (monthly periods; row count and latest month change as the database updates).
+Time period dimension table (42 monthly periods).
 
 | Column         | Type    | Description                                | Sample Values       |
 | -------------- | ------- | ------------------------------------------ | ------------------- |
 | `period_id`    | varchar | Primary key for the Period dimension       | 40696, 40252, 40698 |
-| `period_year`  | int     | Year when CSD facts were generated         | e.g., YYYY          |
+| `period_year`  | int     | Year when CSD facts were generated         | 2022, 2023, 2024    |
 | `period_month` | int     | Month (1–12) when CSD facts were generated | 1, 3, 11            |
-| `date_key`     | varchar | Readable month + year format               | e.g., "Month YYYY"  |
+| `date_key`     | varchar | Readable month + year format               | "October 2022"      |
 
 ---
 
 ### csd_clean_dim_product_v
 
-Product dimension table. Dataset scope: **CSD only** (Carbonated Soft Drinks).
+Product dimension table. Dataset scope: **CSD only** (Carbonated Soft Drinks) — 2,057 products.
 
 | Column             | Type    | Description                                                     | Sample Values                           |
 | ------------------ | ------- | --------------------------------------------------------------- | --------------------------------------- |
@@ -95,7 +106,7 @@ Product dimension table. Dataset scope: **CSD only** (Carbonated Soft Drinks).
 | `packaging`        | varchar | Type of packaging                                               | DÅSE, GLAS, PLAST                       |
 | `size_variants`    | varchar | Package size                                                    | 1.5 L, 33 CL, 75 CL                     |
 | `units`            | varchar | Items per pack                                                  | 20 STK, 2 STK, 30 STK                   |
-| `item_description` | varchar | Full product description                                        | FAXE KONDI SPECIEL EDITION 6\*75CL      |
+| `item_description` | varchar | Full product description                                        | FAXE KONDI SPECIEL EDITION 6*75CL       |
 | `upc_code`         | varchar | Universal Product Code (barcode)                                | 5710925015632                           |
 | `type`             | varchar | Product flavor type                                             | COLA, LEMON/LIME, APPELSIN              |
 | `regular_light`    | varchar | Regular or light (sugar-free)                                   | REGULAR, LIGHT                          |
@@ -107,15 +118,13 @@ Product dimension table. Dataset scope: **CSD only** (Carbonated Soft Drinks).
 
 **Key column**: `corporation_ru_1` identifies whether a product belongs to Royal Unibrew or a competitor.
 
-**Note**: When searching for brands and subbrands, make sure to **capitalize the brand names** — consult sample values in the table.
-
 ---
 
 ## Fact Table
 
 ### csd_clean_facts_v
 
-Central fact table with sales metrics
+Central fact table with sales metrics (2,535,464 rows).
 
 | Column                      | Type    | Description                                       | Sample Values       |
 | --------------------------- | ------- | ------------------------------------------------- | ------------------- |
@@ -132,3 +141,29 @@ Central fact table with sales metrics
 
 ---
 
+## Complete Schema Reference
+
+For all 5 product categories, column lists, row counts, and complete metadata, refer to:
+
+**`thesis/data/nielsen/.csv/SCHEMA_SNAPSHOT.md`**
+
+This file is **auto-generated** when running:
+```bash
+python thesis/data/nielsen/scripts/audit_datasets.py
+```
+
+The snapshot includes:
+- All 20 views (cleaned data for modeling)
+- All 23 base tables (raw data)
+- All 9 metadata tables (Nielsen column definitions)
+- Complete column lists for each table
+- Row counts and column counts
+
+---
+
+## Notes
+
+- **Views are cleaned** — Nika fixed orphaned facts issue (markets filtered consistently across categories)
+- **Column naming varies by category** — Different across CSD, TotalBeer, EnergyDrink, DanskVand, RTD per Nielsen's design (intentional)
+- **Metadata included** — `metadata_csd_columns.csv` and category-specific column definitions preserved for reference
+- **Last updated** — 2026-04-22 (schema snapshot current as of this date)

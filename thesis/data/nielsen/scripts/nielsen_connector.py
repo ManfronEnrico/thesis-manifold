@@ -14,6 +14,8 @@ Requires:
     - pip install pyodbc azure-identity python-dotenv
 """
 
+# %%
+
 import os
 import struct
 import pyodbc
@@ -21,9 +23,17 @@ from pathlib import Path
 from azure.identity import ClientSecretCredential
 from dotenv import load_dotenv
 
+# %%
+
 # Load credentials from .env in project root
-_env_path = Path(__file__).resolve().parents[3] / ".env"
+_env_path = Path(__file__).resolve().parents[4] / ".env"
+
+print(_env_path)
+
+# %%
+
 load_dotenv(_env_path)
+
 
 SERVER   = os.environ["RU_SERVER_STRING"]
 DATABASE = os.environ["RU_DATABASE"]
