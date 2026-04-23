@@ -35,7 +35,7 @@
 ## Rules (TL;DR)
 
 - **Model**: Haiku by default | Upgrade with `/model sonnet` or `/model opus`
-- **OneDrive**: Never Edit/Write `.py` files directly (hook enforces safe pattern)
+- **Python files**: Never Edit/Write `.py` files directly (hook enforces safe pattern — temp script via `C:/Users/brian/AppData/Local/Temp/`)
 - **Tools**: Read, Grep, Glob (not cat/rg/find); Bash for system commands
 - **Thesis**: Bullets only—never prose without human approval
 - **Every phase transition**: Requires explicit human approval

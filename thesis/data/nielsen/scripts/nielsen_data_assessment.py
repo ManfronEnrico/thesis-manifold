@@ -4,8 +4,8 @@ Connects to the Nielsen_clean Microsoft Fabric warehouse and runs
 a comprehensive data quality + coverage assessment across all 4 views.
 
 Usage:
-    cd /Users/enricomanfron/Desktop/Thesis\ Maniflod
-    cd CMT_Codebase && python -m datasets.data_nielsen.scripts.nielsen_data_assessment
+    cd C:/dev/thesis-manifold
+    python -m thesis.data.nielsen.scripts.nielsen_data_assessment
 """
 
 import sys
