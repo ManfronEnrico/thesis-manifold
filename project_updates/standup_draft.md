@@ -58,3 +58,34 @@ None for the cleanup work itself. Note: `.claude/hooks/check_file_edit.py` hook 
 1. Commit cleanup work to `session/checkpoint-cleanup-20260423` branch
 2. Open PR back to `main`
 3. Start next working session on a new branch: `thesis/chapter-4-data-assessment` or `feat/feature-engineering-module`
+
+---
+
+## 2026-04-23 — Thesis agents audit + feature-engineering integration plan
+
+**Branch:** `session/thesis-agents-review`
+
+### Completed this session
+
+- ✅ Audited System A (`ai_research_framework`) + System B (`thesis_production_system`) runnability via parallel Explore subagents
+- ✅ Ran user-executed smoke tests:
+  - `test_agents.py` → PASS (Nielsen 2.5M rows + Indeks 20K × 6.3K load cleanly)
+  - `test_langgraph_pipeline.py` → LangGraph builds; halts at `DataAssessmentAgent._engineer_features()` NotImplementedError
+  - System B import check → PASS
+  - `preprocessing.py` standalone → FAIL (`ModuleNotFoundError: No module named 'thesis'` — `ROOT = parents[2]` bug)
+- ✅ Confirmed Phase 1 state extension already landed (toggles, material_gaps, chapter_states, style_profile in `thesis_state.py:120-135`) — earlier audit flagging it "open" was wrong
+- ✅ Located three relevant skills: `feature-engineering`, `forecasting-time-series-data`, `aeon` (with `transformations.md`, `forecasting.md`, `regression.md` references)
+- ✅ Drafted plan `2026-04-23_system-a-feature-eng-integration.md` — three parallel workstreams (preprocessing packaging fix, proper feature-engineering integration into System A, thesis_state.json sync) with gap analysis, acceptance criteria, and worktree strategy
+
+### Blockers / Issues
+
+- System A cannot execute end-to-end until feature engineering is wired; forecasting/validation stubs also remain `NotImplementedError` (out of scope for next plan)
+- Potential methodological issue: existing `preprocessing.py` may fit transforms on full frame before train/val/test split (leakage). Flagged as audit step in Workstream B.
+- `docs/tasks/thesis_state.json` snapshot is 5+ weeks stale (session_id `20260315-000000`, `last_scraped: 2026-03-15`); `word_count_estimate` values appear to be character counts
+
+### Next steps
+
+1. Approve plan `2026-04-23_system-a-feature-eng-integration.md` (in project repo for Enrico's review)
+2. Launch three parallel worktrees for workstreams A/B/C
+3. Delete outdated NotebookLM plan file (`.claude/plans/plan_files/2026-04-13_notebooklm-integration-plan.md`) per instruction
+4. After merge: re-run smoke test suite end-to-end; open combined draft PR
