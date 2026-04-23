@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Execute a git commit from an approved draft message. Handles staging, PowerShell-safe commit command, and post-commit checklist. Always verify worktree isolation before committing. Pairs with /git-draft-commit (message generation) and /using-git-worktrees (workspace setup).
+description: Execute a git commit from an approved draft message. Handles staging, PowerShell-safe commit command, and post-commit checklist. Always verify worktree isolation before committing. Pairs with /git-draft-commit (message generation) and /git-using-worktrees (workspace setup).
 compatibility:
   tools: [Bash, Read]
   requires: git repository
@@ -11,7 +11,7 @@ compatibility:
 Execute a git commit from an approved draft message. This skill handles the submission half of the commit workflow — staging files and running the commit command.
 
 **Upstream:** Use `/git-draft-commit` first to generate and approve the message.
-**Prerequisite:** Worktree must be verified or `/using-git-worktrees` must have been run.
+**Prerequisite:** Worktree must be verified or `/git-using-worktrees` must have been run.
 
 ---
 
@@ -37,7 +37,7 @@ git worktree list
 
 - **In a worktree** (`.cc/worktrees/` in path): safe, proceed.
 - **On a feature branch**: safe, proceed. Note: shared staging area risk if another session is active.
-- **On `main`**: stop. Run `/using-git-worktrees` first. Do not commit to main.
+- **On `main`**: stop. Run `/git-using-worktrees` first. Do not commit to main.
 
 ---
 
@@ -165,6 +165,6 @@ Status: In progress"
 ## Reference docs
 
 - Message generation: `/git-draft-commit`
-- Worktree setup: `/using-git-worktrees`
+- Worktree setup: `/git-using-worktrees`
 - Full worktree guide: `docs/reference/git-worktrees-and-parallel-sessions.md`
 - Branch strategy: `docs/reference/git-branch-strategy.md`

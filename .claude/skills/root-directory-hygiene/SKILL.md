@@ -1,11 +1,11 @@
 ---
-name: repo-hygiene
+name: root-directory-hygiene
 description: >
   Repository root and Markdown documentation hygiene auditor.
   Analyzes the repo root against a minimal-root policy and audits
   Markdown files for correct folder placement, filename format,
   and YAML front matter completeness.
-  Trigger: /repo-hygiene analyze | plan | fix --safe | apply V001,V002
+  Trigger: /root-directory-hygiene analyze | plan | fix --safe | apply V001,V002
 compatibility: any
 ---
 
@@ -24,12 +24,12 @@ Audit repository root cleanliness and Markdown documentation hygiene. Emits a st
 ## Subcommand Interface
 
 ```
-/repo-hygiene analyze              # audit only — no changes
-/repo-hygiene analyze --scope root # root files only
-/repo-hygiene analyze --scope docs # markdown files only
-/repo-hygiene plan                 # audit + full remediation plan
-/repo-hygiene fix --safe           # apply high-confidence safe fixes only
-/repo-hygiene apply V003,V007      # apply specific violation IDs
+/root-directory-hygiene analyze              # audit only — no changes
+/root-directory-hygiene analyze --scope root # root files only
+/root-directory-hygiene analyze --scope docs # markdown files only
+/root-directory-hygiene plan                 # audit + full remediation plan
+/root-directory-hygiene fix --safe           # apply high-confidence safe fixes only
+/root-directory-hygiene apply V003,V007      # apply specific violation IDs
 ```
 
 Default when no subcommand given: `analyze`.

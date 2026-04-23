@@ -354,6 +354,6 @@ This JSON can be piped to tools, logged, or archived for later analysis.
 
 ## Related Workflows
 
-- **After running this skill:** Use `/draft-commit` to document findings
+- **After running this skill:** Use `/git-draft-commit` to document findings
 - **Before supervisor meeting:** Run `test codebase integrity` and include results in standup
-- **Before major refactor:** Save results with `/update-plan` as a baseline
+- **Before major refactor:** Save results with `/plan-update-all-all` as a baseline
