@@ -1,6 +1,6 @@
 ---
-name: using-git-worktrees
-description: Use when starting a new Claude Code session that needs isolation — creates a git worktree under .cc/worktrees/ with the project branch naming convention, safety checks, and branch mismatch detection. Pairs with /draft-commit for cleanup and audit.
+name: git-using-worktrees
+description: Use when starting a new Claude Code session that needs isolation — creates a git worktree under .cc/worktrees/ with the project branch naming convention, safety checks, and branch mismatch detection. Pairs with /git-draft-commit for cleanup and audit.
 ---
 
 # Using Git Worktrees
@@ -142,7 +142,7 @@ git worktree prune
 
 ## Branch Mismatch Detection
 
-Before committing, `/draft-commit` re-derives the session topic and checks the current branch using two-level matching:
+Before committing, `/git-draft-commit` re-derives the session topic and checks the current branch using two-level matching:
 
 | Level | Condition | Result |
 |---|---|---|
@@ -150,7 +150,7 @@ Before committing, `/draft-commit` re-derives the session topic and checks the c
 | **Loose** | ≥1 keyword anywhere in branch name | Proceed, note loose match |
 | **None** | Neither condition met | Flag mismatch, ask user to resolve |
 
-If on `main` instead of a worktree branch, `/draft-commit` will warn and offer to create a worktree before proceeding.
+If on `main` instead of a worktree branch, `/git-draft-commit` will warn and offer to create a worktree before proceeding.
 
 ---
 
@@ -161,7 +161,7 @@ If on `main` instead of a worktree branch, `/draft-commit` will warn and offer t
 | Starting new session | Create worktree (Steps 0–5) |
 | `.cc/` not gitignored | Add to `.gitignore` + commit first |
 | Worktree already exists for topic | Ask user: reuse or new? |
-| On `main` mid-session | See `/draft-commit` Step 0 — offer to create worktree |
+| On `main` mid-session | See `/git-draft-commit` Step 0 — offer to create worktree |
 | Session complete | `git worktree remove .cc/worktrees/<slug>` from repo root |
 | Stale worktrees accumulating | `git worktree prune` |
 
@@ -190,12 +190,12 @@ If on `main` instead of a worktree branch, `/draft-commit` will warn and offer t
 ## Integration
 
 **Pairs with:**
-- `/draft-commit` — commit from within the worktree; trailers include worktree path
+- `/git-draft-commit` — commit from within the worktree; trailers include worktree path
 - `docs/reference/git-worktrees-and-parallel-sessions.md` — plain-language guide for Brian and Enrico
 - `docs/reference/git-branch-strategy.md` — full branch naming rules
 - `.claude/rules/trigger-branch-strategy.md` — auto-fires on session start if on `main`
 
 **Called when:**
 - Starting any session where isolation matters (new feature, chapter edit, data work)
-- `/draft-commit` detects `main` and offers worktree setup as Option [1]
+- `/git-draft-commit` detects `main` and offers worktree setup as Option [1]
 - The branch guard hook fires and user chooses to create a new branch

@@ -1,6 +1,6 @@
 ---
 name: errors-log
-description: This skill should be used when the user asks to "log errors", "log tooling issues", or "/log-errors". Scans session conversation history for tool failures, Windows/OneDrive issues, CRLF problems, and encoding errors, then logs them to .claude/logs/tooling-issues.jsonl (source of truth), triggering automatic markdown rebuild.
+description: This skill should be used when the user asks to "log errors", "log tooling issues", or "/errors-log". Scans session conversation history for tool failures, Windows/OneDrive issues, CRLF problems, and encoding errors, then logs them to .claude/logs/tooling-issues.jsonl (source of truth), triggering automatic markdown rebuild.
 version: 0.2.0
 ---
 
@@ -12,8 +12,8 @@ Extract and document errors that occur during a session by appending to `.claude
 
 ## When to Use
 
-- **Manual invocation**: Call `/log-errors` after a session where tooling issues occurred
-- **Pre-commit hook**: Automatically triggered before `/draft-commit` to ensure all session errors are logged before creating a commit
+- **Manual invocation**: Call `/errors-log` after a session where tooling issues occurred
+- **Pre-commit hook**: Automatically triggered before `/git-draft-commit` to ensure all session errors are logged before creating a commit
 
 ## How It Works
 
@@ -63,16 +63,16 @@ Before logging, check if the error already exists by comparing `symptom_short` a
 
 **Manual invocation:**
 ```
-/log-errors
+/errors-log
 ```
 Scans conversation, extracts errors, prompts you to confirm/edit, then appends to `docs/tooling-issues.md`.
 
 **Before drafting a commit:**
 ```
-/log-errors
-/draft-commit
+/errors-log
+/git-draft-commit
 ```
-Or if auto-trigger is enabled, `/draft-commit` will automatically run `/log-errors` first.
+Or if auto-trigger is enabled, `/git-draft-commit` will automatically run `/errors-log` first.
 
 ## Output
 
@@ -94,7 +94,7 @@ No new errors detected in conversation history.
 
 ## Integration with Git Workflow
 
-When auto-trigger is enabled in `.claude/settings.json`, the `/draft-commit` skill will automatically invoke `/log-errors` before generating the commit message. This ensures:
+When auto-trigger is enabled in `.claude/settings.json`, the `/git-draft-commit` skill will automatically invoke `/errors-log` before generating the commit message. This ensures:
 
 1. All session errors are appended to JSONL
 2. Markdown is rebuilt (no manual edits)
