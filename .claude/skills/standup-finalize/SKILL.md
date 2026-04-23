@@ -34,7 +34,7 @@ This skill implements the finalize standup workflow from `.claude/rules/trigger-
 
 Do NOT use this skill if:
 - You haven't yet updated `standup_draft.md` with post-meeting work
-- You want to preserve the draft in its current state (use `/init-standup` only)
+- You want to preserve the draft in its current state (use `/standup-init` only)
 - You need to make edits to the draft before finalizing (edit `project_updates/standup_draft.md` first)
 
 ---
@@ -44,7 +44,7 @@ Do NOT use this skill if:
 Invoke in chat:
 
 ```
-/finalize-standup
+/standup-finalize
 ```
 
 Or use trigger phrases in conversation:
@@ -88,7 +88,7 @@ Example filename: `project_updates/2026-04-15_14-32_update_meeting_1.md`
 Writes the **unmodified** `standup_draft.md` (with all meta-notes intact) to:
 - **File**: `project_updates/standup_draft_archive.md`
 - **Purpose**: Permanent backup and historical record of internal decision-making
-- **Usage**: Serves as the carry-over source when `/init-standup` starts the next meeting cycle
+- **Usage**: Serves as the carry-over source when `/standup-init` starts the next meeting cycle
 
 ---
 
@@ -110,13 +110,13 @@ project_updates/standup_draft_archive.md
 ```
 - Contains: Verbatim `standup_draft.md` with all meta-notes and internal annotations
 - Excludes: Nothing (everything preserved)
-- Recipients: Stored locally for session history and carry-over to next `/init-standup`
+- Recipients: Stored locally for session history and carry-over to next `/standup-init`
 
 ### Workflow Continuity
 
 After finalization:
 - `project_updates/standup_draft.md` **remains unchanged** in the working directory
-- The draft is ready for the next cycle: when you run `/init-standup`, it uses the archive as the carry-over source
+- The draft is ready for the next cycle: when you run `/standup-init`, it uses the archive as the carry-over source
 - No action required — the skill handles file movement and cleanup automatically
 
 ---
@@ -145,9 +145,9 @@ project_updates/standup_draft_archive.md
 
 - **Draft is preserved**: The original `standup_draft.md` is not modified; archiving copies it, not moves it
 - **Supervisor transparency**: The final meeting document shows all work done with full Progress Log and decision history (without meta-notes)
-- **No re-running**: Finalize once per cycle; `/init-standup` handles prep for the next meeting
+- **No re-running**: Finalize once per cycle; `/standup-init` handles prep for the next meeting
 - **File naming**: Meeting files are named with timestamp and sequential counter (N) to prevent overwrites
-- **Carry-over**: The archive file (`standup_draft_archive.md`) is automatically used by `/init-standup` for the next session's context
+- **Carry-over**: The archive file (`standup_draft_archive.md`) is automatically used by `/standup-init` for the next session's context
 
 ---
 
@@ -179,16 +179,16 @@ project_updates/standup_draft_archive.md ← Internal archive
 
 ## Related Skills
 
-- **`/init-standup`** — Initialize a new standup draft for the next meeting cycle (reads the archive created by this skill)
-- **`/log-standup`** — Log new standup entries manually to the draft between meetings
-- **`/draft-commit`** — Generate a git commit message from session work (often run in parallel with finalization)
+- **`/standup-init`** — Initialize a new standup draft for the next meeting cycle (reads the archive created by this skill)
+- **`/standup-log`** — Log new standup entries manually to the draft between meetings
+- **`/git-draft-commit`** — Generate a git commit message from session work (often run in parallel with finalization)
 
 ---
 
 ## Troubleshooting
 
 **Problem**: "File not found" when trying to finalize
-- **Check**: Does `project_updates/standup_draft.md` exist? Create it first with `/init-standup` if missing.
+- **Check**: Does `project_updates/standup_draft.md` exist? Create it first with `/standup-init` if missing.
 
 **Problem**: Meta-notes not being stripped
 - **Check**: Verify meta-note format matches `_(... Claude ...)_`. If your notes use different syntax, update the Grep pattern in the skill.
