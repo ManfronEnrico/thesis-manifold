@@ -65,7 +65,7 @@ ResearchCoordinator (LangGraph StateGraph)
 | Dataset | Format | Status |
 |---|---|---|
 | Nielsen/Prometheus CSD | Power BI/Fabric API (52 objects, 29 CSV exports, 1.9 GB backup) | ✅ Active — see [Nielsen guide](thesis/data/nielsen/README.md) |
-| Indeks Danmark | CSV (20,134 respondents × 6,364 variables) | 🔴 Blocked — download pending |
+| Indeks Danmark | CSV (20,134 respondents × 6,364 variables) | ✅ Available locally at `thesis/data/spss_indeksdanmark/.csv/` |
 
 ### RAM Budget
 
@@ -237,7 +237,7 @@ python generate_figures.py
 
 ## Running the Research Framework (System A)
 
-> ⚠️ Currently blocked — Nielsen and Indeks Danmark data access is pending.
+> ✅ Data access is unblocked as of 2026-04-22. Both Nielsen (29 CSVs, 2.5M rows) and Indeks Danmark (20K × 6.3K matrix) load locally through the agent pipeline. Feature engineering, forecasting, and validation modules remain as placeholder stubs pending implementation.
 
 ```python
 from ai_research_framework.core.coordinator import build_coordinator
@@ -273,42 +273,44 @@ python -m pytest tests/ -v
 Every phase transition requires **explicit human approval** before proceeding.
 
 ```
-Phase 0 — Setup & pre-start checklist
-Phase 1 — Data Assessment           [BLOCKED — awaiting data access]
-Phase 2 — Literature Review & Gap Analysis
-Phase 3 — Framework Design
-Phase 4 — SRQ1: Model Selection & Benchmark   [BLOCKED — awaiting data]
-Phase 5 — SRQ2: Synthesis Module              [BLOCKED — awaiting Phase 4]
-Phase 6 — SRQ3/4: Evaluation & Validation     [BLOCKED — awaiting Phase 5]
-Phase 7 — Thesis Writing            [bullets only → human approval → prose]
+Phase 0 — Setup & pre-start checklist           [DONE]
+Phase 1 — Data Assessment                       [IN PROGRESS — data loading verified]
+Phase 2 — Literature Review & Gap Analysis      [DONE — 49 papers, RQs v2]
+Phase 3 — Framework Design                      [DONE — architecture + System A/B split]
+Phase 4 — SRQ1: Model Selection & Benchmark     [NEXT — feature engineering + 5-model benchmark]
+Phase 5 — SRQ2: Synthesis Module                [pending Phase 4]
+Phase 6 — SRQ3/4: Evaluation & Validation       [pending Phase 5]
+Phase 7 — Thesis Writing                        [bullets only → human approval → prose]
 ```
 
 ---
 
-## Current Status (as of 2026-03-21)
+## Current Status (as of 2026-04-23)
 
 ### Completed ✅
 - System A skeleton — all 4 research agents + LangGraph coordinator
 - System B — all 10 production agents implemented
-- Literature review — 37 confirmed papers, gap analysis v3, RQs v2
+- Literature review — 49 confirmed papers, gap analysis v3, RQs v2
 - CBS compliance checks — all 11 chapters + abstract
 - All thesis chapter bullet skeletons (Ch.1–10 + frontpage + abstract)
 - Architecture figures — 5 SVG + PNG pairs
 - Experiment registry template initialised
 - GitHub repository set up with collaborator access
-
-### Blocked 🔴
-- Indeks Danmark CSVs — must download from Google Drive
+- **Nielsen data unblocked** — 52 Fabric objects cataloged, 29 CSV exports (1.9 GB), schema snapshot auto-generated
+- **Indeks Danmark data unblocked** — 20K × 6.3K matrix loading locally
+- **Agent pipeline verified** — test suite passes 11/11; Nielsen loads 2.5M rows, Indeks loads through LangGraph
+- Repository restructured into `thesis/thesis-context/` + `thesis/thesis-writing/`
+- Agents consolidated into `thesis/thesis_agents/` Python package
 
 ### In Progress 🟡
-- Nielsen database — credentials received, connection verified, data exploration in progress
-  → See [docs/DATA_ACCESS_SETUP.md](docs/DATA_ACCESS_SETUP.md) for colleague setup
-  → Run `python scripts/explore_nielsen.py` to inspect the data
+- Chapter 4 (Data Assessment) bullets — refresh with actual data findings
+- Feature engineering module — currently placeholder stub (`NotImplementedError`)
 
 ### Pending
-- Phase 1–6 implementation (all data-dependent)
-- Tier B paper confirmations (10 papers, user decision pending)
-- Literature Scraping Run 4 (optional)
+- Phase 4 — 5-model benchmark (ARIMA, Prophet, LightGBM, XGBoost, Ridge) against 8 GB RAM constraint
+- Phase 5 — Synthesis module implementation
+- Phase 6 — 3-level evaluation / validation
+- Context-mode MCP integration — deferred pending proper debugging
 
 ---
 
