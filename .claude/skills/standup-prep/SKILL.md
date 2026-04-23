@@ -21,7 +21,7 @@ Prepares the standup draft for the supervisor meeting by drafting the Non-Techni
 
 Use this skill with any of these commands:
 
-- `/prep-standup`
+- `/standup-prep`
 - "prep standup"
 - "prepare standup"
 - "prepare for standup"
@@ -34,9 +34,9 @@ Run this skill **just before your supervisor meeting** to finalize the standup d
 
 **Typical workflow:**
 1. Throughout the week: maintain `standup_draft.md` with updates, blockers, and meta-notes
-2. Before the meeting: run `/prep-standup`
+2. Before the meeting: run `/standup-prep`
 3. During the meeting: optionally edit the output file in real-time, or take notes directly in `standup_draft.md`
-4. After the meeting: run `/finalize-standup` to create the final supervisor copy with post-meeting edits
+4. After the meeting: run `/standup-finalize` to create the final supervisor copy with post-meeting edits
 
 ## How It Works
 
@@ -88,14 +88,14 @@ Report that the presentation-ready document is created and located at the output
 - Full path to the new document
 - Confirmation of the meeting number
 - Reminder about the meeting workflow (edit during meeting, finalize after)
-- Next steps (`/finalize-standup` after the meeting)
+- Next steps (`/standup-finalize` after the meeting)
 
 ## Important Workflow Notes
 
 **`standup_draft.md` is the source of truth:**
 - This skill does NOT modify `standup_draft.md` — it retains all meta-notes
 - All internal tracking (Claude notes, timestamps, incremental updates) stays in the draft
-- If changes are needed, always edit `standup_draft.md` afterward, then re-run `/prep-standup` to regenerate the presentation copy
+- If changes are needed, always edit `standup_draft.md` afterward, then re-run `/standup-prep` to regenerate the presentation copy
 
 **Output document is presentation-ready:**
 - The `YYYY-MM-DD_HH-MM_update_meeting_N.md` file is clean and ready to show or discuss in the meeting
@@ -107,7 +107,7 @@ Report that the presentation-ready document is created and located at the output
 - Or, make changes to `standup_draft.md` during/after the meeting (new to-dos, clarifications, etc.)
 
 **After the meeting:**
-- Run `/finalize-standup` which will create the final version including any post-meeting edits from `standup_draft.md`
+- Run `/standup-finalize` which will create the final version including any post-meeting edits from `standup_draft.md`
 - This ensures the final document reflects what was actually discussed and decided
 
 ## Example Workflow
@@ -119,7 +119,7 @@ Monday-Thursday: Maintain standup_draft.md
   - Include meta-notes and timestamps
 
 Friday 9:50 AM (before 10 AM meeting):
-  /prep-standup
+  /standup-prep
   → Reads standup_draft.md
   → Drafts Non-Technical Summary
   → Creates 2026-04-15_09-55_update_meeting_5.md (clean, ready to present)
@@ -131,22 +131,22 @@ Friday 10:00-10:30 AM (during meeting):
 
 Friday 10:35 AM (after meeting):
   - Edit standup_draft.md with any final notes from the meeting
-  /finalize-standup
+  /standup-finalize
   → Creates final archived copy with all post-meeting updates
 ```
 
 ## Related Skills
 
-- **`/finalize-standup`** — Run after the supervisor meeting to create the final archived copy with any post-meeting edits
-- **`/log-standup`** — Log a quick standup entry at the end of a session (e.g., "added 200 lines to System A agent")
+- **`/standup-finalize`** — Run after the supervisor meeting to create the final archived copy with any post-meeting edits
+- **`/standup-log`** — Log a quick standup entry at the end of a session (e.g., "added 200 lines to System A agent")
 
 ## Common Questions
 
 **Q: Can I edit the output file during the meeting?**
-A: Yes. Brian can edit the presentation document in real-time during the meeting, or note changes in `standup_draft.md` afterward. Either way, run `/finalize-standup` after the meeting.
+A: Yes. Brian can edit the presentation document in real-time during the meeting, or note changes in `standup_draft.md` afterward. Either way, run `/standup-finalize` after the meeting.
 
 **Q: What if the Non-Technical Summary isn't quite right?**
-A: Edit the summary directly in `standup_draft.md` under `## Non-Technical Summary Draft`, then re-run `/prep-standup` to regenerate the presentation copy.
+A: Edit the summary directly in `standup_draft.md` under `## Non-Technical Summary Draft`, then re-run `/standup-prep` to regenerate the presentation copy.
 
 **Q: Should I delete the output files after the meeting?**
 A: No. Keep them as a meeting record. They are named with timestamps so new meetings won't overwrite old ones.
