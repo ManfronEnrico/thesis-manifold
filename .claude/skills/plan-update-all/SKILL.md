@@ -44,24 +44,23 @@ This creates an audit trail for future reference and allows the plan system to t
 /plan-update-all-all YYYY-MM-DD_my-plan-slug
 ```
 
-If no plan name is provided, Claude searches for recently-touched plans in `.claude/plans/`.
+If no plan name is provided, Claude searches for recently-touched plans in `plans/` (root level).
 
 ## How It Works
 
-This skill implements a four-step workflow:
+This skill implements a three-step workflow:
 
 ### Step 1: Locate the Plan File
 
 The skill searches for your plan in these locations (in order):
-1. `<project-root>/.claude/plans/plan_files/` — primary location for new plans
-2. `<project-root>/.claude/plans/` — fallback for plans not yet reorganized
-3. `~/.claude/plans/` — global plans (if referenced in project context)
+1. `<project-root>/plans/plan_files/` — primary location for new plans
+2. `<project-root>/plans/` — fallback for plans not yet reorganized
 
-### Step 2: Relocate if Misplaced
+### Step 2: Organize if Needed
 
-If a plan is found in the global `~/.claude/plans/` directory, it is moved to the project's `.claude/plans/` directory to keep all project work together.
+If a plan is found in the root `plans/` directory (not in a subdirectory), it is moved to `plans/plan_files/` to keep all active work organized.
 
-### Step 3: Rename if Needed
+### Step 3: Rename if Needed (applies to both active and outcome files)
 
 If the filename does not follow the standard naming convention, it is renamed:
 - **Format:** `YYYY-MM-DD_<short-slug>.md`
@@ -143,10 +142,10 @@ All plan files live in the **project's own directory**:
 
 ### Example Plan Lifecycle
 
-1. **Created:** `2026-04-10_system-refactor.md` in `.claude/plans/plan_files/`
+1. **Created:** `2026-04-10_system-refactor.md` in `plans/plan_files/`
 2. **Executed:** You run the plan over 3 days, discover adjustments
 3. **Logged:** You run `/plan-update-all-all system-refactor`
-4. **Result:** Plan file gains `## Outcome` section; a mirrored outcome entry is created at `.claude/plans/outcome_files/2026-04-10_system-refactor.md`
+4. **Result:** Plan file gains `## Outcome` section; a mirrored outcome entry is created at `plans/outcome_files/2026-04-10_system-refactor.md`
 
 ## Common Workflows
 
@@ -190,7 +189,7 @@ This skill connects to:
 
 ### Example 1: Simple Plan with All Completed
 
-**Plan file:** `.claude/plans/plan_files/2026-04-10_add-logging.md`
+**Plan file:** `plans/plan_files/2026-04-10_add-logging.md`
 
 **Original plan:** Add structured logging to three modules
 
@@ -210,7 +209,7 @@ _Completed: 2026-04-12_
 
 ### Example 2: Complex Plan with Adjustments
 
-**Plan file:** `.claude/plans/plan_files/2026-04-05_thesis-chapter-2-draft.md`
+**Plan file:** `plans/plan_files/2026-04-05_thesis-chapter-2-draft.md`
 
 **Original plan:** Write 3000 words on methodology, 2000 words on data sources, outline results section
 
@@ -258,7 +257,7 @@ _Completed: 2026-04-14_
 
 **Plan file not found:**
 - Check that the plan name or partial filename matches your file
-- Verify the file exists in `.claude/plans/plan_files/` or `.claude/plans/`
+- Verify the file exists in `plans/plan_files/` or `plans/`
 - Provide the full filename if partial match fails
 
 **Filename needs renaming:**

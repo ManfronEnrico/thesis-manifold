@@ -62,7 +62,7 @@ The skill activates when you use any of these phrases:
 - `Grep` — Search for stale references across files
 
 **File system access required:**
-- Read: `docs/`, `.claude/rules/`, `.claude/plans/`, `project_updates/`
+- Read: `docs/`, `.claude/rules/`, `plans/`, `project_updates/`
 - Write: All of the above locations
 
 **Git integration:**
@@ -246,7 +246,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 9: Plan Files — `.claude/plans/`
+### Phase 9: Plan Files — `plans/`
 
 **When to update:**
 - Plan was actively discussed, executed, or partially implemented

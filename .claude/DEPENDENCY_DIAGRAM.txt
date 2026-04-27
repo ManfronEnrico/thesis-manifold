@@ -1,0 +1,324 @@
+# Notebook Dependency & Data Flow Diagram
+
+```
+════════════════════════════════════════════════════════════════════════════════
+PHASE 2: ML TRAINING (PARALLEL, INDEPENDENT)
+════════════════════════════════════════════════════════════════════════════════
+
+    ┌─ NIELSEN RAW DATA ─────────────────────────────────────────────┐
+    │   thesis/data/nielsen/                                         │
+    │   - sales_units (brand × channel × date)                       │
+    │   - category (CSD, danskvand, energidrikke, RTD, totalbeer)    │
+    └────────┬─────────────────────────────────────────────────────┘
+             │
+             ├──→ [CSD Notebook]          → thesis/analysis/outputs/csd/
+             │    - Train XGB + LGB              ├─ pipelines/model_xgboost.pkl
+             │    - 50 Optuna trials per        ├─ pipelines/model_lightgbm.pkl
+             │    - Save: xgb (16.77%), lgb     ├─ pipelines/pipe_tree.pkl
+             │                                   └─ feature_matrix_split.parquet
+             │
+             ├──→ [Danskvand Notebook]    → thesis/analysis/outputs/danskvand/
+             │    - Train XGB + LGB              ├─ pipelines/model_*.pkl
+             │    - LGB wins (21.23%)           └─ feature_matrix_split.parquet
+             │
+             ├──→ [Energidrikke Notebook] → thesis/analysis/outputs/energidrikke/
+             │    - Train XGB + LGB              └─ [same structure]
+             │    - XGB wins (21.18%)
+             │
+             ├──→ [RTD Notebook]          → thesis/analysis/outputs/rtd_v2/
+             │    - Train XGB + LGB              ├─ [same structure]
+             │    - V2: 6 promo features
+             │
+             ├──→ [Totalbeer Notebook]    → thesis/analysis/outputs/totalbeer/
+             │    - Train XGB + LGB              └─ [same structure]
+             │    - XGB wins (26.65%)
+             │
+             ├──→ [Pooled-4 Notebook]     → thesis/analysis/outputs/pooled_4/
+             │    - All 4 (excl. CSD)            └─ [same structure]
+             │    - Baseline fallback
+             │
+             └──→ [Pooled-5 Notebook]     → thesis/analysis/outputs/pooled_5/
+                  - All 5 categories               └─ [same structure]
+                  - Backup fallback
+
+                              ↓ (all independent, run in parallel)
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE 2.5: COMPARISON (AGGREGATES PHASE 2 OUTPUTS)
+════════════════════════════════════════════════════════════════════════════════
+
+    [7 training notebooks] (outputs)
+             │
+             ├──→ [Comparison Notebook]
+             │    - Iterate over all 7 outputs dirs
+             │    - Read: metrics.csv from each
+             │    - Aggregate: median MAPE, winner per category
+             │    - Output: comparison_metrics.csv
+             │
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE 3: AGENTIC INTEGRATION
+════════════════════════════════════════════════════════════════════════════════
+
+    ┌─ TRAINED MODELS (7 categories) ─────────────────────────────┐
+    │ thesis/analysis/outputs/{csd,danskvand,...}/                │
+    │ ├─ pipelines/model_xgboost.pkl                              │
+    │ ├─ pipelines/model_lightgbm.pkl                             │
+    │ ├─ pipelines/pipe_tree.pkl                                  │
+    │ └─ feature_matrix_split.parquet                             │
+    └────────┬─────────────────────────────────────────────────────┘
+             │
+             ├──→ [Agentic Notebook] §0.5
+             │    ├─ CATEGORY_MODELS registry
+             │    │  └─ Maps: category → outputs_dir + model choice
+             │    │
+             │    ├─ load_model_for_category(cat) FUNCTION
+             │    │  ├─ Loads: model_xgboost.pkl or model_lightgbm.pkl
+             │    │  ├─ Loads: pipe_tree.pkl (preprocessing)
+             │    │  ├─ Loads: feature_matrix_split.parquet
+             │    │  └─ Returns: {model, pipe, feature_matrix, mape, ...}
+             │    │
+             │    └─ predict_for_category(brand, channel, date, cat)
+             │       ├─ Calls: load_model_for_category()
+             │       ├─ Predicts: sales_units
+             │       └─ Returns: {prediction, actual, error, ...}
+             │
+             └──→ §2.5 Forecasting Agent (Multi-category)
+                  ├─ Takes: brand + channel + date + category
+                  ├─ Routes to: per-category model via registry
+                  ├─ Gets prediction from load_model_for_category()
+                  ├─ Calls: OpenAI + Anthropic LLM
+                  └─ Output: forecast + confidence
+
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE 5: 4-TIER EVALUATION (PRODUCES CHAPTER 7 RESULTS)
+════════════════════════════════════════════════════════════════════════════════
+
+    INPUT:
+    ┌─────────────────────────────────────────────────────────┐
+    │ [Trained models] (via registry)                         │
+    │ [Prompts CSV] (50 final eval prompts v5)                │
+    │ thesis/analysis/prompts/prompts_v5_final.csv            │
+    │                                                         │
+    │ Prompts contain:                                        │
+    │ - point_forecast, range_forecast, confidence_interval  │
+    │ - brand_vs_brand, channel_ranking                       │
+    │ - risk_flags, anomaly_flag, yoy_comparison             │
+    │ - etc. (50 total, 10 types × ~5 variations)            │
+    └─────────────────────────────────────────────────────────┘
+                        ↓
+
+    [Eval Notebook] §3-8
+    ├─ §3: 4-TIER EVAL (MAIN LOOP)
+    │  ├─ For each of 50 prompts:
+    │  │  ├─ L0: gpt-4o-mini (NO tools, pure LLM)                 ← baseline
+    │  │  │      [200 OpenAI calls, $1.50, 12 min]
+    │  │  ├─ L1: gpt-4o-mini + raw data tool (no ML)              ← data access
+    │  │  │      [part of 200 OpenAI calls above]
+    │  │  ├─ L2: gpt-4o-mini + UNTUNED ML                         ← ML structure
+    │  │  │      [load_model_for_category(cat) with n_est=200]
+    │  │  │      [part of 200 OpenAI calls above]
+    │  │  └─ L3: gpt-4o-mini + TUNED ML + confidence              ← quality + confidence
+    │  │         [load_model_for_category(cat) with Optuna-50]
+    │  │         [part of 200 OpenAI calls above]
+    │  │
+    │  └─ Total: 50 prompts × 4 systems = 200 OpenAI calls (~$1.50)
+    │
+    ├─ §4: QUANTITATIVE METRICS (FREE)
+    │  ├─ MAPE, MAE, RMSE, sMAPE
+    │  ├─ Hallucination detection
+    │  ├─ Latency tracking
+    │  └─ Cost tracking
+    │
+    ├─ §5: LLM-AS-JUDGE (EXPENSIVE)
+    │  ├─ For each: L0, L1, L2, L3 output
+    │  ├─ For each of: groundedness, actionability, specificity, coherence, business_relevance
+    │  ├─ Judge calls: 50 prompts × 4 systems × 5 metrics
+    │  └─ Total: 1000 Claude API calls (~$2, 20 min)
+    │
+    ├─ §6: PAIRWISE COMPARISON (CHEAPER)
+    │  ├─ Which system won for each prompt?
+    │  ├─ Pairs: L0v1, L0v2, L0v3, L1v2, L1v3, L2v3 (6 pairs)
+    │  └─ Total: 6 pairs × 50 prompts = 300 Claude calls (~$0.50, 5 min)
+    │
+    ├─ §7: AGGREGATE METRICS
+    │  ├─ Win rates (how often L3 beats L0, L1, L2?)
+    │  ├─ Composite quality score
+    │  ├─ Hallucination rate
+    │  └─ Cost-quality tradeoff
+    │
+    └─ §8: FIGURES + MARKDOWN
+       ├─ Boxplot: sMAPE by tier
+       ├─ Heatmap: judge metrics
+       ├─ Radar chart: 4-tier comparison
+       ├─ Win-rate matrix
+       ├─ Cost vs quality scatter
+       └─ Ready-to-paste markdown tables
+
+    OUTPUT (to Chapter 7):
+    ├─ thesis/analysis/outputs/ab_test_v5/
+    │  ├─ ab_raw_outputs.csv (all L0/L1/L2/L3 recommendations)
+    │  ├─ ab_metrics.csv (per-query metrics)
+    │  ├─ ab_summary.csv (aggregated L0 v L1 v L2 v L3)
+    │  └─ figures/
+    │     ├─ mape_boxplot.png
+    │     ├─ judge_heatmap.png
+    │     ├─ 4tier_radar.png
+    │     ├─ winrate_matrix.png
+    │     └─ costquality_scatter.png
+    │
+    └─ Markdown tables (copy-paste into Word)
+
+
+════════════════════════════════════════════════════════════════════════════════
+CRITICAL PATHS (What breaks if paths are wrong)
+════════════════════════════════════════════════════════════════════════════════
+
+PATH ERROR                              SYMPTOM                   IMPACT
+─────────────────────────────────────────────────────────────────────────────
+ANALYSIS_DIR wrong                      FileNotFoundError          ALL notebooks
+                                        (can't find outputs)
+
+registry outputs_dir wrong               FileNotFoundError          Agentic + Eval
+                                        (can't find .pkl)          (both call load_model_for_category)
+
+prompts_path wrong                       FileNotFoundError          Eval notebook
+                                        (can't load prompts.csv)   (can't run §1)
+
+Feature matrix missing                  KeyError in pd.read        Agentic + Eval
+                                        parquet                    (can't get features)
+
+Preprocessing pipeline (.pkl) missing    FileNotFoundError          Agentic + Eval
+                                        (can't transform X)        (predictions fail)
+
+
+════════════════════════════════════════════════════════════════════════════════
+REGISTRY STRUCTURE (AGENTIC NOTEBOOK §0.5) — CRITICAL
+════════════════════════════════════════════════════════════════════════════════
+
+CATEGORY_MODELS = {
+    "csd": {
+        "outputs_dir": ANALYSIS_DIR / "outputs" / "csd",             ← MUST MATCH ACTUAL
+        "primary_model": "xgboost",
+        "xgb_per_brand_mape": 16.77,
+        "lgb_per_brand_mape": 16.82,
+        "fm_filename": "feature_matrix_split.parquet",
+    },
+    "danskvand": {
+        "outputs_dir": ANALYSIS_DIR / "outputs" / "danskvand",       ← MUST MATCH ACTUAL
+        "primary_model": "lightgbm",
+        "xgb_per_brand_mape": 22.22,
+        "lgb_per_brand_mape": 21.23,
+        "fm_filename": "feature_matrix_split.parquet",
+    },
+    ... (energidrikke, rtd, totalbeer, pooled_4, pooled_5)
+}
+
+LOAD FUNCTION (CALLED BY EVAL NOTEBOOK):
+def load_model_for_category(category: str, model_type: str | None = None) -> dict:
+    cfg = CATEGORY_MODELS[category]
+    out_dir = cfg["outputs_dir"]  ← USED HERE
+
+    # Try to open pickles:
+    with open(out_dir / "pipelines" / f"model_{chosen}.pkl", "rb") as f:
+        model = pickle.load(f)  ← FAILS if path wrong
+
+    with open(out_dir / "pipelines" / "pipe_tree.pkl", "rb") as f:
+        pipe = pickle.load(f)   ← FAILS if path wrong
+
+    fm = pd.read_parquet(out_dir / cfg["fm_filename"])  ← FAILS if path wrong
+
+    return {"model": model, "pipe_tree": pipe, "feature_matrix": fm, ...}
+
+
+════════════════════════════════════════════════════════════════════════════════
+SUMMARY: WHERE DATA FLOWS
+════════════════════════════════════════════════════════════════════════════════
+
+Nielsen Data (raw)
+    ↓ (used by training notebooks)
+Trained Models (pickles) + Feature Matrices (parquet)
+    ↓ (loaded by registry)
+CATEGORY_MODELS registry + load_model_for_category()
+    ↓ (called by)
+Agentic Forecasting + Eval Notebook
+    ↓ (uses registry to load models for L2 + L3 tiers)
+4-Tier Evaluation Results
+    ↓ (metrics + figures)
+Chapter 7 Thesis
+```
+
+---
+
+## Key Invariants (Must be true after migration)
+
+1. **ANALYSIS_DIR path matches notebook location**
+   ```python
+   ANALYSIS_DIR = PROJECT_ROOT / "thesis" / "analysis"  ✅
+   ```
+
+2. **Registry outputs_dir matches actual pickle location**
+   ```python
+   CATEGORY_MODELS["csd"]["outputs_dir"] = ANALYSIS_DIR / "outputs" / "csd"
+   # Must exist: thesis/analysis/outputs/csd/pipelines/model_xgboost.pkl
+   ```
+
+3. **Prompts CSV path matches actual file location**
+   ```python
+   prompts_path = ANALYSIS_DIR / "prompts" / "prompts_v5_final.csv"
+   # Must exist: thesis/analysis/prompts/prompts_v5_final.csv
+   ```
+
+4. **Feature matrices exist for all categories**
+   ```python
+   for category in ["csd", "danskvand", "energidrikke", "rtd", "totalbeer", "pooled_4", "pooled_5"]:
+       fm_path = ANALYSIS_DIR / "outputs" / category / "feature_matrix_split.parquet"
+       assert fm_path.exists(), f"Missing {fm_path}"
+   ```
+
+5. **Preprocessing pipelines exist for all categories**
+   ```python
+   for category in [...]:
+       pipe_path = ANALYSIS_DIR / "outputs" / category / "pipelines" / "pipe_tree.pkl"
+       assert pipe_path.exists(), f"Missing {pipe_path}"
+   ```
+
+If ANY of these fail, the eval notebook will error out before spending $4.
+
+---
+
+## Validation Checklist (Before full run)
+
+```bash
+✅ ANALYSIS_DIR exists and contains outputs/
+   ls -d thesis/analysis/outputs/
+
+✅ Prompts CSV exists
+   ls thesis/analysis/prompts/prompts_v5_final.csv
+
+✅ All 7 category output directories exist
+   ls -d thesis/analysis/outputs/{csd,danskvand,energidrikke,rtd_v2,totalbeer,pooled_4,pooled_5}
+
+✅ All model pickles exist
+   find thesis/analysis/outputs -name "model_*.pkl" | wc -l
+   # Should be 14 (7 categories × 2 models)
+
+✅ All feature matrices exist
+   find thesis/analysis/outputs -name "feature_matrix*.parquet" | wc -l
+   # Should be 7 (1 per category)
+
+✅ All preprocessing pipelines exist
+   find thesis/analysis/outputs -name "pipe_tree.pkl" | wc -l
+   # Should be 7 (1 per category)
+
+✅ Agentic notebook runs §0-2 without FileNotFoundError
+   jupyter notebook thesis/analysis/notebooks/03_agentic_integration/registry_and_forecasting.ipynb
+   # Run sections, verify print output shows correct paths
+
+✅ Eval notebook runs §0-2 without FileNotFoundError
+   jupyter notebook thesis/analysis/notebooks/05_evaluation/4tier_ab_test_final.ipynb
+   # Run sections, verify load_model_for_category() succeeds
+```
+
+Only after ✅ all checks, proceed to DRY-RUN eval (1 prompt, 1 system).

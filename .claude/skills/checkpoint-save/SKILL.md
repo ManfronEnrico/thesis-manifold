@@ -31,7 +31,7 @@ Optional flags in the user prompt:
 Invoke `/docs-update-all`. Surface its summary line. If it skips everything (no doc-relevant changes), continue silently.
 
 ### Step 2: plan-update-all
-Invoke `/plan-update-all`. If there is no in-progress plan in `.claude/plans/plan_files/` without a matching outcome file, this is a no-op -- continue.
+Invoke `/plan-update-all`. If there is no in-progress plan in `plans/plan_files/` without a matching outcome file, this is a no-op -- continue.
 
 ### Step 3: git-draft-commit
 Invoke `/git-draft-commit`. Capture the drafted commit message. Show it to the user.
