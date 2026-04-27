@@ -6,8 +6,8 @@
       "Bash(git log*)",
       "Bash(git diff*)",
       "Bash(git add*)",
-      "Bash(git commit*)"
+      "Bash(git commit*)",
+      "PowerShell(git add *)"
     ]
-  },
-  "model": "opus"
+  }
 }
