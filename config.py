@@ -36,10 +36,12 @@ print(f"Thesis analysis/prompts directory set to: {THESIS_PROMPTS_DIR.resolve()}
 THESIS_OUTPUTS_DIR = THESIS_ANALYSIS_DIR / "outputs"
 print(f"Thesis analysis/outputs directory set to: {THESIS_OUTPUTS_DIR.resolve()}")
 
-  # %%                                                                                                                                                                                                                                                                                                     
-                                                                                                                                                                                                                                                                                                           
-  ## Category-specific output directories
+# %%                                                                                                                                                                                                                                                                                                     
+                                                                                                                                                                                                                                                                                            
+## Feature Matrices Directory (Parquet files for ML training)
 FEATURE_MATRIX_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "feature_matrices"
+
+## Category-specific output directories
 CSD_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "csd"
 DANSKVAND_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "danskvand"
 ENERGIDRIKKE_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "energidrikke"
@@ -48,7 +50,7 @@ TOTALBEER_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "totalbeer"
 POOLED_4_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "pooled_4"
 POOLED_5_OUTPUTS_DIR = THESIS_OUTPUTS_DIR / "pooled_5"
 
-  # %%
+# %%
 
 
 # %%
@@ -68,8 +70,6 @@ THESIS_PREPROCESSING_DIR = THESIS_DATA_DIR / "preprocessing"
 print(f"Thesis data/preprocessing directory set to: {THESIS_PREPROCESSING_DIR.resolve()}")
 
 THESIS_SPSS_INDEKSDANMARK_DIR = THESIS_DATA_DIR / "spss_indeksdanmark"
-
-
 
 
 
