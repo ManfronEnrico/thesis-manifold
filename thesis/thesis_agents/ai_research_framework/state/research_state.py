@@ -81,9 +81,13 @@ class ResearchState(TypedDict):
     requires_human_approval: bool   # Halts the graph until user confirms
 
     # ── Data inputs ───────────────────────────────────────────────────────────
-    nielsen_data: Optional[Any]         # Loaded DataFrame (None until Phase 1)
-    indeks_data: Optional[Any]          # Loaded DataFrame (None until Phase 1)
-    feature_matrix: Optional[Any]       # Engineered features for ML models
+    # DataFrames are NOT stored in state (LangGraph msgpack serializer cannot
+    # handle pd.DataFrame). Agents persist parquet to disk and share paths.
+    nielsen_data: Optional[Any]         # Reserved — kept None; read from CSV dir per config
+    indeks_data: Optional[Any]          # Reserved — kept None; read from CSV dir per config
+    feature_matrix: Optional[Any]       # Reserved — kept None; load via feature_matrix_path
+    feature_matrix_path: Optional[str]  # Filesystem path to results/phase1/feature_matrix.parquet
+    series_index_path: Optional[str]    # Filesystem path to results/phase1/series_index.csv
     consumer_signals: Optional[Dict[str, float]]  # Retailer-level demand indices
 
     # ── Data quality report ───────────────────────────────────────────────────
