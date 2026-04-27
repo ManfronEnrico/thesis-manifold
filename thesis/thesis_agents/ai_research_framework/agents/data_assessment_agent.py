@@ -16,6 +16,12 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from ..config import NielsenConfig, IndeksDanmarkConfig, RAM_BUDGET_MB
+from ..features.engineer_features import (
+    aggregate_brand_month_from_csvs,
+    FeatureEngineer,
+    build_series_index,
+    save_feature_matrix,
+)
 from ..state.research_state import ResearchState
 
 
@@ -45,20 +51,20 @@ class DataAssessmentAgent:
         tracemalloc.start()
         errors: list[str] = []
 
+        feature_matrix_path: Optional[str] = None
+        series_index_path: Optional[str] = None
+        consumer_signals: Optional[Dict[str, float]] = None
+        quality_report: Optional[str] = None
+
         try:
-            nielsen_df, nielsen_report = self._assess_nielsen()
-            indeks_df, indeks_report = self._assess_indeks_danmark()
-            feature_matrix, consumer_signals = self._engineer_features(
-                nielsen_df, indeks_df
+            _nielsen_df, nielsen_report = self._assess_nielsen()
+            _indeks_df, indeks_report = self._assess_indeks_danmark()
+            feature_matrix_path, series_index_path, consumer_signals = (
+                self._engineer_features(_nielsen_df, _indeks_df)
             )
             quality_report = self._format_report(nielsen_report, indeks_report)
         except Exception as exc:  # noqa: BLE001
             errors.append(f"DataAssessmentAgent failed: {exc}")
-            quality_report = None
-            feature_matrix = None
-            consumer_signals = None
-            nielsen_df = None
-            indeks_df = None
 
         _, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
@@ -66,9 +72,13 @@ class DataAssessmentAgent:
 
         return {
             "current_phase": "feature_engineering" if not errors else "data_assessment",
-            "nielsen_data": nielsen_df,
-            "indeks_data": indeks_df,
-            "feature_matrix": feature_matrix,
+            # DataFrames are not propagated through state (msgpack-unfriendly);
+            # downstream agents read parquet from feature_matrix_path.
+            "nielsen_data": None,
+            "indeks_data": None,
+            "feature_matrix": None,
+            "feature_matrix_path": feature_matrix_path,
+            "series_index_path": series_index_path,
             "consumer_signals": consumer_signals,
             "data_quality_report": quality_report,
             "peak_ram_observed_mb": max(
@@ -126,19 +136,51 @@ class DataAssessmentAgent:
 
     def _engineer_features(
         self, nielsen_df: Any, indeks_df: Any
-    ) -> Tuple[Any, Dict[str, float]]:
+    ) -> Tuple[str, str, Dict[str, float]]:
         """
-        Build feature matrix for ML models.
-        Includes: lag features, rolling statistics, calendar, promotional flags,
-        and Indeks Danmark-derived consumer demand indices (PCA + k-means).
+        Build feature matrix for ML models via the shared feature module.
+        Aggregates Nielsen facts to brand × month, applies the leakage-safe
+        pipeline (lags, rolling stats, calendar, promo, log target, split),
+        and persists the result to results/phase1/.
+
+        Returns paths (not DataFrames) so downstream LangGraph nodes can
+        checkpoint state via msgpack. Indeks-Danmark-derived consumer signals
+        (PCA + k-means) are currently out of scope and returned as an empty
+        dict; they will be integrated in a follow-up workstream once SRQ4
+        methodology is locked.
         """
-        raise NotImplementedError("Feature engineering: pending data access.")
+        brand_month = aggregate_brand_month_from_csvs(self.nielsen_cfg.csv_dir)
+        fe = FeatureEngineer()
+        features = fe.fit_transform(brand_month)
+
+        output_dir = Path("results") / "phase1"
+        series_idx = build_series_index(features)
+        paths = save_feature_matrix(features, output_dir, series_idx)
+
+        consumer_signals: Dict[str, float] = {}
+        return (
+            str(paths["feature_matrix"]),
+            str(paths.get("series_index", "")),
+            consumer_signals,
+        )
 
     def _format_report(
         self, nielsen_report: Dict, indeks_report: Dict
     ) -> str:
         """Format data quality findings as a Markdown string."""
-        raise NotImplementedError("Report formatting: pending data assessment.")
+        return (
+            "# Data Assessment Report\n\n"
+            "## Nielsen CSD\n"
+            f"- Source: `{nielsen_report.get('source', 'N/A')}`\n"
+            f"- File: `{nielsen_report.get('file', 'N/A')}`\n"
+            f"- Rows: {nielsen_report.get('rows', 'N/A'):,}\n"
+            f"- Columns: {nielsen_report.get('columns', 'N/A')}\n\n"
+            "## Indeks Danmark\n"
+            f"- Source: `{indeks_report.get('source', 'N/A')}`\n"
+            f"- File: `{indeks_report.get('file', 'N/A')}`\n"
+            f"- Rows: {indeks_report.get('rows', 'N/A'):,}\n"
+            f"- Columns: {indeks_report.get('columns', 'N/A')}\n"
+        )
 
     # ── Cleanup ───────────────────────────────────────────────────────────────
 
