@@ -93,11 +93,11 @@ Pick B only if it's <30 min of work AND the rest of the repo already uses `pytho
    - Return both the feature matrix AND a fitted transformer object (System A can serialise it per the locked split in `preprocessing.py:37-39`).
    - Cover the gaps in the table above that are domain-justified; document gaps intentionally NOT filled (e.g. "no interactions added — no theoretical basis in the demand-forecasting literature for this dataset").
 
-3. **Wire it into `DataAssessmentAgent._engineer_features()`** — import the new module, call `fit` on train portion, `transform` on full frame, persist the fitted transformer + feature matrix to `results/phase1/`, update LangGraph state so `ForecastingAgent` can consume it.
+3. **Wire it into `DataAssessmentAgent._engineer_features()`** — import the new module, call `fit` on train portion, `transform` on full frame, persist the fitted transformer + feature matrix to `thesis/analysis/outputs/phase1/`, update LangGraph state so `ForecastingAgent` can consume it.
 
 **Acceptance:**
 - `python thesis/thesis_agents/test_langgraph_pipeline.py` advances past `data_assessment` without the feature-engineering error.
-- Feature matrix written to `results/phase1/feature_matrix.parquet` (matching the existing preprocessing.py output contract).
+- Feature matrix written to `thesis/analysis/outputs/phase1/feature_matrix.parquet` (matching the existing preprocessing.py output contract).
 - Fitted transformer persisted alongside so inference-time use is possible.
 - A short design note at `docs/dev/feature_engineering_design.md` explaining what's in/out and why (for supervisor + Enrico traceability).
 - Unit-test-level sanity: feature matrix has no NaNs in numeric columns, no scaler was fit on val/test rows.

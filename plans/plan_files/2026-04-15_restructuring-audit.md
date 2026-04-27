@@ -232,7 +232,7 @@ CMT_Codebase/
 ├── memory/                ← MOVE TO .archive/ or DELETE
 ├── datasets/
 ├── dev/
-├── results/
+├── thesis/analysis/outputs/
 ├── scripts/
 ├── tests/
 ├── CLAUDE.md

@@ -8,11 +8,11 @@ The Coder:
 1. Reads the base template from thesis.ai_research_framework/templates/base_config.py
 2. Uses Claude API (claude-sonnet-4-6, temperature=0) to patch only the variable
    parts of the template
-3. Saves the generated script to results/scripts/trial_{trial_id}.py
+3. Saves the generated script to thesis/analysis/outputs/scripts/trial_{trial_id}.py
 4. Returns the script path for the Executor
 
 CRITICAL: Generated code must import from thesis.ai_research_framework (not re-implement)
-CRITICAL: Generated code must write results to results/trial_{trial_id}.json
+CRITICAL: Generated code must write results to thesis/analysis/outputs/trial_{trial_id}.json
 CRITICAL: Generated code uses the same tracemalloc pattern as the base template
 """
 
@@ -29,7 +29,7 @@ from .experiment_registry import TrialConfig
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
 BASE_TEMPLATE_PATH = Path("ai_research_framework/templates/base_config.py")
-SCRIPTS_DIR = Path("results/scripts")
+SCRIPTS_DIR = Path("thesis/analysis/outputs/scripts")
 
 LLM_MODEL = "claude-sonnet-4-6"
 LLM_TEMPERATURE = 0.0
@@ -192,7 +192,7 @@ class Coder:
 
     def _save_script(self, trial_id: str, script: str) -> Path:
         """
-        Save the generated script to results/scripts/trial_{trial_id}.py.
+        Save the generated script to thesis/analysis/outputs/scripts/trial_{trial_id}.py.
 
         Parameters
         ----------

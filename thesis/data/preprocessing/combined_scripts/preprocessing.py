@@ -6,10 +6,10 @@ engineers all features required for the 5 forecasting models, applies the
 locked train/val/test split, and saves the feature matrix to disk.
 
 Output files (Parquet, project-root-relative):
-  results/phase1/feature_matrix.parquet   — full feature matrix, all series
-  results/phase1/series_index.csv         — index of (brand, market) series
-  results/phase1/split_dates.json         — locked split boundaries
-  results/phase1/preprocessing_report.md — data quality summary
+  thesis/analysis/outputs/phase1/feature_matrix.parquet   — full feature matrix, all series
+  thesis/analysis/outputs/phase1/series_index.csv         — index of (brand, market) series
+  thesis/analysis/outputs/phase1/split_dates.json         — locked split boundaries
+  thesis/analysis/outputs/phase1/preprocessing_report.md — data quality summary
 
 Usage:
   python3 -m ai_research_framework.data.preprocessing

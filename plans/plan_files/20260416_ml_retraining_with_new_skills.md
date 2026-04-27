@@ -17,7 +17,7 @@ status: APPROVED structure — awaiting operational decisions before code
 ## Context
 
 - **Previous run** (2026-04-13): 7 models benchmarked, Global LightGBM v2 best at 22.5% MAPE
-- **Outputs preserved**: [results/phase1/](../../results/phase1/) — baseline to beat
+- **Outputs preserved**: [thesis/analysis/outputs/phase1/](../../thesis/analysis/outputs/phase1/) — baseline to beat
 - **Data verified accessible** (Step 1 of session): Nielsen warehouse (53 tables, 2.5M rows on csd_clean_facts_v) + Indeks (266 MB, 6,364 cols) + feature_matrix.parquet (3,234 × 22)
 
 ## Scope
@@ -41,7 +41,7 @@ for separate research questions (those would be SRQ2/SRQ3, separate plan).
 | 06 | Preprocessing pipeline | `scikit-learn` | — | `pipelines/preprocessor.pkl` |
 | 07 | Baseline models (simple) | `statsmodels`, `scikit-learn` | `statistical-analysis` | SeasonalNaive, OLS, Ridge, ARIMA |
 | 08 | Advanced models | `aeon`, `pymc` | `scikit-learn` (LightGBM/XGBoost) | LightGBM, XGBoost, PyMC, aeon DL |
-| 09 | Explainability | `shap` | `seaborn` | `results/.../shap_plots/*.png` |
+| 09 | Explainability | `shap` | `seaborn` | `thesis/analysis/outputs/.../shap_plots/*.png` |
 | 10 | Publication figures + comparison | `scientific-visualization` | `matplotlib`, `seaborn` | PDF for thesis Ch. 4 + `COMPARISON.md` |
 
 ---
@@ -67,7 +67,7 @@ scripts/ml_retraining/
 
 **Why `scripts/ml_retraining/`**:
 - `ai_research_framework/` is System A frozen (per `.system_a_frozen.md` boundary marker)
-- Keeps retraining isolated from baseline (`results/phase1/` untouched)
+- Keeps retraining isolated from baseline (`thesis/analysis/outputs/phase1/` untouched)
 
 ## Outputs Enrico can inspect
 
@@ -84,7 +84,7 @@ pipelines/
 reports/
 └── eda/                    ← auto-generated HTML + plots
 
-results/ml_retrain_2026-04-16/
+thesis/analysis/outputs/ml_retrain_2026-04-16/
 ├── classical_results.csv
 ├── advanced_results.csv
 ├── pymc_intervals.csv
@@ -132,7 +132,7 @@ docs/thesis/figures/
 ## What I will NOT do without asking
 
 - ❌ Touch `ai_research_framework/` (System A frozen)
-- ❌ Modify `results/phase1/` (baseline untouched)
+- ❌ Modify `thesis/analysis/outputs/phase1/` (baseline untouched)
 - ❌ `pip install` anything without explicit go-ahead
 - ❌ Push commits to GitHub
 - ❌ Train deep learning models > 100k params (overfit risk on 35-period data)

@@ -86,8 +86,8 @@ class ResearchState(TypedDict):
     nielsen_data: Optional[Any]         # Reserved — kept None; read from CSV dir per config
     indeks_data: Optional[Any]          # Reserved — kept None; read from CSV dir per config
     feature_matrix: Optional[Any]       # Reserved — kept None; load via feature_matrix_path
-    feature_matrix_path: Optional[str]  # Filesystem path to results/phase1/feature_matrix.parquet
-    series_index_path: Optional[str]    # Filesystem path to results/phase1/series_index.csv
+    feature_matrix_path: Optional[str]  # Filesystem path to thesis/analysis/outputs/phase1/feature_matrix.parquet
+    series_index_path: Optional[str]    # Filesystem path to thesis/analysis/outputs/phase1/series_index.csv
     consumer_signals: Optional[Dict[str, float]]  # Retailer-level demand indices
 
     # ── Data quality report ───────────────────────────────────────────────────
