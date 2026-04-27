@@ -20,14 +20,10 @@ env/
 *.csv
 *.xlsx
 *.xls
-*.parquet
 *.feather
 *.db
 *.sqlite
 *.7z
-
-# Exception: literature review CSV is safe to track
-!2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv
 
 # Model artifacts & intermediate binaries (regenerable from notebook)
 *.npy
