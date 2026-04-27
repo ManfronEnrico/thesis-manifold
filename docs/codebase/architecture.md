@@ -168,10 +168,3 @@ Validation Agent
 ```
 
 ---
-
-## Open Design Questions
-
-- [ ] How are Indeks Danmark segments built? (k-means clustering? PCA first?)
-- [ ] What is the exact join key between consumer segments and retailer demand? (geographic proxy? category affinity?)
-- [ ] Sequential vs lazy-loading model execution — measure actual RAM at Phase 4
-- [ ] LLM provider for synthesis layer: Claude API (claude-sonnet-4-6) preferred

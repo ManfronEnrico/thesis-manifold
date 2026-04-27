@@ -5,7 +5,7 @@ paths:
 
 # Plan Workflow
 
-**Auto-mirroring enabled**: Write plans to `~/.claude/plans/` → hook auto-mirrors to `.claude/plans/plan_files/YYYY-MM-DD_<slug>.md` with timestamps.
+**Plan location**: Project-relative at `plans/plan_files/YYYY-MM-DD_<slug>.md`. Plans are tracked in version control with outcomes in `plans/outcome_files/`.
 
 **Plan format**: Plans auto-include YAML frontmatter:
 ```yaml
@@ -17,7 +17,7 @@ updated: 2026-04-15 15:45:22
 [content]
 ```
 
-**After execution**: Manually create outcome file at `.claude/plans/outcome_files/YYYY-MM-DD_<slug>.md`:
+**After execution**: Manually create outcome file at `plans/outcome_files/YYYY-MM-DD_<slug>.md`:
 ```
 # Outcome: <Title>
 _Plan: plan_files/YYYY-MM-DD_<slug>.md_
