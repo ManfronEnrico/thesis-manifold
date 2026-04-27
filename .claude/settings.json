@@ -23,17 +23,6 @@
     "PYTHONIOENCODING": "utf-8"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \".claude/hooks/branch_guard/branch_guard.py\"",
-            "statusMessage": "Checking git branch..."
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
