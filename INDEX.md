@@ -22,113 +22,182 @@
 ## Folder Structure Overview
 
 ```
-.
+thesis-manifold/
 ├── CLAUDE.md                    ← Project instructions & workflows
-├── README.md                    ← Project description
+├── README.md                    ← Project overview & setup
 ├── INDEX.md                     ← This file
+├── config.py                    ← Root configuration
 │
-├── thesis/                      ← Thesis content (data, writing, context)
+├── thesis/                      ← All thesis content & research code
 │   ├── INDEX.md                 ← Thesis folder guide
-│   ├── data/                    ← Nielsen & Indeks Danmark datasets
+│   │
+│   ├── thesis_agents/           ← Research & production agents
+│   │   ├── ai_research_framework/     # System A: Multi-agent forecasting
+│   │   │   ├── agents/                # 4 research agents
+│   │   │   ├── core/coordinator.py    # LangGraph orchestrator
+│   │   │   ├── state/research_state.py # State management
+│   │   │   ├── config.py              # RAM budget, model config
+│   │   │   └── requirements.txt
+│   │   │
+│   │   └── thesis_production_system/  # System B: Thesis writing tooling
+│   │       ├── agents/                # 10 production agents
+│   │       ├── core/coordinator.py    # Plan→Execute→Critic loop
+│   │       ├── state/thesis_state.py  # State management
+│   │       └── requirements.txt
+│   │
+│   ├── thesis-context/          ← Thesis metadata & requirements
+│   │   ├── research-questions/  # RQs v2 & evolution
+│   │   ├── thesis-topic/        # Project state & frozen decisions
+│   │   ├── formal-requirements/ # CBS guidelines & compliance
+│   │   ├── chapters/            # Chapter metadata (mappings, TOC)
+│   │   └── prometheus-integration/ # Prometheus integration plan
+│   │
+│   ├── thesis-writing/          ← Draft chapters & final prose
+│   │   ├── sections-drafts/     # Bullet skeletons (all chapters)
+│   │   ├── sections-final/      # Final prose versions
+│   │   ├── figures/             # Diagrams, graphs, charts
+│   │   ├── analysis/            # Thesis-specific analysis
+│   │   └── [outline, references, etc.]
+│   │
+│   ├── data/                    ← Datasets (local, not in git)
+│   │   ├── nielsen/             # Nielsen Fabric API data
+│   │   │   ├── README.md        # Data access guide
+│   │   │   ├── description/SCHEMA_SNAPSHOT.md  # Auto-generated schema
+│   │   │   └── [52 CSV exports, 1.9 GB]
+│   │   ├── spss_indeksdanmark/  # Indeks Danmark survey data
+│   │   │   └── [20K respondents × 6.3K variables]
+│   │   ├── preprocessing/       # Data pipeline & transformations
+│   │   └── assessment/          # Data quality reports
+│   │
 │   ├── literature/              ← 49 papers & gap analysis
-│   ├── thesis-context/          ← RQs, compliance, project state, integration
-│   └── thesis-writing/          ← Draft chapters, outline, references
-│
-├── src/                         ← Main Python code
-│   ├── agents/                  ← System A & B agent implementations
-│   ├── forecasting/             ← Time series forecasting models
-│   ├── feature_engineering/     ← Feature extraction & transformation
-│   └── utils/                   ← Shared utilities (config, logging, etc.)
-│
-├── scripts/                     ← CLI tools & data processing
-│   ├── data_pipeline.py         ← ETL pipeline
-│   └── ...
+│   │   ├── obisdian_paper_analysis/ # Annotated papers
+│   │   └── [gap_analysis.md, rq_evolution.md in docs/]
+│   │
+│   └── analysis/                ← Experiment outputs & notebooks
+│       ├── notebooks/           # Jupyter notebooks for analysis
+│       ├── outputs/             # Model predictions, metrics, plots
+│       └── prompts/             # LLM prompts for agents
 │
 ├── docs/                        ← Technical documentation
-│   ├── codebase/                ← Architecture, design decisions
-│   ├── dev/                     ← Developer guides, repository map
-│   ├── reference/               ← Git strategy, cheatsheet, etc.
-│   ├── integrations/            ← Zotero, MCP, etc.
-│   ├── project-management/      ← Context, session logs
-│   └── tooling/                 ← Known issues, environment notes
+│   ├── codebase/                # Architecture & design decisions
+│   ├── dev/                     # Developer guides, repository_map.md
+│   ├── reference/               # Git strategy, cheatsheet, etc.
+│   ├── integrations/            # Zotero, MCP, etc.
+│   ├── project-management/      # Context, session logs
+│   ├── tooling/                 # Known issues, environment notes
+│   ├── analyses/                # Analysis reports & findings
+│   ├── guides/                  # Setup, how-to docs
+│   ├── tasks/                   # Task-specific docs
+│   ├── experiments/             # Experiment tracking & results
+│   ├── decisions/               # Architecture & approach decisions
+│   ├── codebase-testing/        # Testing strategy docs
+│   └── 00_archive/              # Archived/deprecated docs
+│
+├── scripts/                     ← CLI tools & utilities
+│   ├── ml_retraining/           # Model retraining pipelines
+│   └── [data_pipeline.py, etc.]
 │
 ├── tests/                       ← Test suite
-│   ├── unit/                    ← Unit tests
-│   └── integration/             ← Integration tests
+│   └── [unit & integration tests]
 │
-├── thesis/analysis/outputs/     ← Experiment outputs, metrics
-│   ├── forecasts/               ← Model predictions
-│   ├── metrics/                 ← Performance evaluation
-│   └── analysis/                ← Statistical analysis
+├── integrations/                ← External integrations
+│   └── [Zotero, MCP, etc.]
 │
 ├── project_updates/             ← Standup & session logs
-│   └── standup_draft.md          ← Current standup entries
+│   └── standup_draft.md         ← Current session entries
+│
+├── plans/                       ← Session plans & outcomes
+│   ├── plan_files/              # Active plans with timestamps
+│   └── outcome_files/           # Completed plans with results
 │
 ├── .claude/                     ← Claude Code configuration
-│   ├── settings.json            ← Project settings
-│   ├── rules/                   ← Workflow automation rules
-│   ├── plans/                   ← Session plans & outcomes
-│   ├── logs/                    ← Tooling issues, errors
-│   └── skills/                  ← Project-specific skills
+│   ├── settings.json            # Project settings
+│   ├── memory/                  # Auto-memories from sessions
+│   ├── rules/                   # Workflow automation rules
+│   ├── skills/                  # Project-specific skills
+│   ├── hooks/                   # Custom hook scripts
+│   ├── logs/                    # Tooling issues, errors (JSONL)
+│   ├── agents/                  # Custom agents
+│   ├── commands/                # Custom commands
+│   └── docs/                    # Internal skill documentation
 │
-└── .agents/                     ← Remote agent skills (global install)
+└── .archive/                    ← Old versions, backups
+    ├── memory_legacy/           # Archived memory files
+    └── Thesis_obsidian_backup/  # Obsidian vault backup
 ```
 
 ---
 
 ## Key Directories Explained
 
-### `thesis/` — Thesis Content
-**What:** All thesis-related content (data, literature, writing, context)  
-**Status:** Active  
-**See:** [thesis/INDEX.md](thesis/INDEX.md) for detailed breakdown
-
-Key subdirectories:
-- `data/` — Nielsen + Indeks Danmark datasets (local, accessible)
-- `literature/` — 49 papers analyzed for RQs & methodology
-- `thesis-context/` — RQs, compliance, frozen decisions, **Prometheus integration** (NEW)
-- `thesis-writing/` — Draft chapters (bullet skeletons → prose)
-
-### `src/` — Python Codebase
-**What:** Main application code  
+### `thesis/thesis_agents/` — Research & Production Code
+**What:** System A (research framework) and System B (thesis production) agent implementations  
 **Structure:**
-- `agents/` — System A (research framework) & System B (thesis production)
-- `forecasting/` — Time series models, ARIMA, ensemble methods
-- `feature_engineering/` — Feature extraction from Nielsen data
-- `utils/` — Shared config, logging, data loading
+- **System A** (`ai_research_framework/`) — 4-agent multi-model forecasting pipeline
+  - DataAssessmentAgent → ForecastingAgent → SynthesisAgent → ValidationAgent
+  - Models: ARIMA, Prophet, LightGBM, XGBoost, Ridge
+  - RAM constraint: ≤ 8 GB total
+  
+- **System B** (`thesis_production_system/`) — 10-agent thesis writing system
+  - ThesisCoordinator, PlannerAgent, WritingAgent, ComplianceAgent, etc.
+  - **Rule:** WritingAgent produces only bullet points (never prose without approval)
+
+### `thesis/thesis-context/` — Thesis Metadata
+**What:** Research questions, compliance requirements, project state, integration plans  
+**Key files:**
+- `research-questions/research-questions.md` — RQs v2 (frozen)
+- `thesis-topic/project-state.md` — Architecture decisions (frozen)
+- `formal-requirements/compliance.md` — CBS guidelines
+- `prometheus-integration/` — Deployment architecture (NEW, 2026-04-27)
+
+### `thesis/thesis-writing/` — Thesis Content
+**What:** Draft chapters, final prose, figures, references  
+**Workflow:**
+- `sections-drafts/` — Bullet-only skeletons (13 chapters)
+- `sections-final/` — Final approved prose versions
+- `figures/` — Graphviz + Matplotlib diagrams
+
+### `thesis/data/` — Datasets
+**What:** Nielsen Fabric API exports + Indeks Danmark survey data  
+**Status:** Both local & accessible (2026-04-22)
+- **Nielsen:** 52 Fabric objects, 29 CSV exports, 2.5M rows, 1.9 GB
+- **Indeks Danmark:** 20K respondents × 6.3K variables
+- **See:** [thesis/data/nielsen/README.md](thesis/data/nielsen/README.md) for access guide
+
+### `thesis/analysis/` — Experiments & Outputs
+**What:** Model training, predictions, metrics, notebooks  
+- `notebooks/` — Jupyter analysis notebooks
+- `outputs/` — Model predictions, performance metrics, plots
+- `prompts/` — LLM prompts for agents
 
 ### `docs/` — Technical Documentation
 **What:** Architecture, design decisions, developer guides  
 **Key files:**
-- `codebase/architecture.md` — System A/B design & integration
-- `dev/repository_map.md` — What each module does
+- `codebase/architecture.md` — System A/B design
+- `dev/repository_map.md` — Module inventory & responsibilities
 - `reference/cheatsheet.md` — CLI commands & skill triggers
-- `integrations/zotero-integration-setup.md` — Bibliography integration
+- `project-management/context.md` — Session logs
+- `tooling/tooling-issues.md` — Known Windows/OneDrive issues (6 documented)
 
 ### `scripts/` — CLI Tools
-**What:** Executable scripts for data processing, training, experiments  
-**Example:** `data_pipeline.py` for ETL
+**What:** Data processing, model training, utilities  
+- `ml_retraining/` — Retraining pipeline
+- Other ETL & analysis scripts
 
-### `tests/` — Test Suite
-**What:** Unit & integration tests  
-**Run:** `pytest` or use `/test-codebase-integrity` skill
+### `plans/` — Session Planning
+**What:** Session plans & completion outcomes  
+- `plan_files/` — Active plans (YYYY-MM-DD_slug.md)
+- `outcome_files/` — Completed plans with results
 
-### `thesis/analysis/outputs/` — Experiment Outputs
-**What:** Model predictions, metrics, analysis plots  
-**Organized by:** Forecast type, metric type, analysis date
-
-### `project_updates/` — Standup & Logs
-**What:** Session standup entries, meeting notes, progress tracking  
-**Key file:** `standup_draft.md` (active session log)
+**Rule:** No outcome file = plan not completed (instant visual check)
 
 ### `.claude/` — Claude Code Configuration
-**What:** Project-specific settings, rules, plans, logs  
-**Key files:**
-- `settings.json` — Project permissions & configuration
-- `rules/` — Automation rules (branch strategy, docs workflow, git commit workflow)
-- `plans/plan_files/` — Session plans with timestamps
-- `plans/outcome_files/` — Outcome summaries (proves plan was completed)
-- `logs/tooling-issues.jsonl` — Windows/OneDrive/tooling problems (source of truth)
+**What:** Project-specific settings, rules, skills, hooks  
+- `rules/` — Workflow automation (branch strategy, docs, git commit)
+- `skills/` — Custom skills for this project
+- `hooks/` — Custom hooks (branch guard, etc.)
+- `logs/tooling-issues.jsonl` — Structured error log
+- `memory/` — Session memories (auto-persists across sessions)
 
 ---
 
@@ -146,6 +215,8 @@ Key subdirectories:
 | [docs/dev/repository_map.md](docs/dev/repository_map.md) | File → purpose mapping | ✅ Current |
 | [docs/reference/cheatsheet.md](docs/reference/cheatsheet.md) | CLI commands & skills | ✅ Current |
 | [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) | Known environment issues | ✅ Updated |
+| [thesis/data/nielsen/README.md](thesis/data/nielsen/README.md) | Nielsen data access guide | ✅ Current |
+| [thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md](thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md) | Auto-generated schema reference | ✅ Current |
 
 ---
 
@@ -155,20 +226,20 @@ Key subdirectories:
 
 | Task | Command |
 |------|---------|
-| Start new session | Use your branch (or create one with `/git-using-worktrees`) |
+| Start new session | Use your branch (or create with worktree) |
 | Draft a git commit | `/git-draft-commit` |
 | Write a thesis section | `/write-section <id>` (after bullet approval) |
 | Add a citation | `/cite` |
 | Update project docs | `/docs-update-all` |
-| Prepare standup | `/standup-prep` |
-| Test codebase | `/test-codebase-integrity` |
+| Log standup entry | `/standup-log` |
+| Test codebase | Run pytest or use skill |
 | Check branch strategy | See [docs/reference/GIT_BRANCH_STRATEGY.md](docs/reference/GIT_BRANCH_STRATEGY.md) |
 
 ### Key Rules
 
 1. **Every session gets its own branch** — never commit directly to `main`
-2. **Bullets only for thesis** — never prose without explicit approval
-3. **One-off execution by default** — `/loop` only if interval is specified
+2. **Bullets only for thesis** — WritingAgent never produces prose without explicit approval
+3. **One-off execution by default** — `/loop` only if interval is explicitly specified
 4. **Outcome files prove completion** — no outcome file = plan not done
 5. **Python files:** Edit via temp script, not directly (hook enforces)
 
@@ -176,7 +247,7 @@ See [CLAUDE.md](CLAUDE.md) for full workflow details.
 
 ---
 
-## Current Status
+## Current Status (as of 2026-04-27)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -187,7 +258,7 @@ See [CLAUDE.md](CLAUDE.md) for full workflow details.
 | **Compliance** | ✅ Confirmed | CBS requirements met |
 | **Prometheus Integration** | 🆕 Planning | New architecture doc (2026-04-27) |
 | **Thesis Chapters** | 📝 Drafted | Bullet skeletons, awaiting approval |
-| **Model Training** | 🚀 Next Phase | Sales forecasting models (Nielsen data) |
+| **Model Training** | 🚀 Next Phase | 5-model benchmark (Nielsen data) |
 | **API Deployment** | 🚀 Next Phase | Expose models for Prometheus integration |
 | **Submission Deadline** | ⏰ 2026-05-15 | 18 days away |
 
@@ -220,9 +291,9 @@ See [CLAUDE.md](CLAUDE.md) for full workflow details.
 
 ## What's New (2026-04-27)
 
+- ✅ **Restructured INDEX.md** — Now reflects actual repo structure (thesis_agents, data, etc.)
 - ✅ **Prometheus Integration Overview** — New doc clarifying architecture, meeting strategy, and deployment plan
-- ✅ **Thesis INDEX** — Comprehensive guide to thesis folder structure
-- ✅ **Root INDEX** — This file
+- ✅ **Data Access Verified** — Nielsen + Indeks Danmark both local & accessible
 
 ---
 
@@ -242,7 +313,6 @@ See [CLAUDE.md](CLAUDE.md) for full workflow details.
 - **Lines of Code:** ~5000+ (agents, forecasting, feature engineering)
 - **Test Coverage:** Integration tests for System A/B + forecasting
 - **Papers:** 49 analyzed
-- **Datasets:** Nielsen (4 categories × 16 CSVs) + Indeks Danmark (3 CSVs)
-- **Thesis Chapters:** 10 (drafted, bullet skeletons)
+- **Datasets:** Nielsen (52 objects, 29 CSVs, 2.5M rows) + Indeks Danmark (20K × 6.3K)
+- **Thesis Chapters:** 13 (drafted, bullet skeletons)
 - **Git Commits:** 150+ (session/thesis/chore/data branches)
-
