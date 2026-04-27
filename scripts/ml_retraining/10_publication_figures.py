@@ -229,8 +229,8 @@ def write_comparison(summary: pd.DataFrame) -> Path:
     lines.append("# SRQ1 — Final Model Comparison")
     lines.append(f"_Generated {datetime.now().isoformat(timespec='seconds')}_\n")
     lines.append(
-        "Comparison of the new global ML pipeline (results/ml_retrain_2026-04-16) "
-        "against the Phase-1 per-brand benchmark (results/phase1/benchmark_summary_v2.md). "
+        "Comparison of the new global ML pipeline (thesis/analysis/outputs/ml_retrain_2026-04-16) "
+        "against the Phase-1 per-brand benchmark (thesis/analysis/outputs/phase1/benchmark_summary_v2.md). "
         "All numbers are on the same VAL window (Mar-Aug 2025, 77 brands)."
     )
     lines.append("\n## Ranking (median MAPE across brands)\n")
@@ -303,7 +303,7 @@ def write_comparison(summary: pd.DataFrame) -> Path:
         "feature_engineering_report.md",
     ]
     for a in artefacts:
-        lines.append(f"- `results/ml_retrain_2026-04-16/{a}`")
+        lines.append(f"- `thesis/analysis/outputs/ml_retrain_2026-04-16/{a}`")
     lines.append("- `reports/eda/index.html` — EDA figures")
     lines.append("- `reports/shap/index.html` — SHAP figures")
     lines.append("- `reports/final/*.png` — publication figures")

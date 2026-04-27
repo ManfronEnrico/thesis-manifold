@@ -40,11 +40,11 @@ figures/seaborn_exploratory/          ← PNG visualizations (150 DPI)
   - seaborn_02_relationships.png      ← 2-panel relationship analysis
   - seaborn_03_correlation.png        ← Correlation matrix heatmap
 
-results/seaborn_exploratory/          ← Analysis results
+thesis/analysis/outputs/seaborn_exploratory/          ← Analysis results
   - sample_nielsen_data.csv           ← Data source snapshot
   - eda_report_<timestamp>.md         ← Human-readable summary
 
-results/audit_logs/                   ← Execution audit trail
+thesis/analysis/outputs/audit_logs/                   ← Execution audit trail
   - seaborn_eda_<timestamp>.json      ← Machine-readable audit log
   - seaborn_eda_<timestamp>.md        ← Human-readable audit log
 ```
@@ -135,7 +135,7 @@ Every analysis captures source data information:
 
 ```json
 "data_provenance": {
-  "source_file": "C:/.../results/seaborn_exploratory/sample_nielsen_data.csv",
+  "source_file": "C:/.../thesis/analysis/outputs/seaborn_exploratory/sample_nielsen_data.csv",
   "rows": 10000,
   "columns": 5,
   "column_names": ["date", "category", "store_id", "demand_units", "revenue_usd"],
@@ -157,7 +157,7 @@ Included synthetic Nielsen-like data:
 - 0.46% missing values in demand_units (realistic)
 - 2-year date range (2022–2023)
 
-**Data file**: `results/seaborn_exploratory/sample_nielsen_data.csv`
+**Data file**: `thesis/analysis/outputs/seaborn_exploratory/sample_nielsen_data.csv`
 
 This allows the skill to work immediately without requiring live database access.
 
@@ -173,7 +173,7 @@ This allows the skill to work immediately without requiring live database access
 | Requirement | Implementation | Verification |
 |-------------|------------------|--------------|
 | **Create /figures** | ✅ `figures/seaborn_exploratory/` | 3 PNG files persisted |
-| **Create /results** | ✅ `results/seaborn_exploratory/` | CSV data + reports |
+| **Create /results** | ✅ `thesis/analysis/outputs/seaborn_exploratory/` | CSV data + reports |
 | **Make persistent** | ✅ All outputs to disk, timestamped | Confirmed via `ls -lh` |
 | **Make auditable** | ✅ `AuditLogger` class tracks every step | JSON + MD logs created |
 | **Make traceable** | ✅ Full data provenance in logs | Source file, rows, columns captured |
@@ -191,7 +191,7 @@ User: "That's unreliable."
 
 **After** (persistent audit trail):
 ```
-Output → /figures/seaborn_exploratory/ + /results/audit_logs/
+Output → /figures/seaborn_exploratory/ + /thesis/analysis/outputs/audit_logs/
 Audit Log → { action, timestamp, details, figures } (JSON + MD)
 Result: "Here's exactly what happened, when it happened, and the data I used"
 User: "I can verify this independently."
@@ -259,12 +259,12 @@ figures/seaborn_exploratory/seaborn_03_correlation.png       42 KB
 
 ### Data & Results
 ```
-results/seaborn_exploratory/sample_nielsen_data.csv         595 KB
+thesis/analysis/outputs/seaborn_exploratory/sample_nielsen_data.csv         595 KB
 ```
 
 ### Audit Logs
 ```
-results/audit_logs/seaborn_eda_20260416_145931.json        2.2 KB
+thesis/analysis/outputs/audit_logs/seaborn_eda_20260416_145931.json        2.2 KB
 ```
 
 **Total**: 1.1 MB of persistent, auditable outputs
@@ -348,7 +348,7 @@ This pattern should be applied to **all analysis/visualization skills** per the 
 feat(seaborn): implement exploratory data analysis with persistent audit trail
 
 - Generated 3 publication-quality visualizations (distributions, relationships, correlation)
-- Created persistent output structure: figures/, results/, audit_logs/
+- Created persistent output structure: figures/, thesis/analysis/outputs/, audit_logs/
 - Implemented AuditLogger class with UTC timestamps and data provenance
 - JSON audit logs capture execution trace, figure metadata, and statistics
 - All outputs are verifiable and reproducible without re-running analysis
@@ -356,8 +356,8 @@ feat(seaborn): implement exploratory data analysis with persistent audit trail
 
 Output locations:
   Figures: figures/seaborn_exploratory/
-  Results: results/seaborn_exploratory/
-  Audit:   results/audit_logs/seaborn_eda_<timestamp>.json
+  Results: thesis/analysis/outputs/seaborn_exploratory/
+  Audit:   thesis/analysis/outputs/audit_logs/seaborn_eda_<timestamp>.json
 
 This implementation fulfills the user requirement that all analysis skills
 must produce auditable, persistent artifacts with complete data provenance.
@@ -371,8 +371,8 @@ must produce auditable, persistent artifacts with complete data provenance.
 
 ### Created:
 - `figures/seaborn_exploratory/` directory + 3 PNG files
-- `results/seaborn_exploratory/` directory + data file
-- `results/audit_logs/seaborn_eda_20260416_145931.json`
+- `thesis/analysis/outputs/seaborn_exploratory/` directory + data file
+- `thesis/analysis/outputs/audit_logs/seaborn_eda_20260416_145931.json`
 
 ### Not Created (OneDrive .py protection):
 - `.claude/scripts/seaborn_exploratory_eda.py` — Deferred (not strictly needed; script runs inline via bash)

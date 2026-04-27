@@ -38,7 +38,7 @@ CMT_Codebase/
 │
 ├── tests/                             ← Unit tests for codebase
 │
-├── results/                           ← Experiment outputs by phase
+├── thesis/analysis/outputs/           ← Experiment outputs by phase
 │   ├── phase1/                        ← Preprocessing, feature matrix, benchmarks
 │   ├── audit_logs/                    ← Experiment metadata & EDA audit trails
 │   └── seaborn_exploratory/           ← EDA figures + sample Nielsen CSV

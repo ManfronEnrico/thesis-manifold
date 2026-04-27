@@ -1,7 +1,7 @@
 """
 Step 05 — Dataset splitting.
 
-Applies the frozen SRQ1 split from results/phase1/split_dates.json and
+Applies the frozen SRQ1 split from thesis/analysis/outputs/phase1/split_dates.json and
 produces walk-forward CV folds on the TRAIN window for hyperparameter
 tuning in Step 08.
 

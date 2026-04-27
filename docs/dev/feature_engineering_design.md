@@ -23,10 +23,10 @@ CSV dir (facts + 3 dim) ──▶ aggregate_brand_month_from_csvs() ──▶ br
                                   make_calendar → filter_series → engineer_features → apply_split
                                                                        │
                                                                        ▼
-                                              save_feature_matrix() → results/phase1/*.parquet
+                                              save_feature_matrix() → thesis/analysis/outputs/phase1/*.parquet
 ```
 
-Output contract (unchanged from `preprocessing.py`): `results/phase1/feature_matrix.parquet`
+Output contract (unchanged from `preprocessing.py`): `thesis/analysis/outputs/phase1/feature_matrix.parquet`
 with columns `brand, date, split, sales_units, log_sales_units, lag_{1,2,3,4,8,13},
 rolling_mean_{4,13}, rolling_std_4, month, quarter, holiday_month, promo_intensity,
 sales_value, sales_liters, promo_units, weighted_dist`.

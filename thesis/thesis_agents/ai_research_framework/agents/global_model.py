@@ -9,7 +9,7 @@ we use 1 model × 77 brands = 2,695 rows -- dramatically more signal.
 
 This mirrors the approach that won the M5 Competition (Makridakis et al., 2022).
 
-Output files (results/phase1/):
+Output files (thesis/analysis/outputs/phase1/):
   global_results.csv      -- per-brand test MAPE (global vs per-brand)
   global_summary.md       -- comparison table for thesis
 

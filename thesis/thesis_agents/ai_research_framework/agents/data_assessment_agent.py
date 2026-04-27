@@ -141,7 +141,7 @@ class DataAssessmentAgent:
         Build feature matrix for ML models via the shared feature module.
         Aggregates Nielsen facts to brand × month, applies the leakage-safe
         pipeline (lags, rolling stats, calendar, promo, log target, split),
-        and persists the result to results/phase1/.
+        and persists the result to thesis/analysis/outputs/phase1/.
 
         Returns paths (not DataFrames) so downstream LangGraph nodes can
         checkpoint state via msgpack. Indeks-Danmark-derived consumer signals

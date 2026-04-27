@@ -152,7 +152,7 @@ Thesis Maniflod/
 │
 ├── tests/
 │   └── test_builder_integration.py
-├── results/                        # Experiment outputs
+├── thesis/analysis/outputs/        # Experiment outputs
 ├── generate_figures.py             # Standalone figure generator
 ├── CLAUDE.md                       # Master project instructions (read by Claude Code)
 ├── CHEATSHEET.md                   # Quick reference for common commands

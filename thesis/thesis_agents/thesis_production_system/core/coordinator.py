@@ -173,8 +173,8 @@ class ThesisCoordinator:
         self,
         goal: str,
         max_trials: int = 30,
-        feature_matrix_path: str = "results/phase1/feature_matrix.parquet",
-        consumer_signals_path: str = "results/phase1/consumer_signals.json",
+        feature_matrix_path: str = "thesis/analysis/outputs/phase1/feature_matrix.parquet",
+        consumer_signals_path: str = "thesis/analysis/outputs/phase1/consumer_signals.json",
     ) -> dict:
         """
         Trigger the Builder Agent loop directly (bypasses the TaskPlan mechanism).

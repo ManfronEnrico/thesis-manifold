@@ -276,6 +276,6 @@ When Enrico or a synthesis agent builds the SRQ2 module (combining multiple fore
 - `ai_research_framework/data/preprocessing.py` — 315 lines, clean and correct
 - `ai_research_framework/agents/global_model_v2.py` — 356 lines, tests 3 models + ensemble on validation
 - `ai_research_framework/agents/test_evaluation.py` — 429 lines, evaluates 5 models on held-out test
-- `results/phase1/global_v2_summary.md` — validation results (22–26% MAPE)
-- `results/phase1/test_summary.md` — test results (45–67% MAPE)
-- `results/phase1/preprocessing_report.md` — data quality summary
+- `thesis/analysis/outputs/phase1/global_v2_summary.md` — validation results (22–26% MAPE)
+- `thesis/analysis/outputs/phase1/test_summary.md` — test results (45–67% MAPE)
+- `thesis/analysis/outputs/phase1/preprocessing_report.md` — data quality summary

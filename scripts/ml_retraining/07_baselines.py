@@ -14,9 +14,9 @@ Metrics (macro across brands, on VAL):
   median MAPE, mean MAPE, WAPE, RMSE, MAE
 
 Outputs:
-  results/ml_retrain_2026-04-16/baselines_val.csv       # per-brand / per-model rows
-  results/ml_retrain_2026-04-16/baselines_summary.md    # ranking table
-  results/ml_retrain_2026-04-16/models/*.pkl            # fitted pipelines (linear / ridge)
+  thesis/analysis/outputs/ml_retrain_2026-04-16/baselines_val.csv       # per-brand / per-model rows
+  thesis/analysis/outputs/ml_retrain_2026-04-16/baselines_summary.md    # ranking table
+  thesis/analysis/outputs/ml_retrain_2026-04-16/models/*.pkl            # fitted pipelines (linear / ridge)
 
 Usage:
     uv run python -m scripts.ml_retraining.07_baselines

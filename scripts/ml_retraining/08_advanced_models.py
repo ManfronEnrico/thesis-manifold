@@ -13,10 +13,10 @@ Four families, all trained on TRAIN, tuned on CV folds, evaluated on VAL:
 Target: log_sales_units; predictions back-transformed via expm1 and clipped ≥ 0.
 
 Outputs:
-  results/ml_retrain_2026-04-16/advanced_val.csv             # per-brand metrics
-  results/ml_retrain_2026-04-16/advanced_predictions.parquet # merged predictions
-  results/ml_retrain_2026-04-16/models/{lightgbm,xgboost}.pkl
-  results/ml_retrain_2026-04-16/advanced_summary.md
+  thesis/analysis/outputs/ml_retrain_2026-04-16/advanced_val.csv             # per-brand metrics
+  thesis/analysis/outputs/ml_retrain_2026-04-16/advanced_predictions.parquet # merged predictions
+  thesis/analysis/outputs/ml_retrain_2026-04-16/models/{lightgbm,xgboost}.pkl
+  thesis/analysis/outputs/ml_retrain_2026-04-16/advanced_summary.md
 
 Usage:
     uv run python -m scripts.ml_retraining.08_advanced_models

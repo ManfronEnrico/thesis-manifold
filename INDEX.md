@@ -56,7 +56,7 @@
 │   ├── unit/                    ← Unit tests
 │   └── integration/             ← Integration tests
 │
-├── results/                     ← Experiment outputs, metrics
+├── thesis/analysis/outputs/     ← Experiment outputs, metrics
 │   ├── forecasts/               ← Model predictions
 │   ├── metrics/                 ← Performance evaluation
 │   └── analysis/                ← Statistical analysis
@@ -113,7 +113,7 @@ Key subdirectories:
 **What:** Unit & integration tests  
 **Run:** `pytest` or use `/test-codebase-integrity` skill
 
-### `results/` — Experiment Outputs
+### `thesis/analysis/outputs/` — Experiment Outputs
 **What:** Model predictions, metrics, analysis plots  
 **Organized by:** Forecast type, metric type, analysis date
 
