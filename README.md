@@ -64,7 +64,7 @@ ResearchCoordinator (LangGraph StateGraph)
 
 | Dataset | Format | Status |
 |---|---|---|
-| Nielsen/Prometheus CSD | Power BI/Fabric API (52 objects, 29 CSV exports, 1.9 GB backup) | ✅ Active — see [Nielsen guide](thesis/data/nielsen/README.md) |
+| Nielsen/Prometheus CSD | Power BI/Fabric API (52 objects, 29 CSV exports, 1.9 GB backup) | ✅ Active — see [Nielsen guide](thesis/data/nielsen/scripts/README.md) |
 | Indeks Danmark | CSV (20,134 respondents × 6,364 variables) | ✅ Available locally at `thesis/data/spss_indeksdanmark/.csv/` |
 
 ### RAM Budget
@@ -105,58 +105,46 @@ Internal scaffolding that runs the thesis writing process. **Not described in th
 
 ## Project Structure
 
+**Detailed folder structure with all paths:** See [INDEX.md](INDEX.md) for comprehensive breakdown.
+
+**Quick overview:**
 ```
-Thesis Maniflod/
-├── ai_research_framework/          # SYSTEM A — research contribution
-│   ├── config.py                   # RAM budget, model list, LLM config
-│   ├── agents/                     # 4 research agents
-│   ├── core/coordinator.py         # LangGraph StateGraph orchestrator
-│   ├── state/research_state.py     # ResearchState TypedDict
-│   └── requirements.txt
-│
-├── thesis_production_system/       # SYSTEM B — thesis writing tooling
-│   ├── agents/                     # 10 production agents
-│   │   └── builder/                # Autonomous trial loop (Builder Agent)
-│   ├── core/coordinator.py         # Plan→Execute→Critic loop
-│   ├── state/thesis_state.py       # ThesisState Pydantic model
-│   └── requirements.txt
-│
-├── docs/
-│   ├── context.md                  # Session log
-│   ├── architecture.md             # Framework architecture decisions
-│   ├── system-architecture-report.md
-│   ├── literature/
-│   │   ├── gap_analysis.md         # Research gap + novelty (v3)
-│   │   ├── rq_evolution.md         # RQ version history
-│   │   ├── scraping_log.md         # Literature scraping log
-│   │   └── papers/                 # 37 annotated papers
-│   ├── data/
-│   │   ├── nielsen_assessment.md
-│   │   └── indeksdanmark_notes.md
-│   ├── tasks/
-│   │   ├── thesis_state.json       # ThesisState persistence
-│   │   ├── data_assessment.md
-│   │   ├── model_benchmark.md
-│   │   ├── synthesis_module.md
-│   │   └── validation_report.md
-│   ├── thesis/
-│   │   ├── outline.md              # 10-chapter structure
-│   │   ├── sections/               # 11 chapter bullet skeletons
-│   │   └── figures/                # SVG + PNG architecture diagrams
-│   ├── experiments/
-│   │   ├── experiment_registry.json
-│   │   └── experiment_summary.md
-│   └── compliance/
-│       ├── cbs_guidelines_notes.md
-│       └── compliance_checks/
-│
-├── tests/
-│   └── test_builder_integration.py
-├── thesis/analysis/outputs/        # Experiment outputs
-├── generate_figures.py             # Standalone figure generator
+thesis-manifold/
 ├── CLAUDE.md                       # Master project instructions (read by Claude Code)
-├── CHEATSHEET.md                   # Quick reference for common commands
-└── .gitignore
+├── README.md                       # This file
+├── INDEX.md                        # Detailed folder structure & file guide
+├── config.py                       # Root configuration
+│
+├── thesis/                         # All thesis content & research code
+│   ├── thesis_agents/              # System A (research) & System B (production) agents
+│   │   ├── ai_research_framework/  # System A: Multi-agent forecasting pipeline
+│   │   └── thesis_production_system/ # System B: Thesis writing tooling
+│   ├── thesis-context/             # RQs, compliance, project state, integration plans
+│   ├── thesis-writing/             # Draft chapters, final prose, figures
+│   ├── data/                       # Nielsen + Indeks Danmark datasets (local)
+│   ├── literature/                 # 49 papers & gap analysis
+│   └── analysis/                   # Notebooks, outputs, experiment results
+│
+├── docs/                           # Technical documentation
+│   ├── codebase/                   # Architecture & design decisions
+│   ├── dev/                        # Developer guides & repository map
+│   ├── reference/                  # Git strategy, cheatsheet, etc.
+│   ├── integrations/               # Zotero, MCP, etc.
+│   ├── project-management/         # Session logs & context
+│   ├── tooling/                    # Known issues, environment notes
+│   ├── analyses/                   # Analysis reports & findings
+│   ├── guides/                     # Setup & how-to docs
+│   ├── tasks/                      # Task-specific documentation
+│   ├── experiments/                # Experiment tracking & results
+│   └── decisions/                  # Architecture decisions
+│
+├── scripts/                        # CLI tools & utilities
+├── tests/                          # Test suite
+├── integrations/                   # External integrations
+├── project_updates/                # Standup & session logs
+├── plans/                          # Session plans & outcomes
+├── .claude/                        # Claude Code configuration
+└── .archive/                       # Old versions, backups
 ```
 
 ---
@@ -285,7 +273,7 @@ Phase 7 — Thesis Writing                        [bullets only → human approv
 
 ---
 
-## Current Status (as of 2026-04-23)
+## Current Status (as of 2026-04-27)
 
 ### Completed ✅
 - System A skeleton — all 4 research agents + LangGraph coordinator
@@ -319,13 +307,13 @@ Phase 7 — Thesis Writing                        [bullets only → human approv
 | Document | Location | Purpose |
 |---|---|---|
 | Master instructions | `CLAUDE.md` | Read by Claude Code at every session |
+| Index | `INDEX.md` | Detailed folder structure & file guide |
 | Quick reference | `CHEATSHEET.md` | Common commands and workflows |
-| Session log | `docs/context.md` | What happened in each session |
-| Architecture report | `docs/system-architecture-report.md` | Full 10-section technical report |
-| Gap analysis | `docs/literature/gap_analysis.md` | Research gap + novelty claim |
-| RQ evolution | `docs/literature/rq_evolution.md` | Version history of research questions |
-| Thesis outline | `docs/thesis/outline.md` | 10-chapter structure |
-| CBS compliance | `docs/compliance/cbs_guidelines_notes.md` | Formal requirements |
+| Architecture | `docs/codebase/architecture.md` | System A/B design & integration |
+| Repository map | `docs/dev/repository_map.md` | Module inventory & responsibilities |
+| Gap analysis | `thesis/literature/gap_analysis.md` | Research gap + novelty claim |
+| Thesis outline | `thesis/thesis-writing/outline.md` | Chapter structure & sequence |
+| CBS compliance | `thesis/thesis-context/formal-requirements/compliance.md` | Formal requirements checklist |
 
 ---
 

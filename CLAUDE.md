@@ -45,16 +45,16 @@
 
 ## Quick References
 
-- [docs/project-management/context.md](docs/project-management/context.md) — packages, session log
+- [docs/project-management/](docs/project-management/) — project management docs
 - [docs/reference/cheatsheet.md](docs/reference/cheatsheet.md) — CLI commands, trigger phrases
 - [docs/tooling/tooling-issues.md](docs/tooling/tooling-issues.md) — solved Windows/OneDrive/tooling problems (6 documented)
-- [thesis/data/nielsen/README.md](thesis/data/nielsen/README.md) — Nielsen data access guide (52 objects cataloged, 29 CSV exports)
+- [thesis/data/nielsen/scripts/README.md](thesis/data/nielsen/scripts/README.md) — Nielsen data access guide (52 objects cataloged, 29 CSV exports)
 - [thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md](thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md) — Auto-generated schema reference (all 52 objects, columns, row counts)
 - [docs/integrations/zotero-integration-setup.md](docs/integrations/zotero-integration-setup.md) — Zotero integration setup (group library ID: 6479832)
 - [docs/reference/zotero-quick-reference.md](docs/reference/zotero-quick-reference.md) — Quick Zotero copy-paste commands
 - [.claude/rules/](.claude/rules/) — workflow automation rules
 - [docs/dev/repository_map.md](docs/dev/repository_map.md) — module inventory
-- [docs/claude-tooling/skill-activation-summary.md](docs/claude-tooling/skill-activation-summary.md) — test-codebase-integrity skill status & usage
+- [.claude/skills/](\.claude/skills/) — Project-specific skill definitions
 - [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — **22 NEW SKILLS IMPORTED** (Apr 16) — tier classification + integration strategy
 - [.claude/SKILLS_DEMO_EXAMPLES.md](.claude/SKILLS_DEMO_EXAMPLES.md) — 10 concrete demos with expected outputs (try each in 5-8 min)
 - [.claude/SKILLS_INVENTORY.md](.claude/SKILLS_INVENTORY.md) — complete reference for all 35 skills by category + use cases
