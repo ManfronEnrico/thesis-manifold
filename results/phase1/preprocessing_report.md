@@ -11,8 +11,8 @@
 | Total rows | 3,234 |
 | Periods per brand | 42 |
 | Features engineered | 17 |
-| Peak RAM (preprocessing) | 7.9 MB |
-| Elapsed time | 11.5 s |
+| Peak RAM (preprocessing) | 8.0 MB |
+| Elapsed time | 11.6 s |
 
 ## Split Boundaries
 
