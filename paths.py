@@ -37,7 +37,7 @@ and Linux. When referenced in notebooks, use ROOT_DIR.resolve() to get the absol
 
 Example:
     from paths import ROOT_DIR
-    print(ROOT_DIR.resolve())  # C:\dev\thesis-manifold
+    print(ROOT_DIR.resolve())  # C:\\dev\\thesis-manifold
 """
 
 # %%
@@ -70,7 +70,7 @@ subdirectories for organizational clarity.
 
 Example:
     from paths import THESIS_DIR
-    print(THESIS_DIR.resolve())  # C:\dev\thesis-manifold\thesis
+    print(THESIS_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis
 """
 
 # %%
@@ -102,7 +102,7 @@ hub for all computational and analytical work on the thesis.
 
 Example:
     from paths import THESIS_ANALYSIS_DIR
-    print(THESIS_ANALYSIS_DIR.resolve())  # C:\dev\thesis-manifold\thesis\analysis
+    print(THESIS_ANALYSIS_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis\\analysis
 """
 
 # %%
@@ -348,7 +348,7 @@ This is the hub for all data management related to the thesis research.
 
 Example:
     from paths import THESIS_DATA_DIR
-    print(THESIS_DATA_DIR.resolve())  # C:\dev\thesis-manifold\thesis\data
+    print(THESIS_DATA_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis\\data
 """
 
 # %%
