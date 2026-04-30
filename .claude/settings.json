@@ -22,17 +22,5 @@
   "env": {
     "PYTHONIOENCODING": "utf-8"
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \".claude/hooks/check_file_edit.py\""
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }
