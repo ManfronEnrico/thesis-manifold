@@ -1,113 +1,130 @@
-# Plans Index — Organization & Status
+# Plans Index
 
-Last updated: 2026-04-28
+All plans are organized by status bucket and identified by unique P-ID for easy reference and tracking.
 
 ---
 
-## Structure
+## 📋 Index Format
 
-Plans are organized into four folders based on their lifecycle:
+Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
+
+- **P{NNNN}**: Unique sequential plan identifier (e.g., P0001)
+- **YYYY-MM-DD**: Plan creation date (ISO format)
+- **HHMM**: Plan creation time (24-hour format, 0800 default for undated)
+- **{slug}**: Descriptive slug (lowercase, hyphens)
+
+---
+
+## 🎯 Backlog Plans (01-backlog-plans/)
+
+| ID | Date | Created | Plan | Status |
+|---|---|---|---|---|
+| **P0001** | 2026-04-13 | 0800 | CMT Master Upgrade | Pending |
+| **P0002** | 2026-04-13 | 0800 | NotebookLM Integration | Pending |
+| **P0003** | 2026-04-13 | 0800 | PTA Best Practices Extraction | Pending |
+| **P0004** | 2026-04-13 | 0800 | Thesis Repository Upgrade | Pending |
+
+---
+
+## 🚀 In-Progress Plans (02-in_progress-plans/)
+
+| ID | Date | Created | Plan | Status |
+|---|---|---|---|---|
+| **P0005** | 2026-04-23 | 0800 | System A Feature Eng Integration | In Progress (DRAFT) |
+| **P0017** | 2026-04-27 | 1420 | Jupyter Notebook Path Centralization | In Progress (Phase 3 Manual) |
+| **P0018** | 2026-04-28 | 1400 | Restructure Existing Plans | In Progress |
+
+---
+
+## ✅ Outcome Plans (03-outcome_plans/)
+
+| ID | Date | Created | Plan | Status | Outcome |
+|---|---|---|---|---|---|
+| **P0006** | 2026-04-15 | 0800 | Integration Phase 1 Execution | Completed | Phase 1 extended |
+| **P0007** | 2026-04-15 | 0800 | Restructuring Audit | Completed | Audit done |
+| **P0008** | 2026-04-18 | 0800 | Integration Three Systems | Completed | Integration verified |
+| **P0009** | 2026-04-22 | 0800 | Nielsen Pipeline & Agent Paths | Completed | Data access + paths fixed |
+| **P0017-OUTCOME** | 2026-04-28 | — | Jupyter Path Centralization Phase 2 | Completed | Phase 2 complete (rolled back 2026-04-30) |
+
+---
+
+## 📦 Archive Plans (04-archive_plans/)
+
+| ID | Date | Created | Plan | Status |
+|---|---|---|---|---|
+| **P0010** | 2026-04-15 | 0800 | Academic Repos Integration | Archived |
+| **P0011** | 2026-04-15 | 0800 | Architecture Analysis & Integration Safety | Archived |
+| **P0012** | 2026-04-15 | 0800 | Integration Phase 1 State Extension | Archived |
+| **P0013** | 2026-04-15 | 0800 | Integration Summary | Archived |
+| **P0014** | 2026-04-15 | 0800 | Session Progress | Archived |
+| **P0015** | 2026-04-15 | 0800 | System A vs B Contrast | Archived |
+| **P0016** | 2026-04-16 | 0800 | ML Retraining with New Skills | Archived |
+
+---
+
+## 📊 Summary
+
+- **Total Plans**: 18
+- **Backlog**: 4 (P0001–P0004)
+- **In Progress**: 3 (P0005, P0017–P0018)
+- **Outcomes**: 5 (P0006–P0009, P0017-OUTCOME)
+- **Archive**: 7 (P0010–P0016)
+
+---
+
+## 🔍 Quick Reference
+
+### By Date (Chronological)
+
+**2026-04-13**: P0001, P0002, P0003, P0004  
+**2026-04-15**: P0006, P0007, P0010, P0011, P0012, P0013, P0014, P0015  
+**2026-04-16**: P0016  
+**2026-04-18**: P0008  
+**2026-04-22**: P0009  
+**2026-04-23**: P0005  
+**2026-04-27**: P0017  
+**2026-04-28**: P0017-OUTCOME, P0018  
+
+### By Status
+
+**Pending**: P0001, P0002, P0003, P0004  
+**In Progress**: P0005, P0017, P0018  
+**Completed**: P0006, P0007, P0008, P0009, P0017-OUTCOME  
+**Archived**: P0010, P0011, P0012, P0013, P0014, P0015, P0016  
+
+---
+
+## 📝 Accessing Plans
+
+All plans are located in their status bucket:
 
 ```
 plans/
-├── 01-backlog-plans/           (4 plans) — Early analysis, not started
-├── 02-in_progress-plans/       (9 plans) — Active work, partial progress
-├── 03-outcome_plans/           (4 plans) — ✅ Completed, outcomes documented
-└── 04-archive_plans/           (0 plans) — Deprecated or superseded
+  01-backlog-plans/
+    P0001_2026-04-13_0800_PLAN-cmt-master-upgrade/
+      P0001_2026-04-13_0800_PLAN-cmt-master-upgrade.md
+    ... (P0002–P0004)
+  
+  02-in_progress-plans/
+    P0005_2026-04-23_0800_PLAN-system-a-feature-eng-integration/
+      P0005_2026-04-23_0800_PLAN-system-a-feature-eng-integration.md
+    P0017_2026-04-27_1420_PLAN-jupyter_notebook_path_centralization/
+      P0017_2026-04-27_1420_PLAN-jupyter_notebook_path_centralization.md
+      2026-04-28_DOC-*.md (supporting docs)
+    P0018_2026-04-28_1400_PLAN-restructure_existing_plans/
+      P0018_2026-04-28_1400_PLAN-restructure_existing_plans.md
+  
+  03-outcome_plans/
+    P0006_2026-04-15_0800_PLAN-integration-phase1-execution/
+      ... (etc)
+  
+  04-archive_plans/
+    P0010_2026-04-15_0800_PLAN-academic-repos-integration/
+      ... (etc)
 ```
 
 ---
 
-## 📋 BACKLOG — Analysis Only (4 plans)
-
-**Status**: No implementation yet. Strategic exploration and decision-making.
-
-| Plan | Created | Purpose | Next Step |
-|------|---------|---------|-----------|
-| **CMT_Codebase Master Upgrade** | 2026-04-13 | Synthesize forked repos + PTA best-practices into roadmap | Review, decide adoption level |
-| **NotebookLM Integration** | 2026-04-13 | Evaluate NotebookLM API for literature grounding | Pilot phase (post-deadline suggested) |
-| **PTA Best-Practices Extraction** | 2026-04-13 | Extract Claude Code patterns from reference project | Apply learnings to thesis-manifold |
-| **Thesis Repo Upgrade** | 2026-04-13 | LaTeX pipeline, integrity gates, skill modularity | Integrate Phase 2+3 findings |
-
-**Recommendation**: These are well-researched but require resourcing decisions. Review after Jupyter path cleanup completes.
-
----
-
-## 🔄 IN PROGRESS — Active Work (9 plans)
-
-**Status**: Started, partially executed, or awaiting next phase.
-
-| Plan | Created | Status | Blocker |
-|------|---------|--------|---------|
-| **Jupyter Notebook Path Centralization** | 2026-04-27 | Phase 1 done (config.py), Phase 2 in progress (notebook refactor) | Merge main after completion |
-| **System A Feature-Eng Integration** | 2026-04-23 | Analysis complete, awaiting Enrico's next PR | Data access unblocked 2026-04-22 |
-| **ML Retraining with New Skills** | 2026-04-16 | Approved structure, awaiting operational decisions | Budget/timeline constraints |
-| **Integration Phase 1: State Extension** | 2026-04-15 | Ready to implement, infrastructure designed | No blockers |
-| **Academic Repos Integration** | 2026-04-15 | Optional enhancements, toggleable features designed | Resource allocation |
-| **Architecture Analysis & Safety** | 2026-04-15 | Complete, integration is safe | Awaiting phase 1 completion |
-| **Integration Summary** | 2026-04-15 | Decision framework documented | Scenario choice (baseline / standard / full) |
-| **Session Progress** | 2026-04-15 | Snapshot from that session | Historical reference |
-| **System A vs B Contrast** | 2026-04-15 | Reference document, no action needed | N/A |
-
-**Recommendation**: 
-- **Priority now**: Complete Jupyter path cleanup (Phase 2 + Phase 3 validation)
-- **Quick win**: Integration Phase 1 (state extension infrastructure)
-- **Defer**: ML retraining, academic repos integration (post-Phase-5 eval)
-
----
-
-## ✅ OUTCOMES — Completed (4 plans)
-
-**Status**: ✅ Done. Outcomes documented and lessons learned captured.
-
-| Plan | Completed | What Was Done | Outcome |
-|------|-----------|---------------|---------|
-| **Integration Phase 1: State Extension** | 2026-04-15 | Extended ThesisState + ComplianceState with toggleable features | ✅ Infrastructure ready |
-| **Restructuring Audit** | 2026-04-15 | Consolidated papers, archived legacy, added System A/B markers | ✅ Repo cleaned, ready for next phase |
-| **Integration Audit & Handover** | 2026-04-18 | Audited Zotero, Google Drive, NotebookLM integrations | ✅ 3 systems operational, documented |
-| **Nielsen Pipeline + Agent Paths** | 2026-04-22 | Fixed data connectors, migrated agents to local CSV paths, cleaned hooks | ✅ Data pipeline unblocked |
-
-**Lessons Learned**: See each outcome file for "Adjusted" sections.
-
----
-
-## 📦 ARCHIVE — Deprecated (0 plans)
-
-(Currently empty. Plans move here when superseded or after 60 days with no progress.)
-
----
-
-## How to Use This Index
-
-**Starting a session?**
-1. Check 02-in_progress-plans/ for current priorities
-2. Read the relevant plan's "Next Steps" section
-3. Update status when work completes
-
-**Plan completed?**
-1. Create outcome file in 03-outcome_plans/
-2. Move plan from 02 → 04-archive_plans/ (optional, or leave for reference)
-3. Update this index
-
-**Plan decision deferred?**
-1. Move from 01-backlog to 02-in_progress when work starts
-2. Add blocker/notes in this index
-
-**Plan superseded?**
-1. Move to 04-archive_plans/
-2. Note reason in this index
-
----
-
-## Current Priority (2026-04-28)
-
-**🎯 Focus**: Jupyter notebook path centralization (Phase 2 + 3)
-- **Duration**: 2–4 hours
-- **Blocker for merge**: Don't pull main until this completes
-- **After completion**: Create outcome file, then revisit Phase 1 state extension
-
----
-
-## Contact
-
-For questions on plan strategy: See CLAUDE.md → Workflows section
+**Last Updated**: 2026-04-30 10:30  
+**Index Maintainer**: Claude Code Session  
+**Notes**: P0017 and P0018 were newly assigned IDs during restructuring (2026-04-30)
