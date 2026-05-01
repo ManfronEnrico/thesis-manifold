@@ -24,6 +24,7 @@ env/
 *.db
 *.sqlite
 *.7z
+*.parquet
 
 # Model artifacts & intermediate binaries (regenerable from notebook)
 *.npy
@@ -32,9 +33,6 @@ env/
 # OS
 .DS_Store
 Thumbs.db
-
-# Claude local memory (machine-specific)
-.claude/projects/
 
 # LaTeX build artifacts
 build/
@@ -60,11 +58,5 @@ build/
 
 # Exception: thesis notebooks + their structured CSV outputs
 # (placed last so they override *.ipynb and *.csv rules above)
-!docs/thesis/analysis/thesis_notebook.ipynb
-!docs/thesis/analysis/thesis_agentic_notebook.ipynb
-!docs/thesis/analysis/outputs/*.csv
-!docs/thesis/analysis/outputs/pipelines/feature_info.json
-!docs/thesis/analysis/outputs_agentic/*.csv
-!docs/thesis/analysis/outputs_agentic/*.json
 .claude/settings.local.json
 .claude/logs/
