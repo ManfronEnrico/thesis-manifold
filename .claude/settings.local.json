@@ -7,7 +7,9 @@
       "Bash(git diff*)",
       "Bash(git add*)",
       "Bash(git commit*)",
-      "PowerShell(git add *)"
+      "PowerShell(git add *)",
+      "PowerShell(Head *)",
+      "PowerShell(Test-Path \"C:\\\\dev\\\\thesis-manifold\\\\thesis\\\\data\\\\raw_nielsen\"; \\(Get-ChildItem \"C:\\\\dev\\\\thesis-manifold\\\\thesis\\\\data\\\\raw_nielsen\" | Measure-Object\\).Count)"
     ]
   }
 }
