@@ -1,0 +1,59 @@
+thesis/                                                                                                                                                                                                                                                                                                   
+    modelling (formerly analysis)/                                                                                                                                                                                                                                                                                               
+        notebooks/                                                                                                                                                                                                                                                                                          
+            SRQ_1/ 
+                specialized_CSD/
+                    specialized_CSD.ipynb
+                    specialized_CSD_outputs/ 
+                        headline_table.csv              
+                        pool_vs_spec.csv  
+                        figures/        
+                            fig_headline.png
+                            fig_pool_vs_spec_heatmap.png
+                        chapter6_table.md
+                other_analysis/
+                    other_analysis.ipynb   
+                    other_analysis_outputs/
+                        [outputs specific to that notebook]
+            SRQ_2/                                 
+                [same structure]
+        prompts/
+            [human_eval_pilot_15_v3.csv, prompt_v5_final.csv]
+    data/
+        [raw datasets, preprocessing scripts, etc.]
+    literature/
+    # This could also move to the thesis-writing perhaps
+        [papers, notes, etc.]
+    thesis_agents/
+        [ai_research_framework, thesis_production_system, tests]
+    thesis-context/
+        [context files for agents]
+        chapters/
+        # Not really sure whats the purpose and need of this tbh
+            context-chapter1.md
+        formal-requirements/
+            [formal requirement files]
+        prometheus-integration/
+        # Might be wrongly placed, but it is related to the integration of the thesis production system with the prometheus agent
+            [prometheus integration files]
+        research-questions/
+        #These should probably also move to the thesis-writing perhaps
+            [SRQ context files]
+        thesis-topic/
+        #These should probably also move to the thesis-writing perhaps
+            [thesis topic files]
+    thesis-writing/ 
+        # The contents of this folder are severly messy (multiple figure and output folders e.g. "figures", "figures_agentic" with no clear source or seperation, "outputs", "outputs_agentic")
+        # It must be sorted down the line. But first we must fix the current notebook file references.
+        [drafts, notes, etc.]
+        analysis/
+        # Same name as the "analysis" folder in the main thesis folder, but this one is for writing related analysis (e.g. writing related figures, tables, etc.) -> must be made clearer down the line.
+            [analysis, report figures, agentic figures]
+        figures/
+        # Again another figures folder with no clear source or seperation. Must be sorted down the line.
+        # Appears to be related to Data Flow and Langraph Flowcharts.
+            [figures related to writing, data flow, langraph flowcharts, etc.]
+        sections-drafts/
+            [drafts of specific sections]
+        sections-final/
+            [finalized sections]
