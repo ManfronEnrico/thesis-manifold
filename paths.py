@@ -5,7 +5,7 @@ from IPython.display import Markdown, display
 
 # %%
 # PROJECT PATHS CONFIGURATION
-display(Markdown("""
+Markdown("""
 # Configuration: Project Paths
 
 This file centralizes all path definitions for the thesis project using pathlib.Path for cross-platform
@@ -13,18 +13,18 @@ compatibility. Paths are organized hierarchically from root directory down throu
 
 Each path variable includes type hints and docstrings to provide context on hover in your IDE.
 Use these constants throughout notebooks instead of hardcoded strings.
-"""))
+""")
 
 # %%
 # ROOT REPOSITORY
-display(Markdown("""
+Markdown("""
 ## 0. Root Repository
 
 The root directory is the base folder of the project, containing all subfolders and files related to the thesis.
 This is where the main paths configuration file (paths.py) is located, which defines paths to all other
 important directories and files used in the project. Using pathlib.Path ensures cross-platform compatibility
 across Windows, macOS, and Linux systems.
-"""))
+""")
 
 # %%
 ROOT_DIR: Path = Path(__file__).parent
@@ -41,23 +41,23 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 ### 0.1 Root Directory Example
 
 The following example shows how to access the root directory:
-"""))
+""")
 
 # %%
 print(f"ROOT_DIR = {ROOT_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 ## 1. Thesis Directory
 
 The thesis folder serves as the central hub for all thesis-related work. It contains subdirectories for analysis
 (notebooks, figures, outputs) and data (raw datasets, preprocessing scripts, assessment data). All paths within
 this section are relative to THESIS_DIR.
-"""))
+""")
 
 # %%
 THESIS_DIR: Path = ROOT_DIR / "thesis"
@@ -74,22 +74,22 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 ### 1.1 Thesis Directory Example
 
 The following example shows how to access the thesis directory:
-"""))
+""")
 
 # %%
 print(f"THESIS_DIR = {THESIS_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 ### 1.2 Analysis Subdirectory
 
 The analysis folder contains all notebooks, figures, prompts, and output files generated during the thesis work.
 This is where computational analysis, visualizations, and model outputs are stored and organized by category.
-"""))
+""")
 
 # %%
 THESIS_ANALYSIS_DIR: Path = THESIS_DIR / "analysis"
@@ -106,17 +106,17 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.2.1 Analysis Directory Example
 
 The following example shows how to access the analysis directory:
-"""))
+""")
 
 # %%
 print(f"THESIS_ANALYSIS_DIR = {THESIS_ANALYSIS_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.2.2 Analysis Sub-Subdirectories
 
 The analysis directory is further organized into specific subdirectories for different types of outputs:
@@ -124,7 +124,7 @@ The analysis directory is further organized into specific subdirectories for dif
 - **notebooks**: Jupyter notebooks containing analysis code and results
 - **prompts**: Prompt templates and configurations for system interactions
 - **outputs**: Processed results and model outputs
-"""))
+""")
 
 # %%
 THESIS_FIGURES_DIR: Path = THESIS_ANALYSIS_DIR / "figures"
@@ -177,11 +177,11 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.2.3 Analysis Sub-Subdirectories Examples
 
 The following examples show how to access each analysis sub-subdirectory:
-"""))
+""")
 
 # %%
 print(f"THESIS_FIGURES_DIR = {THESIS_FIGURES_DIR.resolve()}")
@@ -190,12 +190,12 @@ print(f"THESIS_PROMPTS_DIR = {THESIS_PROMPTS_DIR.resolve()}")
 print(f"THESIS_OUTPUTS_DIR = {THESIS_OUTPUTS_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.2.4 Feature Matrices Output Directory
 
 Feature matrices contain preprocessed data in Parquet format used for machine learning model training.
 These files are optimized for efficient data loading and numerical operations.
-"""))
+""")
 
 # %%
 FEATURE_MATRIX_OUTPUTS_DIR: Path = THESIS_OUTPUTS_DIR / "feature_matrices"
@@ -212,22 +212,22 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 ##### 1.2.4.1 Feature Matrices Directory Example
 
 The following example shows how to access the feature matrices directory:
-"""))
+""")
 
 # %%
 print(f"FEATURE_MATRIX_OUTPUTS_DIR = {FEATURE_MATRIX_OUTPUTS_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.2.5 Category-Specific Output Directories
 
 Output directories are organized by product category to keep results organized and easily accessible.
 Each category has its own subdirectory containing analysis results, feature matrices, and model outputs.
-"""))
+""")
 
 # %%
 CSD_OUTPUTS_DIR: Path = THESIS_OUTPUTS_DIR / "csd"
@@ -315,11 +315,11 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 ##### 1.2.5.1 Category-Specific Directories Examples
 
 The following examples show how to access each category-specific output directory:
-"""))
+""")
 
 # %%
 print(f"CSD_OUTPUTS_DIR = {CSD_OUTPUTS_DIR.resolve()}")
@@ -331,12 +331,12 @@ print(f"POOLED_4_OUTPUTS_DIR = {POOLED_4_OUTPUTS_DIR.resolve()}")
 print(f"POOLED_5_OUTPUTS_DIR = {POOLED_5_OUTPUTS_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 ### 1.3 Data Subdirectory
 
 The data folder contains all datasets, raw data sources, and preprocessing scripts. It is organized into
 subdirectories for different data sources and processing stages.
-"""))
+""")
 
 # %%
 THESIS_DATA_DIR: Path = THESIS_DIR / "data"
@@ -352,17 +352,17 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.3.1 Data Directory Example
 
 The following example shows how to access the data directory:
-"""))
+""")
 
 # %%
 print(f"THESIS_DATA_DIR = {THESIS_DATA_DIR.resolve()}")
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.3.2 Data Sub-Subdirectories
 
 The data directory is further organized into specific subdirectories for different data sources:
@@ -370,7 +370,7 @@ The data directory is further organized into specific subdirectories for differe
 - **nielsen**: Nielsen market research data exports
 - **preprocessing**: Data preprocessing scripts and intermediate files
 - **spss_indeksdanmark**: Indeks Danmark SPSS data files
-"""))
+""")
 
 # %%
 THESIS_ASSESSMENT_DIR: Path = THESIS_DATA_DIR / "assessment"
@@ -422,11 +422,11 @@ Example:
 """
 
 # %%
-display(Markdown("""
+Markdown("""
 #### 1.3.3 Data Sub-Subdirectories Examples
 
 The following examples show how to access each data sub-subdirectory:
-"""))
+""")
 
 # %%
 print(f"THESIS_ASSESSMENT_DIR = {THESIS_ASSESSMENT_DIR.resolve()}")
