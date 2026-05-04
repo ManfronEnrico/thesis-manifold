@@ -350,6 +350,10 @@ You've already built `/move-docs-to-folders` skill correctly, demonstrating the 
 
 ### Dependencies
 - jlacour-git framework understanding (read: rule-reform-gaps.md)
+- **P0021 (Docs Reorganization) COMPLETED** — 4-folder structure now authority
+  - Routing table: `.claude/rules/root-documentation-boundary.md`
+  - Enforcement skills: `/move-docs-to-folders`, `/docs-update-all` Phase 0
+  - See: `2026-05-04_DOC-p0021-integration.md` (in this plan folder) for cross-phase integration
 - Existing skills (`/move-docs-to-folders`, `/docs-update-all`) already enhanced
 - MEMORY.md index maintained
 - Cross-references tracked

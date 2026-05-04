@@ -7,268 +7,277 @@ trigger_phrases:
   - "plan is done"
   - "plan completed"
   - "document plan outcome"
-description: Log and finalize a completed plan by documenting what was completed, adjusted, or dropped. Automatically relocates and renames misplaced plans to conform to the YYYY-MM-DD_<short-slug>.md naming convention.
+description: Verification + sync workflow. Scan all active plans, cross-reference conversation context, auto-update plan files with new information from this session, report changes. No clarifying questions—the goal is always to ensure plans are current and execution-ready.
 compatibility:
   tools_required:
     - Read
     - Write
     - Bash
+    - Grep
   os: any
   note: Works with both global and project-specific plan directories
 ---
 
-# Update Plan Skill
+# Update Plan Skill — Verification + Sync Workflow
 
-Finalize a completed or adjusted plan by logging its outcome and ensuring proper file organization. This skill implements the plan update workflow defined in `.claude/rules/trigger-plan-workflow.md`.
+**Core behavior:** Scan all in-progress plans, cross-reference conversation context against plan files, auto-update with new information, report what changed. This workflow ensures plans stay synchronized with current understanding and remain execution-ready.
+
+## Standard Workflow (Every Invocation)
+
+This skill follows the same pattern **every time you invoke it**, without needing you to explain intent:
+
+1. **Scan all active plans** (`02-in_progress-plans/`) for staleness
+2. **Cross-reference conversation context** — capture any new info, decisions, or understanding mentioned in this session that isn't yet in the plan file
+3. **Auto-update plan files** with that context (no permission prompts, just do it)
+4. **Report changes** — list what was updated in each plan
+5. **Flag blockers only** — report if something prevents execution (unresolved decision, missing dependency)
+
+**Result:** Plans are always current with the latest session context and ready to execute.
 
 ## When to Use
 
-Use this skill **after executing a plan** to document:
-- **What was completed** — tasks implemented as originally planned
-- **What was adjusted** — changes made during execution (and why)
-- **What was dropped** — items deferred, out of scope, or superseded
+Invoke `/plan-update-all` to:
+- Verify all active plans are synced with current session understanding
+- Capture any new info from conversation into plan files automatically
+- Check execution-readiness (identify blockers, missing dependencies, unresolved decisions)
+- Before beginning execution of any plan, ensure it reflects current state
 
-This creates an audit trail for future reference and allows the plan system to track execution fidelity across your project.
-
-**Typical scenarios:**
-- You've finished a refactoring plan and want to log what changed mid-execution
-- A multi-phase plan completed with some phases deferred
-- A planning session ended with discovered constraints that shifted scope
-- You want to close a plan file and create an outcome record
+**You never need to answer clarifying questions again.** The skill assumes: "Is there new context from this session that should go into the plan file?" and updates accordingly.
 
 ## Invocation
 
 ```bash
-/plan-update-all-all
-/plan-update-all-all <plan-name-or-partial-filename>
-/plan-update-all-all YYYY-MM-DD_my-plan-slug
+/plan-update-all              # Verify + sync ALL in-progress plans
+/plan-update-all <plan-id>    # Verify + sync specific plan (e.g., P0020)
 ```
 
-If no plan name is provided, Claude searches for recently-touched plans in `plans/` (root level).
+Invoke without arguments to sync **all** in-progress plans at once.
 
 ## How It Works
 
-This skill implements a three-step workflow:
+The skill executes five steps in sequence:
 
-### Step 1: Locate the Plan File
+### Step 1: Scan Active Plans
 
-The skill searches for your plan in these locations (in order):
-1. `<project-root>/plans/plan_files/` — primary location for new plans
-2. `<project-root>/plans/` — fallback for plans not yet reorganized
+Search `plans/02-in_progress-plans/` for all plan folders using P-ID naming convention:
+- `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/`
+- Return list of all P-IDs, creation dates, and status
 
-### Step 2: Organize if Needed
+### Step 2: Cross-Reference Conversation Context
 
-If a plan is found in the root `plans/` directory (not in a subdirectory), it is moved to `plans/plan_files/` to keep all active work organized.
+For each in-progress plan, check:
+- **Plan file:** Read the main plan markdown file
+- **Session context:** Any new information, decisions, or understanding mentioned in this conversation that isn't yet in the file
+- **Integration guides:** Any supporting docs (e.g., `YYYY-MM-DD_DOC-*.md`) that need updates
+- **Dependencies:** Check if any referenced plans (e.g., P0021 in P0020) have new information
 
-### Step 3: Rename if Needed (applies to both active and outcome files)
+### Step 3: Auto-Update Plan Files
 
-If the filename does not follow the standard naming convention, it is renamed:
-- **Format:** `YYYY-MM-DD_<short-slug>.md`
-- **Example:** `2026-04-15_system-a-refactor.md`
-- **Rules:**
-  - Date must be `YYYY-MM-DD` (the plan creation date or today's date)
-  - Slug should be 2–4 words, lowercase, hyphenated
-  - No spaces or special characters in slug
+For each plan, if new context is found:
+- **Update relevant sections:** Add new info to appropriate place in plan file (phases, objectives, dependencies, risks, etc.)
+- **Update timestamps:** Revise `updated: YYYY-MM-DD HH:MM:SS` in file frontmatter
+- **Preserve structure:** Keep all existing content; only add/revise sections with new info
+- **No permission prompts:** Just do the updates and report what changed
 
-### Step 4: Append Outcome Section
+### Step 4: Check for Blockers
 
-The skill appends a new `## Outcome` section to the plan file with the structure below.
+Scan each plan for unresolved items that prevent execution:
+- **Unresolved decisions:** Any "TBD", "to be decided", "pending approval" in plan file?
+- **Missing dependencies:** Referenced plans (e.g., "P0021 completed") — is that true? If blocked plan not completed, flag it
+- **Incomplete sections:** Missing description, success criteria, or phase details?
+- **Cross-reference breaks:** Any linked files that no longer exist?
 
-## Outcome Section Format
+### Step 5: Report Status
 
-Copy and fill this template into your plan file:
-
-```markdown
----
-
-## Outcome
-
-_Completed: YYYY-MM-DD_
-
-### ✅ Completed
-- Task or goal that was fully implemented
-- Another completed item
-- List only items done as originally planned
-
-### 🔄 Adjusted
-- **What**: Feature A was split into two phases
-  **Why**: Discovered dependency on System B, required sequencing
-  **How**: Implemented Phase 1 now, Phase 2 deferred to next sprint
-
-- **What**: API endpoint timeout increased from 5s to 10s
-  **Why**: Stress test revealed p99 latencies at 8s under load
-  **How**: Tuned timeout and logged issue for infra optimization
-
-### ❌ Dropped
-- **What**: Performance profiling with py-spy
-  **Why**: Out of scope — superseded by built-in perf metrics
+Output structured report for **each plan**:
+```
+P0020: Rule System Reform
+  Status: In Progress
+  Last updated: 2026-05-04 14:30
   
-- **What**: Backward compatibility layer for v1 clients
-  **Why**: No active v1 users; deferred to next major release
-
-### Notes
-- The refactor surfaced three schema inconsistencies (logged as GH issues #42–44)
-- Team agreed on revised naming convention mid-execution (see linked PR)
-- Next iteration should front-load dependency analysis
+  ✅ Updated in this session:
+     - Dependencies section: Added P0021 integration details
+     - Phase 1 tasks: Clarified audit checklist
+  
+  ⚠️  No blockers found
+  
+  ✔️ Execution-ready (can begin Phase 1)
 ```
 
-**Omit sections if there is nothing to record.** For example, if a plan executed perfectly with no adjustments or dropped items, only include the `✅ Completed` section.
+Then final summary: "All plans current, X updates made, Y blockers flagged."
 
-## File Locations and Conventions
+## What Gets Updated
 
-### Directory Structure
+When `/plan-update-all` finds new context in conversation, it updates:
 
-All plan files live in the **project's own directory**:
+| Element | Update Behavior |
+|---------|-----------------|
+| **Objective** | If clarified or refined during discussion |
+| **Context & Rationale** | If new understanding of problem discovered |
+| **Scope** | If boundaries expanded, reduced, or clarified |
+| **Success Criteria** | If additional criteria identified |
+| **Phase descriptions** | If approach adjusted or refined |
+| **Dependencies** | If new plan dependencies identified (e.g., "awaiting P0021") |
+| **Risks & Mitigations** | If new risks discovered or mitigations added |
+| **Timestamps** | Updated `updated:` field in frontmatter always |
 
-```
-<project-root>/
-├── .claude/
-│   ├── plans/
-│   │   ├── plan_files/          # New plans (YYYY-MM-DD_<slug>.md)
-│   │   ├── outcome_files/       # Outcomes linked to plan_files/
-│   │   └── README.md            # Plan system documentation
-```
+**Never removes or loses information.** Only adds, clarifies, or refines. All edits are additive.
 
-### Naming Conventions
+## File Locations and Naming
 
-- **Plan files:** `YYYY-MM-DD_<short-slug>.md`
-- **Outcome files:** `YYYY-MM-DD_<short-slug>.md` (mirrors plan filename in `outcome_files/` directory)
-- **Slug guidelines:**
-  - 2–4 words maximum
-  - Lowercase only
-  - Hyphens to separate words
-  - No spaces, underscores, or special characters
-  - Examples: `system-a-refactor`, `thesis-chapter-3-draft`, `code-review-process`
-
-### Example Plan Lifecycle
-
-1. **Created:** `2026-04-10_system-refactor.md` in `plans/plan_files/`
-2. **Executed:** You run the plan over 3 days, discover adjustments
-3. **Logged:** You run `/plan-update-all-all system-refactor`
-4. **Result:** Plan file gains `## Outcome` section; a mirrored outcome entry is created at `plans/outcome_files/2026-04-10_system-refactor.md`
-
-## Common Workflows
-
-### Workflow: Quick Plan Completion
-
-You've just finished a small focused plan with no surprises:
+All plans live in status-organized buckets:
 
 ```
-/plan-update-all-all my-plan-name
+plans/
+  01-backlog-plans/
+    P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/
+      P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}.md
+      YYYY-MM-DD_DOC-{description}.md  (supporting docs)
+  
+  02-in_progress-plans/          # ← This skill syncs these
+    P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/
+      P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}.md
+      YYYY-MM-DD_DOC-*.md
+  
+  03-outcome_plans/
+    P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}/
+      P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}.md
+  
+  04-archive_plans/
+    P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/
+```
+
+**Naming convention:**
+- `P{NNNN}` — Unique sequential ID (P0001, P0002, ..., P0020, etc.)
+- `YYYY-MM-DD_HHMM` — ISO date + 24hr time
+- `PLAN` / `OUTCOME` — Literal keywords
+- `{slug}` — Lowercase, hyphens
+
+## Common Scenarios
+
+### Scenario 1: Start of Session
+
+You begin a new Claude session. You want to ensure all active plans have the latest context before proceeding:
+
+```
+/plan-update-all
 ```
 
 Skill will:
-1. Locate and open `my-plan-name` 
-2. Ask you to confirm the outcome summary
-3. Append `## Outcome` with `✅ Completed` items only
-4. Save and notify you of the updated file location
+1. Scan `02-in_progress-plans/` (all active plans)
+2. Cross-reference conversation context (if any references to plans in your prompt)
+3. Update any plan files with new context
+4. Report status and blockers (if any)
 
-### Workflow: Complex Multi-Phase Execution
+**Output:**
+```
+P0020: Rule System Reform — ✅ All updates synced (2 sections updated)
+P0019: Preprocessing Unification — ✔️ No new context found
+P0018: Plan Restructuring — ✔️ Already complete (moved to outcomes)
 
-You've completed a plan with significant adjustments and dropped phases:
+Overall: ✔️ All plans current and execution-ready
+```
+
+### Scenario 2: Mid-Session Plan Sync
+
+You're discussing details about a specific plan. Before executing it, ensure it has all the new understanding:
 
 ```
-/plan-update-all-all YYYY-MM-DD_big-refactor
+/plan-update-all P0020
 ```
 
 Skill will:
-1. Locate the plan file
-2. Guide you through each section (Completed, Adjusted, Dropped)
-3. Help you articulate **What**, **Why**, and **How** for each adjustment
-4. Append the full `## Outcome` section
-5. Create an outcome mirror file in `outcome_files/`
+1. Locate P0020 plan file
+2. Check conversation for context relevant to P0020 (e.g., "P0021 integration", "new task details")
+3. Update P0020 with any new information
+4. Report changes and blockers
+
+**Output:**
+```
+P0020: Rule System Reform
+  
+  ✅ Updated in this session:
+     - Phase 1 tasks: Clarified audit checklist with 3 new items
+     - Dependencies: Added explicit link to P0021 integration guide
+  
+  ⚠️ No blockers found
+  
+  ✔️ Execution-ready (can begin Phase 1)
+```
 
 ## Integration with Project Workflow
 
 This skill connects to:
-- **`.claude/rules/trigger-plan-workflow.md`** — Plan creation, naming, and outcome documentation standards
-- **`docs/project-state.md`** — Frozen decisions and plan execution context
-- **`/git-draft-commit`** skill — Uses outcome files to generate accurate commit messages
+- **`.claude/rules/trigger-plan-workflow.md`** — Plan structure, naming, and organization standards
+- **`plans/PLANS_INDEX.md`** — Master reference of all P-IDs and plan statuses
+- **Memory system** — Auto-updates reference_plan_ids.md if new plans created
+- **`/plan-documentation-organizer`** skill — For creating/moving/validating plans
 
-## Examples
+## No Permission Prompts
 
-### Example 1: Simple Plan with All Completed
+The skill updates plan files **without asking for confirmation**. It will:
+- Never ask "should I update P0020?"
+- Never ask "do you want this change?"
+- Simply update, then report what changed
 
-**Plan file:** `plans/plan_files/2026-04-10_add-logging.md`
+This is intentional. The goal is **verification + sync**, not decision-making. You trust the skill to add new context accurately.
 
-**Original plan:** Add structured logging to three modules
+## Example Session Flow
 
-**Outcome appended:**
+**You start a session discussing P0020 details:**
 
-```markdown
-## Outcome
-
-_Completed: 2026-04-12_
-
-### ✅ Completed
-- Added structured logging to auth module
-- Added structured logging to database module
-- Added structured logging to cache module
-- Updated log configuration documentation
+```
+In this session, you talk about:
+- Phase 1 audit checkpoints (new detail)
+- How P0021 integration affects Phase 2 (new dependency)
+- Updated success criteria (clarification)
 ```
 
-### Example 2: Complex Plan with Adjustments
-
-**Plan file:** `plans/plan_files/2026-04-05_thesis-chapter-2-draft.md`
-
-**Original plan:** Write 3000 words on methodology, 2000 words on data sources, outline results section
-
-**Outcome appended:**
-
-```markdown
-## Outcome
-
-_Completed: 2026-04-14_
-
-### ✅ Completed
-- Wrote 3200 words on methodology (exceeded target for clarity)
-- Wrote 2000 words on data sources as planned
-- Supervisor feedback integrated throughout
-
-### 🔄 Adjusted
-- **What**: Results section outline expanded to full draft (1500 words)
-  **Why**: Discovered early that outline alone wouldn't capture nuance needed for supervisor review
-  **How**: Drafted full section instead of outline; saves revision cycle
-
-- **What**: Added 4-figure diagram set for methodology
-  **Why**: Supervisor requested visual explanation of experimental design
-  **How**: Created figures using Mermaid; embedded in chapter
-
-### ❌ Dropped
-- **What**: Peer review round before supervisor submission
-  **Why**: Schedule compression; supervisor offered inline feedback instead
-  **How**: Submitted directly to supervisor with TODOs marked for revision
-
-### Notes
-- Supervisor approved methodology approach in live feedback session (2026-04-13)
-- Results section will require one more revision cycle post-supervisor feedback
-- Next chapter planning should budget extra time for figures
+**You invoke:**
+```
+/plan-update-all P0020
 ```
 
-## Tips for Effective Outcomes
+**Skill does:**
+1. Reads P0020 plan file
+2. Scans conversation for new P0020-relevant context
+3. Finds: audit details, P0021 dependency link, success criteria
+4. Updates plan file with those details
+5. Updates `updated:` timestamp
+6. Reports what changed
 
-1. **Be specific:** "Fixed bug" → "Fixed race condition in cache invalidation by adding mutex lock"
-2. **Link decisions:** "Changed approach" → link to the GitHub issue, PR, or decision doc that prompted the change
-3. **Note surprises:** Document unexpected discoveries; they inform future planning
-4. **Track deferred work:** Dropped items should reference where they'll be picked up (GitHub issue, future sprint, etc.)
-5. **Use the Notes section:** Add meta-commentary for your future self — what did you learn about your planning process?
+**Skill outputs:**
+```
+P0020: Rule System Reform
+  
+  ✅ Updated in this session:
+     - Phase 1 tasks: Added 3 audit checkpoints
+     - Dependencies: Linked to P0021 integration guide (2026-05-04_DOC-p0021-integration.md)
+     - Success Criteria: Refined token savings target with explicit measurement
+  
+  ⚠️ No blockers found
+  
+  ✔️ Execution-ready (can begin Phase 1)
+```
 
-## Troubleshooting
-
-**Plan file not found:**
-- Check that the plan name or partial filename matches your file
-- Verify the file exists in `plans/plan_files/` or `plans/`
-- Provide the full filename if partial match fails
-
-**Filename needs renaming:**
-- The skill will suggest a rename to `YYYY-MM-DD_<slug>.md` format
-- You can accept the suggestion or provide a custom slug
-
-**Outcome section already exists:**
-- If the plan already has a `## Outcome` section, the skill will ask whether to append or update
-- Choose update to replace with a new outcome summary
-- Choose append to add additional phases/iterations
+**Next time you invoke it, the skill remembers none of this.** It simply:
+- "Is there new context from this conversation that's not in the plan file?"
+- If yes, update. If no, skip.
+- Report status and blockers.
 
 ---
 
-**Related:** `.claude/rules/trigger-plan-workflow.md` | `/git-draft-commit` | `docs/project-state.md`
+## Troubleshooting
+
+**Skill says "no blockers" but I know there's an issue:**
+- Blockers are only: unresolved decisions, missing dependencies, broken cross-refs
+- If something else is preventing execution, that's a scope/readiness issue, not a blocker
+- Create a task or note in plan file to track it
+
+**Skill found a blocker I forgot about:**
+- Great! Fix it before execution
+- Common blockers: "awaiting P0021" (now completed), "TBD" (needs decision), missing phase description
+
+---
+
+**Related:** `.claude/rules/trigger-plan-workflow.md` | `plans/PLANS_INDEX.md` | `/plan-documentation-organizer`

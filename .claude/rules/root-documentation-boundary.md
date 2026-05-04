@@ -76,32 +76,15 @@ plans/03-outcome_plans/P0021_.../2026-05-04_DOC-reorganization-summary.md
 
 ## Why This Rule Exists
 
-**Root clutter problem:** Without boundaries, root accumulates analysis docs, test reports, audit files, guides, summaries—becoming a dumping ground. This makes:
-- Navigation harder (too many files to scroll through)
-- Discovery harder (unclear where to find specific docs)
-- Maintenance harder (where does each doc belong? can it move?)
-- Onboarding harder (new developers see chaos)
-
-**Solution:** Enforce clear boundaries. Root = entry points only. Everything else = organized by type/phase.
+Without boundaries, root becomes a dumping ground: hard to navigate, hard to discover docs, hard to maintain. **Solution:** Root = entry points only. Everything else = organized by type.
 
 ---
 
 ## How to Apply This Rule
 
-### When Creating a Document
+**When creating a document:** Use routing table above. If unsure, ask: "Is this needed on day 1?" If no → goes to `docs/` or plan folder.
 
-1. **Is it analysis, report, or reference?** → Goes to `docs/` hierarchy
-2. **Is it part of an active plan?** → Goes to `plans/` in P-ID folder
-3. **Is it foundational project info?** → Only if CLAUDE.md, INDEX.md, README.md, paths.py, or requirements.txt
-4. **Otherwise?** → Ask yourself: "Is this a discovery document someone needs on day 1?" If no, it goes to `docs/` or plan folder
-
-### When You Catch a Violation
-
-If you see markdown at root that shouldn't be there:
-1. Identify document type
-2. Use routing table above to find destination
-3. Move file (with path updates)
-4. Update any cross-references
+**When catching a violation:** Identify type, use routing table to find destination, move file, update cross-references.
 
 ---
 
@@ -128,30 +111,9 @@ ls -1 *.md | grep -v "CLAUDE\|INDEX\|README"
 
 ## Session Example
 
-**User creates analysis doc:**
-```
-"I completed preprocessing analysis. Let me document it."
+**Analysis doc:** ✓ `docs/architecture/preprocessing-analysis.md` ✗ `/PREPROCESSING_ANALYSIS.md`
 
-✓ CORRECT: `docs/tooling/preprocessing-analysis.md`
-✗ WRONG: `/PREPROCESSING_ANALYSIS.md` (root violation)
-```
+**Plan artifact:** ✓ `plans/02-in_progress-plans/P0019_.../2026-05-04_DOC-test-report.md` ✗ `/TEST_REPORT.md`
 
-**User creates test report for a plan:**
-```
-"I ran tests for the preprocessing unification plan."
-
-✓ CORRECT: `plans/02-in_progress-plans/P0019_.../2026-05-04_DOC-test-report.md`
-✗ WRONG: `/TEST_REPORT_PREPROCESSING.md` (root violation)
-```
-
-**User creates project guide:**
-```
-"I'm writing setup instructions for new developers."
-
-Check: Is this foundational? Is it needed on day 1?
-  → If about Claude Code usage → CLAUDE.md (update it)
-  → If about repository structure → docs/dev/ (create guide there)
-  → If about tooling → docs/tooling/
-  → If general onboarding → Update README.md (keep short, link to docs/)
-```
+**Setup guide:** Check if foundational → if yes (about Claude Code), update CLAUDE.md; if no → `docs/integration/`
 

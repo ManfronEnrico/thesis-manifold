@@ -48,31 +48,59 @@ Use Glob and Read to gather:
 
 ### Step 2 — Classify root files
 
-For every file at the repo root, assign one classification using the allowlist in `references/root-allowlist.md`:
+For every file at the repo root, assign one classification using intelligent detection:
+
+**First, check against allowlist** (in `references/root-allowlist.md`):
+- **Required**: CLAUDE.md, README.md, INDEX.md, paths.py, requirements.txt, setup.py, pyproject.toml, package.json, etc.
+- **Allowed**: When repo actively uses (config files, CI files per conventions)
+- **Exception**: Explicitly declared in `.claude/rules/root-documentation-boundary.md`
+
+**Then, apply context-aware heuristics** for unrecognized files:
+
+| Pattern | Heuristic Detection | Classification |
+|---------|---|---|
+| Filename contains `REFERENCE`, `SUMMARY`, `GUIDE`, `ANALYSIS`, `REPORT`, `AUDIT` | Content-bearing documentation | **Discouraged** → move to `docs/reference/` |
+| Filename starts `YYYY_MM_DD-` or `YYYY-MM-DD` | Time-bound doc (plan, handover, note) | **Discouraged** → move to `plans/{status}/P{NNNN}_.../` |
+| Filename is `QUICK_REFERENCE*` or similar | Reference material | **Discouraged** → move to `docs/reference/` or `plans/` |
+| Extension is `.txt`, `.csv`, `.json` with non-config name | Data or content-bearing artifact | **Discouraged** → classify by content, suggest folder |
+| File is uppercase with underscores (`FILE_NAME.ext`) | Likely artifact/generated doc | **Discouraged** → infer type from name, suggest folder |
+| Contains no code, no config syntax, human-readable prose | Documentation artifact | **Discouraged** → classify and suggest folder |
+| Extension `.md` and not foundational | **Always discouraged** — use ROOT-MD rule |
+| Size > 1KB and not config | Likely documentation/artifact | **Discouraged** → suggest folder based on content inference |
 
 | Class | Meaning |
 |-------|---------|
-| `required` | Must be present |
-| `allowed` | Permitted when the repo actually uses it |
-| `discouraged` | Should move to `docs/`; emit WARN |
-| `forbidden` | Must not be in root; emit violation |
-| `exception` | Explicitly declared exception — informational only |
+| `required` | Must be present (foundational) |
+| `allowed` | Permitted when the repo actively uses it (config/CI) |
+| `discouraged` | Should move to appropriate folder; emit WARN |
+| `forbidden` | Must not be in root; emit HIGH violation |
+| `exception` | Explicitly declared in rules — informational only |
 
-### Step 3 — Classify Markdown files
+**Key insight**: Don't hard-code file formats. Infer intent from filename, size, and content type. If it reads like documentation (prose, not config), it's discouraged.
 
-For each `.md` file, evaluate all rules from `references/rule-catalog.md`. Key checks:
+### Step 3 — Classify all documentation files (any format)
+
+For each file that looks like documentation (regardless of extension), evaluate placement rules:
 
 **Root rules**
-- `ROOT-MD` (HIGH): `.md` at root not on allowlist → propose move to correct `docs/` subfolder
+- `ROOT-DOC` (HIGH): Any documentation file at root not on allowlist → propose move to correct folder
+  - `.md` files → `docs/{architecture,integration,reference,contributing}` or `plans/{status}/P{NNNN}_...`
+  - `.txt` reference files → `docs/reference/` or `plans/{status}/P{NNNN}_...`
+  - `.json`, `.csv` with semantic name → `docs/reference/` or relevant subfolder
+  - Any time-bound doc (contains date) → `plans/{status}/P{NNNN}_YYYY-MM-DD_HHMM_{TYPE}/`
 - `ROOT-DUP` (HIGH): multiple README-like or same-topic root docs
 - `ROOT-ASSET` (MEDIUM): image/export at root
 
 **Placement rules**
-- `DOC-PLACE` (MEDIUM): file in wrong folder for its inferred doc class (use folder taxonomy in `references/doc-taxonomy.md`)
+- `DOC-PLACE` (MEDIUM): file in wrong folder for its inferred doc class
+  - Use folder taxonomy from `.claude/rules/root-documentation-boundary.md` (routing table)
+  - **Plan-related docs**: Always route to `plans/03-outcome_plans/P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}/` or active plan folder
+  - **Reference/skill development docs**: Route to `docs/reference/` or plan outcome folder if they document a plan
 
 **Naming rules**
 - `DOC-DATE` (MEDIUM): time-bound doc (plan, handover, note, ADR, RFC, postmortem, migration) missing `YYYY_MM_DD-` prefix
-- `DOC-NAME` (LOW): evergreen doc not in `kebab-case.md`
+- `DOC-NAME` (LOW): evergreen doc not in `kebab-case.md` or `UPPER_CASE.txt`
+- `PLAN-DOC-ROUTING` (HIGH): Plan-related supporting docs (reference guides, summaries, analysis) belong in plan outcome folder, not root or generic `docs/` folders
 
 **Metadata rules**
 - `DOC-META-ABSENT` (MEDIUM): time-bound doc has no YAML front matter at all
@@ -90,6 +118,56 @@ For each `.md` file, evaluate all rules from `references/rule-catalog.md`. Key c
 
 **Overlap**
 - `DOC-OVERLAP` (MEDIUM): two or more files share the same topic/title — report only, do not auto-fix
+
+---
+
+### Step 3b — Intelligent Routing Logic (Context-Aware Classification)
+
+When a file is detected as documentation (any format), determine its destination **dynamically** based on content and naming:
+
+**Detection Heuristics:**
+
+1. **Plan-related docs** (highest priority):
+   - Contains keywords: `PLAN`, `OUTCOME`, `SUMMARY`, `ANALYSIS` + date pattern `YYYY-MM-DD` or `YYYY_MM_DD`
+   - Contains P-ID reference (`P0021`, `P0019`, etc.) in name or content
+   - Belongs in: `plans/03-outcome_plans/P{NNNN}_YYYY-MM-DD_HHMM_{TYPE}/` or active plan folder
+   - **Example**: `EDITED_FILES_SUMMARY.md` (plan outcome support) → `plans/03-outcome_plans/P0021_.../EDITED_FILES_SUMMARY.md`
+
+2. **Skill/rule development docs**:
+   - Contains keywords: `REFERENCE`, `SKILL`, `RULE`, `DEVELOPMENT`, `ENFORCEMENT`
+   - Associated with a plan outcome (documents that explain how to enforce a structure)
+   - Belongs in: Plan outcome folder if tied to a plan; else `docs/reference/`
+   - **Example**: `QUICK_REFERENCE_EDITED_FILES.txt` (skill dev reference for P0021) → `plans/03-outcome_plans/P0021_.../QUICK_REFERENCE_EDITED_FILES.txt`
+
+3. **Generic reference/verification docs**:
+   - Contains keywords: `VERIFICATION`, `TEST`, `AUDIT`, `REPORT`, `CHECKLIST`, `QUICK-REF`
+   - No date pattern, not tied to a plan
+   - Belongs in: `docs/reference/`
+   - **Example**: `VERIFICATION_REPORT.md` → `docs/reference/VERIFICATION_REPORT.md`
+
+4. **Architecture/design docs**:
+   - Contains keywords: `ARCHITECTURE`, `DESIGN`, `PATTERN`, `ADR`, `DECISION`
+   - Belongs in: `docs/architecture/`
+
+5. **Setup/integration docs**:
+   - Contains keywords: `SETUP`, `INTEGRATION`, `GUIDE`, `HOWTO`, `INSTALL`, `CONFIG`
+   - Belongs in: `docs/integration/`
+
+6. **Developer/workflow docs**:
+   - Contains keywords: `CONTRIBUTOR`, `GIT`, `WORKFLOW`, `REPOSITORY`, `BRANCH`
+   - Belongs in: `docs/contributing/`
+
+**Decision Tree**:
+```
+Is this a plan-related document?
+  YES → Is it about skill/rule enforcement?
+    YES → Move to plan outcome folder (e.g., P0021_OUTCOME)
+    NO → Move to plan status folder (backlog/in-progress/archive)
+  NO → Is it time-bound or historical?
+    YES → Move to docs/00_archive/ or plan folder
+    NO → Classify by semantic keywords (above)
+         → Route to docs/{architecture,integration,reference,contributing}/
+```
 
 ### Step 4 — Produce structured report
 

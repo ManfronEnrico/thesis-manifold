@@ -1,0 +1,197 @@
+================================================================================
+QUICK REFERENCE — EDITED FILES FOR SKILL/RULE DEVELOPMENT
+================================================================================
+
+PASS THIS TO YOUR SKILL/RULE DEVELOPMENT CHAT
+
+Use this as a checklist when developing enforcement skills and rules.
+
+================================================================================
+CRITICAL FILES TO UPDATE (whenever structure changes)
+================================================================================
+
+✓ .claude/rules/root-documentation-boundary.md
+  - Contains routing table (document type → folder)
+  - Update: lines 40–51 (routing table), examples section
+  - When: After adding new folders or changing destination logic
+
+✓ docs/README.md
+  - Navigation hub for the 4-folder structure
+  - Update: Folder descriptions, quick links, agentic routing table
+  - When: After creating new folders or changing folder purpose
+
+✓ CLAUDE.md
+  - Session entry point — all path references must be current
+  - Update: Any line with docs/* path reference
+  - When: After moving or creating documentation files
+
+✓ plans/PLANS_INDEX.md
+  - Master reference of all plans by P-ID
+  - Update: Add new P-IDs to tables, statistics, chronological index
+  - When: After creating new plan outcomes
+
+================================================================================
+SUPPORTING FILES TO CHECK
+================================================================================
+
+• .claude/skills/move-docs-to-folders/SKILL.md
+  - Auto-relocates root violations
+  - Status: Already compatible with new structure
+  - Note: Uses routing table from root-documentation-boundary.md
+
+• .claude/skills/docs-update-all/SKILL.md
+  - Updates living documentation
+  - Status: Compatible; no changes needed for structure reorganization
+
+• .claude/rules/plan-documentation-structure.md
+  - P-ID system (P0001, P0002, etc.)
+  - Status: Complementary to folder reorganization
+
+================================================================================
+DOCUMENTATION CREATED (Reference Templates)
+================================================================================
+
+Template for Plan Outcomes:
+  → plans/03-outcome_plans/P0021_2026-05-04_1400_OUTCOME-docs-reorganization/
+  → P0021_2026-05-04_1400_OUTCOME-docs-reorganization.md
+
+Detailed File Mappings:
+  → plans/03-outcome_plans/P0021_2026-05-04_1400_OUTCOME-docs-reorganization/
+  → 2026-05-04_DOC-reorganization-summary.md
+
+================================================================================
+NEW FOLDER STRUCTURE (Path A)
+================================================================================
+
+docs/
+  ├── architecture/       WHAT — design, ADRs, patterns
+  │   ├── analyses/      (supporting analysis docs)
+  │   └── experiments/   (experiment tracking)
+  ├── integration/       HOW — setup, tooling, data access
+  ├── reference/         WHERE — lookup, verification, testing
+  ├── contributing/      HOW-TO — developer guide, repo, git
+  ├── 00_archive/        PAST — historical materials
+  │   ├── handovers/
+  │   └── tasks/
+  └── README.md          (navigation hub)
+
+================================================================================
+AGENTIC ROUTING FOR CLAUDE
+================================================================================
+
+When Claude saves a document:
+
+Design/Architecture/ADR        → docs/architecture/
+Setup/Integration/Tooling/Data → docs/integration/
+Quick-ref/Verification/Testing → docs/reference/
+Developer/Repo/Git/Workflow    → docs/contributing/
+Historical/Superseded/Old Phase → docs/00_archive/
+
+Folder names = VERBS (action-based, not phase-based)
+
+================================================================================
+ENFORCEMENT STRATEGY (For your skill/rule development)
+================================================================================
+
+1. ROUTING VALIDATION
+   - Check: New documents use correct folder (per routing table)
+   - Source: .claude/rules/root-documentation-boundary.md
+   - Action: Warn if document matches blacklist but saved at root
+
+2. PATH CONSISTENCY
+   - Check: CLAUDE.md, docs/README.md, routing table all synchronized
+   - Action: Alert if path reference points to deleted folder
+
+3. P-ID COMPLIANCE
+   - Check: New plans follow P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug} naming
+   - Source: .claude/rules/plan-documentation-structure.md
+   - Action: Suggest correct naming if P-ID format violated
+
+4. OUTCOME DISCIPLINE
+   - Check: Completed plans have outcome documentation (P{NNNN}_OUTCOME_*.md)
+   - Action: Remind user to create outcome before marking plan complete
+
+5. ROOT HYGIENE
+   - Check: No .md files at docs/ root (except thesis/)
+   - Action: Suggest move to appropriate folder using routing table
+
+6. SYNC VERIFICATION
+   - Check: 4 critical files stay synchronized
+   - Critical files:
+     ✓ .claude/rules/root-documentation-boundary.md
+     ✓ docs/README.md
+     ✓ CLAUDE.md
+     ✓ plans/PLANS_INDEX.md
+   - Action: Alert if changes in one don't propagate to others
+
+================================================================================
+STATISTICS FOR TESTING/VALIDATION
+================================================================================
+
+Before Reorganization:
+  - 11 separate folders (codebase, dev, guides, integrations, tooling, etc.)
+  - Overlapping purposes (unclear where to save documents)
+  - 1 root violation (MANIFOLD_ARCHITECTURE.md at root)
+
+After Reorganization:
+  - 4 core folders + 1 archive = 5 total
+  - Zero semantic ambiguity
+  - Zero root violations
+  - 31+ files moved
+  - 89 total file operations
+  - 0 files lost/deleted
+
+Test Cases:
+  ✓ Architecture decision doc → docs/architecture/ (correct)
+  ✓ Setup guide → docs/integration/ (correct)
+  ✓ Test report → docs/reference/ (correct)
+  ✓ Git strategy → docs/contributing/ (correct)
+  ✓ Historical handover → docs/00_archive/handovers/ (correct)
+  ✗ Any .md at docs/ root → violation (except thesis/)
+
+================================================================================
+REFERENCE DOCUMENTS (Complete Details)
+================================================================================
+
+Full documentation available at:
+  → C:/dev/thesis-manifold/EDITED_FILES_SUMMARY.md
+
+Outcome documentation:
+  → plans/03-outcome_plans/P0021_2026-05-04_1400_OUTCOME-docs-reorganization/
+
+Plan files:
+  → plans/PLANS_INDEX.md (master plan reference)
+
+Current structure:
+  → docs/README.md (navigation guide)
+
+Compliance rules:
+  → .claude/rules/root-documentation-boundary.md (routing authority)
+
+================================================================================
+CHECKLIST FOR SKILL/RULE INTEGRATION
+================================================================================
+
+When updating your skill/rule system:
+
+□ Read EDITED_FILES_SUMMARY.md (this file's full version)
+□ Review routing table in root-documentation-boundary.md
+□ Understand 4-folder semantics (WHAT, HOW, WHERE, HOW-TO)
+□ Check P0021 outcome for template (plan outcomes)
+□ Test routing with sample documents
+□ Verify 4 critical files stay synchronized
+□ Create validation tests for each enforcement rule
+□ Document enforcement strategy in your skill/rule
+
+================================================================================
+QUESTIONS? REFERENCE:
+================================================================================
+
+Plan ID: P0021 (Docs Reorganization)
+Commit: 1ee4ace
+Branch: chore/folder-cleanup
+Date: 2026-05-04
+
+Full context at: plans/03-outcome_plans/P0021_2026-05-04_1400_OUTCOME-docs-reorganization/
+
+================================================================================

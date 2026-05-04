@@ -24,28 +24,16 @@ The hook is registered in `~/.claude/settings.json` (global, not in repo).
 
 ### Branch mismatch detection (used by `/draft-git-commit`)
 
-`branch_guard.py` exports `extract_keywords`, `pick_prefix`, `slugify`, and
-`branch_matches_topic` for use by the draft-git-commit skill. At commit time,
-the skill re-derives the session topic and checks the current branch using
-two-level matching:
-
-| Level | Condition | Result |
-|-------|-----------|--------|
-| **Strict** | prefix matches AND ≥1 keyword in slug | Proceed silently |
-| **Loose** | ≥1 keyword anywhere in branch name | Proceed, note loose match |
-| **None** | Neither condition met | Flag mismatch, ask user to resolve |
+At commit time, `/draft-git-commit` checks current branch against session topic:
+- **Strict match** (prefix + keywords match) → Proceed
+- **Loose match** (≥1 keyword anywhere) → Proceed, note mismatch
+- **No match** → Flag, ask user to resolve
 
 ## Layer B — Rule fallback (backup)
 
-If the hook output is somehow absent, Claude must still perform the branch
-check manually at the start of any session where git work is expected:
-
-```bash
-git branch --show-current
-```
-
-- **Feature branch** → proceed normally
-- **`main`** → present the interactive choice block below before doing anything else
+If hook is absent, check manually: `git branch --show-current`
+- **Feature branch** → proceed
+- **`main`** → present interactive choice block before doing anything
 
 ## Interactive choice block (present verbatim when on `main`)
 
@@ -78,23 +66,14 @@ chore/<cleanup-topic>    # refactoring, reorganization
 
 ## When committing on `main` IS allowed
 
-- User is explicitly integrating/merging completed branch work into `main`
-- User has reviewed the changes and confirms the commit is intentional
-- The commit is a merge commit, not new feature work
+- Explicitly integrating/merging completed branch work
+- Changes reviewed and commit intentional
+- Merge commit, not new feature work
 
 ## Committing on a feature branch
 
-On a feature branch, `git add -A` is safe — the branch is isolated by design.
-The draft-git-commit skill and all git workflows can proceed without restriction.
+On a feature branch, `git add -A` is safe — branch is isolated by design.
 
 ## Merging back to `main`
 
-```bash
-git checkout main
-git merge <branch-name>     # or open a PR on GitHub
-```
-
-Before merging, review the diff:
-```bash
-git diff main..<branch-name>
-```
+Review before merging: `git diff main..<branch-name>` then `git merge <branch-name>`
