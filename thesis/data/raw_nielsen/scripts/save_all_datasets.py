@@ -24,7 +24,7 @@ TENANT_ID     = os.environ["RU_TENANT_ID"]
 CLIENT_SECRET = os.environ["RU_CLIENT_SECRET"]
 ODBC_DRIVER = "ODBC Driver 18 for SQL Server"
 
-OUTPUT_DIR = Path(__file__).resolve().parents[2] / ".csv"
+OUTPUT_DIR = Path(__file__).resolve().parents[1] / "data_csv"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def _get_token() -> bytes:

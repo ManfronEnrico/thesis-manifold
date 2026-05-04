@@ -1,5 +1,5 @@
 # Nielsen CSD Preprocessing Report
-> Generated: 2026-05-01 20:25:08
+> Generated: 2026-05-04 12:19:46
 > Category: CSD
 > Market scope: DVH EXCL. HD
 > Min periods filter: 30
@@ -12,8 +12,8 @@
 | Total rows | 3,234 |
 | Periods per brand | 42 |
 | Features engineered | 17 |
-| Peak RAM (preprocessing) | 387.1 MB |
-| Elapsed time | 2.8 s |
+| Peak RAM (preprocessing) | 275.4 MB |
+| Elapsed time | 3.6 s |
 
 ## Split Boundaries
 

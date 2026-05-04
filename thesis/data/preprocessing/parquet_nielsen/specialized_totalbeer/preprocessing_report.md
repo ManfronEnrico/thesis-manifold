@@ -1,5 +1,5 @@
 # Nielsen Total Beer Preprocessing Report
-> Generated: 2026-05-01 20:35:09
+> Generated: 2026-05-04 12:20:19
 > Category: Total Beer
 > Market scope: DVH EXCL. HD
 > Min periods filter: 30
@@ -12,8 +12,8 @@
 | Total rows | 6,747 |
 | Periods per brand | 39 |
 | Features engineered | 17 |
-| Peak RAM (preprocessing) | 2964.0 MB |
-| Elapsed time | 17.5 s |
+| Peak RAM (preprocessing) | 1987.6 MB |
+| Elapsed time | 15.4 s |
 
 ## Split Boundaries
 

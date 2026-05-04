@@ -75,6 +75,53 @@ The skill activates when you use any of these phrases:
 
 The skill processes documents in this strict order, updating only those affected by this session:
 
+### Phase 0: Root Documentation Boundary Check (Optional)
+
+**Purpose:** Proactively detect markdown files at root that may violate project documentation boundaries.
+
+**When to check:**
+- Every time this skill runs (proactive, can be disabled per project)
+- Especially after documentation generation or reorganization
+- Only if your project enforces a root documentation boundary rule
+
+**Action:**
+1. Scan root directory for all `.md` files
+2. Compare against whitelist (define per project; examples: CLAUDE.md, INDEX.md, README.md, setup scripts, requirements files)
+3. If violations found and root-documentation-boundary rule exists:
+   - ⚠️ **Warn user:** List violations with suggested destinations
+   - 📋 **Offer choice:**
+     - **Auto-move:** "Run `/move-docs-to-folders` to relocate files"
+     - **Manual move:** User addresses separately
+     - **Proceed:** Continue with doc updates despite violations
+   - 🛑 **Log violations:** Report at end of workflow with recommendation
+
+**Example output (project-specific):**
+```
+⚠️ ROOT DOCUMENTATION VIOLATIONS DETECTED:
+
+  1. PREPROCESSING_ANALYSIS.md
+     → Suggested destination: docs/tooling/preprocessing-analysis.md
+  
+  2. TEST_REPORT.md
+     → Suggested destination: plans/P{ID}/2026-05-04_DOC-*.md
+
+RECOMMENDATION: Run /move-docs-to-folders to relocate these files
+              to enforce root-documentation-boundary rule.
+
+Continue with doc updates? [Yes] [No - fix violations first]
+```
+
+**Configuration:**
+- Whitelist: Define in `.claude/rules/root-documentation-boundary.md` or project config
+- Routing table: Map document types to folders in rule or config
+- Disable: Skip Phase 0 if your project doesn't enforce root boundaries
+
+**Files checked:**
+- Root directory (*.md files only)
+- Project rule file (if exists): `.claude/rules/root-documentation-boundary.md`
+
+---
+
 ### Phase 1: Session Record — `project_updates/standup_draft.md`
 
 **When to update:**
@@ -336,6 +383,53 @@ After processing all ten phases, the skill produces a summary table:
 📊 Total: 7 updated, 3 skipped
 ⏱️  Completed in 3 min 45 sec
 🔗 Ready to stage for commit: git add docs/ .claude/ project_updates/ CLAUDE.md CHEATSHEET.md README.md
+```
+
+---
+
+## Integration with `/move-docs-to-folders` Skill
+
+This skill optionally includes **Phase 0: Root Documentation Boundary Check** (enable per project) to detect violations and offer remediation:
+
+**Workflow:**
+1. User runs `/docs-update-all` after documentation work
+2. Phase 0 (if enabled) scans root for markdown violations
+3. If violations found and project has a boundary rule:
+   - ⚠️ Lists files and suggests destinations (using project routing table)
+   - Offers to run `/move-docs-to-folders` automatically
+   - Or user can proceed with updates despite violations
+4. Violations logged in output with recommendations
+
+**Example (Thesis Project):**
+```
+/docs-update-all
+
+⚠️ ROOT DOCUMENTATION VIOLATIONS DETECTED:
+
+  PREPROCESSING_ANALYSIS.md → docs/tooling/
+  TEST_REPORT.md → plans/P0019_*/2026-05-04_DOC-*.md
+
+Run /move-docs-to-folders first? [Yes] [No] [Cancel]
+```
+
+**For Projects Without Boundary Rules:**
+Phase 0 is skipped entirely. The skill proceeds directly to Phase 1.
+
+---
+
+## Related Skills
+
+- `/move-docs-to-folders` — Auto-scan and move root violations to correct locations
+- `/git-draft-commit` — Works with updated docs to generate commit messages
+- `/git-commit` — Stages all changed documentation for commit
+
+---
+
+## See Also
+
+- `.claude/rules/root-documentation-boundary.md` — Root whitelist and routing table
+- `.claude/rules/trigger-docs-workflow.md` — Complete docs workflow specification
+- `.claude/skills/move-docs-to-folders/` — Auto-relocation skill
 ```
 
 ---

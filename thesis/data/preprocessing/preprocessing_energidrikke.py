@@ -21,7 +21,7 @@ Usage:
   python3 preprocessing_energidrikke.py
 """
 
-import sys, json, tracemalloc, time
+import sys, json, tracemalloc, time, importlib
 from pathlib import Path
 
 import pandas as pd
@@ -30,12 +30,7 @@ import pandas as pd
 # CENTRALIZED PATHS
 # ============================================================================
 
-# Import from centralized paths.py (at project root)
-# File location: thesis/data/preprocessing/preprocessing_energidrikke.py
-# Target: paths.py (at root) → need to go up 3 levels
-
-# %%
-# Find project root by locating CLAUDE.md -> helps dynamically finding the project root regardless of where the script is run from
+# Find project root by locating CLAUDE.md -> works regardless of where script is run from
 current = Path.cwd()
 while current != current.parent:
     if (current / "CLAUDE.md").exists():
@@ -45,12 +40,12 @@ while current != current.parent:
 else:
     raise FileNotFoundError("Could not find project root (CLAUDE.md)")
 
-import sys
 print(f"Project root found at: {ROOT_DIR_FINDER}")
 sys.path.insert(0, str(ROOT_DIR_FINDER))
 
-# %%
-
+# Import paths module and reload to ensure latest changes
+import paths
+importlib.reload(paths)
 
 from paths import (
     ROOT_DIR,
@@ -58,8 +53,6 @@ from paths import (
     THESIS_DATA_NIELSEN_CSV_DIR,
     THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR,
 )
-
-# %%
 
 
 # ============================================================================
