@@ -70,9 +70,14 @@ thesis/
   - § 0.3: Helper function `get_upstream_notebook_outputs_dir()`
   - § 0.4: Test existence + graceful missing-data warning
 - [x] Created template for specialized notebooks (§ 0.0-0.3)
+- [x] **Primary notebook: `@thesis/modelling/notebooks/SRQ_1/CSD/CSD.ipynb`** (formerly "specialized_CSD")
+  - Most progress on file path dynamization
+  - Model for other specialized notebooks to follow
 
 ### ⏳ In Progress
 - [ ] Fix `comparison.ipynb` § 1-5 (still uses old undefined variables)
+- [ ] **Primary focus: `@thesis/modelling/notebooks/SRQ_1/CSD/CSD.ipynb`** — Most progress on file path dynamization
+  - CSD.ipynb is the model/template for other specialized notebooks to follow
 
 ### ⏭️ Next Phase
 1. Finalize comparison.ipynb § 1-5

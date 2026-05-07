@@ -1,0 +1,171 @@
+[
+  {
+    "timestamp": "2026-05-07T11:27:32.959349",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.82,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T11:27:51.377218",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.87,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T11:28:08.733295",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.89,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T11:28:27.198822",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.77,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:12:42.976440",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.82,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:16:35.030480",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 2.22,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:16:54.159918",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.93,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:17:05.585258",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.48,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:17:12.067142",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.78,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:17:28.154733",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.74,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:18:45.173691",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.83,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:19:29.750598",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.81,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:21:29.459169",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.82,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:21:47.088399",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.71,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:32:35.138654",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.24,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:33:01.090688",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.84,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:33:13.057766",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.87,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:34:36.350864",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.4,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:39:54.206150",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.83,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:42:21.581887",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.82,
+    "output_rows": 4040
+  },
+  {
+    "timestamp": "2026-05-07T12:45:15.080022",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 0.81,
+    "output_rows": 4040,
+    "output_cols": 8
+  }
+]

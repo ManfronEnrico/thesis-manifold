@@ -31,10 +31,9 @@ Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
 | ID | Date | Created | Plan | Status |
 |---|---|---|---|---|
 | **P0005** | 2026-04-23 | 0800 | System A Feature Eng Integration | In Progress (DRAFT) |
-| **P0017** | 2026-04-27 | 1420 | Jupyter Notebook Path Centralization | In Progress (Phase 3 Manual) |
-| **P0018** | 2026-04-28 | 1400 | Restructure Existing Plans | In Progress |
-| **P0019** | 2026-05-04 | 1400 | Preprocessing Pipeline Unification | In Progress |
-| **P0020** | 2026-05-04 | 1430 | Rule System Reform | In Progress |
+| **P0017** | 2026-04-27 | 1420 | Jupyter Notebook Path Centralization | In Progress (Phase 2B) |
+| **P0019** | 2026-05-04 | 1400 | Preprocessing Pipeline Unification | In Progress (Phase 4 pending) |
+| **P0022** | 2026-05-07 | 1000 | Preprocessing Pipeline Modularization | In Progress (Phase 1 code ✅, fixes pending) |
 
 ---
 
@@ -47,6 +46,7 @@ Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
 | **P0008** | 2026-04-18 | 0800 | Integration Three Systems | Completed | Integration verified |
 | **P0009** | 2026-04-22 | 0800 | Nielsen Pipeline & Agent Paths | Completed | Data access + paths fixed |
 | **P0017-OUTCOME** | 2026-04-28 | — | Jupyter Path Centralization Phase 2 | Completed | Phase 2 complete (rolled back 2026-04-30) |
+| **P0020** | 2026-05-04 | 1430 | Rule System Reform | Completed | 8 phases delivered; 5 enforcement skills built; conventions consolidated |
 | **P0021** | 2026-05-04 | 1400 | Docs Reorganization (11→4 folders) | Completed | 4-folder structure complete, archive organized |
 
 ---
@@ -67,10 +67,10 @@ Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
 
 ## 📊 Summary
 
-- **Total Plans**: 20
+- **Total Plans**: 22
 - **Backlog**: 4 (P0001–P0004)
-- **In Progress**: 4 (P0005, P0017–P0018, P0020)
-- **Outcomes**: 6 (P0006–P0009, P0017-OUTCOME, P0021)
+- **In Progress**: 4 (P0005, P0017, P0019, P0022)
+- **Outcomes**: 7 (P0006–P0009, P0017-OUTCOME, P0020, P0021)
 - **Archive**: 7 (P0010–P0016)
 
 ---
@@ -87,13 +87,14 @@ Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
 **2026-04-23**: P0005  
 **2026-04-27**: P0017  
 **2026-04-28**: P0017-OUTCOME, P0018  
-**2026-05-04**: P0019, P0020, P0021
+**2026-05-04**: P0019, P0020, P0021  
+**2026-05-07**: P0022
 
 ### By Status
 
 **Pending**: P0001, P0002, P0003, P0004  
-**In Progress**: P0005, P0017, P0018, P0019, P0020  
-**Completed**: P0006, P0007, P0008, P0009, P0017-OUTCOME, P0021  
+**In Progress**: P0005, P0017, P0019, P0022  
+**Completed**: P0006, P0007, P0008, P0009, P0017-OUTCOME, P0018, P0020, P0021  
 **Archived**: P0010, P0011, P0012, P0013, P0014, P0015, P0016  
 
 ---

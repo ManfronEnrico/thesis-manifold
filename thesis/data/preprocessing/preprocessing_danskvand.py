@@ -1,18 +1,18 @@
 """
 Nielsen Danskvand Preprocessing Pipeline
 ==========================================
-Reads raw Nielsen danskvand data from local CSV files, engineers all features
+Reads raw Nielsen danskvand data from local JSONL files, engineers all features
 required for the 5 forecasting models, applies the locked train/val/test split,
 and saves the feature matrix to disk in Parquet format.
 
-Input files (from raw_nielsen/data_csv/):
-  danskvand_clean_facts_v.csv
-  danskvand_clean_dim_product_v.csv
-  danskvand_clean_dim_period_v.csv
-  danskvand_clean_dim_market_v.csv
+Input files (from raw_nielsen/data_jsonl/danskvand/views/):
+  danskvand_clean_facts_v.jsonl
+  danskvand_clean_dim_product_v.jsonl
+  danskvand_clean_dim_period_v.jsonl
+  danskvand_clean_dim_market_v.jsonl
 
-Output files (Parquet, in preprocessing/parquet_nielsen/specialized_danskvand/):
-  specialized_danskvand_feature_matrix.parquet
+Output files (Parquet, in preprocessing/parquet_nielsen/danskvand/engineered/):
+  danskvand_feature_matrix.parquet
   series_index.csv
   split_dates.json
   preprocessing_report.md
@@ -44,14 +44,15 @@ print(f"Project root found at: {ROOT_DIR_FINDER}")
 sys.path.insert(0, str(ROOT_DIR_FINDER))
 
 # Import paths module and reload to ensure latest changes
-import paths
-importlib.reload(paths)
+import PATHS
+importlib.reload(PATHS)
 
-from paths import (
+from PATHS import (
     ROOT_DIR,
     THESIS_DATA_PREPROCESSING_DIR,
-    THESIS_DATA_NIELSEN_CSV_DIR,
+    THESIS_DATA_NIELSEN_JSONL_DIR,
     THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR,
+    get_category_jsonl_views_dir,
 )
 
 
@@ -63,14 +64,14 @@ CATEGORY = "danskvand"
 NOTEBOOK_NAME = f"specialized_{CATEGORY}"
 
 # ============================================================================
-# INPUT/OUTPUT PATHS (Dynamic from paths.py)
+# INPUT/OUTPUT PATHS (Dynamic from PATHS.py)
 # ============================================================================
 
-# Input: raw Nielsen CSV files
-INPUT_DIR = THESIS_DATA_NIELSEN_CSV_DIR
+# Input: raw Nielsen JSONL files (views directory)
+INPUT_DIR = get_category_jsonl_views_dir(CATEGORY.capitalize())
 
 # Output: processed Parquet files
-OUT = THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR / NOTEBOOK_NAME
+OUT = THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR / CATEGORY.capitalize() / "engineered"
 OUT.mkdir(parents=True, exist_ok=True)
 
 print(f"Input directory: {INPUT_DIR.resolve()}")
@@ -98,22 +99,22 @@ from thesis.thesis_agents.ai_research_framework.features.engineer_features impor
 
 def validate_input_data(input_dir: Path) -> bool:
     """
-    Check if all required Nielsen danskvand CSV files exist.
+    Check if all required Nielsen danskvand JSONL files exist.
     If any are missing, print instructions on how to download them.
     Returns True if all files exist, False otherwise.
     """
     required_files = [
-        "danskvand_clean_facts_v.csv",
-        "danskvand_clean_dim_product_v.csv",
-        "danskvand_clean_dim_period_v.csv",
-        "danskvand_clean_dim_market_v.csv",
+        "danskvand_clean_facts_v.jsonl",
+        "danskvand_clean_dim_product_v.jsonl",
+        "danskvand_clean_dim_period_v.jsonl",
+        "danskvand_clean_dim_market_v.jsonl",
     ]
 
     missing = [f for f in required_files if not (input_dir / f).exists()]
 
     if missing:
         print("=" * 80)
-        print("ERROR: Missing required Nielsen CSV files!")
+        print("ERROR: Missing required Nielsen JSONL files!")
         print("=" * 80)
         print(f"\nLocation: {input_dir.resolve()}\n")
         print("Missing files:")
@@ -144,17 +145,16 @@ def validate_input_data(input_dir: Path) -> bool:
 
 def load_raw(input_dir: Path) -> pd.DataFrame:
     """
-    Load Nielsen danskvand data from local CSV files.
+    Load Nielsen danskvand data from local JSONL files.
     Reads facts × product dim × period dim, filters to TARGET_MARKET.
     Returns one row per (brand, period_year, period_month).
     Aggregates across product_id (sum) so the grain is brand × month.
     """
-    print("  Loading CSV files...")
-    facts = pd.read_csv(input_dir / "danskvand_clean_facts_v.csv")
-    # Note: on_bad_lines='skip' handles rows with inconsistent field counts
-    products = pd.read_csv(input_dir / "danskvand_clean_dim_product_v.csv", on_bad_lines='skip')
-    periods = pd.read_csv(input_dir / "danskvand_clean_dim_period_v.csv")
-    markets = pd.read_csv(input_dir / "danskvand_clean_dim_market_v.csv")
+    print("  Loading JSONL files...")
+    facts = pd.read_json(input_dir / "danskvand_clean_facts_v.jsonl", lines=True)
+    products = pd.read_json(input_dir / "danskvand_clean_dim_product_v.jsonl", lines=True)
+    periods = pd.read_json(input_dir / "danskvand_clean_dim_period_v.jsonl", lines=True)
+    markets = pd.read_json(input_dir / "danskvand_clean_dim_market_v.jsonl", lines=True)
 
     print(f"  Facts shape: {facts.shape}")
     print(f"  Products shape: {products.shape}")
@@ -280,7 +280,7 @@ def main():
     tracemalloc.start()
     t0 = time.perf_counter()
 
-    print("\nStep 1/5 — Loading raw data from CSV files...")
+    print("\nStep 1/5 — Loading raw data from JSONL files...")
     raw = load_raw(INPUT_DIR)
     print(f"  Raw rows: {len(raw):,}  |  Brands: {raw['brand'].nunique()}\n")
 

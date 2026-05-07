@@ -1,0 +1,10 @@
+[
+  {
+    "timestamp": "2026-05-07T10:57:32.197635",
+    "step_num": 0,
+    "step_name": "Cache Raw Data",
+    "category": "CSD",
+    "elapsed_sec": 23.73,
+    "output_rows": 2537695
+  }
+]

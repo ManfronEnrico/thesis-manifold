@@ -1,0 +1,284 @@
+{
+  "category": "CSD",
+  "generated": "2026-05-07",
+  "description": "Complete Nielsen CSD metadata reference with column definitions, meanings, and units",
+  "facts_table": {
+    "name": "csd_clean_facts",
+    "rows": "~2.5M",
+    "granularity": "market \u00d7 period \u00d7 product",
+    "columns": {
+      "market_id": {
+        "position": 1,
+        "type": "string",
+        "comment": "Foreign key to Market dimension",
+        "unit": "N/A",
+        "null_meaning": "not nullable",
+        "description": "Foreign key to the Market dimension. Joins facts to market metadata. Never NULL."
+      },
+      "period_id": {
+        "position": 2,
+        "type": "string",
+        "comment": "Foreign key to Period dimension",
+        "unit": "N/A",
+        "null_meaning": "not nullable",
+        "description": "Foreign key to the Period dimension. Joins facts to period metadata. Never NULL."
+      },
+      "product_id": {
+        "position": 3,
+        "type": "string",
+        "comment": "Foreign key to Product dimension",
+        "unit": "N/A",
+        "null_meaning": "not nullable",
+        "description": "Foreign key to the Product dimension. Joins facts to product metadata. Never NULL."
+      },
+      "sales_value": {
+        "position": 4,
+        "type": "double",
+        "comment": "Sales Value in Danish krone (DKK)",
+        "unit": "DKK",
+        "null_meaning": "",
+        "description": "Total sales out of store expressed in Danish Krone (DKK). Consumer retail price including VAT (point-of-sale scanner data). This is the TOTAL \u2014 promo + non-promo combined. NULL = no data for this market/product/period combination."
+      },
+      "sales_in_liters": {
+        "position": 5,
+        "type": "double",
+        "comment": "Sales in liters (L)",
+        "unit": "liters",
+        "null_meaning": "",
+        "description": "Total sales out of store expressed in litres. Includes both promo and non-promo volume. NULL = no data for this combination."
+      },
+      "sales_units": {
+        "position": 6,
+        "type": "double",
+        "comment": "Sales Units",
+        "unit": "units",
+        "null_meaning": "",
+        "description": "Total sales out of store expressed in consumer purchase units (individual packs / bottles / cans as scanned at checkout). Includes both promo and non-promo. NULL = no data."
+      },
+      "sales_value_any_promo": {
+        "position": 7,
+        "type": "double",
+        "comment": "Sales Value Any Promo",
+        "unit": "DKK",
+        "null_meaning": "",
+        "description": "Value of sales (DKK) made on any type of promotion (TPR, display, feature, or any combination). Subset of sales_value: total = promo + non-promo. NOT applicable in Total Market incl Hard Discount (Lidl is cash-slip only). A small number of fact rows show promo slightly exceeding total due to rounding (<1,000 DKK); cap with MIN(promo, total) when displaying. NULL = promo not tracked for this combination."
+      },
+      "sales_in_liters_any_promo": {
+        "position": 8,
+        "type": "double",
+        "comment": "Sales in liters (L) Any Promo",
+        "unit": "liters",
+        "null_meaning": "",
+        "description": "Volume in litres sold on any type of promotion. Subset of sales_in_liters. NULL = promo not tracked. Not applicable in Total Market incl Hard Discount."
+      },
+      "sales_units_any_promo": {
+        "position": 9,
+        "type": "double",
+        "comment": "Sales Units Any Promo",
+        "unit": "units",
+        "null_meaning": "",
+        "description": "Units sold on any type of promotion. Subset of sales_units. NULL = promo not tracked. Not applicable in Total Market incl Hard Discount."
+      },
+      "weighted_distribution": {
+        "position": 10,
+        "type": "double",
+        "comment": "Weighted Distribution",
+        "unit": "fraction (0-1)",
+        "null_meaning": "",
+        "description": "Average WEEKLY percentage of total CATEGORY TURNOVER (value sales) accounted for by stores that sold the selected product, ACV-weighted (All Commodity Volume). Stored as a fraction 0-1. Example: 0.85 = stores carrying this product represent 85% of category sales. More meaningful than numeric distribution because it weights by store importance. NOT additive across products. ~16.7% of CSD fact rows are NULL (aggregate levels, cash-slip markets like Lidl, or new products mid-period)."
+      }
+    }
+  },
+  "dimensions": {
+    "market": {
+      "name": "csd_clean_dim_market",
+      "rows": 28,
+      "description": "Retail outlet types/channels (REMA 1000, NETTO, e-commerce, etc.) \u2014 NOT country",
+      "columns": {
+        "market_id": {
+          "position": 1,
+          "type": "string",
+          "comment": "Primary key for the Market dimension",
+          "unit": "N/A",
+          "description": "Foreign key to the Market dimension. Joins facts to market metadata. Never NULL."
+        },
+        "market_description": {
+          "position": 2,
+          "type": "string",
+          "comment": "Market Description",
+          "unit": "N/A",
+          "description": "Human-readable name of the Nielsen market (retail chain, channel, or aggregate universe), e.g. 'DVH INCL. HD', 'COOP DK', 'Lidl'. Used for display and filtering."
+        }
+      }
+    },
+    "period": {
+      "name": "csd_clean_dim_period",
+      "rows": 42,
+      "range": "2022-10 to 2026-03 (42 months)",
+      "description": "Monthly periods with Nielsen 4-4-5 week calendar",
+      "columns": {
+        "period_id": {
+          "position": 1,
+          "type": "string",
+          "comment": "Primary key for the Period dimension",
+          "unit": "N/A",
+          "description": "Foreign key to the Period dimension. Joins facts to period metadata. Never NULL."
+        },
+        "period_year": {
+          "position": 2,
+          "type": "int",
+          "comment": "Year when CSD facts were generated",
+          "unit": "years",
+          "description": "Calendar year (integer, e.g. 2026) when the CSD facts row was generated. Derived from period_end_date."
+        },
+        "period_month": {
+          "position": 3,
+          "type": "int",
+          "comment": "Month when CSD facts were generated",
+          "unit": "months",
+          "description": "Calendar month number 1-12 when the CSD facts row was generated."
+        },
+        "date_key": {
+          "position": 4,
+          "type": "string",
+          "comment": "Combination of month and year when CSD facts were generated",
+          "unit": "N/A",
+          "description": "Combination of month and year as a single label (e.g. 'January 2026') for the CSD facts row."
+        }
+      }
+    },
+    "product": {
+      "name": "csd_clean_dim_product",
+      "rows": 2057,
+      "description": "Products at varying hierarchy levels (category \u2192 manufacturer \u2192 brand \u2192 variant \u2192 UPC)",
+      "columns": {
+        "product_id": {
+          "position": 1,
+          "type": "string",
+          "comment": "Primary key for the Product dimension",
+          "unit": "N/A",
+          "description": "Foreign key to the Product dimension. Joins facts to product metadata. Never NULL."
+        },
+        "category": {
+          "position": 2,
+          "type": "string",
+          "comment": "CSD",
+          "unit": "N/A",
+          "description": "Top-level category label for this dataset: 'CSD' (Carbonated Soft Drinks). All rows in this dataset roll up to this category at hierarchy level 1."
+        },
+        "manufacturer": {
+          "position": 3,
+          "type": "string",
+          "comment": "Manufacturer",
+          "unit": "N/A",
+          "description": "Manufacturer of the product as classified by Nielsen. One level below the corporation grouping in the standard Nielsen product hierarchy."
+        },
+        "brand": {
+          "position": 4,
+          "type": "string",
+          "comment": "Brand",
+          "unit": "N/A",
+          "description": "Brand name as classified by Nielsen. The brand level sits below manufacturer and above sub-brand / variant in the product hierarchy."
+        },
+        "ru_subbrand": {
+          "position": 5,
+          "type": "string",
+          "comment": "RU Subbrand",
+          "unit": "N/A",
+          "description": "Royal Unibrew internal sub-brand grouping. RU-defined classification used for internal reporting; one level below brand."
+        },
+        "ru_variant": {
+          "position": 6,
+          "type": "string",
+          "comment": "RU Variant",
+          "unit": "N/A",
+          "description": "Royal Unibrew internal variant grouping. Below sub-brand in the RU-defined product hierarchy. Distinguishes flavour/format/recipe variants within a sub-brand."
+        },
+        "packaging": {
+          "position": 7,
+          "type": "string",
+          "comment": "Packaging",
+          "unit": "N/A",
+          "description": "Packaging description for the product (e.g. 'CAN', 'PET', 'GLASS'). Captures the primary container type."
+        },
+        "size_variants": {
+          "position": 8,
+          "type": "string",
+          "comment": "Size Variants",
+          "unit": "N/A",
+          "description": "Product size variant description (e.g. '33CL', '50CL', '6X33CL'). Only populated at lower hierarchy levels (variant / packaging / UPC); NULL at aggregate levels like brand or manufacturer."
+        },
+        "units": {
+          "position": 9,
+          "type": "string",
+          "comment": "Units",
+          "unit": "N/A",
+          "description": "Number of consumer units per multipack (e.g. '1', '6', '24'). Stored as text."
+        },
+        "item_description": {
+          "position": 10,
+          "type": "string",
+          "comment": "Item Description",
+          "unit": "N/A",
+          "description": "Item description \u2014 the canonical Nielsen item label, typically combining brand + variant + size + packaging."
+        },
+        "upc_code": {
+          "position": 11,
+          "type": "string",
+          "comment": "UPC Code",
+          "unit": "N/A",
+          "description": "Universal Product Code / barcode of the SKU. Lowest level of the product hierarchy (one row per UPC)."
+        },
+        "type": {
+          "position": 12,
+          "type": "string",
+          "comment": "Type",
+          "unit": "N/A",
+          "description": "Product type classification within the category. Category-specific values; see the row's category context."
+        },
+        "regular_light": {
+          "position": 13,
+          "type": "string",
+          "comment": "Regular / Light",
+          "unit": "N/A",
+          "description": "Sugar content classification: regular (full sugar) vs. light/diet/zero. CSD-specific."
+        },
+        "price_category": {
+          "position": 14,
+          "type": "string",
+          "comment": "Price Category",
+          "unit": "N/A",
+          "description": "Nielsen price tier classification (e.g. 'PREMIUM', 'STANDARD', 'ECONOMY'). Groups products by relative price positioning within the category."
+        },
+        "ru_cola_flavour": {
+          "position": 15,
+          "type": "string",
+          "comment": "RU Cola Flavour",
+          "unit": "N/A",
+          "description": "Royal Unibrew internal classification of cola flavor variants (e.g. 'REGULAR COLA', 'CHERRY COLA', 'VANILLA COLA'). RU-specific grouping for CSD analysis."
+        },
+        "organic": {
+          "position": 16,
+          "type": "string",
+          "comment": "Organic",
+          "unit": "N/A",
+          "description": "Flag indicating whether the product is certified organic. Values are typically 'YES'/'NO' or category-specific labels."
+        },
+        "private_label": {
+          "position": 17,
+          "type": "string",
+          "comment": "Private Label",
+          "unit": "N/A",
+          "description": "Flag indicating whether the product is a retailer private label (e.g. Coop's 365, REMA 1000 own brand) versus a branded manufacturer product."
+        },
+        "corporation_ru_1": {
+          "position": 18,
+          "type": "string",
+          "comment": "Corporation RU_1",
+          "unit": "N/A",
+          "description": "Top-level corporate grouping. Groups brands under their parent corporation as defined by RU/Nielsen (e.g. groups 'PEPSI', 'FAXE KONDI' under 'PEPSI COLA INT.'). Same concept as corporation_ru (beer) and corporation_1 (energidrikke/RTD) \u2014 naming inconsistency to be standardized. NULL at aggregate levels."
+        }
+      }
+    }
+  }
+}

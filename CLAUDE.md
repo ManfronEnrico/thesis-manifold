@@ -14,10 +14,13 @@
 - [thesis/thesis-context/formal-requirements/compliance.md](thesis/thesis-context/formal-requirements/compliance.md) — CBS requirements
 - [docs/integration/tooling-issues.md](docs/integration/tooling-issues.md) — known environment problems
 - [docs/contributing/repository_map.md](docs/contributing/repository_map.md) — file locations
+- **[METADATA.py](METADATA.py)** — Nielsen metadata reference library (load once, query column definitions by name)
 
 ---
 
 ## Workflows
+
+### Session & Documentation
 
 | Command | Purpose |
 |---------|---------|
@@ -30,33 +33,71 @@
 | `/write-section <id>` | Convert bullets to prose (manual approve before) |
 | `/cite` | Add APA 7 citation to references |
 
+### Enforcement & Validation
+
+| Command | Purpose |
+|---------|---------|
+| `/enforce-repo-cleanliness` | **Master gate**: Run all 4 validators + unified report |
+| `/validate-plan-ids` | Enforce P-ID naming convention (P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}) |
+| `/audit-plan-outcomes` | Verify outcome completeness (Correctness Tier enforcement) |
+| `/audit-cross-references` | Validate all links/references are correct |
+| `/sync-memory-indices` | Keep memory files synchronized with MEMORY.md index |
+
 ---
 
-## Rules (TL;DR)
+## Rules by Tier
 
+See [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hierarchy.md) for conflict resolution.
+
+### 🔴 Trust Tier (Non-negotiable)
+
+- **Branch strategy**: Every session gets own branch (feature branch or worktree). Never `main` commits except merges. → [trigger-branch-strategy.md](.claude/rules/trigger-branch-strategy.md)
+- **Root documentation boundary**: All analysis/reports → `docs/` folders per routing table. Root reserved for foundational files only. → [root-documentation-boundary.md](.claude/rules/root-documentation-boundary.md)
+
+### 🟡 Correctness Tier (Maintain data integrity)
+
+- **Plan outcome discipline**: Plan is complete only after outcome file exists in `03-outcome_plans/`. → [trigger-plan-workflow.md](.claude/rules/trigger-plan-workflow.md)
+
+### 🟢 Quality Tier (Improve usability)
+
+- **One-off execution default**: Workflow commands execute once immediately unless interval specified. → [one-off-execution.md](.claude/rules/one-off-execution.md)
+- **Bullets-only before prose**: Thesis content starts as bullets; never prose without explicit approval.
 - **Model**: Haiku by default | Upgrade with `/model sonnet` or `/model opus`
-- **Python files**: Never Edit/Write `.py` files directly (hook enforces safe pattern — temp script via `C:/Users/brian/AppData/Local/Temp/`)
+- **Python files**: Never Edit/Write directly (hook enforces temp script pattern via `C:/Users/brian/AppData/Local/Temp/`)
 - **Tools**: Read, Grep, Glob (not cat/rg/find); Bash for system commands
-- **Thesis**: Bullets only—never prose without human approval
-- **Every phase transition**: Requires explicit human approval
-- **Git**: Each session gets its own worktree + branch. Warn on `main`. Never push directly to `main`. Use draft PRs for backup. → [git-branch-strategy.md](docs/contributing/git-branch-strategy.md) · [worktree guide](docs/contributing/git-worktrees-and-parallel-sessions.md)
+
+### 📋 Reference Rules
+
+- [.claude/rules/](.claude/rules/) — All workflow automation rules by trigger phrase
 
 ---
 
 ## Quick References
 
+### Core Documentation
+
 - [docs/reference/cheatsheet.md](docs/reference/cheatsheet.md) — CLI commands, trigger phrases
-- [docs/integration/tooling-issues.md](docs/integration/tooling-issues.md) — solved Windows/OneDrive/tooling problems (6 documented)
-- [thesis/data/nielsen/scripts/README.md](thesis/data/nielsen/scripts/README.md) — Nielsen data access guide (52 objects cataloged, 29 CSV exports)
-- [thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md](thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md) — Auto-generated schema reference (all 52 objects, columns, row counts)
-- [docs/integration/zotero-integration-setup.md](docs/integration/zotero-integration-setup.md) — Zotero integration setup (group library ID: 6479832)
-- [docs/reference/zotero-quick-reference.md](docs/reference/zotero-quick-reference.md) — Quick Zotero copy-paste commands
-- [.claude/rules/](.claude/rules/) — workflow automation rules
 - [docs/contributing/repository_map.md](docs/contributing/repository_map.md) — module inventory
-- [.claude/skills/](\.claude/skills/) — Project-specific skill definitions
-- [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — **22 NEW SKILLS IMPORTED** (Apr 16) — tier classification + integration strategy
-- [.claude/SKILLS_DEMO_EXAMPLES.md](.claude/SKILLS_DEMO_EXAMPLES.md) — 10 concrete demos with expected outputs (try each in 5-8 min)
-- [.claude/SKILLS_INVENTORY.md](.claude/SKILLS_INVENTORY.md) — complete reference for all 35 skills by category + use cases
+- [docs/integration/tooling-issues.md](docs/integration/tooling-issues.md) — solved Windows/OneDrive/tooling problems (6 documented)
+
+### Rule System (P0020 Reform)
+
+- [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hierarchy.md) — Tier-based conflict resolution (Trust > Correctness > Quality > Efficiency)
+- [.claude/rules/](.claude/rules/) — All workflow automation rules
+- [memory/convention_project_standards.md](C:\Users\brian\.claude\projects\C--dev-thesis-manifold\memory\convention_project_standards.md) — Consolidated conventions (models, worktrees, P-IDs, docs routing, data access)
+
+### Data & Integration
+
+- [thesis/data/nielsen/scripts/README.md](thesis/data/nielsen/scripts/README.md) — Nielsen data access (52 objects, 29 CSV exports)
+- [thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md](thesis/data/nielsen/description/SCHEMA_SNAPSHOT.md) — Nielsen schema reference
+- [docs/integration/zotero-integration-setup.md](docs/integration/zotero-integration-setup.md) — Zotero setup (group library ID: 6479832)
+- [docs/reference/zotero-quick-reference.md](docs/reference/zotero-quick-reference.md) — Quick Zotero commands
+
+### Skills & Project State
+
+- [.claude/skills/](\.claude/skills/) — Project-specific skill definitions (now includes enforcement validators)
+- [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — Imported skills (22 + 5 new enforcement skills)
+- [plans/PLANS_INDEX.md](plans/PLANS_INDEX.md) — All plans by P-ID (P0001–P0021, 4 status buckets)
 
 ---
 

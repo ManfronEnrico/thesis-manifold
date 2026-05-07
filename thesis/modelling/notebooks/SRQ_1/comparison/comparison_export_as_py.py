@@ -52,10 +52,10 @@ print(f"Project root found at: {ROOT_DIR_FINDER}")
 sys.path.insert(0, str(ROOT_DIR_FINDER))
 
 
-import paths
-importlib.reload(paths)  # Reload the config module to ensure we have the latest changes
+import PATHS
+importlib.reload(PATHS)  # Reload the config module to ensure we have the latest changes
 
-from paths import *
+from PATHS import *
 
 # %% [markdown]
 # ## § 0.1 - Hard Code Notebook Specific Paths

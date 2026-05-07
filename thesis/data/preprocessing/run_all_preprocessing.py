@@ -33,9 +33,9 @@ else:
 
 sys.path.insert(0, str(ROOT_DIR_FINDER))
 
-# Import paths module and reload to ensure latest changes
-import paths
-importlib.reload(paths)
+# Import PATHS module and reload to ensure latest changes
+import PATHS
+importlib.reload(PATHS)
 
 from thesis.data.preprocessing import (
     preprocessing_csd,
@@ -44,7 +44,7 @@ from thesis.data.preprocessing import (
     preprocessing_rtd,
     preprocessing_totalbeer,
 )
-from paths import THESIS_DATA_PREPROCESSING_DIR
+from PATHS import THESIS_DATA_PREPROCESSING_DIR
 
 
 def run_category_preprocessing(category_module, category_name: str) -> dict:

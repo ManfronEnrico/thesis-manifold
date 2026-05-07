@@ -1,15 +1,15 @@
 """
 Nielsen CSD Preprocessing Pipeline
 ====================================
-Reads raw Nielsen CSD data from local CSV files, engineers all features
+Reads raw Nielsen CSD data from local JSONL files, engineers all features
 required for the 5 forecasting models, applies the locked train/val/test split,
 and saves the feature matrix to disk in Parquet format.
 
-Input files (from raw_nielsen/data_csv/):
-  csd_clean_facts_v.csv
-  csd_clean_dim_product_v.csv
-  csd_clean_dim_period_v.csv
-  csd_clean_dim_market_v.csv
+Input files (from raw_nielsen/data_jsonl/CSD/):
+  views/csd_clean_facts_v.jsonl
+  views/csd_clean_dim_product_v.jsonl
+  views/csd_clean_dim_period_v.jsonl
+  views/csd_clean_dim_market_v.jsonl
 
 Output files (Parquet, in preprocessing/parquet_nielsen/):
   specialized_CSD_feature_matrix.parquet
@@ -44,37 +44,46 @@ print(f"Project root found at: {ROOT_DIR_FINDER}")
 sys.path.insert(0, str(ROOT_DIR_FINDER))
 
 # Import paths module and reload to ensure latest changes
-import paths
-importlib.reload(paths)
+import PATHS
+importlib.reload(PATHS)
 
-from paths import (
+from PATHS import (
     ROOT_DIR,
     THESIS_DATA_PREPROCESSING_DIR,
-    THESIS_DATA_NIELSEN_CSV_DIR,
+    THESIS_DATA_NIELSEN_JSONL_DIR,
     THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR,
+    get_category_raw_dir,
+    get_category_views_dir,
+    get_category_metadata_dir,
+    get_category_engineered_dir,
 )
-
 
 # ============================================================================
 # CATEGORY CONFIGURATION
 # ============================================================================
 
 CATEGORY = "CSD"
-NOTEBOOK_NAME = f"specialized_{CATEGORY}"
 
 # ============================================================================
-# INPUT/OUTPUT PATHS (Dynamic from paths.py)
+# INPUT/OUTPUT PATHS (Dynamic from PATHS.py)
 # ============================================================================
 
-# Input: raw Nielsen CSV files
-INPUT_DIR = THESIS_DATA_NIELSEN_CSV_DIR
+# Input: Nielsen JSONL files organized by type
+INPUT_VIEWS_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "views"
+INPUT_METADATA_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "metadata"
 
-# Output: processed Parquet files
-OUT = THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR / NOTEBOOK_NAME
-OUT.mkdir(parents=True, exist_ok=True)
+# Output: parquet files organized by category and type
+OUT_RAW = get_category_raw_dir(CATEGORY)
+OUT_VIEWS = get_category_views_dir(CATEGORY)
+OUT_METADATA = get_category_metadata_dir(CATEGORY)
+OUT_ENGINEERED = get_category_engineered_dir(CATEGORY)
 
-print(f"Input directory: {INPUT_DIR.resolve()}")
-print(f"Output directory: {OUT.resolve()}")
+# Create all output directories
+for out_dir in [OUT_RAW, OUT_VIEWS, OUT_METADATA, OUT_ENGINEERED]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+print(f"Input (Views): {INPUT_VIEWS_DIR.resolve()}")
+print(f"Output (Engineered): {OUT_ENGINEERED.resolve()}")
 
 # ============================================================================
 # FEATURE ENGINEERING IMPORTS
@@ -96,28 +105,36 @@ from thesis.thesis_agents.ai_research_framework.features.engineer_features impor
 # DATA VALIDATION
 # ============================================================================
 
-def validate_input_data(input_dir: Path) -> bool:
+def validate_input_data(raw_dir: Path, views_dir: Path) -> bool:
     """
-    Check if all required Nielsen CSD CSV files exist.
+    Check if all required Nielsen CSD JSONL files exist in raw and views directories.
     If any are missing, print instructions on how to download them.
-    Returns True if all files exist, False otherwise.
+    Returns True if at least raw tables exist, False otherwise.
     """
-    required_files = [
-        "csd_clean_facts_v.csv",
-        "csd_clean_dim_product_v.csv",
-        "csd_clean_dim_period_v.csv",
-        "csd_clean_dim_market_v.csv",
+    required_raw_files = [
+        "csd_clean_facts.jsonl",
+        "csd_clean_dim_product.jsonl",
+        "csd_clean_dim_period.jsonl",
+        "csd_clean_dim_market.jsonl",
     ]
 
-    missing = [f for f in required_files if not (input_dir / f).exists()]
+    required_views_files = [
+        "csd_clean_facts_v.jsonl",
+        "csd_clean_dim_product_v.jsonl",
+        "csd_clean_dim_period_v.jsonl",
+        "csd_clean_dim_market_v.jsonl",
+    ]
 
-    if missing:
+    missing_raw = [f for f in required_raw_files if not (raw_dir / f).exists()]
+    missing_views = [f for f in required_views_files if not (views_dir / f).exists()]
+
+    if missing_views:
         print("=" * 80)
-        print("ERROR: Missing required Nielsen CSV files!")
+        print("ERROR: Missing required Nielsen JSONL view files!")
         print("=" * 80)
-        print(f"\nLocation: {input_dir.resolve()}\n")
-        print("Missing files:")
-        for f in missing:
+        print(f"\nViews location: {views_dir.resolve()}\n")
+        print("Missing view files:")
+        for f in missing_views:
             print(f"  - {f}")
         print("\n" + "=" * 80)
         print("SOLUTION: Download Nielsen data from Fabric warehouse")
@@ -132,7 +149,11 @@ def validate_input_data(input_dir: Path) -> bool:
         print("=" * 80)
         return False
 
-    print(f"✓ Input validation: All {len(required_files)} required files found")
+    if missing_raw:
+        print(f"⚠ Warning: Raw tables not found, will skip caching raw tables")
+        return True  # Can still proceed if views exist
+
+    print(f"✓ Input validation: All required view files found")
     return True
 
 
@@ -140,21 +161,19 @@ def validate_input_data(input_dir: Path) -> bool:
 # PIPELINE STEPS
 # ============================================================================
 
-# ── 1. Load raw data from local CSV files ─────────────────────────────────
+# ── 1. Load raw data from local JSONL files ─────────────────────────────────
 
 def load_raw(input_dir: Path) -> pd.DataFrame:
     """
-    Load Nielsen CSD data from local CSV files.
-    Reads facts × product dim × period dim, filters to TARGET_MARKET.
-    Returns one row per (brand, period_year, period_month).
-    Aggregates across product_id (sum) so the grain is brand × month.
+    Load Nielsen CSD data from local JSONL view files.
+    Reads facts × product dim × period dim (from views, which are cleaned/reduced).
+    Filters to TARGET_MARKET, then aggregates to brand × month grain.
     """
-    print("  Loading CSV files...")
-    facts = pd.read_csv(input_dir / "csd_clean_facts_v.csv")
-    # Note: on_bad_lines='skip' handles rows with inconsistent field counts
-    products = pd.read_csv(input_dir / "csd_clean_dim_product_v.csv", on_bad_lines='skip')
-    periods = pd.read_csv(input_dir / "csd_clean_dim_period_v.csv")
-    markets = pd.read_csv(input_dir / "csd_clean_dim_market_v.csv")
+    print("  Loading view JSONL files...")
+    facts = pd.read_json(input_dir / "csd_clean_facts_v.jsonl", lines=True)
+    products = pd.read_json(input_dir / "csd_clean_dim_product_v.jsonl", lines=True)
+    periods = pd.read_json(input_dir / "csd_clean_dim_period_v.jsonl", lines=True)
+    markets = pd.read_json(input_dir / "csd_clean_dim_market_v.jsonl", lines=True)
 
     print(f"  Facts shape: {facts.shape}")
     print(f"  Products shape: {products.shape}")
@@ -196,14 +215,69 @@ def load_raw(input_dir: Path) -> pd.DataFrame:
 # to avoid duplication between the CLI batch script and the LangGraph agent.
 
 
-# ── 2. Save outputs ───────────────────────────────────────────────────────
+# ── 2. Save raw/views/metadata to parquet cache ──────────────────────────
 
-def save_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
-                 all_dates: list, elapsed: float, peak_mb: float):
+def save_dimension_tables(input_raw_dir: Path, input_views_dir: Path, input_metadata_dir: Path):
+    """
+    Save raw tables, views, and metadata as parquet for caching and reference.
 
-    df.to_parquet(OUT / f"{NOTEBOOK_NAME}_feature_matrix.parquet", index=False)
-    series_idx.to_csv(OUT / "series_index.csv", index=False)
+    These are cached copies of Nielsen data (not engineered—used for validation,
+    analysis, and reproducibility).
+    """
+    print("\n  Caching raw tables as parquet...")
 
+    # Raw tables (full granularity)
+    for table_name in ["csd_clean_facts", "csd_clean_dim_product",
+                       "csd_clean_dim_period", "csd_clean_dim_market"]:
+        try:
+            df = pd.read_json(input_raw_dir / f"{table_name}.jsonl", lines=True)
+            df.to_parquet(OUT_RAW / f"{table_name}.parquet", index=False)
+            print(f"    ✓ {table_name}: {len(df):,} rows")
+        except FileNotFoundError:
+            print(f"    ⚠ {table_name}: JSONL not found (skipped)")
+
+    print("  Caching view tables as parquet...")
+
+    # Views (cleaned, column-reduced)
+    for table_name in ["csd_clean_facts_v", "csd_clean_dim_product_v",
+                       "csd_clean_dim_period_v", "csd_clean_dim_market_v"]:
+        try:
+            df = pd.read_json(input_views_dir / f"{table_name}.jsonl", lines=True)
+            df.to_parquet(OUT_VIEWS / f"{table_name}.parquet", index=False)
+            print(f"    ✓ {table_name}: {len(df):,} rows")
+        except FileNotFoundError:
+            print(f"    ⚠ {table_name}: JSONL not found (skipped)")
+
+    print("  Caching metadata tables as parquet...")
+
+    # Metadata (schema documentation)
+    for table_name in ["metadata_csd_clean_facts", "metadata_csd_clean_dim_product",
+                       "metadata_csd_clean_dim_period", "metadata_csd_clean_dim_market",
+                       "metadata_csd_columns"]:
+        try:
+            df = pd.read_json(input_metadata_dir / f"{table_name}.jsonl", lines=True)
+            df.to_parquet(OUT_METADATA / f"{table_name}.parquet", index=False)
+            print(f"    ✓ {table_name}: {len(df):,} rows")
+        except FileNotFoundError:
+            print(f"    ⚠ {table_name}: JSONL not found (skipped)")
+
+
+# ── 3. Save engineered outputs ───────────────────────────────────────────────
+
+def save_engineered_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
+                           all_dates: list, elapsed: float, peak_mb: float):
+    """
+    Save engineered features, metadata, and report to engineered/ directory.
+    Uses simplified naming (category only, no "specialized_" prefix).
+    """
+
+    # Feature matrix
+    df.to_parquet(OUT_ENGINEERED / f"{CATEGORY.lower()}_feature_matrix.parquet", index=False)
+
+    # Series index
+    series_idx.to_csv(OUT_ENGINEERED / f"{CATEGORY.lower()}_series_index.csv", index=False)
+
+    # Split dates
     split_dates = {
         "train_start": str(min(all_dates).date()),
         "train_end":   f"{TRAIN_END[0]}-{TRAIN_END[1]:02d}-01",
@@ -212,9 +286,10 @@ def save_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
         "test_start":  f"{VAL_END[0]}-{VAL_END[1]+1 if VAL_END[1]<12 else 1:02d}-01",
         "test_end":    str(max(all_dates).date()),
     }
-    with open(OUT / "split_dates.json", "w") as f:
+    with open(OUT_ENGINEERED / f"{CATEGORY.lower()}_split_dates.json", "w") as f:
         json.dump(split_dates, f, indent=2)
 
+    # Preprocessing report
     n_brands = df["brand"].nunique()
     n_rows   = len(df)
     features = [c for c in df.columns
@@ -222,10 +297,11 @@ def save_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
                              "split", "sales_units", "log_sales_units"]]
 
     report = f"""# Nielsen {CATEGORY} Preprocessing Report
-> Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
-> Category: {CATEGORY}
-> Market scope: {TARGET_MARKET}
-> Min periods filter: {MIN_PERIODS}
+
+**Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Category:** {CATEGORY}
+**Market Scope:** {TARGET_MARKET}
+**Min Periods Filter:** {MIN_PERIODS}
 
 ## Summary
 
@@ -246,7 +322,7 @@ def save_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
 | Val | {split_dates["val_start"]} | {split_dates["val_end"]} | {series_idx["val_periods"].iloc[0]} |
 | Test | {split_dates["test_start"]} | {split_dates["test_end"]} | {series_idx["test_periods"].iloc[0]} |
 
-## Feature List
+## Engineered Features
 
 {chr(10).join(f"- `{f}`" for f in features)}
 
@@ -254,7 +330,7 @@ def save_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
 
 {series_idx.head(20).to_markdown(index=False)}
 """
-    (OUT / "preprocessing_report.md").write_text(report)
+    (OUT_ENGINEERED / f"{CATEGORY.lower()}_preprocessing_report.md").write_text(report)
     print(report)
 
 
@@ -269,18 +345,22 @@ def main():
     print(f"Min periods: {MIN_PERIODS}\n")
 
     # Validate input data exists
-    if not validate_input_data(INPUT_DIR):
+    if not validate_input_data(INPUT_VIEWS_DIR, INPUT_VIEWS_DIR):
         print("\nAbort: Input validation failed.")
         return
+
+    # Step 0: Cache views/metadata as parquet (one-time setup)
+    print("\nStep 0/6 — Caching Nielsen data as parquet...")
+    save_dimension_tables(INPUT_VIEWS_DIR, INPUT_VIEWS_DIR, INPUT_METADATA_DIR)
 
     tracemalloc.start()
     t0 = time.perf_counter()
 
-    print("\nStep 1/5 — Loading raw data from CSV files...")
-    raw = load_raw(INPUT_DIR)
+    print("\nStep 1/6 — Loading raw data from JSONL files...")
+    raw = load_raw(INPUT_VIEWS_DIR)
     print(f"  Raw rows: {len(raw):,}  |  Brands: {raw['brand'].nunique()}\n")
 
-    print("Step 2/5 — Building full calendar index...")
+    print("Step 2/6 — Building full calendar index...")
     df, all_dates = make_calendar(raw)
     print(f"  Rows after calendar fill: {len(df):,}")
     print(f"  Date range: {min(all_dates).date()} to {max(all_dates).date()}")
@@ -288,7 +368,7 @@ def main():
     print(df.head(10).to_string(index=False))
     print()
 
-    print("Step 3/5 — Filtering short series...")
+    print("Step 3/6 — Filtering short series...")
     df = filter_series(df)
     print(f"  Series kept after filter (>= {MIN_PERIODS} non-zero periods): "
           f"{df['brand'].nunique()} brands")
@@ -296,7 +376,7 @@ def main():
     print(df.head(10).to_string(index=False))
     print()
 
-    print("Step 4/5 — Engineering features...")
+    print("Step 4/6 — Engineering features...")
     df = engineer_features(df)
     print(f"  Feature engineering complete")
     print(f"  Columns: {df.shape[1]}")
@@ -305,7 +385,7 @@ def main():
     print(df[cols_to_show].head(5).to_string(index=False))
     print()
 
-    print("Step 5/5 — Applying split labels...")
+    print("Step 5/6 — Applying split labels...")
     df = apply_split(df)
     print(f"  Split labels applied")
     print(f"  Split distribution: {df['split'].value_counts().to_dict()}")
@@ -320,9 +400,15 @@ def main():
 
     print(f"Done in {elapsed:.1f}s  |  Peak RAM: {peak_mb:.1f} MB\n")
 
+    print("Step 6/6 — Saving engineered features...")
     series_idx = build_series_index(df)
-    save_outputs(df, series_idx, all_dates, elapsed, peak_mb)
-    print(f"\nOutputs written to {OUT}/")
+    save_engineered_outputs(df, series_idx, all_dates, elapsed, peak_mb)
+
+    print(f"\nOutputs summary:")
+    print(f"  Raw tables:       {OUT_RAW}/")
+    print(f"  View tables:      {OUT_VIEWS}/")
+    print(f"  Metadata tables:  {OUT_METADATA}/")
+    print(f"  Engineered data:  {OUT_ENGINEERED}/")
 
 
 if __name__ == "__main__":
