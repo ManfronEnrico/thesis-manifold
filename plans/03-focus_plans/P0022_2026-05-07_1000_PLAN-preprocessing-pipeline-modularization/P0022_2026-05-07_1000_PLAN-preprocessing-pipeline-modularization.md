@@ -1,16 +1,16 @@
 ---
 created: 2026-05-07 10:00:00
-updated: 2026-05-07
-status: Focus — Ready to Execute
-focus_detail: "Architecture finalized (per-step, per-category modularization). Phase 1 ready. No dependencies, can start anytime."
+updated: 2026-05-07 16:15:00
+status: Focus — Phase 1 Complete, Phase 2-4 Ready
+focus_detail: "CSD template 100% complete + tested. All 4 fixes already implemented. Ready to replicate for remaining 4 categories (Energidrikke, Danskvand, RTD, Totalbeer)."
 ---
 
 # P0022: Preprocessing Pipeline Modularization
 
 **P-ID:** P0022  
 **Created:** 2026-05-07 10:00  
-**Updated:** 2026-05-07 11:30 (Architecture revised to per-step, per-category)  
-**Status:** In Progress  
+**Updated:** 2026-05-07 16:15 (Phase 1 verification complete)  
+**Status:** In Progress (Phase 2 Ready)  
 
 ---
 
@@ -376,22 +376,38 @@ python preprocessing_all.py --run-step 4              # Feature engineering for 
 
 ## Phase 1: Modularize CSD (Template for Others)
 
-### Status: ✅ CODE COMPLETE | 🔧 FIXES IN PROGRESS
+### Status: ✅ COMPLETE & VERIFIED (2026-05-07)
 
-**Created (2026-05-07):**
+**Implemented & Verified:**
 - ✅ 7 step scripts (pre_csd_0 through pre_csd_6)
-- ✅ Category orchestrator (preprocessing_csd.py)
+- ✅ Category orchestrator (preprocessing_csd.py) with smart caching
 - ✅ Shared utilities module (terminal_utils, timing_utils, base_preprocessing)
-- 📝 Documentation: Phase 1 completion report
+- ✅ Fix #9: Parquet cache loading with JSONL fallback (line 112-124 in step 1)
+- ✅ Fix #10: Format casting for period_month (line 174-175 in step 1)
+- ✅ Fix #11: PATHS.py helpers implemented (get_category_pipeline_step_outputs_dir, get_category_preprocessing_scripts_dir)
+- ✅ Fix #12: Smart caching default (step 0 skipped unless --run-raw, see preprocessing_csd.py line 92-99)
 
-**Fixes Needed (Priority):**
-- [ ] Task #9: Fix step 1 to load from parquet (step 0 output) if available, else fallback to JSONL
-- [ ] Task #10: Fix format error in step 1 date range print (period_month is float, not int)
-- [ ] Task #11: Add helper functions to PATHS.py (get_category_preprocessing_scripts_dir, get_category_pipeline_step_outputs_dir)
-- [ ] Task #12: Make --skip-raw the default in preprocessing_csd.py (only run step 0 if --run-raw flag)
+**All Files Present & Working:**
+```
+thesis/data/preprocessing/nielsen/
+  ├─ shared/
+  │  ├─ __init__.py
+  │  ├─ base_preprocessing.py
+  │  ├─ terminal_utils.py
+  │  └─ timing_utils.py
+  └─ CSD/
+     ├─ pre_csd_0_cache.py
+     ├─ pre_csd_1_load_and_aggregate.py (✅ fixes applied)
+     ├─ pre_csd_2_build_calendar.py
+     ├─ pre_csd_3_filter_series.py
+     ├─ pre_csd_4_engineer_features.py
+     ├─ pre_csd_5_apply_split.py
+     ├─ pre_csd_6_save_outputs.py
+     └─ preprocessing_csd.py (✅ smart caching implemented)
+```
 
-**Testing:**
-- [ ] Task #13: Phase 1.5 — Test CSD pipeline end-to-end (after fixes)
+**Testing Complete:**
+- ✅ Task #13: Phase 1.5 already passed (CSD pipeline fully functional)
 
 ---
 
@@ -431,56 +447,71 @@ python preprocessing_all.py --run-step 4              # Feature engineering for 
 
 ## Phase 2: Apply to Remaining 4 Categories
 
-**Once Phase 1.5 (CSD testing) is complete and passing:**
+**Status:** READY TO EXECUTE (2026-05-07 16:15)
 
-- [ ] Task #14: Energidrikke — Replicate 7-step + orchestrator (pre_energidrikke_0 through pre_energidrikke_6 + preprocessing_energidrikke.py)
-- [ ] Task #15: Danskvand — Replicate 7-step + orchestrator
-- [ ] Task #16: RTD — Replicate 7-step + orchestrator
-- [ ] Task #17: Totalbeer — Replicate 7-step + orchestrator
+**Tasks (Ready Now):**
 
-**Per-category tasks:**
-- Verify category-specific parameters (feature lags, rolling windows, holiday months)
+- [ ] **Task #14:** Energidrikke
+  - Copy CSD folder → Energidrikke (8 files: pre_energidrikke_0 through pre_energidrikke_6 + preprocessing_energidrikke.py)
+  - Update CATEGORY = "Energidrikke" in each file
+  - Update table names: energidrikke_clean_* instead of csd_clean_*
+  - Update feature engineering parameters in pre_energidrikke_4_engineer_features.py
+  - Test end-to-end: `python preprocessing_energidrikke.py`
+  - **Estimated:** 45 min
+
+- [ ] **Task #15:** Danskvand — Same pattern as Energidrikke — **45 min**
+
+- [ ] **Task #16:** RTD — Same pattern as Energidrikke — **45 min**
+
+- [ ] **Task #17:** Totalbeer — Same pattern as Energidrikke — **45 min**
+
+**Total Phase 2 Time:** ~3 hours (all 4 categories)
+
+**Per-category work:**
+- Verify category-specific parameters (feature lags, rolling windows, holiday months) from old preprocessing_*.py scripts
 - Test end-to-end
 - Compare outputs with previous preprocessing runs
 
-**Shared utilities usage:**
-- All 4 categories use same terminal_utils, timing_utils, base_preprocessing from `shared/`
-- Only per-category step 4 (engineer_features) differs based on category parameters
+**Key:** All 4 categories reuse same terminal_utils, timing_utils, base_preprocessing from `shared/`. Only per-category step 4 (engineer_features) differs based on category parameters.
 
 ---
 
 ## Phase 3: Create Master Orchestrator
 
-**Once Phase 2 (all 5 categories) is complete:**
+**Status:** PENDING (after Phase 2)
 
-- [ ] Task #18: Create `preprocessing_all.py`
+- [ ] **Task #18:** Create `preprocessing_all.py` (root: thesis/data/preprocessing/nielsen/)
   - Orchestrates all 5 categories (CSD, Energidrikke, Danskvand, RTD, Totalbeer) in sequence
   - Flags: `--categories CSD RTD`, `--run-step 4`, `--run-raw`
   - Final summary: timing per category, total elapsed time
   - Integration test report
+  - **Estimated:** 1 hour
 
 ---
 
 ## Phase 4: Documentation
 
-**Once Phase 3 is complete:**
+**Status:** PENDING (after Phase 3)
 
-- [ ] Task #19: Step dependency graph
+- [ ] **Task #19:** Step dependency graph
   - Visual diagram showing data flow through 7 steps
   - Dependencies (step N depends on step N-1 output)
   - Checkpoint files and resumption points
-  
-- [ ] Task #20: Category-specific parameter reference
+  - **Estimated:** 30 min
+
+- [ ] **Task #20:** Category-specific parameter reference
   - Feature engineering parameters per category (lag windows, rolling windows, holiday months, min_periods, split dates)
   - Side-by-side comparison table across all 5 categories
   - Rationale for category-specific choices
-  
-- [ ] Task #21: Troubleshooting guide
-  - "Which step is slow?" — how to profile timing
+  - **Estimated:** 45 min
+
+- [ ] **Task #21:** Troubleshooting guide
+  - "Which step is slow?" — profiling tips
   - "How to restart from step N" — command examples
-  - "Output rows don't match expectations" — debugging checklist
-  - "Memory usage per step" — profiling guide
+  - "Output rows mismatch" — debugging checklist
+  - "Memory usage per step" — monitoring guide
   - Architecture design document (why per-step? why per-category?)
+  - **Estimated:** 1 hour
 
 ---
 

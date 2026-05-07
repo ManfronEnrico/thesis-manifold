@@ -1,50 +1,51 @@
 ---
 created: 2026-05-04 14:00:00
-updated: 2026-05-07
-status: Focus — Phase 3 Complete, Phase 4 Pending
-focus_detail: "Phases 1-3 done (path centralization, unified runner, documentation). Phase 4 pending: Create root-documentation-boundary rule + /move-docs-to-folders skill"
+updated: 2026-05-07 16:25:00
+status: Paused — Lower Priority Infrastructure Work
+paused_reason: "Renamed from 'Preprocessing Pipeline Unification' to reflect actual scope: documentation boundary enforcement + auto-folder-relocation. Paused pending completion of P0022 (preprocessing modularization) and P0017 (notebook paths). Will resume once higher-priority work stabilizes."
 ---
 
-# Plan: Preprocessing Pipeline Unification
+# Plan: Root Documentation Boundary & Folder Cleanup (P0019)
 
 **P-ID:** P0019  
 **Created:** 2026-05-04 14:00  
-**Status:** In Progress
+**Status:** Paused (Infrastructure work, lower priority)
 
 ---
 
 ## Objective
 
-Unify 5 independent preprocessing scripts (CSD, energidrikke, danskvand, RTD, totalbeer) into a single coordinated pipeline with:
-1. Centralized path handling via paths.py
-2. Dynamic root discovery (CLAUDE.md pattern)
-3. Unified runner script for batch execution
-4. Complete documentation and testing
+Create infrastructure rules + skills to enforce documentation boundary:
+1. **Rule:** `root-documentation-boundary.md` — prevent root clutter (docs → `docs/`, `plans/`, etc.)
+2. **Skill:** `/move-docs-to-folders` — auto-detect and relocate misplaced markdown files
+3. **Skill enhancement:** `/docs-update-all` — add violation detection
+
+**Why this plan exists:** P0019's original title ("Preprocessing Pipeline Unification") was misleading. Phases 1-3 were actually preprocessing work (now part of P0022). Phase 4 is actually about documentation organization (different concern).
 
 ---
 
 ## Scope
 
-### In Scope
-- Preprocessing scripts (5 category variants)
-- Unified runner (run_all_preprocessing.py)
-- Path centralization (save_all_datasets.py + paths.py alignment)
-- Testing & validation
-- Documentation (analysis, test reports)
+### Phase 4 Only (Paused)
+- [ ] Create rule file: `.claude/rules/root-documentation-boundary.md`
+- [ ] Create skill: `/move-docs-to-folders` (auto-relocation)
+- [ ] Update skill: `/docs-update-all` (detection + enforcement)
 
-### Out of Scope
-- Feature engineering logic (shared library, not modified)
-- Notebook integration (separate from pipeline)
-- Database schema changes
+### Already Complete (Phases 1-3)
+- ✅ Preprocessing scripts (now P0022)
+- ✅ Unified runner (now part of P0022)
+- ✅ Path centralization (done in P0022)
 
 ---
 
-## Key Decisions
+## Why Paused
 
-1. **CSV-first approach:** Scripts assume CSV data pre-downloaded via save_all_datasets.py
-2. **No SQL fallback:** Decouples preprocessing from database credentials
-3. **Unified runner:** Single command orchestrates all 5 categories in sequence
-4. **Error handling:** Graceful failure reporting with manifest output
+This is **infrastructure work**, not core to thesis delivery:
+- P0022 (preprocessing modularization) has higher priority
+- P0017 (notebook paths) blocks on P0022
+- Documentation cleanup is useful but non-blocking
+
+**Resume when:** P0022 Phase 2-4 complete (~3-4 more hours) and the pipeline is stable.
 
 ---
 

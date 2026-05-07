@@ -1,8 +1,8 @@
 ﻿---
 created: 2026-04-27 14:20:00
-updated: 2026-05-07
-status: Focus — Phase 2 In Progress
-focus_detail: "Dynamic path helper + comparison.ipynb template. Next: Fix comparison.ipynb § 1-5, apply template to 9 remaining notebooks"
+updated: 2026-05-07 16:20:00
+status: Blocked — Awaiting P0022 Phase 2 Completion
+blocked_reason: "Waiting for P0022 to complete Phase 2 (Energidrikke, Danskvand, RTD, Totalbeer preprocessing). Once parquet outputs are stable across all 5 categories, P0017 can proceed with notebook path centralization."
 ---
 
 # Plan: Jupyter Notebook Path Centralization (P0017)
