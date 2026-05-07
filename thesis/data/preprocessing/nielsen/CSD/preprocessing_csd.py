@@ -96,8 +96,8 @@ def run_step(step_num: int, run_raw: bool = False, force_step0: bool = False) ->
 			print(f"✓ Step {step_num} skipped (parquet cache already exists)")
 			return False
 		else:
-			print(f"⊘ Step {step_num} skipped (cache exists; use --run-raw to force)")
-			return False
+			print(f"▶ Running step {step_num} (cache does not exist; must create first)")
+			force_step0 = True
 
 	# Find step script
 	script = list(SCRIPTS_DIR.glob(f"pre_{CATEGORY.lower()}_{step_num}_*.py"))

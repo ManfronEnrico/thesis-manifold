@@ -61,6 +61,7 @@ See [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hiera
 ### 🟢 Quality Tier (Improve usability)
 
 - **One-off execution default**: Workflow commands execute once immediately unless interval specified. → [one-off-execution.md](.claude/rules/one-off-execution.md)
+- **Plan verification discipline**: Never take in-progress plan documents at face value; always verify claims against actual code before implementing. → [plan-verification-discipline.md](.claude/rules/plan-verification-discipline.md)
 - **Bullets-only before prose**: Thesis content starts as bullets; never prose without explicit approval.
 - **Model**: Haiku by default | Upgrade with `/model sonnet` or `/model opus`
 - **Python files**: Never Edit/Write directly (hook enforces temp script pattern via `C:/Users/brian/AppData/Local/Temp/`)

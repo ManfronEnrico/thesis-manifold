@@ -91,13 +91,13 @@ def run_step(step_num: int, run_raw: bool = False, force_step0: bool = False) ->
 	"""
 	if step_num == 0:
 		if force_step0:
-			print(f"â–¶ Running step {step_num} (forced via --run-raw or --re-cache)")
+			print(f”▶ Running step {step_num} (forced via --run-raw or --re-cache)”)
 		elif cache_exists():
-			print(f"âœ“ Step {step_num} skipped (parquet cache already exists)")
+			print(f”✓ Step {step_num} skipped (parquet cache already exists)”)
 			return False
 		else:
-			print(f"âŠ˜ Step {step_num} skipped (cache exists; use --run-raw to force)")
-			return False
+			print(f”▶ Running step {step_num} (cache does not exist; must create first)”)
+			force_step0 = True
 
 	# Find step script
 	script = list(SCRIPTS_DIR.glob(f"pre_{CATEGORY.lower()}_{step_num}_*.py"))
