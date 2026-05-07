@@ -1,7 +1,8 @@
 ---
 created: 2026-05-04 14:00:00
-updated: 2026-05-04 14:00:00
-status: In Progress
+updated: 2026-05-07
+status: Focus — Phase 3 Complete, Phase 4 Pending
+focus_detail: "Phases 1-3 done (path centralization, unified runner, documentation). Phase 4 pending: Create root-documentation-boundary rule + /move-docs-to-folders skill"
 ---
 
 # Plan: Preprocessing Pipeline Unification

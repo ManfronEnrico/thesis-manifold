@@ -4,14 +4,14 @@ Verify that completed plans have proper outcome files with complete documentatio
 
 ## Purpose
 
-Enforce the Correctness Tier rule: **A plan is not considered complete until its outcome file exists in `03-outcome_plans/`.**
+Enforce the Correctness Tier rule: **Plan status is tracked in frontmatter only** (no separate outcome files as of 2026-05-07).
 
 This skill detects:
-- In-progress plans missing their eventual outcome files
-- Outcome files with incomplete sections
-- Outcome files with missing frontmatter
-- Plans listed as completed in PLANS_INDEX but lacking outcome files
-- Orphaned outcome files (no matching in-progress plan)
+- Plans with missing or malformed frontmatter status fields
+- Folder location that doesn't match frontmatter status (e.g., plan in 04-complete_plans but status: "In Progress")
+- Completed plans missing `completed` timestamp or `outcome_summary`
+- Blocked/Paused plans missing `blocked_reason` / `paused_reason`
+- Inconsistencies between PLANS_INDEX and actual plan frontmatter
 
 ## Invocation
 
@@ -26,29 +26,34 @@ This skill detects:
 
 ### Step 1: Scan All Plans
 
-Reads `02-in_progress-plans/` and `03-outcome_plans/` directories.
+Reads all 8 status folders: `01-backlog_plans/`, `02-in_progress_plans/`, `03-focus_plans/`, `04-complete_plans/`, `05-blocked_plans/`, `06-paused_plans/`, `07-cancelled_plans/`, `08-archived_plans/`.
 
 For each plan, extract:
-- P-ID, status (in-progress or outcome), folder name, main plan file
-- Check for corresponding outcome file in `03-outcome_plans/`
+- P-ID, folder location, main plan file
+- Read frontmatter to get `status` field
 
-### Step 2: Check In-Progress Plans
+### Step 2: Validate Frontmatter
 
-For **each plan in 02-in_progress-plans/**, verify:
-- Plan is currently being worked on (acceptable to lack outcome)
-- Outcome file should NOT exist yet (or is stale)
-- When completed, outcome file MUST be created
+For **each plan**, verify:
+- Frontmatter exists and is valid YAML
+- `status` field is present and valid (Backlog, In Progress, Focus, Complete, Blocked, Paused, Cancelled, Archived)
+- Folder location matches status type:
+  - Status "Focus" → must be in `03-focus_plans/`
+  - Status "Complete" → must be in `04-complete_plans/`
+  - Status "Blocked" → must be in `05-blocked_plans/`, etc.
 
-### Step 3: Validate Outcome Files
+### Step 3: Validate Status-Specific Fields
 
-For **each outcome file in 03-outcome_plans/**, check:
+For **each plan by status**, check:
 
-**Frontmatter:**
+**Complete plans** must have:
 ```yaml
 ---
 created: YYYY-MM-DD HH:MM:SS
+updated: YYYY-MM-DD HH:MM:SS
+status: Complete
 completed: YYYY-MM-DD HH:MM:SS
-plan_reference: plans/02-in_progress-plans/P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/P{NNNN}_...md
+plan_reference: plans/04-complete_plans/P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/P{NNNN}_...md
 ---
 ```
 
@@ -163,7 +168,7 @@ Output:
 Auditing P0020 (Rule System Reform)...
 
 Status: IN-PROGRESS (started 2026-05-04 14:30)
-Folder: plans/02-in_progress-plans/P0020_2026-05-04_1430_PLAN-rule-system-reform/
+Folder: plans/06-paused_plans/P0020_2026-05-04_1430_PLAN-rule-system-reform/
 
 Expected outcome file: 
   plans/03-outcome_plans/P0020_2026-05-04_1430_OUTCOME-rule-system-reform/
@@ -216,7 +221,7 @@ Report includes:
 
 ## Implementation Notes
 
-- Uses Glob to scan `plans/02-in_progress-plans/` and `plans/03-outcome_plans/`
+- Uses Glob to scan all 8 status folders (`01-backlog_plans/` through `08-archived_plans/`)
 - Regex to parse outcome filenames: `P(\d{4})_(\d{4}-\d{2}-\d{2})_(\d{4})_OUTCOME-(.+)`
 - Reads outcome files to check frontmatter (YAML parsing)
 - Checks for required sections (✅, optionally 🔄 and ❌)

@@ -56,7 +56,7 @@ See [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hiera
 
 ### 🟡 Correctness Tier (Maintain data integrity)
 
-- **Plan outcome discipline**: Plan is complete only after outcome file exists in `03-outcome_plans/`. → [trigger-plan-workflow.md](.claude/rules/trigger-plan-workflow.md)
+- **Plan status discipline**: Plan status tracked in frontmatter only (no duplicate outcome files). Folder location + frontmatter status must agree. → [trigger-plan-workflow.md](.claude/rules/trigger-plan-workflow.md)
 
 ### 🟢 Quality Tier (Improve usability)
 
@@ -97,7 +97,7 @@ See [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hiera
 
 - [.claude/skills/](\.claude/skills/) — Project-specific skill definitions (now includes enforcement validators)
 - [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — Imported skills (22 + 5 new enforcement skills)
-- [plans/PLANS_INDEX.md](plans/PLANS_INDEX.md) — All plans by P-ID (P0001–P0021, 4 status buckets)
+- [plans/PLANS_INDEX.md](plans/PLANS_INDEX.md) — All plans by P-ID (P0001–P0022, 8 status buckets: backlog, in_progress, focus, complete, blocked, paused, cancelled, archived)
 
 ---
 

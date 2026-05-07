@@ -1,8 +1,9 @@
 ---
 created: 2026-04-23
-updated: 2026-04-23
+updated: 2026-05-07
+status: Blocked
+blocked_reason: "Awaiting decision on preprocessing packaging fix: Option A (parents[2]→parents[3], 5min) vs Option B (add __init__.py files, 30min, cleaner)"
 branch: session/thesis-agents-review
-status: DRAFT — awaiting human approval
 ---
 
 # Plan: Wire Feature Engineering Into System A + Sync Thesis State

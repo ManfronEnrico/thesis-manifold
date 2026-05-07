@@ -13,7 +13,8 @@
       "PowerShell(Get-ChildItem 'C:\\\\dev\\\\thesis-manifold\\\\plans\\\\02-in_progress-plans\\\\P0017_2026-04-27_1420_PLAN-jupyter-notebook-path-centralization' | Select-Object Name | Where-Object { $_.Name -match '2026-05-01' })",
       "PowerShell(Get-ChildItem 'C:\\\\dev\\\\thesis-manifold\\\\plans\\\\02-in_progress-plans\\\\P0017_2026-04-27_1420_PLAN-jupyter-notebook-path-centralization' | ForEach-Object { $_.Name })",
       "PowerShell(Get-Process *)",
-      "PowerShell(Get-ChildItem 'Z:\\\\.dev-ssd\\\\thesis-manifold\\\\plans\\\\02-in_progress-plans' -Directory | ForEach-Object { $_.Name })"
+      "PowerShell(Get-ChildItem 'Z:\\\\.dev-ssd\\\\thesis-manifold\\\\plans\\\\02-in_progress-plans' -Directory | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem -Path \"Z:\\\\.dev-ssd\\\\thesis-manifold\\\\plans\\\\02-in_progress-plans\" -Directory | ForEach-Object { $_.Name })"
     ]
   }
 }

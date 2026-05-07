@@ -1,7 +1,9 @@
 ---
 created: 2026-05-04 14:30:00
-updated: 2026-05-04 14:30:00
-status: In Progress
+updated: 2026-05-07
+status: Paused
+paused_reason: "Waiting for P0019 Phase 4 completion (root-documentation-boundary rule + /move-docs-to-folders skill)"
+dependencies: ["P0019"]
 ---
 
 # P0020: Rule System Reform — Enforceable, Concise, Effective Rules

@@ -1,7 +1,8 @@
 ﻿---
 created: 2026-04-27 14:20:00
-updated: 2026-05-01 10:45:00
-status: PHASE 2 IN PROGRESS — Dynamic path helper + comparison.ipynb template
+updated: 2026-05-07
+status: Focus — Phase 2 In Progress
+focus_detail: "Dynamic path helper + comparison.ipynb template. Next: Fix comparison.ipynb § 1-5, apply template to 9 remaining notebooks"
 ---
 
 # Plan: Jupyter Notebook Path Centralization (P0017)

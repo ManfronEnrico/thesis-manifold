@@ -22,4 +22,4 @@ Already installed in project `.claude/skills/move-docs-to-folders/`.
 
 - `.claude/rules/root-documentation-boundary.md` — Root whitelist and routing table
 - `/docs-update-all` — Enhanced with violation detection
-- `plans/02-in_progress-plans/P0019_.../` — Documentation reorganization plan
+- `plans/03-focus_plans/P0019_.../` — Preprocessing unification plan (includes doc reorganization work)

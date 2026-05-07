@@ -61,7 +61,7 @@ docs/reference/verification-report.md
 docs/reference/CHEATSHEET.md
 docs/contributing/repository_map.md
 docs/contributing/git-branch-strategy.md
-plans/03-outcome_plans/P0021_.../2026-05-04_DOC-reorganization-summary.md
+plans/03-focus_plans/P0019_.../2026-05-04_DOC-test-report.md
 ```
 
 ❌ **INCORRECT:**
@@ -113,7 +113,7 @@ ls -1 *.md | grep -v "CLAUDE\|INDEX\|README"
 
 **Analysis doc:** ✓ `docs/architecture/preprocessing-analysis.md` ✗ `/PREPROCESSING_ANALYSIS.md`
 
-**Plan artifact:** ✓ `plans/02-in_progress-plans/P0019_.../2026-05-04_DOC-test-report.md` ✗ `/TEST_REPORT.md`
+**Plan artifact:** ✓ `plans/03-focus_plans/P0019_.../2026-05-04_DOC-test-report.md` ✗ `/TEST_REPORT.md`
 
 **Setup guide:** Check if foundational → if yes (about Claude Code), update CLAUDE.md; if no → `docs/integration/`
 

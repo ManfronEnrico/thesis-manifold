@@ -1,6 +1,6 @@
-# Plans Index
+# Plans Index — 8-Status Workflow (2026-05-07+)
 
-All plans are organized by status bucket and identified by unique P-ID for easy reference and tracking.
+All plans are organized by status bucket and identified by unique P-ID for easy reference and tracking. **Status is maintained in plan frontmatter only** (no duplicate outcome files).
 
 ---
 
@@ -13,65 +13,123 @@ Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
 - **HHMM**: Plan creation time (24-hour format, 0800 default for undated)
 - **{slug}**: Descriptive slug (lowercase, hyphens)
 
+**Status Fields** (in plan frontmatter):
+- `status`: Current status (Backlog, In Progress, Focus, Complete, Blocked, Paused, Cancelled, Archived)
+- `created`: Creation timestamp
+- `updated`: Last update timestamp
+- Additional fields per status (e.g., `focus_detail`, `blocked_reason`, `paused_reason`, `outcome_summary`)
+
 ---
 
-## 🎯 Backlog Plans (01-backlog-plans/)
+## 🎯 01. Backlog Plans
 
-| ID | Date | Created | Plan | Status |
+Not yet started. Awaiting prioritization or upstream completion.
+
+| ID | Date | Plan | Status in Frontmatter |
+|---|---|---|---|
+| **P0001** | 2026-04-13 | CMT Master Upgrade | Backlog |
+| **P0002** | 2026-04-13 | NotebookLM Integration | Backlog |
+| **P0003** | 2026-04-13 | PTA Best Practices Extraction | Backlog |
+| **P0004** | 2026-04-13 | Thesis Repository Upgrade | Backlog |
+| **P0018** | 2026-04-28 | Restructure Existing Plans | Backlog |
+
+---
+
+## 🚀 02. In-Progress Plans
+
+Active work, not currently highlighted as focus.
+
+| ID | Date | Plan | Status in Frontmatter |
+|---|---|---|---|
+| (None currently) | — | — | — |
+
+---
+
+## ✨ 03. Focus Plans
+
+Top priority. Actively worked on this session. Next steps defined.
+
+| ID | Date | Plan | Phase/Detail |
+|---|---|---|---|
+| **P0017** | 2026-04-27 | Jupyter Notebook Path Centralization | Phase 2 In Progress — Fix comparison.ipynb § 1-5, apply template to 9 remaining |
+| **P0019** | 2026-05-04 | Preprocessing Pipeline Unification | Phase 3 Complete, Phase 4 Pending — root-documentation-boundary rule + /move-docs-to-folders skill |
+| **P0022** | 2026-05-07 | Preprocessing Pipeline Modularization | Phase 1 Ready — Architecture finalized, no dependencies |
+
+---
+
+## ✅ 04. Complete Plans
+
+Completed. Outcome tracked in frontmatter `outcome_summary` field. All supporting docs bundled in plan folder.
+
+| ID | Date | Plan | Outcome Summary |
+|---|---|---|---|
+| **P0006** | 2026-04-15 | Integration Phase 1 Execution | ✅ Phase 1 extended with material_gaps, toggles, chapter_states, style_profile |
+| **P0007** | 2026-04-15 | Restructuring Audit | ✅ Audit complete; P-ID system defined and implemented |
+| **P0008** | 2026-04-18 | Integration Three Systems | ✅ All 3 systems integrated; System A/B test passes; standalone preprocessing identified |
+| **P0009** | 2026-04-22 | Nielsen Pipeline & Agent Paths | ✅ Nielsen data access + path routing verified; preprocessing.py paths fixed |
+| **P0018** | 2026-04-28 | Restructure Existing Plans | ✅ Plans migrated to P-ID folder structure with status-based buckets (01-08) |
+
+---
+
+## 🚧 05. Blocked Plans
+
+Awaiting external decision or dependency. Unblock condition defined in frontmatter `blocked_reason`.
+
+| ID | Date | Plan | Blocked Reason |
+|---|---|---|---|
+| **P0005** | 2026-04-23 | System A Feature Eng Integration | Awaiting decision: Option A (parents[2]→parents[3], 5min) vs Option B (add __init__.py, 30min, cleaner) |
+
+---
+
+## ⏸ 06. Paused Plans
+
+Intentionally paused. Resume condition defined in frontmatter `paused_reason` and `dependencies`.
+
+| ID | Date | Plan | Paused Reason | Depends On |
 |---|---|---|---|---|
-| **P0001** | 2026-04-13 | 0800 | CMT Master Upgrade | Pending |
-| **P0002** | 2026-04-13 | 0800 | NotebookLM Integration | Pending |
-| **P0003** | 2026-04-13 | 0800 | PTA Best Practices Extraction | Pending |
-| **P0004** | 2026-04-13 | 0800 | Thesis Repository Upgrade | Pending |
+| **P0020** | 2026-05-04 | Rule System Reform | Waiting for P0019 Phase 4 (root-documentation-boundary rule + /move-docs-to-folders skill) | P0019 |
+
+**Note**: P0021 (Docs Reorganization) was completed and archived. Work for future doc organization improvements tracked in plan status notes.
 
 ---
 
-## 🚀 In-Progress Plans (02-in_progress-plans/)
+## ❌ 07. Cancelled Plans
 
-| ID | Date | Created | Plan | Status |
-|---|---|---|---|---|
-| **P0005** | 2026-04-23 | 0800 | System A Feature Eng Integration | In Progress (DRAFT) |
-| **P0017** | 2026-04-27 | 1420 | Jupyter Notebook Path Centralization | In Progress (Phase 2B) |
-| **P0019** | 2026-05-04 | 1400 | Preprocessing Pipeline Unification | In Progress (Phase 4 pending) |
-| **P0022** | 2026-05-07 | 1000 | Preprocessing Pipeline Modularization | In Progress (Phase 1 code ✅, fixes pending) |
+No longer needed. Cancellation reason tracked in frontmatter.
+
+(None currently)
 
 ---
 
-## ✅ Outcome Plans (03-outcome_plans/)
+## 📦 08. Archived Plans
 
-| ID | Date | Created | Plan | Status | Outcome |
-|---|---|---|---|---|---|
-| **P0006** | 2026-04-15 | 0800 | Integration Phase 1 Execution | Completed | Phase 1 extended |
-| **P0007** | 2026-04-15 | 0800 | Restructuring Audit | Completed | Audit done |
-| **P0008** | 2026-04-18 | 0800 | Integration Three Systems | Completed | Integration verified |
-| **P0009** | 2026-04-22 | 0800 | Nielsen Pipeline & Agent Paths | Completed | Data access + paths fixed |
-| **P0017-OUTCOME** | 2026-04-28 | — | Jupyter Path Centralization Phase 2 | Completed | Phase 2 complete (rolled back 2026-04-30) |
-| **P0020** | 2026-05-04 | 1430 | Rule System Reform | Completed | 8 phases delivered; 5 enforcement skills built; conventions consolidated |
-| **P0021** | 2026-05-04 | 1400 | Docs Reorganization (11→4 folders) | Completed | 4-folder structure complete, archive organized |
+Old/legacy plans. Preserved for historical reference. No ongoing work.
 
----
-
-## 📦 Archive Plans (04-archive_plans/)
-
-| ID | Date | Created | Plan | Status |
-|---|---|---|---|---|
-| **P0010** | 2026-04-15 | 0800 | Academic Repos Integration | Archived |
-| **P0011** | 2026-04-15 | 0800 | Architecture Analysis & Integration Safety | Archived |
-| **P0012** | 2026-04-15 | 0800 | Integration Phase 1 State Extension | Archived |
-| **P0013** | 2026-04-15 | 0800 | Integration Summary | Archived |
-| **P0014** | 2026-04-15 | 0800 | Session Progress | Archived |
-| **P0015** | 2026-04-15 | 0800 | System A vs B Contrast | Archived |
-| **P0016** | 2026-04-16 | 0800 | ML Retraining with New Skills | Archived |
+| ID | Date | Plan | Archive Reason |
+|---|---|---|---|
+| **P0010** | 2026-04-15 | Academic Repos Integration | Superseded by System A/B architecture |
+| **P0011** | 2026-04-15 | Architecture Analysis & Integration Safety | Archived after architecture decision |
+| **P0012** | 2026-04-15 | Integration Phase 1 State Extension | Archived after completion; work continued in P0020 |
+| **P0013** | 2026-04-15 | Integration Summary | Archived after consolidation |
+| **P0014** | 2026-04-15 | Session Progress | Archived after session close |
+| **P0015** | 2026-04-15 | System A vs B Contrast | Archived after architecture finalized |
+| **P0016** | 2026-04-16 | ML Retraining with New Skills | Archived; pending new feature request |
 
 ---
 
 ## 📊 Summary
 
-- **Total Plans**: 22
-- **Backlog**: 4 (P0001–P0004)
-- **In Progress**: 4 (P0005, P0017, P0019, P0022)
-- **Outcomes**: 7 (P0006–P0009, P0017-OUTCOME, P0020, P0021)
-- **Archive**: 7 (P0010–P0016)
+- **Total Plans**: 21 tracked
+  - Backlog: 4 (P0001–P0004)
+  - In Progress: 0
+  - Focus: 3 (P0017, P0019, P0022)
+  - Complete: 5 (P0006–P0009, P0018)
+  - Blocked: 1 (P0005)
+  - Paused: 1 (P0020)
+  - Cancelled: 0
+  - Archived: 7 (P0010–P0016)
+
+**Note**: P0021 was completed and merged into broader doc reorganization (no separate folder)
 
 ---
 
@@ -86,16 +144,19 @@ Each plan uses the naming convention: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}`
 **2026-04-22**: P0009  
 **2026-04-23**: P0005  
 **2026-04-27**: P0017  
-**2026-04-28**: P0017-OUTCOME, P0018  
+**2026-04-28**: P0018  
 **2026-05-04**: P0019, P0020, P0021  
-**2026-05-07**: P0022
+**2026-05-07**: P0022  
 
 ### By Status
 
-**Pending**: P0001, P0002, P0003, P0004  
-**In Progress**: P0005, P0017, P0019, P0022  
-**Completed**: P0006, P0007, P0008, P0009, P0017-OUTCOME, P0018, P0020, P0021  
+**Backlog**: P0001, P0002, P0003, P0004  
+**Focus**: P0017, P0019, P0022  
+**Complete**: P0006, P0007, P0008, P0009, P0018  
+**Blocked**: P0005  
+**Paused**: P0020  
 **Archived**: P0010, P0011, P0012, P0013, P0014, P0015, P0016  
+**Retired/Merged**: P0021 (completed, no separate folder)  
 
 ---
 
@@ -105,31 +166,45 @@ All plans are located in their status bucket:
 
 ```
 plans/
-  01-backlog-plans/
+  01-backlog_plans/           (5 plans)
     P0001_2026-04-13_0800_PLAN-cmt-master-upgrade/
       P0001_2026-04-13_0800_PLAN-cmt-master-upgrade.md
-    ... (P0002–P0004)
-  
-  02-in_progress-plans/
-    P0005_2026-04-23_0800_PLAN-system-a-feature-eng-integration/
-      P0005_2026-04-23_0800_PLAN-system-a-feature-eng-integration.md
+    ... (P0002–P0004, P0018)
+
+  02-in_progress_plans/       (0 plans)
+
+  03-focus_plans/             (3 plans)
     P0017_2026-04-27_1420_PLAN-jupyter_notebook_path_centralization/
       P0017_2026-04-27_1420_PLAN-jupyter_notebook_path_centralization.md
       2026-04-28_DOC-*.md (supporting docs)
-    P0018_2026-04-28_1400_PLAN-restructure_existing_plans/
-      P0018_2026-04-28_1400_PLAN-restructure_existing_plans.md
-  
-  03-outcome_plans/
+    P0019_2026-05-04_1400_PLAN-preprocessing-unification/
+      P0019_2026-05-04_1400_PLAN-preprocessing-unification.md
+      2026-05-04_DOC-*.md (supporting docs)
+    P0022_2026-05-07_1000_PLAN-preprocessing-pipeline-modularization/
+      P0022_2026-05-07_1000_PLAN-preprocessing-pipeline-modularization.md
+
+  04-complete_plans/          (7 plans)
     P0006_2026-04-15_0800_PLAN-integration-phase1-execution/
-      ... (etc)
-  
-  04-archive_plans/
+      P0006_2026-04-15_0800_PLAN-integration-phase1-execution.md
+    ... (P0007–P0009, P0018, P0020, P0021)
+
+  05-blocked_plans/                 (1 plan)
+    P0005_2026-04-23_0800_PLAN-system-a-feature-eng-integration/
+      P0005_2026-04-23_0800_PLAN-system-a-feature-eng-integration.md
+
+  06-paused_plans/                  (1 plan)
+    P0020_2026-05-04_1430_PLAN-rule-system-reform/
+      P0020_2026-05-04_1430_PLAN-rule-system-reform.md
+
+  07-cancelled_plans/               (0 plans)
+
+  08-archived_plans/          (7 plans)
     P0010_2026-04-15_0800_PLAN-academic-repos-integration/
-      ... (etc)
+      P0010_2026-04-15_0800_PLAN-academic-repos-integration.md
+    ... (P0011–P0016)
 ```
 
 ---
 
-**Last Updated**: 2026-05-04 14:45  
-**Index Maintainer**: Claude Code Session  
-**Notes**: P0020 created for rule system reform (based on jlacour-git framework)
+**Last Updated**: 2026-05-07 (Restructured to 8-status frontmatter-based system)  
+**Status Tracking**: All status maintained in plan `.md` frontmatter (no duplicate outcome files)

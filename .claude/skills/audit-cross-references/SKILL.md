@@ -41,7 +41,7 @@ Scans repo for references in:
 **YAML frontmatter:**
 ```yaml
 ---
-reference: plans/02-in_progress-plans/P0020_YYYY-MM-DD_HHMM_PLAN-{slug}/
+reference: plans/06-paused_plans/P0020_YYYY-MM-DD_HHMM_PLAN-{slug}/
 related: [file1.md, file2.md]
 ---
 ```

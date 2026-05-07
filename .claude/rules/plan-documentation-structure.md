@@ -8,20 +8,24 @@
 
 ## Folder Structure
 
-Plans live in one of four status buckets:
+Plans live in one of eight status buckets:
 
 ```
 plans/
-  01-backlog-plans/         (Not yet started)
-  02-in_progress-plans/     (Currently being executed)
-  03-outcome_plans/         (Completed with outcomes)
-  04-archive_plans/         (Old/deprecated plans)
+  01-backlog_plans/         (Not yet started)
+  02-in_progress_plans/     (Active work, not currently highlighted)
+  03-focus_plans/           (Top priority, actively worked this session)
+  04-complete_plans/        (Completed with outcomes in frontmatter)
+  05-blocked_plans/         (Awaiting external decision/dependency)
+  06-paused_plans/          (Intentionally paused, waiting for X)
+  07-cancelled_plans/       (No longer needed)
+  08-archived_plans/        (Old/legacy plans)
   
-  PLANS_INDEX.md            (Master reference of all P-IDs)
-  RESTRUCTURING_SUMMARY.md  (Documentation of P-ID restructuring - 2026-04-30)
+  PLANS_INDEX.md            (Master reference of all P-IDs by status)
+  2026-05-07_RESTRUCTURING_COMPLETE.md  (Documentation of latest restructuring)
 ```
 
-**Each plan is a folder**, not a single file. This enables bundling with supporting documentation.
+**Each plan is a folder**, not a single file. This enables bundling with supporting documentation. **Status is tracked in frontmatter only** (no separate outcome files).
 
 ---
 
@@ -48,11 +52,18 @@ File inside folder: `P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}.md`
 
 This is the primary plan document containing details, objectives, steps, and outcomes.
 
-### Outcome File
+### Status Tracking (Frontmatter Only)
 
-When plan completes, create: `P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}.md`
+When plan status changes, update the plan file's frontmatter:
+```yaml
+status: <status-string>
+completed: YYYY-MM-DD HH:MM:SS (if status is Complete)
+blocked_reason: "..." (if status is Blocked)
+paused_reason: "..." (if status is Paused)
+outcome_summary: "..." (if status is Complete)
+```
 
-In folder: `plans/03-outcome_plans/P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}/`
+**No separate outcome files.** The plan file stays in one folder; status lives in frontmatter.
 
 ### Documentation Files
 
@@ -73,13 +84,13 @@ Examples:
 ## Complete Example (P-ID Structure)
 
 ```
-plans/02-in_progress-plans/
+plans/02-in_progress_plans/
   P0017_2026-04-27_1420_PLAN-jupyter-notebook-path-centralization/
     P0017_2026-04-27_1420_PLAN-jupyter-notebook-path-centralization.md
     2026-04-28_DOC-phase2-migration-summary.md
     2026-04-28_DOC-phase3-testing-guide.md
 
-plans/03-outcome_plans/
+plans/04-complete_plans/
   P0018_2026-04-28_1400_OUTCOME-restructure-existing-plans/
     P0018_2026-04-28_1400_OUTCOME-restructure-existing-plans.md
 ```
@@ -110,11 +121,11 @@ Never include:
 
 2. **When moving to outcome**:
    - Keep all supporting docs in folder
-   - Move entire folder from 02-in_progress-plans/ to 03-outcome_plans/
+   - Move entire folder from 02-in_progress_plans/ to 04-complete_plans/
    - Optionally add YYYY-MM-DD_DOC-outcome-summary.md with final results
 
 3. **When archiving**:
-   - Move entire folder from current status to 04-archive_plans/
+   - Move entire folder from current status to 08-archived_plans/
    - Keep all supporting docs intact
 
 ---
@@ -128,7 +139,7 @@ DO NOT create in C:/dev/thesis-manifold/:
 - Any plan-related documentation
 
 ALWAYS create inside plan folder:
-- plans/02-in_progress-plans/P0017_2026-04-27_1420_PLAN-name/2026-04-28_DOC-summary.md
+- plans/02-in_progress_plans/P0017_2026-04-27_1420_PLAN-name/2026-04-28_DOC-summary.md
 
 ---
 
@@ -137,7 +148,7 @@ ALWAYS create inside plan folder:
 ### Creating a New Plan
 
 1. Check plans/PLANS_INDEX.md for next available P-ID (e.g., P0019)
-2. Create folder: plans/02-in_progress-plans/P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/
+2. Create folder: plans/02-in_progress_plans/P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}/
 3. Create plan file: P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}.md inside
 4. Put all supporting docs in same folder
 5. Update plans/PLANS_INDEX.md to register new plan
@@ -150,17 +161,20 @@ ALWAYS create inside plan folder:
 
 ### Moving Between Statuses
 
-1. Move entire folder (plan + all docs) to new status
-2. Example: 02-in_progress-plans/P0017_2026-04-27_1420_PLAN-x/ → 03-outcome_plans/P0017-OUTCOME_2026-04-28_PLAN-x/
-3. Update plans/PLANS_INDEX.md with new status
+1. Move entire folder (plan + all docs) to new status bucket (01, 02, 03, 04, 05, 06, 07, or 08)
+2. Example: `02-in_progress_plans/P0017_2026-04-27_1420_PLAN-x/` → `03-focus_plans/P0017_2026-04-27_1420_PLAN-x/`
+3. Update plan file frontmatter `status` field to match new bucket
+4. Update plans/PLANS_INDEX.md with new status
 
 ### Completing a Plan
 
-1. Create outcome folder: plans/03-outcome_plans/P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}/
-2. Create outcome file: P{NNNN}_YYYY-MM-DD_HHMM_OUTCOME-{slug}.md
-3. Include frontmatter with completed timestamp and link to original plan
-4. Document Completed, Adjusted, Dropped sections
-5. Update plans/PLANS_INDEX.md to mark as Completed
+1. Update frontmatter in plan file:
+   - `status: Complete`
+   - `completed: YYYY-MM-DD HH:MM:SS`
+   - `outcome_summary: "✅ ... | 🔄 ... | ❌ ..."`
+2. Move folder to `plans/04-complete_plans/`
+3. Keep all supporting docs in same folder (no separate outcome file)
+4. Update plans/PLANS_INDEX.md to mark as Completed
 
 ---
 
