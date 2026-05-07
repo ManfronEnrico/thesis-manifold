@@ -25,6 +25,7 @@ env/
 *.sqlite
 *.7z
 *.parquet
+*.jsonl
 
 # Model artifacts & intermediate binaries (regenerable from notebook)
 *.npy
