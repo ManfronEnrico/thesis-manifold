@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-05-06T16:12:53.026752",
+  "timestamp": "2026-05-08T21:09:34.477029",
   "database": "Nielsen_clean",
-  "output_dir": "Z:\\.dev-ssd\\thesis-manifold\\thesis\\data\\raw_nielsen\\data_jsonl",
+  "output_dir": "/root/dev/thesis-manifold/thesis/data/raw_nielsen/data_jsonl",
   "files": [
     {
       "status": "saved",
@@ -10,38 +10,38 @@
       "columns": 2,
       "size_mb": 0.0,
       "file": "csd_clean_dim_market_v.jsonl",
-      "peak_ram_mb": 0.3,
-      "elapsed_sec": 0.2
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 4.4
     },
     {
       "status": "saved",
       "name": "csd_clean_dim_period_v",
-      "rows": 42,
+      "rows": 43,
       "columns": 4,
       "size_mb": 0.0,
       "file": "csd_clean_dim_period_v.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.1
-    },
-    {
-      "status": "saved",
-      "name": "csd_clean_dim_product_v",
-      "rows": 2057,
-      "columns": 18,
-      "size_mb": 1.08,
-      "file": "csd_clean_dim_product_v.jsonl",
-      "peak_ram_mb": 2.5,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.5
     },
     {
       "status": "saved",
+      "name": "csd_clean_dim_product_v",
+      "rows": 2080,
+      "columns": 18,
+      "size_mb": 1.09,
+      "file": "csd_clean_dim_product_v.jsonl",
+      "peak_ram_mb": 2.4,
+      "elapsed_sec": 1.4
+    },
+    {
+      "status": "saved",
       "name": "csd_clean_facts_v",
-      "rows": 2535464,
+      "rows": 2600020,
       "columns": 10,
-      "size_mb": 676.08,
+      "size_mb": 690.83,
       "file": "csd_clean_facts_v.jsonl",
-      "peak_ram_mb": 78.7,
-      "elapsed_sec": 213.3
+      "peak_ram_mb": 79.0,
+      "elapsed_sec": 600.7
     },
     {
       "status": "saved",
@@ -50,8 +50,8 @@
       "columns": 4,
       "size_mb": 0.0,
       "file": "metadata_csd_clean_dim_market.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.4
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
@@ -60,8 +60,8 @@
       "columns": 4,
       "size_mb": 0.0,
       "file": "metadata_csd_clean_dim_period.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.2
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
@@ -70,8 +70,8 @@
       "columns": 4,
       "size_mb": 0.0,
       "file": "metadata_csd_clean_dim_product.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.2
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
@@ -80,7 +80,7 @@
       "columns": 4,
       "size_mb": 0.0,
       "file": "metadata_csd_clean_facts.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.2
     },
     {
@@ -90,8 +90,8 @@
       "columns": 7,
       "size_mb": 0.02,
       "file": "metadata_csd_columns.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.4
+      "peak_ram_mb": 0.1,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
@@ -100,38 +100,38 @@
       "columns": 2,
       "size_mb": 0.01,
       "file": "totalbeer_clean_dim_market_v.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "totalbeer_clean_dim_period_v",
-      "rows": 39,
+      "rows": 40,
       "columns": 4,
       "size_mb": 0.0,
       "file": "totalbeer_clean_dim_period_v.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.2
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "totalbeer_clean_dim_product_v",
-      "rows": 5645,
+      "rows": 5668,
       "columns": 35,
-      "size_mb": 6.47,
+      "size_mb": 6.49,
       "file": "totalbeer_clean_dim_product_v.jsonl",
       "peak_ram_mb": 11.9,
-      "elapsed_sec": 1.7
+      "elapsed_sec": 3.7
     },
     {
       "status": "saved",
       "name": "totalbeer_clean_facts_v",
-      "rows": 15506029,
+      "rows": 15897306,
       "columns": 36,
-      "size_mb": 19366.42,
+      "size_mb": 19835.13,
       "file": "totalbeer_clean_facts_v.jsonl",
-      "peak_ram_mb": 164.3,
-      "elapsed_sec": 3568.0
+      "peak_ram_mb": 164.0,
+      "elapsed_sec": 7128.7
     },
     {
       "status": "saved",
@@ -140,8 +140,8 @@
       "columns": 7,
       "size_mb": 0.03,
       "file": "metadata_totalbeer_columns.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.4
+      "peak_ram_mb": 0.1,
+      "elapsed_sec": 0.6
     },
     {
       "status": "saved",
@@ -150,38 +150,38 @@
       "columns": 2,
       "size_mb": 0.01,
       "file": "energidrikke_clean_dim_market_v.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.2
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "energidrikke_clean_dim_period_v",
-      "rows": 39,
+      "rows": 40,
       "columns": 4,
       "size_mb": 0.0,
       "file": "energidrikke_clean_dim_period_v.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.2
+      "peak_ram_mb": 0.0,
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "energidrikke_clean_dim_product_v",
-      "rows": 748,
+      "rows": 761,
       "columns": 25,
-      "size_mb": 0.6,
+      "size_mb": 0.61,
       "file": "energidrikke_clean_dim_product_v.jsonl",
-      "peak_ram_mb": 1.3,
-      "elapsed_sec": 0.5
+      "peak_ram_mb": 1.1,
+      "elapsed_sec": 0.7
     },
     {
       "status": "saved",
       "name": "energidrikke_clean_facts_v",
-      "rows": 3112010,
+      "rows": 3200716,
       "columns": 32,
-      "size_mb": 3471.15,
+      "size_mb": 3552.2,
       "file": "energidrikke_clean_facts_v.jsonl",
-      "peak_ram_mb": 153.4,
-      "elapsed_sec": 665.4
+      "peak_ram_mb": 153.3,
+      "elapsed_sec": 1220.7
     },
     {
       "status": "saved",
@@ -190,8 +190,8 @@
       "columns": 7,
       "size_mb": 0.02,
       "file": "metadata_energidrikke_columns.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.9
+      "peak_ram_mb": 0.1,
+      "elapsed_sec": 0.5
     },
     {
       "status": "saved",
@@ -200,38 +200,38 @@
       "columns": 2,
       "size_mb": 0.01,
       "file": "danskvand_clean_dim_market_v.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "danskvand_clean_dim_period_v",
-      "rows": 37,
+      "rows": 38,
       "columns": 4,
       "size_mb": 0.0,
       "file": "danskvand_clean_dim_period_v.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "danskvand_clean_dim_product_v",
-      "rows": 566,
+      "rows": 568,
       "columns": 24,
       "size_mb": 0.43,
       "file": "danskvand_clean_dim_product_v.jsonl",
-      "peak_ram_mb": 0.9,
-      "elapsed_sec": 0.4
+      "peak_ram_mb": 0.8,
+      "elapsed_sec": 0.5
     },
     {
       "status": "saved",
       "name": "danskvand_clean_facts_v",
-      "rows": 1248913,
+      "rows": 1281670,
       "columns": 15,
-      "size_mb": 599.58,
+      "size_mb": 614.07,
       "file": "danskvand_clean_facts_v.jsonl",
-      "peak_ram_mb": 112.0,
-      "elapsed_sec": 193.9
+      "peak_ram_mb": 111.9,
+      "elapsed_sec": 354.5
     },
     {
       "status": "saved",
@@ -240,7 +240,7 @@
       "columns": 7,
       "size_mb": 0.02,
       "file": "metadata_danskvand_columns.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.1,
       "elapsed_sec": 0.5
     },
     {
@@ -250,17 +250,17 @@
       "columns": 2,
       "size_mb": 0.01,
       "file": "rtd_clean_dim_market_v.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.3
     },
     {
       "status": "saved",
       "name": "rtd_clean_dim_period_v",
-      "rows": 37,
+      "rows": 38,
       "columns": 4,
       "size_mb": 0.0,
       "file": "rtd_clean_dim_period_v.jsonl",
-      "peak_ram_mb": 0.2,
+      "peak_ram_mb": 0.0,
       "elapsed_sec": 0.3
     },
     {
@@ -270,18 +270,18 @@
       "columns": 24,
       "size_mb": 0.43,
       "file": "rtd_clean_dim_product_v.jsonl",
-      "peak_ram_mb": 1.0,
-      "elapsed_sec": 0.4
+      "peak_ram_mb": 0.8,
+      "elapsed_sec": 0.5
     },
     {
       "status": "saved",
       "name": "rtd_clean_facts_v",
-      "rows": 2161268,
+      "rows": 2214693,
       "columns": 31,
-      "size_mb": 2303.35,
+      "size_mb": 2358.14,
       "file": "rtd_clean_facts_v.jsonl",
-      "peak_ram_mb": 150.3,
-      "elapsed_sec": 394.3
+      "peak_ram_mb": 150.2,
+      "elapsed_sec": 831.9
     },
     {
       "status": "saved",
@@ -290,8 +290,8 @@
       "columns": 7,
       "size_mb": 0.02,
       "file": "metadata_rtd_columns.jsonl",
-      "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.6
+      "peak_ram_mb": 0.1,
+      "elapsed_sec": 0.4
     }
   ],
   "summary": {

@@ -1,6 +1,6 @@
 # Nielsen CSD Preprocessing Report
 
-**Generated:** 2026-05-07 08:05:24
+**Generated:** 2026-05-09 10:32:26
 **Category:** CSD
 **Market Scope:** DVH EXCL. HD
 **Min Periods Filter:** 30
@@ -9,12 +9,12 @@
 
 | Metric | Value |
 |---|---|
-| Brands in feature matrix | 77 |
-| Total rows | 3,234 |
-| Periods per brand | 42 |
+| Brands in feature matrix | 78 |
+| Total rows | 3,354 |
+| Periods per brand | 43 |
 | Features engineered | 17 |
-| Peak RAM (preprocessing) | 6195.3 MB |
-| Elapsed time | 345.9 s |
+| Peak RAM (preprocessing) | 7728.8 MB |
+| Elapsed time | 285.2 s |
 
 ## Split Boundaries
 
@@ -22,7 +22,7 @@
 |---|---|---|---|
 | Train | 2022-10-01 | 2025-02-01 | 29 |
 | Val | 2025-03-01 | 2025-08-01 | 6 |
-| Test | 2025-09-01 | 2026-03-01 | 7 |
+| Test | 2025-09-01 | 2026-04-01 | 8 |
 
 ## Engineered Features
 
@@ -48,23 +48,23 @@
 
 | brand             |   n_periods |   n_nonzero |   total_units |   train_periods |   val_periods |   test_periods |
 |:------------------|------------:|------------:|--------------:|----------------:|--------------:|---------------:|
-| HARBOE            |          42 |          42 |   2.08436e+08 |              29 |             6 |              7 |
-| COCA COLA         |          42 |          42 |   1.99549e+08 |              29 |             6 |              7 |
-| PEPSI             |          42 |          42 |   1.70583e+08 |              29 |             6 |              7 |
-| FAXE KONDI        |          42 |          42 |   1.28057e+08 |              29 |             6 |              7 |
-| FANTA             |          42 |          42 |   3.42968e+07 |              29 |             6 |              7 |
-| JOLLY             |          42 |          42 |   1.92736e+07 |              29 |             6 |              7 |
-| TUBORG SQUASH     |          42 |          42 |   1.70469e+07 |              29 |             6 |              7 |
-| SCHWEPPES         |          42 |          42 |   1.39655e+07 |              29 |             6 |              7 |
-| HANCOCK           |          42 |          42 |   9.68664e+06 |              29 |             6 |              7 |
-| FEVER TREE        |          42 |          42 |   8.13824e+06 |              29 |             6 |              7 |
-| SAN PELLEGRINO    |          42 |          42 |   8.07717e+06 |              29 |             6 |              7 |
-| HARBOE OTHER      |          42 |          42 |   4.60843e+06 |              29 |             6 |              7 |
-| EGO               |          42 |          42 |   3.74373e+06 |              29 |             6 |              7 |
-| ULUDAG            |          42 |          42 |   3.03555e+06 |              29 |             6 |              7 |
-| SPRITE            |          42 |          42 |   2.99003e+06 |              29 |             6 |              7 |
-| CARIBIA           |          42 |          42 |   2.82e+06    |              29 |             6 |              7 |
-| THE PERFECT MIXER |          42 |          42 |   2.34077e+06 |              29 |             6 |              7 |
-| FREM              |          42 |          42 |   2.30141e+06 |              29 |             6 |              7 |
-| MIRINDA           |          42 |          42 |   1.78967e+06 |              29 |             6 |              7 |
-| FRESH             |          42 |          30 |   1.51854e+06 |              29 |             6 |              7 |
+| HARBOE            |          43 |          43 |   2.13716e+08 |              29 |             6 |              8 |
+| COCA COLA         |          43 |          43 |   2.03639e+08 |              29 |             6 |              8 |
+| PEPSI             |          43 |          43 |   1.74064e+08 |              29 |             6 |              8 |
+| FAXE KONDI        |          43 |          43 |   1.30886e+08 |              29 |             6 |              8 |
+| FANTA             |          43 |          43 |   3.51162e+07 |              29 |             6 |              8 |
+| JOLLY             |          43 |          43 |   1.96175e+07 |              29 |             6 |              8 |
+| TUBORG SQUASH     |          43 |          43 |   1.75144e+07 |              29 |             6 |              8 |
+| SCHWEPPES         |          43 |          43 |   1.41717e+07 |              29 |             6 |              8 |
+| HANCOCK           |          43 |          43 |   9.95056e+06 |              29 |             6 |              8 |
+| FEVER TREE        |          43 |          43 |   8.29369e+06 |              29 |             6 |              8 |
+| SAN PELLEGRINO    |          43 |          43 |   8.25799e+06 |              29 |             6 |              8 |
+| HARBOE OTHER      |          43 |          43 |   4.6822e+06  |              29 |             6 |              8 |
+| EGO               |          43 |          43 |   3.85312e+06 |              29 |             6 |              8 |
+| ULUDAG            |          43 |          43 |   3.06649e+06 |              29 |             6 |              8 |
+| SPRITE            |          43 |          43 |   3.05884e+06 |              29 |             6 |              8 |
+| CARIBIA           |          43 |          43 |   2.8992e+06  |              29 |             6 |              8 |
+| THE PERFECT MIXER |          43 |          43 |   2.34147e+06 |              29 |             6 |              8 |
+| FREM              |          43 |          43 |   2.34133e+06 |              29 |             6 |              8 |
+| MIRINDA           |          43 |          43 |   1.80574e+06 |              29 |             6 |              8 |
+| FRESH             |          43 |          31 |   1.54673e+06 |              29 |             6 |              8 |

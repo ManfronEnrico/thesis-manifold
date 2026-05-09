@@ -382,8 +382,6 @@ def main():
     print(f"Manifest: {manifest_path}")
 
 if __name__ == "__main__":
-    global DOWNLOAD_RAW_DATA
-
     parser = argparse.ArgumentParser(
         description="Download Nielsen Fabric data to JSONL",
         formatter_class=argparse.RawDescriptionHelpFormatter,

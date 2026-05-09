@@ -1,5 +1,5 @@
 # Nielsen Danskvand Preprocessing Report
-> Generated: 2026-05-07 08:17:05
+> Generated: 2026-05-09 11:53:10
 > Category: Danskvand
 > Market scope: DVH EXCL. HD
 > Min periods filter: 30
@@ -9,11 +9,11 @@
 | Metric | Value |
 |---|---|
 | Brands in feature matrix | 24 |
-| Total rows | 888 |
-| Periods per brand | 37 |
+| Total rows | 912 |
+| Periods per brand | 38 |
 | Features engineered | 18 |
-| Peak RAM (preprocessing) | 19415.7 MB |
-| Elapsed time | 201.2 s |
+| Peak RAM (preprocessing) | 6571.3 MB |
+| Elapsed time | 205.8 s |
 
 ## Split Boundaries
 
@@ -21,7 +21,7 @@
 |---|---|---|---|
 | Train | 2023-03-01 | 2025-02-01 | 24 |
 | Val | 2025-03-01 | 2025-08-01 | 6 |
-| Test | 2025-09-01 | 2026-03-01 | 7 |
+| Test | 2025-09-01 | 2026-04-01 | 8 |
 
 ## Feature List
 
@@ -48,23 +48,23 @@
 
 | brand             |   n_periods |   n_nonzero |      total_units |   train_periods |   val_periods |   test_periods |
 |:------------------|------------:|------------:|-----------------:|----------------:|--------------:|---------------:|
-| HARBOE            |          37 |          37 |      6.17638e+07 |              24 |             6 |              7 |
-| BLUE KELD         |          37 |          37 |      2.29315e+07 |              24 |             6 |              7 |
-| FIRST PRICE       |          37 |          37 |      1.37655e+07 |              24 |             6 |              7 |
-| AQUA D'OR         |          37 |          37 |      1.24892e+07 |              24 |             6 |              7 |
-| KILDEVÆLD         |          37 |          37 |      7.29082e+06 |              24 |             6 |              7 |
-| EGEKILDE          |          37 |          37 |      6.45226e+06 |              24 |             6 |              7 |
-| RAMLOESA          |          37 |          37 |      5.68806e+06 |              24 |             6 |              7 |
-| SAN PELLEGRINO    |          37 |          37 |      5.10643e+06 |              24 |             6 |              7 |
-| OTHER BRAND       |          37 |          37 | 702675           |              24 |             6 |              7 |
-| ACTIVE 02         |          37 |          37 | 585528           |              24 |             6 |              7 |
-| HANCOCK           |          37 |          37 | 410155           |              24 |             6 |              7 |
-| CARLSBERG KURVAND |          37 |          37 | 229966           |              24 |             6 |              7 |
-| PERRIER           |          37 |          37 | 204195           |              24 |             6 |              7 |
-| OK PLUS           |          37 |          36 | 149512           |              24 |             6 |              7 |
-| KIRVI             |          37 |          37 | 123239           |              24 |             6 |              7 |
-| EVIAN             |          37 |          37 |  74025.6         |              24 |             6 |              7 |
-| FREM              |          37 |          37 |  69116.2         |              24 |             6 |              7 |
-| DENICE            |          37 |          35 |  48815           |              24 |             6 |              7 |
-| SALTUM            |          37 |          37 |  26280           |              24 |             6 |              7 |
-| SAN BENEDETTO     |          37 |          37 |  25520.7         |              24 |             6 |              7 |
+| HARBOE            |          38 |          38 |      6.40511e+07 |              24 |             6 |              8 |
+| BLUE KELD         |          38 |          38 |      2.33721e+07 |              24 |             6 |              8 |
+| FIRST PRICE       |          38 |          38 |      1.40836e+07 |              24 |             6 |              8 |
+| AQUA D'OR         |          38 |          38 |      1.26705e+07 |              24 |             6 |              8 |
+| KILDEVÃ†LD         |          38 |          38 |      7.45454e+06 |              24 |             6 |              8 |
+| EGEKILDE          |          38 |          38 |      6.60664e+06 |              24 |             6 |              8 |
+| RAMLOESA          |          38 |          38 |      5.84417e+06 |              24 |             6 |              8 |
+| SAN PELLEGRINO    |          38 |          38 |      5.2091e+06  |              24 |             6 |              8 |
+| OTHER BRAND       |          38 |          38 | 713316           |              24 |             6 |              8 |
+| ACTIVE 02         |          38 |          38 | 586470           |              24 |             6 |              8 |
+| HANCOCK           |          38 |          38 | 422478           |              24 |             6 |              8 |
+| CARLSBERG KURVAND |          38 |          38 | 232646           |              24 |             6 |              8 |
+| PERRIER           |          38 |          38 | 208513           |              24 |             6 |              8 |
+| OK PLUS           |          38 |          37 | 149698           |              24 |             6 |              8 |
+| KIRVI             |          38 |          38 | 123805           |              24 |             6 |              8 |
+| EVIAN             |          38 |          38 |  77418.6         |              24 |             6 |              8 |
+| FREM              |          38 |          38 |  70335.2         |              24 |             6 |              8 |
+| DENICE            |          38 |          36 |  48856           |              24 |             6 |              8 |
+| SAN BENEDETTO     |          38 |          38 |  26915.7         |              24 |             6 |              8 |
+| SALTUM            |          38 |          38 |  26569.1         |              24 |             6 |              8 |
