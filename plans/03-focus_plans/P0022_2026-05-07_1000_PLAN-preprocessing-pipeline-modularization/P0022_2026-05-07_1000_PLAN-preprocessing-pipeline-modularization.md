@@ -1,8 +1,8 @@
 ---
 created: 2026-05-07 10:00:00
-updated: 2026-05-07 17:30:00
+updated: 2026-05-09 14:50:00
 status: Phase 1 Complete, Phase 2 In Progress (Orchestrator Bug Fixed)
-focus_detail: "All orchestrators fixed: Step 0 now auto-runs when cache missing (no manual flag needed). Energidrikke, Danskvand, RTD, Totalbeer configured. Ready to test."
+focus_detail: "Modular nielsen/ orchestrators ready to test. Parallel work 2026-05-09: legacy monolithic preprocessing_*.py scripts also separated into Stage 1 (jsonl_to_parquet/ cache) + Stage 2 (parquet-only feature engineering)."
 ---
 
 # P0022: Preprocessing Pipeline Modularization
@@ -82,6 +82,33 @@ thesis/data/preprocessing/nielsen/
 
 - **P0017:** Notebook paths (blocked: awaiting P0022 stable outputs)
 - **P0019:** Root docs boundary (paused: lower priority)
+
+---
+
+## Parallel Architecture (Legacy Monolithic Scripts) — 2026-05-09
+
+The legacy monolithic preprocessing scripts at `thesis/data/preprocessing/preprocessing_*.py`
+(still imported by `run_all_preprocessing.py`) were also refactored into a 2-stage
+architecture this session, mirroring the same caching principle P0022 implements at finer granularity.
+
+**Changes:**
+- New folder: `thesis/data/preprocessing/jsonl_to_parquet/`
+  - `convert_category.py` — parametric `--category` JSONL→Parquet converter, idempotent mtime check
+  - `run_all_conversions.py` — loops all 5 categories; supports `--only`, `--force`; writes manifest
+  - `README.md` — documents Stage 1 vs Stage 2 separation
+- Removed `save_dimension_tables()` from legacy `preprocessing_csd.py` (moved to Stage 1)
+- All 5 legacy scripts now read **only Parquet** (hard-fail with Stage 1 instructions if cache missing)
+- No JSONL fallback in Stage 2 — clean dependency boundary
+
+**Verification:**
+- All 5 scripts pass `py_compile`, import cleanly, resolve to correct parquet paths
+- `validate_input_data` hard-fail message smoke-tested
+
+**Relationship to P0022:**
+- P0022 modularizes one category into 7 step scripts (cache → load → calendar → filter → engineer → split → save)
+- This parallel work leaves the legacy scripts monolithic but separates the cache step (same principle, coarser granularity)
+- The two architectures coexist: P0022 modular under `nielsen/`, legacy monolithic in parent folder. `run_all_preprocessing.py` still drives the legacy path.
+- When P0022 Phase 3 introduces `preprocessing_all.py` master orchestrator and the modular path becomes canonical, the legacy `preprocessing_*.py` and the standalone `jsonl_to_parquet/` folder can be retired together.
 
 ---
 

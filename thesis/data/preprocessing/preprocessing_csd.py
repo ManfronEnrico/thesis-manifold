@@ -1,24 +1,31 @@
 """
-Nielsen CSD Preprocessing Pipeline
-====================================
-Reads raw Nielsen CSD data from local JSONL files, engineers all features
-required for the 5 forecasting models, applies the locked train/val/test split,
-and saves the feature matrix to disk in Parquet format.
+Nielsen CSD Preprocessing Pipeline (Stage 2 — Feature Engineering)
+====================================================================
+Reads cached Parquet views, engineers all features required for the 5
+forecasting models, applies the locked train/val/test split, and saves the
+feature matrix to disk in Parquet format.
 
-Input files (from raw_nielsen/data_jsonl/CSD/):
-  views/csd_clean_facts_v.jsonl
-  views/csd_clean_dim_product_v.jsonl
-  views/csd_clean_dim_period_v.jsonl
-  views/csd_clean_dim_market_v.jsonl
+This is **Stage 2**. It depends on Stage 1 (`jsonl_to_parquet/`) having
+already converted the raw JSONL files into Parquet. If the Parquet cache is
+missing, this script hard-fails with instructions.
 
-Output files (Parquet, in preprocessing/parquet_nielsen/):
-  specialized_CSD_feature_matrix.parquet
-  series_index.csv
-  split_dates.json
-  preprocessing_report.md
+Input files (from preprocessing/parquet_nielsen/CSD/views/):
+  csd_clean_facts_v.parquet
+  csd_clean_dim_product_v.parquet
+  csd_clean_dim_period_v.parquet
+  csd_clean_dim_market_v.parquet
+
+Output files (Parquet, in preprocessing/parquet_nielsen/CSD/engineered/):
+  csd_feature_matrix.parquet
+  csd_series_index.csv
+  csd_split_dates.json
+  csd_preprocessing_report.md
 
 Usage:
-  python3 preprocessing_csd.py
+  # Stage 1 first (only if not yet cached):
+  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only CSD
+  # Then Stage 2:
+  python thesis/data/preprocessing/preprocessing_csd.py
 """
 
 import sys, json, tracemalloc, time, importlib
@@ -48,13 +55,7 @@ import PATHS
 importlib.reload(PATHS)
 
 from PATHS import (
-    ROOT_DIR,
-    THESIS_DATA_PREPROCESSING_DIR,
-    THESIS_DATA_NIELSEN_JSONL_DIR,
-    THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR,
-    get_category_raw_dir,
     get_category_views_dir,
-    get_category_metadata_dir,
     get_category_engineered_dir,
 )
 
@@ -68,22 +69,15 @@ CATEGORY = "CSD"
 # INPUT/OUTPUT PATHS (Dynamic from PATHS.py)
 # ============================================================================
 
-# Input: Nielsen JSONL files organized by type
-INPUT_VIEWS_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "views"
-INPUT_METADATA_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "metadata"
+# Input: cached Parquet views (produced by Stage 1 jsonl_to_parquet/)
+INPUT_VIEWS_DIR = get_category_views_dir(CATEGORY)
 
-# Output: parquet files organized by category and type
-OUT_RAW = get_category_raw_dir(CATEGORY)
-OUT_VIEWS = get_category_views_dir(CATEGORY)
-OUT_METADATA = get_category_metadata_dir(CATEGORY)
+# Output: engineered features
 OUT_ENGINEERED = get_category_engineered_dir(CATEGORY)
+OUT_ENGINEERED.mkdir(parents=True, exist_ok=True)
 
-# Create all output directories
-for out_dir in [OUT_RAW, OUT_VIEWS, OUT_METADATA, OUT_ENGINEERED]:
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-print(f"Input (Views): {INPUT_VIEWS_DIR.resolve()}")
-print(f"Output (Engineered): {OUT_ENGINEERED.resolve()}")
+print(f"Input (Parquet views): {INPUT_VIEWS_DIR.resolve()}")
+print(f"Output (Engineered):   {OUT_ENGINEERED.resolve()}")
 
 # ============================================================================
 # FEATURE ENGINEERING IMPORTS
@@ -105,55 +99,41 @@ from thesis.thesis_agents.ai_research_framework.features.engineer_features impor
 # DATA VALIDATION
 # ============================================================================
 
-def validate_input_data(raw_dir: Path, views_dir: Path) -> bool:
+def validate_input_data(views_dir: Path) -> bool:
     """
-    Check if all required Nielsen CSD JSONL files exist in raw and views directories.
-    If any are missing, print instructions on how to download them.
-    Returns True if at least raw tables exist, False otherwise.
+    Check that all required Nielsen CSD Parquet view files exist.
+
+    Stage 2 reads only Parquet. If the cache is missing, hard-fail with
+    instructions to run Stage 1 first.
+
+    Returns True iff every required view file exists.
     """
-    required_raw_files = [
-        "csd_clean_facts.jsonl",
-        "csd_clean_dim_product.jsonl",
-        "csd_clean_dim_period.jsonl",
-        "csd_clean_dim_market.jsonl",
+    required_files = [
+        "csd_clean_facts_v.parquet",
+        "csd_clean_dim_product_v.parquet",
+        "csd_clean_dim_period_v.parquet",
+        "csd_clean_dim_market_v.parquet",
     ]
-
-    required_views_files = [
-        "csd_clean_facts_v.jsonl",
-        "csd_clean_dim_product_v.jsonl",
-        "csd_clean_dim_period_v.jsonl",
-        "csd_clean_dim_market_v.jsonl",
-    ]
-
-    missing_raw = [f for f in required_raw_files if not (raw_dir / f).exists()]
-    missing_views = [f for f in required_views_files if not (views_dir / f).exists()]
-
-    if missing_views:
+    missing = [f for f in required_files if not (views_dir / f).exists()]
+    if missing:
         print("=" * 80)
-        print("ERROR: Missing required Nielsen JSONL view files!")
+        print("ERROR: Missing required Parquet view files for CSD!")
         print("=" * 80)
-        print(f"\nViews location: {views_dir.resolve()}\n")
-        print("Missing view files:")
-        for f in missing_views:
+        print(f"\nLocation: {views_dir.resolve()}\n")
+        print("Missing files:")
+        for f in missing:
             print(f"  - {f}")
         print("\n" + "=" * 80)
-        print("SOLUTION: Download Nielsen data from Fabric warehouse")
+        print("SOLUTION: Run Stage 1 (JSONL → Parquet conversion) first")
         print("=" * 80)
-        print("\nRun the following command from the project root:")
-        print("\n  python thesis/data/raw_nielsen/scripts/save_all_datasets.py\n")
-        print("This requires:")
-        print("  - .env file in project root with RU_* credentials")
-        print("  - ODBC Driver 18 for SQL Server")
-        print("  - pip install pyodbc azure-identity python-dotenv\n")
-        print("Script location: thesis/data/raw_nielsen/scripts/save_all_datasets.py")
+        print("\nFrom the project root:")
+        print("  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only CSD")
+        print("\nIf the JSONL source files are also missing, run:")
+        print("  python thesis/data/raw_nielsen/scripts/save_all_datasets.py")
         print("=" * 80)
         return False
 
-    if missing_raw:
-        print(f"⚠ Warning: Raw tables not found, will skip caching raw tables")
-        return True  # Can still proceed if views exist
-
-    print(f"✓ Input validation: All required view files found")
+    print(f"✓ Input validation: All {len(required_files)} Parquet view files found")
     return True
 
 
@@ -161,19 +141,19 @@ def validate_input_data(raw_dir: Path, views_dir: Path) -> bool:
 # PIPELINE STEPS
 # ============================================================================
 
-# ── 1. Load raw data from local JSONL files ─────────────────────────────────
+# ── 1. Load raw data from cached Parquet view files ────────────────────────
 
 def load_raw(input_dir: Path) -> pd.DataFrame:
     """
-    Load Nielsen CSD data from local JSONL view files.
+    Load Nielsen CSD data from cached Parquet view files (produced by Stage 1).
     Reads facts × product dim × period dim (from views, which are cleaned/reduced).
     Filters to TARGET_MARKET, then aggregates to brand × month grain.
     """
-    print("  Loading view JSONL files...")
-    facts = pd.read_json(input_dir / "csd_clean_facts_v.jsonl", lines=True)
-    products = pd.read_json(input_dir / "csd_clean_dim_product_v.jsonl", lines=True)
-    periods = pd.read_json(input_dir / "csd_clean_dim_period_v.jsonl", lines=True)
-    markets = pd.read_json(input_dir / "csd_clean_dim_market_v.jsonl", lines=True)
+    print("  Loading Parquet view files...")
+    facts = pd.read_parquet(input_dir / "csd_clean_facts_v.parquet")
+    products = pd.read_parquet(input_dir / "csd_clean_dim_product_v.parquet")
+    periods = pd.read_parquet(input_dir / "csd_clean_dim_period_v.parquet")
+    markets = pd.read_parquet(input_dir / "csd_clean_dim_market_v.parquet")
 
     print(f"  Facts shape: {facts.shape}")
     print(f"  Products shape: {products.shape}")
@@ -215,54 +195,7 @@ def load_raw(input_dir: Path) -> pd.DataFrame:
 # to avoid duplication between the CLI batch script and the LangGraph agent.
 
 
-# ── 2. Save raw/views/metadata to parquet cache ──────────────────────────
-
-def save_dimension_tables(input_raw_dir: Path, input_views_dir: Path, input_metadata_dir: Path):
-    """
-    Save raw tables, views, and metadata as parquet for caching and reference.
-
-    These are cached copies of Nielsen data (not engineered—used for validation,
-    analysis, and reproducibility).
-    """
-    print("\n  Caching raw tables as parquet...")
-
-    # Raw tables (full granularity)
-    for table_name in ["csd_clean_facts", "csd_clean_dim_product",
-                       "csd_clean_dim_period", "csd_clean_dim_market"]:
-        try:
-            df = pd.read_json(input_raw_dir / f"{table_name}.jsonl", lines=True)
-            df.to_parquet(OUT_RAW / f"{table_name}.parquet", index=False)
-            print(f"    ✓ {table_name}: {len(df):,} rows")
-        except FileNotFoundError:
-            print(f"    ⚠ {table_name}: JSONL not found (skipped)")
-
-    print("  Caching view tables as parquet...")
-
-    # Views (cleaned, column-reduced)
-    for table_name in ["csd_clean_facts_v", "csd_clean_dim_product_v",
-                       "csd_clean_dim_period_v", "csd_clean_dim_market_v"]:
-        try:
-            df = pd.read_json(input_views_dir / f"{table_name}.jsonl", lines=True)
-            df.to_parquet(OUT_VIEWS / f"{table_name}.parquet", index=False)
-            print(f"    ✓ {table_name}: {len(df):,} rows")
-        except FileNotFoundError:
-            print(f"    ⚠ {table_name}: JSONL not found (skipped)")
-
-    print("  Caching metadata tables as parquet...")
-
-    # Metadata (schema documentation)
-    for table_name in ["metadata_csd_clean_facts", "metadata_csd_clean_dim_product",
-                       "metadata_csd_clean_dim_period", "metadata_csd_clean_dim_market",
-                       "metadata_csd_columns"]:
-        try:
-            df = pd.read_json(input_metadata_dir / f"{table_name}.jsonl", lines=True)
-            df.to_parquet(OUT_METADATA / f"{table_name}.parquet", index=False)
-            print(f"    ✓ {table_name}: {len(df):,} rows")
-        except FileNotFoundError:
-            print(f"    ⚠ {table_name}: JSONL not found (skipped)")
-
-
-# ── 3. Save engineered outputs ───────────────────────────────────────────────
+# ── 2. Save engineered outputs ───────────────────────────────────────────────
 
 def save_engineered_outputs(df: pd.DataFrame, series_idx: pd.DataFrame,
                            all_dates: list, elapsed: float, peak_mb: float):
@@ -344,23 +277,19 @@ def main():
     print(f"Market scope: {TARGET_MARKET}")
     print(f"Min periods: {MIN_PERIODS}\n")
 
-    # Validate input data exists
-    if not validate_input_data(INPUT_VIEWS_DIR, INPUT_VIEWS_DIR):
+    # Validate input data exists (Stage 1 must have run)
+    if not validate_input_data(INPUT_VIEWS_DIR):
         print("\nAbort: Input validation failed.")
         return
-
-    # Step 0: Cache views/metadata as parquet (one-time setup)
-    print("\nStep 0/6 — Caching Nielsen data as parquet...")
-    save_dimension_tables(INPUT_VIEWS_DIR, INPUT_VIEWS_DIR, INPUT_METADATA_DIR)
 
     tracemalloc.start()
     t0 = time.perf_counter()
 
-    print("\nStep 1/6 — Loading raw data from JSONL files...")
+    print("\nStep 1/5 — Loading raw data from Parquet view files...")
     raw = load_raw(INPUT_VIEWS_DIR)
     print(f"  Raw rows: {len(raw):,}  |  Brands: {raw['brand'].nunique()}\n")
 
-    print("Step 2/6 — Building full calendar index...")
+    print("Step 2/5 — Building full calendar index...")
     df, all_dates = make_calendar(raw)
     print(f"  Rows after calendar fill: {len(df):,}")
     print(f"  Date range: {min(all_dates).date()} to {max(all_dates).date()}")
@@ -368,7 +297,7 @@ def main():
     print(df.head(10).to_string(index=False))
     print()
 
-    print("Step 3/6 — Filtering short series...")
+    print("Step 3/5 — Filtering short series...")
     df = filter_series(df)
     print(f"  Series kept after filter (>= {MIN_PERIODS} non-zero periods): "
           f"{df['brand'].nunique()} brands")
@@ -376,7 +305,7 @@ def main():
     print(df.head(10).to_string(index=False))
     print()
 
-    print("Step 4/6 — Engineering features...")
+    print("Step 4/5 — Engineering features...")
     df = engineer_features(df)
     print(f"  Feature engineering complete")
     print(f"  Columns: {df.shape[1]}")
@@ -385,7 +314,7 @@ def main():
     print(df[cols_to_show].head(5).to_string(index=False))
     print()
 
-    print("Step 5/6 — Applying split labels...")
+    print("Step 5/5 — Applying split labels...")
     df = apply_split(df)
     print(f"  Split labels applied")
     print(f"  Split distribution: {df['split'].value_counts().to_dict()}")
@@ -400,15 +329,12 @@ def main():
 
     print(f"Done in {elapsed:.1f}s  |  Peak RAM: {peak_mb:.1f} MB\n")
 
-    print("Step 6/6 — Saving engineered features...")
+    print("Saving engineered features...")
     series_idx = build_series_index(df)
     save_engineered_outputs(df, series_idx, all_dates, elapsed, peak_mb)
 
     print(f"\nOutputs summary:")
-    print(f"  Raw tables:       {OUT_RAW}/")
-    print(f"  View tables:      {OUT_VIEWS}/")
-    print(f"  Metadata tables:  {OUT_METADATA}/")
-    print(f"  Engineered data:  {OUT_ENGINEERED}/")
+    print(f"  Engineered data: {OUT_ENGINEERED}/")
 
 
 if __name__ == "__main__":

@@ -1,24 +1,31 @@
 """
-Nielsen Danskvand Preprocessing Pipeline
-==========================================
-Reads raw Nielsen danskvand data from local JSONL files, engineers all features
-required for the 5 forecasting models, applies the locked train/val/test split,
-and saves the feature matrix to disk in Parquet format.
+Nielsen Danskvand Preprocessing Pipeline (Stage 2 — Feature Engineering)
+====================================================================
+Reads cached Parquet views, engineers all features required for the 5
+forecasting models, applies the locked train/val/test split, and saves the
+feature matrix to disk in Parquet format.
 
-Input files (from raw_nielsen/data_jsonl/danskvand/views/):
-  danskvand_clean_facts_v.jsonl
-  danskvand_clean_dim_product_v.jsonl
-  danskvand_clean_dim_period_v.jsonl
-  danskvand_clean_dim_market_v.jsonl
+This is **Stage 2**. It depends on Stage 1 (`jsonl_to_parquet/`) having
+already converted the raw JSONL files into Parquet. If the Parquet cache is
+missing, this script hard-fails with instructions.
 
-Output files (Parquet, in preprocessing/parquet_nielsen/danskvand/engineered/):
-  danskvand_feature_matrix.parquet
+Input files (from preprocessing/parquet_nielsen/Danskvand/views/):
+  danskvand_clean_facts_v.parquet
+  danskvand_clean_dim_product_v.parquet
+  danskvand_clean_dim_period_v.parquet
+  danskvand_clean_dim_market_v.parquet
+
+Output files (Parquet, in preprocessing/parquet_nielsen/Danskvand/engineered/):
+  specialized_danskvand_feature_matrix.parquet
   series_index.csv
   split_dates.json
   preprocessing_report.md
 
 Usage:
-  python3 preprocessing_danskvand.py
+  # Stage 1 first (only if not yet cached):
+  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only Danskvand
+  # Then Stage 2:
+  python thesis/data/preprocessing/preprocessing_danskvand.py
 """
 
 import sys, json, tracemalloc, time, importlib
@@ -50,9 +57,8 @@ importlib.reload(PATHS)
 from PATHS import (
     ROOT_DIR,
     THESIS_DATA_PREPROCESSING_DIR,
-    THESIS_DATA_NIELSEN_JSONL_DIR,
-    THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR,
-    get_category_jsonl_views_dir,
+    get_category_views_dir,
+    get_category_engineered_dir,
 )
 
 
@@ -67,15 +73,15 @@ NOTEBOOK_NAME = f"specialized_{CATEGORY}"
 # INPUT/OUTPUT PATHS (Dynamic from PATHS.py)
 # ============================================================================
 
-# Input: raw Nielsen JSONL files (views directory)
-INPUT_DIR = get_category_jsonl_views_dir(CATEGORY.capitalize())
+# Input: cached Parquet views (produced by Stage 1 jsonl_to_parquet/)
+INPUT_DIR = get_category_views_dir(CATEGORY.capitalize())
 
-# Output: processed Parquet files
-OUT = THESIS_DATA_PREPROCESSING_PARQUET_NIELSEN_DIR / CATEGORY.capitalize() / "engineered"
+# Output: engineered features
+OUT = get_category_engineered_dir(CATEGORY.capitalize())
 OUT.mkdir(parents=True, exist_ok=True)
 
-print(f"Input directory: {INPUT_DIR.resolve()}")
-print(f"Output directory: {OUT.resolve()}")
+print(f"Input (Parquet views): {INPUT_DIR.resolve()}")
+print(f"Output (Engineered):   {OUT.resolve()}")
 
 # ============================================================================
 # FEATURE ENGINEERING IMPORTS
@@ -99,41 +105,39 @@ from thesis.thesis_agents.ai_research_framework.features.engineer_features impor
 
 def validate_input_data(input_dir: Path) -> bool:
     """
-    Check if all required Nielsen danskvand JSONL files exist.
-    If any are missing, print instructions on how to download them.
-    Returns True if all files exist, False otherwise.
+    Check that all required Nielsen danskvand Parquet view files exist.
+
+    Stage 2 reads only Parquet. If the cache is missing, hard-fail with
+    instructions to run Stage 1 first.
+
+    Returns True iff every required view file exists.
     """
     required_files = [
-        "danskvand_clean_facts_v.jsonl",
-        "danskvand_clean_dim_product_v.jsonl",
-        "danskvand_clean_dim_period_v.jsonl",
-        "danskvand_clean_dim_market_v.jsonl",
+        "danskvand_clean_facts_v.parquet",
+        "danskvand_clean_dim_product_v.parquet",
+        "danskvand_clean_dim_period_v.parquet",
+        "danskvand_clean_dim_market_v.parquet",
     ]
-
     missing = [f for f in required_files if not (input_dir / f).exists()]
-
     if missing:
         print("=" * 80)
-        print("ERROR: Missing required Nielsen JSONL files!")
+        print("ERROR: Missing required Parquet view files for Danskvand!")
         print("=" * 80)
         print(f"\nLocation: {input_dir.resolve()}\n")
         print("Missing files:")
         for f in missing:
             print(f"  - {f}")
         print("\n" + "=" * 80)
-        print("SOLUTION: Download Nielsen data from Fabric warehouse")
+        print("SOLUTION: Run Stage 1 (JSONL -> Parquet conversion) first")
         print("=" * 80)
-        print("\nRun the following command from the project root:")
-        print("\n  python thesis/data/raw_nielsen/scripts/save_all_datasets.py\n")
-        print("This requires:")
-        print("  - .env file in project root with RU_* credentials")
-        print("  - ODBC Driver 18 for SQL Server")
-        print("  - pip install pyodbc azure-identity python-dotenv\n")
-        print("Script location: thesis/data/raw_nielsen/scripts/save_all_datasets.py")
+        print("\nFrom the project root:")
+        print("  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only Danskvand")
+        print("\nIf the JSONL source files are also missing, run:")
+        print("  python thesis/data/raw_nielsen/scripts/save_all_datasets.py")
         print("=" * 80)
         return False
 
-    print(f"✓ Input validation: All {len(required_files)} required files found")
+    print(f"✓ Input validation: All {len(required_files)} Parquet view files found")
     return True
 
 
@@ -150,11 +154,11 @@ def load_raw(input_dir: Path) -> pd.DataFrame:
     Returns one row per (brand, period_year, period_month).
     Aggregates across product_id (sum) so the grain is brand × month.
     """
-    print("  Loading JSONL files...")
-    facts = pd.read_json(input_dir / "danskvand_clean_facts_v.jsonl", lines=True)
-    products = pd.read_json(input_dir / "danskvand_clean_dim_product_v.jsonl", lines=True)
-    periods = pd.read_json(input_dir / "danskvand_clean_dim_period_v.jsonl", lines=True)
-    markets = pd.read_json(input_dir / "danskvand_clean_dim_market_v.jsonl", lines=True)
+    print("  Loading Parquet view files...")
+    facts = pd.read_parquet(input_dir / "danskvand_clean_facts_v.parquet")
+    products = pd.read_parquet(input_dir / "danskvand_clean_dim_product_v.parquet")
+    periods = pd.read_parquet(input_dir / "danskvand_clean_dim_period_v.parquet")
+    markets = pd.read_parquet(input_dir / "danskvand_clean_dim_market_v.parquet")
 
     print(f"  Facts shape: {facts.shape}")
     print(f"  Products shape: {products.shape}")
@@ -280,7 +284,7 @@ def main():
     tracemalloc.start()
     t0 = time.perf_counter()
 
-    print("\nStep 1/5 — Loading raw data from JSONL files...")
+    print("\nStep 1/5 — Loading raw data from Parquet view files...")
     raw = load_raw(INPUT_DIR)
     print(f"  Raw rows: {len(raw):,}  |  Brands: {raw['brand'].nunique()}\n")
 
