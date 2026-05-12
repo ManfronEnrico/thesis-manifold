@@ -49,10 +49,10 @@ from PATHS import get_category_preprocessing_scripts_dir
 
 CATEGORY = "CSD"
 SCRIPTS_DIR = get_category_preprocessing_scripts_dir(CATEGORY)
-STEPS = [0, 1, 2, 3, 4, 5, 6]
+STEPS = [1, 2, 3, 4, 5, 6]
 
 STEP_NAMES = {
-	0: "Cache Raw Data",
+	0: "Cache Raw Data (moved to Stage 1 — converted/nielsen/jsonl_to_parquet/)",
 	1: "Load and Aggregate",
 	2: "Build Calendar",
 	3: "Filter Series",
@@ -66,8 +66,9 @@ STEP_NAMES = {
 # ============================================================================
 
 def cache_exists() -> bool:
-	"""Check if view parquet cache already exists."""
-	views_dir = Path(ROOT_DIR) / "thesis" / "data" / "preprocessing" / "nielsen" / CATEGORY / "views"
+	"""Check if Stage 1 view parquet cache already exists in converted tier."""
+	# Cache is now in converted/nielsen/parquet_nielsen/, not preprocessing/
+	views_dir = Path(ROOT_DIR) / "thesis" / "data" / "converted" / "nielsen" / "parquet_nielsen" / CATEGORY / "views"
 	cache_files = [
 		views_dir / "csd_clean_facts_v.parquet",
 		views_dir / "csd_clean_dim_product_v.parquet",
@@ -77,28 +78,16 @@ def cache_exists() -> bool:
 	return all(f.exists() for f in cache_files)
 
 
-def run_step(step_num: int, run_raw: bool = False, force_step0: bool = False) -> bool:
+def run_step(step_num: int) -> bool:
 	"""
-	Run a single step script.
+	Run a single preprocessing step script.
 
 	Args:
-		step_num: Step number (0-6)
-		run_raw: If True, force execution of step 0; if False, use smart caching
-		force_step0: If True, override default and run step 0 regardless of cache state
+		step_num: Step number (1-6; stage 1 is handled separately by converted/nielsen/jsonl_to_parquet/)
 
 	Returns:
-		True if successful, False if skipped, raises exception on failure
+		True if successful, raises exception on failure
 	"""
-	if step_num == 0:
-		if force_step0:
-			print(f"▶ Running step {step_num} (forced via --run-raw or --re-cache)")
-		elif cache_exists():
-			print(f"✓ Step {step_num} skipped (parquet cache already exists)")
-			return False
-		else:
-			print(f"▶ Running step {step_num} (cache does not exist; must create first)")
-			force_step0 = True
-
 	# Find step script
 	script = list(SCRIPTS_DIR.glob(f"pre_{CATEGORY.lower()}_{step_num}_*.py"))
 	if not script:
@@ -123,61 +112,39 @@ def run_step(step_num: int, run_raw: bool = False, force_step0: bool = False) ->
 
 def main():
 	parser = argparse.ArgumentParser(
-		description=f"Run {CATEGORY} preprocessing pipeline",
+		description=f"Run {CATEGORY} preprocessing pipeline (Stage 2 — Feature Engineering)",
 		formatter_class=argparse.RawDescriptionHelpFormatter,
 		epilog="""
 Examples:
-  python preprocessing_csd.py                    # Run steps 1-6 (skip caching)
-  python preprocessing_csd.py --run-raw          # Run all steps 0-6 (include caching)
+  python preprocessing_csd.py                    # Run steps 1-6 (requires Stage 1 cache)
   python preprocessing_csd.py --run-step 4       # Run only step 4
-  python preprocessing_csd.py --run-step 0 --run-raw  # Run only step 0
 		"""
-	)
-	parser.add_argument(
-		"--run-raw",
-		action="store_true",
-		help="Force execution of step 0 (re-cache parquet files)"
-	)
-	parser.add_argument(
-		"--re-cache",
-		action="store_true",
-		help="Remove existing cache and regenerate all parquet files (implies --run-raw)"
 	)
 	parser.add_argument(
 		"--run-step",
 		type=int,
 		default=None,
-		help="Run only this step (0-6); if not specified, run all"
+		help="Run only this step (1-6); if not specified, run all"
 	)
 	args = parser.parse_args()
-
-	# --re-cache implies --run-raw
-	if args.re_cache:
-		args.run_raw = True
 
 	# Validate --run-step argument
 	if args.run_step is not None:
 		if args.run_step not in STEPS:
-			print(f"Error: --run-step must be 0-6, got {args.run_step}")
-			sys.exit(1)
-		# Step 0 requires --run-raw
-		if args.run_step == 0 and not args.run_raw:
-			print(f"Error: Step 0 requires --run-raw flag")
+			print(f"Error: --run-step must be in {STEPS}, got {args.run_step}")
 			sys.exit(1)
 
-	# Handle --re-cache: clear existing cache
-	if args.re_cache:
-		cache_dirs = [
-			Path(ROOT_DIR) / "thesis" / "data" / "preprocessing" / "nielsen" / CATEGORY / "views",
-			Path(ROOT_DIR) / "thesis" / "data" / "preprocessing" / "nielsen" / CATEGORY / "metadata",
-		]
-		for dir_path in cache_dirs:
-			if dir_path.exists():
-				parquet_files = list(dir_path.glob("*.parquet"))
-				if parquet_files:
-					print(f"Removing {len(parquet_files)} cached parquet files from {dir_path.name}...")
-					for f in parquet_files:
-						f.unlink()
+	# Check that Stage 1 cache exists before proceeding
+	if not cache_exists():
+		print("=" * 80)
+		print("ERROR: Stage 1 Parquet cache not found!")
+		print("=" * 80)
+		print(f"\nExpected cache location: thesis/data/converted/nielsen/parquet_nielsen/{CATEGORY}/views/")
+		print("\nThis stage (Stage 2) depends on Stage 1 (JSONL → Parquet conversion) being complete.")
+		print("\nTo generate the cache, run:")
+		print(f"  python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only {CATEGORY}")
+		print("=" * 80)
+		sys.exit(1)
 
 	# Run orchestration
 	pipeline_start = time.perf_counter()
@@ -189,16 +156,15 @@ Examples:
 			print(f"Running {CATEGORY} step {args.run_step} only")
 			print(f"{'='*80}")
 
-			run_step(args.run_step, run_raw=args.run_raw, force_step0=args.run_raw)
+			run_step(args.run_step)
 		else:
-			# Run all steps (smart caching: step 0 conditional)
+			# Run all steps
 			print(f"\n{'='*80}")
-			print(f"Nielsen {CATEGORY} Preprocessing Pipeline")
-			print(f"Cache status: {'FRESH (will regenerate)' if args.re_cache else 'SMART (use cached if available)'}")
+			print(f"Nielsen {CATEGORY} Preprocessing Pipeline (Stage 2 — Feature Engineering)")
 			print(f"{'='*80}")
 
 			for step in STEPS:
-				run_step(step, run_raw=args.run_raw, force_step0=args.run_raw)
+				run_step(step)
 
 			# Final summary
 			pipeline_elapsed = time.perf_counter() - pipeline_start

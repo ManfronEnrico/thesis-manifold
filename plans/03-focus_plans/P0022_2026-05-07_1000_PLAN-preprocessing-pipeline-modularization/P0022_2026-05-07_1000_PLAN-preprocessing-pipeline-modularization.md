@@ -1,8 +1,8 @@
 ---
 created: 2026-05-07 10:00:00
-updated: 2026-05-09 14:50:00
-status: Phase 1 Complete, Phase 2 In Progress (Orchestrator Bug Fixed)
-focus_detail: "Modular nielsen/ orchestrators ready to test. Parallel work 2026-05-09: legacy monolithic preprocessing_*.py scripts also separated into Stage 1 (jsonl_to_parquet/ cache) + Stage 2 (parquet-only feature engineering)."
+updated: 2026-05-12 16:20:00
+status: Phase 2 Complete (Data Restructure + CSD Testing), Phase 3 Ready (4-Category Validation)
+focus_detail: "Data folder fully restructured into 3-tier hierarchy (raw/ → converted/ → preprocessing/). Stage 1 & 2 scripts migrated and tested. CSD end-to-end validated (36.1s Stage 1, 3.3s Stage 2). Progress bar fix applied (transient=True → keep_visible parameter). Ready to test remaining 4 categories (Energidrikke, Danskvand, RTD, Totalbeer). ~3–4 hours remaining for Phase 3 validation."
 ---
 
 # P0022: Preprocessing Pipeline Modularization
@@ -19,44 +19,57 @@ focus_detail: "Modular nielsen/ orchestrators ready to test. Parallel work 2026-
 
 ---
 
-## In Progress (Phase 2 🔧)
+## Completed (Phase 2 ✅)
 
-**Status:** All 4 categories configured (Energidrikke, Danskvand, RTD, Totalbeer)
+**Data Folder Restructure (Steps 1-7: Complete)**
+- ✅ Moved raw JSONL files → `thesis/data/raw/nielsen/data_jsonl/`
+- ✅ Moved Stage 1 scripts → `thesis/data/converted/nielsen/jsonl_to_parquet/`
+- ✅ Updated PATHS.py with new constants (THESIS_DATA_RAW_*, THESIS_DATA_CONVERTED_*)
+- ✅ Updated all 5 legacy preprocessing_*.py scripts (hard-fail if Stage 1 cache missing)
+- ✅ Updated Stage 1 README.md with new paths and diagram
+- ✅ Fixed progress bar visibility (transient=True → keep_visible parameter in terminal_utils.py)
+- ✅ CSD end-to-end testing: Stage 1 (36.1s), Stage 2 (3.3s), 78 brands, 3,354 rows output
 
-**Bug Fixed (2026-05-07 17:30):**
-- Orchestrators had inverted Step 0 logic (skipped when cache missing)
-- Fixed: Now auto-runs Step 0 if cache doesn't exist (no `--run-raw` needed for first run)
-- Applied to: CSD, Energidrikke, Danskvand, RTD, Totalbeer
+**Testing Status:**
+- ✅ CSD: TESTED (Stage 1 + Stage 2)
+- ⏳ Energidrikke: Ready for testing
+- ⏳ Danskvand: Ready for testing
+- ⏳ RTD: Ready for testing
+- ⏳ Totalbeer: Ready for testing
 
-**Caching Strategy (Actual Implementation):**
-```
---run-raw        Force step 0 (re-cache existing or new)
-(default)        Smart: skip step 0 if cache exists, auto-run if missing
-```
+## In Progress (Phase 3 🔧)
 
-**Next Steps:**
-- [ ] Run `python preprocessing_energidrikke.py` (auto-runs step 0, creates cache)
-- [ ] Repeat for Danskvand, RTD, Totalbeer
-- [ ] Verify all categories produce expected parquet outputs
-- [ ] Compare outputs with previous preprocessing runs
+**Remaining Work:**
+- [ ] Run `python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py` (Stage 1 for 4 categories)
+- [ ] Test Stage 2 legacy scripts: `python preprocessing_energidrikke.py`, etc.
+- [ ] Test Stage 2 modular orchestrators (per-category, if deploying)
+- [ ] Verify all categories produce expected engineered features
+- [ ] Compare outputs with previous preprocessing baseline (optional but recommended)
 
 ---
 
-## Folder Structure (Target - On Track)
+## Folder Structure (Target - Complete)
 
 ```
 thesis/data/preprocessing/nielsen/
-  ├─ shared/ (✅ created)
+  ├─ shared/ (✅ complete + terminal_utils.py progress bar fix)
   │  ├─ __init__.py
   │  ├─ base_preprocessing.py
-  │  ├─ terminal_utils.py
+  │  ├─ terminal_utils.py (keep_visible parameter added)
   │  └─ timing_utils.py
-  ├─ CSD/ (✅ tested)
-  ├─ Energidrikke/ (🔧 orchestrator fixed)
-  ├─ Danskvand/ (🔧 orchestrator fixed)
-  ├─ RTD/ (🔧 orchestrator fixed)
-  ├─ Totalbeer/ (🔧 orchestrator fixed)
+  ├─ CSD/ (✅ tested end-to-end)
+  ├─ Energidrikke/ (✅ orchestrator updated, ready for testing)
+  ├─ Danskvand/ (✅ orchestrator updated, ready for testing)
+  ├─ RTD/ (✅ orchestrator updated, ready for testing)
+  ├─ Totalbeer/ (✅ orchestrator updated, ready for testing)
   └─ preprocessing_all.py (pending Phase 3)
+
+thesis/data/raw/nielsen/
+  └─ data_jsonl/ (✅ contains all JSONL source files)
+
+thesis/data/converted/nielsen/
+  ├─ jsonl_to_parquet/ (✅ Stage 1 scripts, ready for batch run)
+  └─ parquet_nielsen/ (✅ Stage 1 cache by category, CSD populated)
 ```
 
 ---
@@ -68,6 +81,10 @@ thesis/data/preprocessing/nielsen/
 ✅ Shared utilities: No duplication across 5 categories  
 ✅ Smart caching: Step 0 skipped if cache exists, auto-run if missing  
 ✅ Logging: Per-step JSON timing logs  
+✅ Data folder 3-tier hierarchy: raw/ → converted/ → preprocessing/  
+✅ Stage 1 & Stage 2 separation: JSONL parsing vs. feature engineering  
+✅ Progress bar visibility: terminal_utils.py fixed (keep_visible parameter)  
+✅ End-to-end tested: CSD category validated (36.1s Stage 1 + 3.3s Stage 2)  
 
 ---
 
@@ -112,11 +129,18 @@ architecture this session, mirroring the same caching principle P0022 implements
 
 ---
 
+## Session Update (2026-05-12)
+
+**What Was Verified and Fixed:**
+1. **Plan verification** (per discipline rule): CSD orchestrator code reviewed; found Step 0 logic was correct in CSD (fixed in previous session), but Energidrikke/Danskvand/RTD/Totalbeer had incomplete refactoring (cache_exists() updated but old run_step() logic not removed). Non-blocking since Step 0 no longer in STEPS list.
+2. **Progress bar investigation**: Determined transient=True was causing spinners to disappear. Fixed by adding keep_visible parameter (default True) to terminal_utils.py progress_bar(). Rich library works correctly when transient=False (keep_visible=True).
+3. **Testing plan documented**: Identified 3–4 hours remaining for Phase 3 (Energidrikke, Danskvand, RTD, Totalbeer end-to-end validation).
+
 ## Note on Plan Accuracy
 
 **Important:** Do NOT take plan documents at face value. Always verify implementation against actual code:
 - Plans document intent; code is ground truth
 - In-progress plans become stale quickly (flag changes discovered during execution)
 - When verifying claims: check the actual script, not the plan description
-- Update plan after discovering drift (this session fixed orchestrator logic after finding inverted Step 0 check)
+- Update plan after discovering drift (this session verified orchestrator refactoring status and progress bar fix)
 

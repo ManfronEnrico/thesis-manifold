@@ -5,17 +5,17 @@ Reads cached Parquet views, engineers all features required for the 5
 forecasting models, applies the locked train/val/test split, and saves the
 feature matrix to disk in Parquet format.
 
-This is **Stage 2**. It depends on Stage 1 (`jsonl_to_parquet/`) having
+This is **Stage 2**. It depends on Stage 1 (`converted/nielsen/jsonl_to_parquet/`) having
 already converted the raw JSONL files into Parquet. If the Parquet cache is
 missing, this script hard-fails with instructions.
 
-Input files (from preprocessing/parquet_nielsen/CSD/views/):
+Input files (from converted/nielsen/parquet_nielsen/CSD/views/):
   csd_clean_facts_v.parquet
   csd_clean_dim_product_v.parquet
   csd_clean_dim_period_v.parquet
   csd_clean_dim_market_v.parquet
 
-Output files (Parquet, in preprocessing/parquet_nielsen/CSD/engineered/):
+Output files (Parquet, in preprocessing/nielsen/CSD/engineered/):
   csd_feature_matrix.parquet
   csd_series_index.csv
   csd_split_dates.json
@@ -23,7 +23,7 @@ Output files (Parquet, in preprocessing/parquet_nielsen/CSD/engineered/):
 
 Usage:
   # Stage 1 first (only if not yet cached):
-  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only CSD
+  python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only CSD
   # Then Stage 2:
   python thesis/data/preprocessing/preprocessing_csd.py
 """
@@ -129,9 +129,9 @@ def validate_input_data(views_dir: Path) -> bool:
         print("SOLUTION: Run Stage 1 (JSONL → Parquet conversion) first")
         print("=" * 80)
         print("\nFrom the project root:")
-        print("  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only CSD")
+        print("  python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only CSD")
         print("\nIf the JSONL source files are also missing, run:")
-        print("  python thesis/data/raw_nielsen/scripts/save_all_datasets.py")
+        print("  python thesis/data/raw/nielsen/scripts/save_all_datasets.py")
         print("=" * 80)
         return False
 

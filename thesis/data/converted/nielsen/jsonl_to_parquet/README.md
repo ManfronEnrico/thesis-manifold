@@ -4,12 +4,13 @@ This folder owns the conversion of raw Nielsen JSONL files into Parquet.
 It is **Stage 1** of a two-stage preprocessing pipeline.
 
 ```
-Stage 1 (this folder)              Stage 2 (../preprocessing_*.py)
-───────────────────                ───────────────────────────────
-JSONL  ─────────────► Parquet ─────────────► Engineered features
-(raw_nielsen/                  (parquet_nielsen/                (parquet_nielsen/
- data_jsonl/<cat>/              <cat>/views/                     <cat>/engineered/
- {views,metadata}/)             <cat>/metadata/)                  *.parquet)
+Stage 1 (this folder)                    Stage 2 (preprocessing/nielsen/<cat>/)
+─────────────────────                    ──────────────────────────────────────
+JSONL ────────────► Parquet ────────────► Engineered features
+(raw/                          (converted/                   (preprocessing/
+ nielsen/                       nielsen/                       nielsen/
+ data_jsonl/<cat>/              parquet_nielsen/               <cat>/
+ {views,metadata}/)             <cat>/{views,metadata})        engineered/)
 ```
 
 ## Why split into two stages?
@@ -32,16 +33,16 @@ Run from the project root.
 
 ```bash
 # Convert one category
-python thesis/data/preprocessing/jsonl_to_parquet/convert_category.py --category CSD
+python thesis/data/converted/nielsen/jsonl_to_parquet/convert_category.py --category CSD
 
 # Convert all 5 categories (idempotent — skips up-to-date files)
-python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py
+python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py
 
 # Force re-convert (ignore mtime check)
-python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --force
+python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --force
 
 # Restrict to a subset
-python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only CSD Energidrikke
+python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only CSD Energidrikke
 ```
 
 ## Idempotence

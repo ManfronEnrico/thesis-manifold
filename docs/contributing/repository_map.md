@@ -84,21 +84,40 @@ CMT_Codebase/
 │   │   ├── scraping_log.md            ← Paper confirmation log
 │   │   └── obisdian_paper_analysis/   ← 50+ annotated paper summaries
 │   │
-│   └── data/                          ← Data sources & pipelines
-│       ├── nielsen/                   ← Nielsen SQL connector & scripts
-│       │   ├── scripts/               ← Production scripts (audit, export, connection)
-│       │   │   ├── nielsen_connector.py ← Power BI/Fabric API connection (fixed)
-│       │   │   ├── audit_datasets.py ← Discover all 52 Fabric objects
-│       │   │   ├── save_all_datasets.py ← Batch export to CSV + manifest
-│       │   │   └── exploration scripts ← Data profiling utilities
-│       │   ├── exported/              ← CSV backups (29 files, 1.9 GB, manifest.json)
-│       │   ├── README.md              ← Colleague onboarding guide
-│       │   └── description/           ← nielsen-prometheus_data_model.md
-│       ├── indeksdanmark/             ← SPSS/CSV loader & data
-│       │   ├── scripts/               ← spss_indeksdanmark_loader.py
-│       │   └── description/           ← spss_indeksdanmark_data_model.md
-│       ├── preprocessing/             ← Combined preprocessing pipeline
-│       └── assessment/                ← Data notes, ML use cases, migration docs
+│   └── data/                          ← Data sources & 3-tier processing pipeline
+│       ├── raw/                       ← TIER 1: Source data (JSONL, CSV, SPSS)
+│       │   ├── nielsen/               ← Nielsen Fabric exports (JSONL format)
+│       │   │   ├── data_jsonl/        ← JSONL files by category + type (views, raw, metadata)
+│       │   │   ├── scripts/           ← Nielsen SQL connector & batch export scripts
+│       │   │   └── description/       ← SCHEMA_SNAPSHOT.md, metadata docs
+│       │   └── spss_indeksdanmark/    ← Indeks Danmark SPSS exports (CSV format)
+│       │       └── data_csv/          ← CSV files from SPSS export
+│       │
+│       ├── converted/                 ← TIER 2: Format-converted cache (Parquet)
+│       │   ├── nielsen/               ← Nielsen JSONL → Parquet conversion
+│       │   │   ├── jsonl_to_parquet/  ← Stage 1 conversion scripts
+│       │   │   │   ├── convert_category.py ← Single category converter
+│       │   │   │   ├── run_all_conversions.py ← Batch orchestrator
+│       │   │   │   └── README.md      ← Stage 1 documentation
+│       │   │   └── parquet_nielsen/   ← Stage 1 cache by category
+│       │   │       └── {CSD,Energidrikke,...}/
+│       │   │           ├── views/     ← Cleaned, column-reduced tables (Parquet)
+│       │   │           ├── raw/       ← Full tables with all columns (Parquet)
+│       │   │           └── metadata/  ← Schema documentation (Parquet)
+│       │   └── spss_indeksdanmark/    ← Future: CSV → Parquet conversion
+│       │       └── parquet_spss/      ← (placeholder)
+│       │
+│       ├── preprocessing/             ← TIER 3: Feature engineering outputs
+│       │   ├── nielsen/               ← Per-category modular pipelines
+│       │   │   ├── shared/            ← Shared utilities (terminal_utils, timing_utils, base_preprocessing)
+│       │   │   ├── {CSD,Energidrikke,...}/
+│       │   │   │   ├── pre_{cat}_0_cache.py ← Step 0: Load source JSONL
+│       │   │   │   ├── pre_{cat}_{1-6}_*.py ← Steps 1-6: Feature engineering
+│       │   │   │   ├── preprocessing_{cat}.py ← Modular orchestrator (Stage 2)
+│       │   │   │   └── engineered/   ← Stage 2 outputs (feature matrix, split dates, reports)
+│       │   └── preprocessing_*.py     ← Legacy monolithic scripts (deprecated)
+│       │
+│       └── assessment/                ← Human evaluation & validation data
 │
 └── docs/                              ← CODEBASE & TOOLING DOCS
     ├── codebase/                      ← System architecture documents

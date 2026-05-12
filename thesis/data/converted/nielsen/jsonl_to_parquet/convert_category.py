@@ -4,8 +4,8 @@ Stage 1 — JSONL → Parquet Cache (Single Category)
 Converts all Nielsen JSONL files for one category into Parquet, mirroring
 filenames and folder structure.
 
-Input  (read):  thesis/data/raw_nielsen/data_jsonl/{Category}/{views,metadata}/*.jsonl
-Output (write): thesis/data/preprocessing/parquet_nielsen/{Category}/{views,metadata}/*.parquet
+Input  (read):  thesis/data/raw/nielsen/data_jsonl/{Category}/{views,metadata}/*.jsonl
+Output (write): thesis/data/converted/nielsen/parquet_nielsen/{Category}/{views,metadata}/*.parquet
 
 The Parquet outputs are read by the Stage 2 feature-engineering scripts
 (`preprocessing_<category>.py`). Stage 2 hard-fails if these files are missing.
@@ -45,7 +45,7 @@ import PATHS
 importlib.reload(PATHS)
 
 from PATHS import (
-    THESIS_DATA_NIELSEN_JSONL_DIR,
+    THESIS_DATA_RAW_NIELSEN_JSONL_DIR,
     get_category_views_dir,
     get_category_metadata_dir,
 )
@@ -108,8 +108,8 @@ def convert_category(category: str, force: bool = False) -> dict:
             f"Unknown category '{category}'. Expected one of: {VALID_CATEGORIES}"
         )
 
-    src_views = THESIS_DATA_NIELSEN_JSONL_DIR / category / "views"
-    src_metadata = THESIS_DATA_NIELSEN_JSONL_DIR / category / "metadata"
+    src_views = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / category / "views"
+    src_metadata = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / category / "metadata"
     dst_views = get_category_views_dir(category)
     dst_metadata = get_category_metadata_dir(category)
 

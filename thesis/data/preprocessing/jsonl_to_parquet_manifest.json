@@ -1,0 +1,13 @@
+{
+  "stage": "1_jsonl_to_parquet",
+  "categories": [
+    {
+      "category": "CSD",
+      "views_converted": 4,
+      "metadata_converted": 5,
+      "elapsed": 36.05939506110735,
+      "error": null
+    }
+  ],
+  "total_elapsed_seconds": 36.05961777199991
+}

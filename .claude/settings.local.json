@@ -28,8 +28,11 @@
       "Bash(sudo swapon /swapfile)",
       "Bash(/root/dev/thesis-manifold/.venv/bin/python -u run_all_preprocessing.py)",
       "Bash(/root/dev/thesis-manifold/.venv/bin/python -m py_compile thesis/data/preprocessing/jsonl_to_parquet/convert_category.py thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py)",
-      "Bash(/root/dev/thesis-manifold/.venv/bin/python *)"
+      "Bash(/root/dev/thesis-manifold/.venv/bin/python *)",
+      "Bash(python -m py_compile PATHS.py)",
+      "Bash(python -c ' *)",
+      "Bash(python -m py_compile thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
+      "Bash(python -c 'from PATHS import get_category_source_jsonl_dir, get_category_views_dir, get_category_engineered_dir; print\\(f'\\\\''  Source \\(raw\\): {get_category_source_jsonl_dir\\(\"CSD\"\\)}'\\\\''\\); print\\(f'\\\\''  Cache \\(conv\\): {get_category_views_dir\\(\"CSD\"\\)}'\\\\''\\); print\\(f'\\\\''  Output \\(prep\\): {get_category_engineered_dir\\(\"CSD\"\\)}'\\\\''\\)')"
     ]
-  },
-  "model": "opus"
+  }
 }

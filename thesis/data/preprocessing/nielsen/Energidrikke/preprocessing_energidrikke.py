@@ -19,11 +19,11 @@ CACHING STRATEGY (Smart):
 Use --run-step N to run only step N (must use --run-raw if step N is 0).
 
 Usage:
-  python preprocessing_energidrikke.py                     # Run steps 1-6 (uses cached parquet if available)
-  python preprocessing_energidrikke.py --run-raw           # Force step 0 caching (re-cache existing)
-  python preprocessing_energidrikke.py --re-cache          # Clear cache, then re-generate and run steps 0-6
-  python preprocessing_energidrikke.py --run-step 4        # Re-run feature engineering only
-  python preprocessing_energidrikke.py --run-step 0 --run-raw  # Re-run step 0 only
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
 """
 
 import sys, argparse, subprocess, time
@@ -49,10 +49,10 @@ from PATHS import get_category_preprocessing_scripts_dir
 
 CATEGORY = "Energidrikke"
 SCRIPTS_DIR = get_category_preprocessing_scripts_dir(CATEGORY)
-STEPS = [0, 1, 2, 3, 4, 5, 6]
+STEPS = [1, 2, 3, 4, 5, 6]
 
 STEP_NAMES = {
-	0: "Cache Raw Data",
+	0: "Cache Raw Data (moved to Stage 1 — converted/nielsen/jsonl_to_parquet/)",
 	1: "Load and Aggregate",
 	2: "Build Calendar",
 	3: "Filter Series",
@@ -66,8 +66,9 @@ STEP_NAMES = {
 # ============================================================================
 
 def cache_exists() -> bool:
-	"""Check if view parquet cache already exists."""
-	views_dir = Path(ROOT_DIR) / "thesis" / "data" / "preprocessing" / "nielsen" / CATEGORY / "views"
+	"""Check if Stage 1 view parquet cache already exists in converted tier."""
+	# Cache is now in converted/nielsen/parquet_nielsen/, not preprocessing/
+	views_dir = Path(ROOT_DIR) / "thesis" / "data" / "converted" / "nielsen" / "parquet_nielsen" / CATEGORY / "views"
 	cache_files = [
 		views_dir / "energidrikke_clean_facts_v.parquet",
 		views_dir / "energidrikke_clean_dim_product_v.parquet",
@@ -126,11 +127,11 @@ def main():
 		description=f"Run {CATEGORY} preprocessing pipeline",
 		formatter_class=argparse.RawDescriptionHelpFormatter,
 		epilog="""
-Examples:
-  python preprocessing_energidrikke.py                    # Run steps 1-6 (skip caching)
-  python preprocessing_energidrikke.py --run-raw          # Run all steps 0-6 (include caching)
-  python preprocessing_energidrikke.py --run-step 4       # Run only step 4
-  python preprocessing_energidrikke.py --run-step 0 --run-raw  # Run only step 0
+Examples (Stage 2 only — steps 1-6):
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
+  python preprocessing_energidrikke.py                    # Run steps 1-6
 		"""
 	)
 	parser.add_argument(
@@ -151,6 +152,21 @@ Examples:
 	)
 	args = parser.parse_args()
 
+	# Check that Stage 1 cache exists before proceeding
+	if not cache_exists():
+		print("=" * 80)
+		print("ERROR: Stage 1 Parquet cache not found!")
+		print("=" * 80)
+		print(f"
+Expected cache location: thesis/data/converted/nielsen/parquet_nielsen/{CATEGORY}/views/")
+		print("
+This stage (Stage 2) depends on Stage 1 (JSONL → Parquet conversion) being complete.")
+		print("
+To generate the cache, run:")
+		print(f"  python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only {CATEGORY}")
+		print("=" * 80)
+		sys.exit(1)
+
 	# --re-cache implies --run-raw
 	if args.re_cache:
 		args.run_raw = True
@@ -168,7 +184,7 @@ Examples:
 	# Handle --re-cache: clear existing cache
 	if args.re_cache:
 		cache_dirs = [
-			Path(ROOT_DIR) / "thesis" / "data" / "preprocessing" / "nielsen" / CATEGORY / "views",
+			Path(ROOT_DIR) / "thesis" / "data" / "converted" / "nielsen" / "parquet_nielsen" / CATEGORY / "views",
 			Path(ROOT_DIR) / "thesis" / "data" / "preprocessing" / "nielsen" / CATEGORY / "metadata",
 		]
 		for dir_path in cache_dirs:

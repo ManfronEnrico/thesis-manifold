@@ -9,13 +9,13 @@ This is **Stage 2**. It depends on Stage 1 (`jsonl_to_parquet/`) having
 already converted the raw JSONL files into Parquet. If the Parquet cache is
 missing, this script hard-fails with instructions.
 
-Input files (from preprocessing/parquet_nielsen/Totalbeer/views/):
+Input files (from converted/nielsen/parquet_nielsen/Totalbeer/views/):
   totalbeer_clean_facts_v.parquet
   totalbeer_clean_dim_product_v.parquet
   totalbeer_clean_dim_period_v.parquet
   totalbeer_clean_dim_market_v.parquet
 
-Output files (Parquet, in preprocessing/parquet_nielsen/Totalbeer/engineered/):
+Output files (Parquet, in converted/nielsen/parquet_nielsen/Totalbeer/engineered/):
   specialized_totalbeer_feature_matrix.parquet
   series_index.csv
   split_dates.json
@@ -23,7 +23,7 @@ Output files (Parquet, in preprocessing/parquet_nielsen/Totalbeer/engineered/):
 
 Usage:
   # Stage 1 first (only if not yet cached):
-  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only Totalbeer
+  python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only Totalbeer
   # Then Stage 2:
   python thesis/data/preprocessing/preprocessing_totalbeer.py
 """
@@ -131,9 +131,9 @@ def validate_input_data(input_dir: Path) -> bool:
         print("SOLUTION: Run Stage 1 (JSONL -> Parquet conversion) first")
         print("=" * 80)
         print("\nFrom the project root:")
-        print("  python thesis/data/preprocessing/jsonl_to_parquet/run_all_conversions.py --only Totalbeer")
+        print("  python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py --only Totalbeer")
         print("\nIf the JSONL source files are also missing, run:")
-        print("  python thesis/data/raw_nielsen/scripts/save_all_datasets.py")
+        print("  python thesis/data/raw/nielsen/scripts/save_all_datasets.py")
         print("=" * 80)
         return False
 
