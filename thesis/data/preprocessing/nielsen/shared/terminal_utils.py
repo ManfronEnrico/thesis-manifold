@@ -54,9 +54,16 @@ def step_execution(step_num: int, step_name: str, category: str):
 # ============================================================================
 
 @contextmanager
-def progress_bar(description: str, total: int, show_percentage: bool = True):
+def progress_bar(description: str, total: int, show_percentage: bool = True, keep_visible: bool = True):
 	"""
 	Rich progress bar context manager.
+
+	Args:
+		description: Progress bar title
+		total: Total items to process
+		show_percentage: Whether to show percentage (default True)
+		keep_visible: Whether to keep progress bar visible after completion (default True).
+		             Set to False for minimal output during batch runs.
 
 	Usage:
 		with progress_bar("Processing rows", total=1000000) as progress:
@@ -74,7 +81,7 @@ def progress_bar(description: str, total: int, show_percentage: bool = True):
 		TextColumn("[cyan]{task.fields[rows]:,}[/cyan]"),
 		TimeRemainingColumn(),
 		console=console,
-		transient=True,
+		transient=not keep_visible,
 	) as progress:
 		yield progress
 

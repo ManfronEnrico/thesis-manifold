@@ -55,6 +55,8 @@ import PATHS
 importlib.reload(PATHS)
 
 from PATHS import (
+    ROOT_DIR,
+    THESIS_DATA_PREPROCESSING_DIR,
     get_category_views_dir,
     get_category_engineered_dir,
 )
