@@ -41,7 +41,7 @@ else:
 
 sys.path.insert(0, str(ROOT_DIR))
 
-from PATHS import get_category_preprocessing_scripts_dir
+from PATHS import get_category_preprocessing_scripts_dir, THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR
 
 # ============================================================================
 # CONFIGURATION
@@ -67,8 +67,7 @@ STEP_NAMES = {
 
 def cache_exists() -> bool:
 	"""Check if Stage 1 view parquet cache already exists in converted tier."""
-	# Cache is now in converted/nielsen/parquet_nielsen/, not preprocessing/
-	views_dir = Path(ROOT_DIR) / "thesis" / "data" / "converted" / "nielsen" / "parquet_nielsen" / CATEGORY / "views"
+	views_dir = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"
 	cache_files = [
 		views_dir / "csd_clean_facts_v.parquet",
 		views_dir / "csd_clean_dim_product_v.parquet",

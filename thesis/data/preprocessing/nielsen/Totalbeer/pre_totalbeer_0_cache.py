@@ -2,7 +2,7 @@
 """
 Nielsen Totalbeer Preprocessing â€” Step 0: Cache Raw Data
 
-Input:  Raw Nielsen JSONL files from thesis/data/raw_nielsen/data_jsonl/Totalbeer/
+Input:  Raw Nielsen JSONL files from thesis/data/raw/nielsen/data_jsonl/Totalbeer/
 		- raw/Totalbeer_clean_facts.jsonl (and 3 other raw tables)
 		- views/Totalbeer_clean_facts_v.jsonl (and 3 other view tables)
 		- metadata/metadata_Totalbeer_clean_facts.jsonl (and 4 other metadata tables)
@@ -13,7 +13,7 @@ Output: Step 0 output (parquet cached copies for reference)
 		- Metadata: metadata/metadata_Totalbeer_clean_facts.parquet, etc.
 
 Logic:
-  - Read JSONL files from raw_nielsen data source
+  - Read JSONL files from raw/nielsen data source
   - Convert to parquet for faster subsequent access
   - Skip missing files gracefully
 """
@@ -33,7 +33,7 @@ else:
 
 sys.path.insert(0, str(ROOT_DIR))
 
-from PATHS import THESIS_DATA_NIELSEN_JSONL_DIR, THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outputs_dir
+from PATHS import THESIS_DATA_RAW_NIELSEN_JSONL_DIR, THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR, get_category_pipeline_step_outputs_dir
 
 from thesis.data.preprocessing.nielsen.shared.base_preprocessing import (
 	get_required_jsonl_files, cache_jsonl_tables
@@ -52,14 +52,14 @@ STEP_NUM = 0
 STEP_NAME = "Cache Raw Data"
 
 # Input paths (Nielsen JSONL data)
-INPUT_RAW_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "raw"
-INPUT_VIEWS_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "views"
-INPUT_METADATA_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "metadata"
+INPUT_RAW_DIR = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / CATEGORY / "raw"
+INPUT_VIEWS_DIR = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / CATEGORY / "views"
+INPUT_METADATA_DIR = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / CATEGORY / "metadata"
 
 # Output paths (parquet cache)
-OUTPUT_RAW_DIR = THESIS_DATA_PREPROCESSING_DIR / "nielsen" / CATEGORY / "raw"
-OUTPUT_VIEWS_DIR = THESIS_DATA_PREPROCESSING_DIR / "nielsen" / CATEGORY / "views"
-OUTPUT_METADATA_DIR = THESIS_DATA_PREPROCESSING_DIR / "nielsen" / CATEGORY / "metadata"
+OUTPUT_RAW_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "raw"
+OUTPUT_VIEWS_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"
+OUTPUT_METADATA_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "metadata"
 
 LOG_FILE = get_category_pipeline_step_outputs_dir(CATEGORY) / f"step_{STEP_NUM}_log.json"
 

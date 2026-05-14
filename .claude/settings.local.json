@@ -32,7 +32,13 @@
       "Bash(python -m py_compile PATHS.py)",
       "Bash(python -c ' *)",
       "Bash(python -m py_compile thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
-      "Bash(python -c 'from PATHS import get_category_source_jsonl_dir, get_category_views_dir, get_category_engineered_dir; print\\(f'\\\\''  Source \\(raw\\): {get_category_source_jsonl_dir\\(\"CSD\"\\)}'\\\\''\\); print\\(f'\\\\''  Cache \\(conv\\): {get_category_views_dir\\(\"CSD\"\\)}'\\\\''\\); print\\(f'\\\\''  Output \\(prep\\): {get_category_engineered_dir\\(\"CSD\"\\)}'\\\\''\\)')"
+      "Bash(python -c 'from PATHS import get_category_source_jsonl_dir, get_category_views_dir, get_category_engineered_dir; print\\(f'\\\\''  Source \\(raw\\): {get_category_source_jsonl_dir\\(\"CSD\"\\)}'\\\\''\\); print\\(f'\\\\''  Cache \\(conv\\): {get_category_views_dir\\(\"CSD\"\\)}'\\\\''\\); print\\(f'\\\\''  Output \\(prep\\): {get_category_engineered_dir\\(\"CSD\"\\)}'\\\\''\\)')",
+      "Bash(git push *)",
+      "Bash(python -m py_compile thesis/data/converted/nielsen/jsonl_to_parquet/convert_category.py)",
+      "Bash(python3 -m py_compile thesis/data/converted/nielsen/jsonl_to_parquet/convert_category.py)",
+      "Bash(python3 -m py_compile thesis/data/preprocessing/preprocessing_csd.py)",
+      "Bash(python3 -m py_compile thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
+      "Bash(python3 *)"
     ]
   }
 }
