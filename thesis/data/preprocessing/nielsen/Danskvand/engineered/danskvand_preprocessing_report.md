@@ -1,6 +1,6 @@
 # Nielsen Danskvand Preprocessing Report
 
-**Generated:** 2026-05-14 16:54:04
+**Generated:** 2026-05-14 18:07:32
 **Category:** Danskvand
 **Market Scope:** DVH EXCL. HD
 **Min Periods Filter:** 30
@@ -15,7 +15,7 @@
 | Total rows | 1,134 |
 | Rows per brand (avg) | 42 |
 | Features engineered | 18 |
-| Total pipeline time | 1.7s |
+| Total pipeline time | 1.4s |
 
 ---
 
@@ -42,7 +42,7 @@
 
 | Step | Input Cols | Output Cols | Elapsed (s) | Output Rows |
 |---|---|---|---|---|
-| Step 1 | â€” | 8 | 0.86s | 1,251 |
+| Step 1 | â€” | 8 | 0.72s | 1,251 |
 
 ### Step 2: Build Calendar
 - **Input:** Aggregated data (step 1)
@@ -50,14 +50,14 @@
 - **Date Range:** 2022-10 to 2026-03 (42 monthly periods)
 - **Processing:** Created complete calendar grid for all brands
 - **Output file:** `step_2_calendar_filled.parquet`
-- **Columns:** 8 â†’ 8 | **Elapsed:** 0.16s | **Output rows:** 2,142
+- **Columns:** 8 â†’ 8 | **Elapsed:** 0.11s | **Output rows:** 2,142
 
 ### Step 3: Filter Series
 - **Input:** Calendar-filled data (step 2)
 - **Output:** Filtered to brands with â‰¥30 non-zero periods
 - **Processing:** Removed sparse series (insufficient historical observations)
 - **Output file:** `step_3_filtered_series.parquet`
-- **Columns:** 8 â†’ 8 | **Elapsed:** 0.13s | **Output rows:** 1,134
+- **Columns:** 8 â†’ 8 | **Elapsed:** 0.10s | **Output rows:** 1,134
 
 ### Step 4: Engineer Features
 - **Input:** Filtered series (step 3)
@@ -69,7 +69,7 @@
   - Calendar: month, quarter, holiday_month (Jan/Apr/Jun/Oct/Dec)
   - Transformation: log(sales_units) with NaN preservation
 - **Output file:** `step_4_engineered_features.parquet`
-- **Columns:** 8 â†’ 23 | **Elapsed:** 0.14s | **Output rows:** 1,134
+- **Columns:** 8 â†’ 23 | **Elapsed:** 0.13s | **Output rows:** 1,134
 
 ### Step 5: Apply Split
 - **Input:** Engineered features (step 4)
@@ -77,14 +77,14 @@
 - **Split method:** Locked date-based (time-series integrity)
 - **Processing:** Assigned split based on period_year-period_month
 - **Output file:** `step_5_split_applied.parquet`
-- **Columns:** 23 â†’ 24 | **Elapsed:** 0.10s | **Output rows:** 1,134
+- **Columns:** 23 â†’ 24 | **Elapsed:** 0.07s | **Output rows:** 1,134
 
 ### Step 6: Save Outputs
 - **Input:** Split-applied data (step 5)
 - **Output:** Feature matrix, series index, split dates, report
 - **Processing:** Generated final outputs and documentation
 - **Output files:** `Danskvand_feature_matrix.parquet`, `Danskvand_series_index.csv`, `Danskvand_split_dates.json`
-- **Columns:** 24 â†’ 24 | **Elapsed:** 0.35s | **Output rows:** 1,134
+- **Columns:** 24 â†’ 24 | **Elapsed:** 0.29s | **Output rows:** 1,134
 
 ---
 
@@ -211,5 +211,5 @@
 - **Total brands processed:** 27
 - **Total rows in final matrix:** 1,134
 - **Features engineered:** 18
-- **Pipeline execution time:** 1.7s
-- **Generated:** 2026-05-14 16:54:04
+- **Pipeline execution time:** 1.4s
+- **Generated:** 2026-05-14 18:07:32

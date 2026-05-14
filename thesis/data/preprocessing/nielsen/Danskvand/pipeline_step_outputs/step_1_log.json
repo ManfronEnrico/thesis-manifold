@@ -25,5 +25,14 @@
     "elapsed_sec": 0.86,
     "output_rows": 1251,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T18:07:27.772376",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "Danskvand",
+    "elapsed_sec": 0.72,
+    "output_rows": 1251,
+    "output_cols": 8
   }
 ]

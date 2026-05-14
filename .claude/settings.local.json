@@ -41,7 +41,10 @@
       "Bash(python3 *)",
       "Bash(time python thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
       "Bash(python *)",
-      "Skill(data-eda)"
+      "Skill(data-eda)",
+      "Skill(docs-update-all)",
+      "Skill(git-draft-commit)",
+      "Skill(plan-update-all)"
     ]
   }
 }
