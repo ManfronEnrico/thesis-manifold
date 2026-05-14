@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-05-14T16:49:03.516364",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "RTD",
+    "elapsed_sec": 0.12,
+    "output_rows": 1806,
+    "input_cols": 8,
+    "output_cols": 23
+  }
+]

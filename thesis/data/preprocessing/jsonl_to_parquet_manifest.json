@@ -2,12 +2,12 @@
   "stage": "1_jsonl_to_parquet",
   "categories": [
     {
-      "category": "CSD",
-      "views_converted": 4,
-      "metadata_converted": 5,
-      "elapsed": 36.05939506110735,
+      "category": "Danskvand",
+      "views_converted": 0,
+      "metadata_converted": 0,
+      "elapsed": 0.0019172541797161102,
       "error": null
     }
   ],
-  "total_elapsed_seconds": 36.05961777199991
+  "total_elapsed_seconds": 0.002158881863579154
 }

@@ -1,6 +1,6 @@
 # Nielsen Energidrikke Preprocessing Report
 
-**Generated:** 2026-05-14 13:53:50
+**Generated:** 2026-05-14 16:48:58
 **Category:** Energidrikke
 **Market Scope:** DVH EXCL. HD
 **Min Periods Filter:** 30
@@ -15,7 +15,7 @@
 | Total rows | 1,302 |
 | Rows per brand (avg) | 42 |
 | Features engineered | 18 |
-| Total pipeline time | 6.8s |
+| Total pipeline time | 3.7s |
 
 ---
 
@@ -42,7 +42,7 @@
 
 | Step | Input Cols | Output Cols | Elapsed (s) | Output Rows |
 |---|---|---|---|---|
-| Step 1 | — | 8 | 6.31s | 1,728 |
+| Step 1 | — | 8 | 3.05s | 1,728 |
 
 ### Step 2: Build Calendar
 - **Input:** Aggregated data (step 1)
@@ -50,14 +50,14 @@
 - **Date Range:** 2022-10 to 2026-03 (42 monthly periods)
 - **Processing:** Created complete calendar grid for all brands
 - **Output file:** `step_2_calendar_filled.parquet`
-- **Columns:** 8 → 8 | **Elapsed:** 0.17s | **Output rows:** 2,982
+- **Columns:** 8 → 8 | **Elapsed:** 0.12s | **Output rows:** 2,982
 
 ### Step 3: Filter Series
 - **Input:** Calendar-filled data (step 2)
 - **Output:** Filtered to brands with ≥30 non-zero periods
 - **Processing:** Removed sparse series (insufficient historical observations)
 - **Output file:** `step_3_filtered_series.parquet`
-- **Columns:** 8 → 8 | **Elapsed:** 0.10s | **Output rows:** 1,302
+- **Columns:** 8 → 8 | **Elapsed:** 0.09s | **Output rows:** 1,302
 
 ### Step 4: Engineer Features
 - **Input:** Filtered series (step 3)
@@ -69,7 +69,7 @@
   - Calendar: month, quarter, holiday_month (Jan/Apr/Jun/Oct/Dec)
   - Transformation: log(sales_units) with NaN preservation
 - **Output file:** `step_4_engineered_features.parquet`
-- **Columns:** 8 → 23 | **Elapsed:** 0.14s | **Output rows:** 1,302
+- **Columns:** 8 → 23 | **Elapsed:** 0.10s | **Output rows:** 1,302
 
 ### Step 5: Apply Split
 - **Input:** Engineered features (step 4)
@@ -77,13 +77,14 @@
 - **Split method:** Locked date-based (time-series integrity)
 - **Processing:** Assigned split based on period_year-period_month
 - **Output file:** `step_5_split_applied.parquet`
-- **Columns:** 23 → 24 | **Elapsed:** 0.12s | **Output rows:** 1,302
+- **Columns:** 23 → 24 | **Elapsed:** 0.07s | **Output rows:** 1,302
 
 ### Step 6: Save Outputs
 - **Input:** Split-applied data (step 5)
 - **Output:** Feature matrix, series index, split dates, report
 - **Processing:** Generated final outputs and documentation
 - **Output files:** `energidrikke_feature_matrix.parquet`, `energidrikke_series_index.csv`, `energidrikke_split_dates.json`
+- **Columns:** 24 → 24 | **Elapsed:** 0.29s | **Output rows:** 1,302
 
 ---
 
@@ -210,5 +211,5 @@
 - **Total brands processed:** 31
 - **Total rows in final matrix:** 1,302
 - **Features engineered:** 18
-- **Pipeline execution time:** 6.8s
-- **Generated:** 2026-05-14 13:53:50
+- **Pipeline execution time:** 3.7s
+- **Generated:** 2026-05-14 16:48:58

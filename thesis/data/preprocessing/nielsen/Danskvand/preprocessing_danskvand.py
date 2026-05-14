@@ -69,10 +69,10 @@ def cache_exists() -> bool:
 	"""Check if Stage 1 view parquet cache already exists in converted tier."""
 	views_dir = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"
 	cache_files = [
-		views_dir / "Danskvand_clean_facts_v.parquet",
-		views_dir / "Danskvand_clean_dim_product_v.parquet",
-		views_dir / "Danskvand_clean_dim_period_v.parquet",
-		views_dir / "Danskvand_clean_dim_market_v.parquet",
+		views_dir / "danskvand_clean_facts_v.parquet",
+		views_dir / "danskvand_clean_dim_product_v.parquet",
+		views_dir / "danskvand_clean_dim_period_v.parquet",
+		views_dir / "danskvand_clean_dim_market_v.parquet",
 	]
 	return all(f.exists() for f in cache_files)
 

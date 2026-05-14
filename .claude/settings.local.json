@@ -40,7 +40,9 @@
       "Bash(python3 -m py_compile thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
       "Bash(python3 *)",
       "Bash(time python thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Skill(docs-update-all)",
+      "Skill(git-draft-commit)"
     ]
   }
 }

@@ -8,5 +8,15 @@
     "output_rows": 1302,
     "input_cols": 8,
     "output_cols": 23
+  },
+  {
+    "timestamp": "2026-05-14T16:48:56.514936",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.1,
+    "output_rows": 1302,
+    "input_cols": 8,
+    "output_cols": 23
   }
 ]

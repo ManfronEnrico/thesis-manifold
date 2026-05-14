@@ -3,10 +3,10 @@
 Nielsen Danskvand Preprocessing â€” Step 1: Load and Aggregate
 
 Input:  Step 0 output or raw Nielsen JSONL view files
-		- Danskvand_clean_facts_v.jsonl
-		- Danskvand_clean_dim_product_v.jsonl
-		- Danskvand_clean_dim_period_v.jsonl
-		- Danskvand_clean_dim_market_v.jsonl
+		- danskvand_clean_facts_v.jsonl
+		- danskvand_clean_dim_product_v.jsonl
+		- danskvand_clean_dim_period_v.jsonl
+		- danskvand_clean_dim_market_v.jsonl
 
 Output: Step 1 output (aggregate.parquet)
 		- Aggregated to brand Ã— period granularity
@@ -109,19 +109,19 @@ def load_and_aggregate(input_dir: Path, target_market: str, cached_parquet_dir: 
 	Tries cached parquet first (from step 0, if available). Falls back to JSONL.
 	"""
 	# Try cached parquet first
-	if cached_parquet_dir and (cached_parquet_dir / "Danskvand_clean_facts_v.parquet").exists():
+	if cached_parquet_dir and (cached_parquet_dir / "danskvand_clean_facts_v.parquet").exists():
 		print("  Loading view parquet files (cached from step 0)...")
-		facts = pd.read_parquet(cached_parquet_dir / "Danskvand_clean_facts_v.parquet")
-		products = pd.read_parquet(cached_parquet_dir / "Danskvand_clean_dim_product_v.parquet")
-		periods = pd.read_parquet(cached_parquet_dir / "Danskvand_clean_dim_period_v.parquet")
-		markets = pd.read_parquet(cached_parquet_dir / "Danskvand_clean_dim_market_v.parquet")
+		facts = pd.read_parquet(cached_parquet_dir / "danskvand_clean_facts_v.parquet")
+		products = pd.read_parquet(cached_parquet_dir / "danskvand_clean_dim_product_v.parquet")
+		periods = pd.read_parquet(cached_parquet_dir / "danskvand_clean_dim_period_v.parquet")
+		markets = pd.read_parquet(cached_parquet_dir / "danskvand_clean_dim_market_v.parquet")
 	else:
 		# Fallback to JSONL
 		print("  Loading view JSONL files...")
-		facts = pd.read_json(input_dir / "Danskvand_clean_facts_v.jsonl", lines=True)
-		products = pd.read_json(input_dir / "Danskvand_clean_dim_product_v.jsonl", lines=True)
-		periods = pd.read_json(input_dir / "Danskvand_clean_dim_period_v.jsonl", lines=True)
-		markets = pd.read_json(input_dir / "Danskvand_clean_dim_market_v.jsonl", lines=True)
+		facts = pd.read_json(input_dir / "danskvand_clean_facts_v.jsonl", lines=True)
+		products = pd.read_json(input_dir / "danskvand_clean_dim_product_v.jsonl", lines=True)
+		periods = pd.read_json(input_dir / "danskvand_clean_dim_period_v.jsonl", lines=True)
+		markets = pd.read_json(input_dir / "danskvand_clean_dim_market_v.jsonl", lines=True)
 
 	print(f"  Facts shape: {facts.shape}")
 	print(f"  Products shape: {products.shape}")
@@ -136,17 +136,36 @@ def load_and_aggregate(input_dir: Path, target_market: str, cached_parquet_dir: 
 	df = df[df["sales_units"] > 0].copy()
 
 	# Aggregate by brand Ã— period
+	# Note: Not all Nielsen categories have promo columns; build agg_dict dynamically
 	agg_dict = {
 		"sales_units": "sum",
 		"sales_value": "sum",
 		"sales_in_liters": "sum",
-		"sales_units_any_promo": lambda x: sum(pd.Series(x).fillna(0)),
 		"weighted_distribution": "mean",
 	}
 
+	# Add promo column if it exists in data
+	if "sales_units_any_promo" in df.columns:
+		agg_dict["sales_units_any_promo"] = lambda x: sum(pd.Series(x).fillna(0))
+
 	aggregated = df.groupby(["brand", "period_year", "period_month"]).agg(agg_dict).reset_index()
-	aggregated.columns = ["brand", "period_year", "period_month", "sales_units", "sales_value",
-						 "sales_liters", "promo_units", "weighted_dist"]
+
+	# Rename columns consistently
+	col_mapping = {
+		"sales_units": "sales_units",
+		"sales_value": "sales_value",
+		"sales_in_liters": "sales_liters",
+		"weighted_distribution": "weighted_dist",
+	}
+	if "sales_units_any_promo" in aggregated.columns:
+		col_mapping["sales_units_any_promo"] = "promo_units"
+	else:
+		# No promo data available; fill with zeros
+		aggregated["promo_units"] = 0
+
+	aggregated = aggregated.rename(columns=col_mapping)
+	aggregated = aggregated[["brand", "period_year", "period_month", "sales_units", "sales_value",
+							 "sales_liters", "promo_units", "weighted_dist"]]
 
 	return aggregated
 
