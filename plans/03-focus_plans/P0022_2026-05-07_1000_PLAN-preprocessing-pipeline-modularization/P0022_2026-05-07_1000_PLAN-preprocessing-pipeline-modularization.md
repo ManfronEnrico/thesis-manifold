@@ -1,8 +1,8 @@
 ---
 created: 2026-05-07 10:00:00
-updated: 2026-05-14 15:45:00
-status: Phase 3 Complete (CSD EDA + Steps 2-6 Implementation), Phase 4 Ready (4-Category Replication)
-focus_detail: "CSD EDA analysis executed with empirically-justified parameters (MIN_PERIODS=40 for thesis quality, HOLIDAY_MONTHS={3,6,12} different from default). Steps 2-6 refactored with EDA findings, tested end-to-end, and feature matrix generated (62 brands, 2,666 rows). Ready to replicate EDA + modular steps for remaining 4 categories (Energidrikke, Danskvand, RTD, Totalbeer). ~2–3 hours remaining for Phase 4 category replication."
+updated: 2026-05-14 17:30:00
+status: Phase 4 Partial (Filename Bugs Fixed, 3/4 Categories Working)
+focus_detail: "Fixed critical filename case-sensitivity bugs in Nielsen preprocessing orchestrators and Step 1 load scripts for all 4 non-CSD categories (Danskvand, Energidrikke, RTD, Totalbeer). Fixed schema mismatch (promo column now optional). Verified end-to-end: Danskvand (6.8s), Energidrikke, RTD all PASS. Totalbeer skipped (missing facts table). Ready for EDA replication on 3 working categories."
 ---
 
 # P0022: Preprocessing Pipeline Modularization
@@ -30,12 +30,12 @@ focus_detail: "CSD EDA analysis executed with empirically-justified parameters (
 - ✅ Fixed progress bar visibility (transient=True → keep_visible parameter in terminal_utils.py)
 - ✅ CSD end-to-end testing: Stage 1 (36.1s), Stage 2 (3.3s), 78 brands, 3,354 rows output
 
-**Testing Status:**
+**Testing Status (Updated 2026-05-14):**
 - ✅ CSD: TESTED (Stage 1 + Stage 2)
-- ⏳ Energidrikke: Ready for testing
-- ⏳ Danskvand: Ready for testing
-- ⏳ RTD: Ready for testing
-- ⏳ Totalbeer: Ready for testing
+- ✅ Danskvand: TESTED end-to-end (6.8s total pipeline, 20 brands after filtering)
+- ✅ Energidrikke: TESTED end-to-end
+- ✅ RTD: TESTED end-to-end
+- ❌ Totalbeer: SKIPPED (missing facts table in source data)
 
 ## Completed (Phase 3 ✅)
 
@@ -56,14 +56,31 @@ focus_detail: "CSD EDA analysis executed with empirically-justified parameters (
 - ✅ 2026-05-14_DOC-csd-eda-analysis-and-parameter-justification.md (EDA template)
 - ✅ 2026-05-14_DOC-csd-eda-findings-populated.md (findings summary)
 
-## In Progress (Phase 4 🔧)
+## Completed (Phase 4 — Bug Fix Pass ✅)
 
-**Remaining Work (4-Category Replication):**
+**Filename Case-Sensitivity & Schema Bugs Fixed (2026-05-14)**
+- ✅ Fixed orchestrator cache existence checks: lowercase filenames in preprocessing_danskvand.py, preprocessing_rtd.py, preprocessing_totalbeer.py
+  - Bug: checked for `Danskvand_clean_facts_v.parquet`, actual files are `danskvand_clean_facts_v.parquet` (Linux case-sensitive)
+- ✅ Fixed Step 1 load scripts: hardcoded JSONL and parquet filenames now lowercase across Danskvand, RTD, Totalbeer
+  - Affected: pre_danskvand_1_load_and_aggregate.py, pre_rtd_1_load_and_aggregate.py, pre_totalbeer_1_load_and_aggregate.py
+- ✅ Fixed Step 1 aggregation schema mismatch: made sales_units_any_promo column optional
+  - Bug: CSD has promo data; Danskvand/RTD/Totalbeer don't; script failed on KeyError
+  - Fix: dynamically build agg_dict, fill promo_units with zeros if missing
+- ✅ All 3 working categories verified end-to-end:
+  - Danskvand: 6.8s total (20 brands after MIN_PERIODS=40 filter)
+  - Energidrikke: PASS
+  - RTD: PASS
+- ⏭️ Totalbeer: SKIPPED (missing facts table in source JSONL)
+
+## In Progress (Phase 5 — 4-Category EDA Replication 🔧)
+
+**Next Steps (3 Working Categories):**
 - [ ] Run EDA analysis for Energidrikke (pre_energidrikke_eda_and_parameter_analysis.py)
-- [ ] Replicate Steps 2-6 for Energidrikke with EDA parameters
-- [ ] Repeat for Danskvand, RTD, Totalbeer
-- [ ] Create unified preprocessing_all.py master orchestrator (Phase 4 extension)
-- [ ] Validate all 5 categories produce expected engineered features
+- [ ] Run EDA analysis for Danskvand (pre_danskvand_eda_and_parameter_analysis.py)
+- [ ] Run EDA analysis for RTD (pre_rtd_eda_and_parameter_analysis.py)
+- [ ] Replicate Steps 2-6 for each category with category-specific EDA parameters
+- [ ] Create unified preprocessing_all.py master orchestrator (Phase 5 extension)
+- [ ] Validate all 4 working categories produce expected engineered features
 
 ---
 

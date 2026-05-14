@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-05-14T16:49:02.583525",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "RTD",
+    "elapsed_sec": 0.1,
+    "output_rows": 1806,
+    "input_cols": 8,
+    "output_cols": 8
+  }
+]

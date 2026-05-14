@@ -8,5 +8,15 @@
     "output_rows": 1302,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T16:48:55.657447",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.09,
+    "output_rows": 1302,
+    "input_cols": 8,
+    "output_cols": 8
   }
 ]
