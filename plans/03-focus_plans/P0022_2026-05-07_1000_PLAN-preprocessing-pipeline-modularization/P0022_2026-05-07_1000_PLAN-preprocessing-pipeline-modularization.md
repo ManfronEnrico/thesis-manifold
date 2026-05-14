@@ -1,8 +1,8 @@
 ---
 created: 2026-05-07 10:00:00
-updated: 2026-05-12 16:20:00
-status: Phase 2 Complete (Data Restructure + CSD Testing), Phase 3 Ready (4-Category Validation)
-focus_detail: "Data folder fully restructured into 3-tier hierarchy (raw/ → converted/ → preprocessing/). Stage 1 & 2 scripts migrated and tested. CSD end-to-end validated (36.1s Stage 1, 3.3s Stage 2). Progress bar fix applied (transient=True → keep_visible parameter). Ready to test remaining 4 categories (Energidrikke, Danskvand, RTD, Totalbeer). ~3–4 hours remaining for Phase 3 validation."
+updated: 2026-05-14 15:45:00
+status: Phase 3 Complete (CSD EDA + Steps 2-6 Implementation), Phase 4 Ready (4-Category Replication)
+focus_detail: "CSD EDA analysis executed with empirically-justified parameters (MIN_PERIODS=40 for thesis quality, HOLIDAY_MONTHS={3,6,12} different from default). Steps 2-6 refactored with EDA findings, tested end-to-end, and feature matrix generated (62 brands, 2,666 rows). Ready to replicate EDA + modular steps for remaining 4 categories (Energidrikke, Danskvand, RTD, Totalbeer). ~2–3 hours remaining for Phase 4 category replication."
 ---
 
 # P0022: Preprocessing Pipeline Modularization
@@ -37,14 +37,33 @@ focus_detail: "Data folder fully restructured into 3-tier hierarchy (raw/ → co
 - ⏳ RTD: Ready for testing
 - ⏳ Totalbeer: Ready for testing
 
-## In Progress (Phase 3 🔧)
+## Completed (Phase 3 ✅)
 
-**Remaining Work:**
-- [ ] Run `python thesis/data/converted/nielsen/jsonl_to_parquet/run_all_conversions.py` (Stage 1 for 4 categories)
-- [ ] Test Stage 2 legacy scripts: `python preprocessing_energidrikke.py`, etc.
-- [ ] Test Stage 2 modular orchestrators (per-category, if deploying)
-- [ ] Verify all categories produce expected engineered features
-- [ ] Compare outputs with previous preprocessing baseline (optional but recommended)
+**CSD EDA & Steps 2-6 Implementation**
+- ✅ Created pre_csd_eda_and_parameter_analysis.py with 8 executable cells
+- ✅ EDA executed: missing value analysis, brand stability, seasonal patterns, lag/rolling analysis
+- ✅ Generated csd_eda_findings.json with empirically-justified parameters
+- ✅ Step 2 (Build Calendar): Updated date range to 2026-04, tested → 6,149 rows
+- ✅ Step 3 (Filter Series): MIN_PERIODS = 40 (thesis quality focus), tested → 2,666 rows (62 brands)
+- ✅ Step 4 (Engineer Features): CSD-specific parameters with HOLIDAY_MONTHS={3,6,12} (different from default), tested → 23 features
+- ✅ Step 5 (Apply Split): EDA-driven dates (TRAIN_END=2024-10, VAL_END=2025-04), tested → split applied
+- ✅ Step 6 (Save Outputs): Generated feature matrix, series index, split dates, preprocessing report
+- ✅ All steps tested end-to-end: 2.6s total pipeline time
+- ✅ Feature matrix ready: 62 brands × 43 periods × 24 features (2,666 rows)
+
+**Documentation Created:**
+- ✅ 2026-05-14_DOC-monolithic-to-modularized-insights.md (12 core architectural insights)
+- ✅ 2026-05-14_DOC-csd-eda-analysis-and-parameter-justification.md (EDA template)
+- ✅ 2026-05-14_DOC-csd-eda-findings-populated.md (findings summary)
+
+## In Progress (Phase 4 🔧)
+
+**Remaining Work (4-Category Replication):**
+- [ ] Run EDA analysis for Energidrikke (pre_energidrikke_eda_and_parameter_analysis.py)
+- [ ] Replicate Steps 2-6 for Energidrikke with EDA parameters
+- [ ] Repeat for Danskvand, RTD, Totalbeer
+- [ ] Create unified preprocessing_all.py master orchestrator (Phase 4 extension)
+- [ ] Validate all 5 categories produce expected engineered features
 
 ---
 
@@ -88,10 +107,10 @@ thesis/data/converted/nielsen/
 
 ---
 
-## Phase 3-4 (Pending)
+## Phase 4-5 (Pending)
 
-- [ ] **Phase 3:** Create `preprocessing_all.py` master orchestrator
-- [ ] **Phase 4:** Documentation (parameter reference, troubleshooting guide)
+- [ ] **Phase 4 Extension:** Create `preprocessing_all.py` master orchestrator (run all 5 categories)
+- [ ] **Phase 5:** Thesis documentation (parameter justification, EDA methodology guide, troubleshooting)
 
 ---
 

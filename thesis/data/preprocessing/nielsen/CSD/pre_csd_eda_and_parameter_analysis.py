@@ -461,3 +461,5 @@ print(f"1. Review findings in: {OUTPUT_FINDINGS}")
 print(f"2. Implement Steps 2-6 with these CSD-specific parameters")
 print(f"3. Curate user prompts to focus on the {brands_40} high-quality brands")
 print(f"4. Document parameter justifications in step docstrings\n")
+
+# %%
