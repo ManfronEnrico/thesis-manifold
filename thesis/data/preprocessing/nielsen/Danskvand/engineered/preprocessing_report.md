@@ -1,5 +1,5 @@
 # Nielsen Danskvand Preprocessing Report
-> Generated: 2026-05-09 11:53:10
+> Generated: 2026-05-14 13:31:57
 > Category: Danskvand
 > Market scope: DVH EXCL. HD
 > Min periods filter: 30
@@ -12,8 +12,8 @@
 | Total rows | 912 |
 | Periods per brand | 38 |
 | Features engineered | 18 |
-| Peak RAM (preprocessing) | 6571.3 MB |
-| Elapsed time | 205.8 s |
+| Peak RAM (preprocessing) | 99.0 MB |
+| Elapsed time | 1.6 s |
 
 ## Split Boundaries
 

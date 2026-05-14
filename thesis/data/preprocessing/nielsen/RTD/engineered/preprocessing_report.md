@@ -1,5 +1,5 @@
 # Nielsen RTD Preprocessing Report
-> Generated: 2026-05-09 12:24:41
+> Generated: 2026-05-14 13:32:21
 > Category: RTD
 > Market scope: DVH EXCL. HD
 > Min periods filter: 30
@@ -12,8 +12,8 @@
 | Total rows | 1,596 |
 | Periods per brand | 38 |
 | Features engineered | 18 |
-| Peak RAM (preprocessing) | 23696.0 MB |
-| Elapsed time | 1891.5 s |
+| Peak RAM (preprocessing) | 159.5 MB |
+| Elapsed time | 2.5 s |
 
 ## Split Boundaries
 

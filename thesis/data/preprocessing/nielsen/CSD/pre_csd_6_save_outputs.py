@@ -39,10 +39,6 @@ from PATHS import THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outp
 from METADATA import get_dimension_info
 from thesis.thesis_agents.ai_research_framework.features.engineer_features import (
 	build_series_index,
-	DEFAULT_TARGET_MARKET as TARGET_MARKET,
-	DEFAULT_MIN_PERIODS as MIN_PERIODS,
-	DEFAULT_TRAIN_END as TRAIN_END,
-	DEFAULT_VAL_END as VAL_END,
 )
 from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_info, print_data_preview
@@ -84,6 +80,11 @@ from rich.console import Console
 CATEGORY = "CSD"
 STEP_NUM = 6
 STEP_NAME = "Save Outputs"
+
+# CSD-specific parameters (from EDA analysis)
+CSD_MIN_PERIODS = 40          # From Cell 3: thesis quality focus (62 brands)
+CSD_TRAIN_END = (2024, 10)    # From Cell 7: 24 months training
+CSD_VAL_END = (2025, 4)       # From Cell 7: 6 months validation
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
@@ -150,10 +151,10 @@ def main():
 
 		split_dates = {
 			"train_start": get_date_str(train_df, "min"),
-			"train_end": f"{TRAIN_END[0]}-{TRAIN_END[1]:02d}-01",
-			"val_start": f"{TRAIN_END[0]}-{TRAIN_END[1]+1 if TRAIN_END[1]<12 else 1:02d}-01",
-			"val_end": f"{VAL_END[0]}-{VAL_END[1]:02d}-01",
-			"test_start": f"{VAL_END[0]}-{VAL_END[1]+1 if VAL_END[1]<12 else 1:02d}-01",
+			"train_end": f"{CSD_TRAIN_END[0]}-{CSD_TRAIN_END[1]:02d}-01",
+			"val_start": f"{CSD_TRAIN_END[0]}-{CSD_TRAIN_END[1]+1 if CSD_TRAIN_END[1]<12 else 1:02d}-01",
+			"val_end": f"{CSD_VAL_END[0]}-{CSD_VAL_END[1]:02d}-01",
+			"test_start": f"{CSD_VAL_END[0]}-{CSD_VAL_END[1]+1 if CSD_VAL_END[1]<12 else 1:02d}-01",
 			"test_end": get_date_str(test_df, "max"),
 		}
 		with open(OUTPUT_SPLIT_DATES, "w") as f:
@@ -229,8 +230,8 @@ def main():
 
 **Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
 **Category:** {CATEGORY}
-**Market Scope:** {TARGET_MARKET}
-**Min Periods Filter:** {MIN_PERIODS}
+**Market Scope:** All Market Types (aggregated across all 28 outlet channels)
+**Min Periods Filter:** {CSD_MIN_PERIODS} (Thesis Quality Focus - 62 brands)
 
 ---
 
@@ -293,7 +294,7 @@ def main():
 		report += f"""
 ### Step 3: Filter Series
 - **Input:** Calendar-filled data (step 2)
-- **Output:** Filtered to brands with ≥{MIN_PERIODS} non-zero periods
+- **Output:** Filtered to brands with ≥{CSD_MIN_PERIODS} non-zero periods
 - **Processing:** Removed sparse series (insufficient historical observations)
 - **Output file:** `step_3_filtered_series.parquet`
 """
@@ -408,7 +409,7 @@ def main():
 - **log_sales_units:** NaN for non-positive or missing values (log-safe transformation).
 
 ### Filtering Criteria
-- Only brands with ≥{MIN_PERIODS} non-zero observations retained
+- Only brands with ≥{CSD_MIN_PERIODS} non-zero observations retained
 - All brands have complete calendar coverage (2022-10 to 2026-03)
 - NaN pattern from earlier steps preserved through final matrix
 
@@ -421,16 +422,16 @@ def main():
 
 ---
 
-## Configuration & Parameters
+## Configuration & Parameters (CSD EDA-Driven)
 
 | Parameter | Value |
 |---|---|
-| Target Market | {TARGET_MARKET} |
-| Min Periods Filter | {MIN_PERIODS} non-zero observations per brand |
-| Calendar Range | 2022-10 to 2026-03 (42 monthly periods) |
-| Lag Windows | 1, 2, 3, 4, 8, 13 months |
-| Rolling Windows | 4-month, 13-month |
-| Holiday Months | 1 (Jan), 4 (Apr), 6 (Jun), 10 (Oct), 12 (Dec) |
+| Market Scope | All Market Types (aggregated across 28 retail outlet channels) |
+| Min Periods Filter | {CSD_MIN_PERIODS} non-zero observations per brand (thesis quality focus) |
+| Calendar Range | 2022-10 to 2026-04 (43 monthly periods) |
+| Lag Windows | 1, 2, 3, 4, 8, 13 months (autocorrelation-based) |
+| Rolling Windows | 4-month, 13-month (Nielsen calendar + quarterly) |
+| Holiday Months | 3 (Mar), 6 (Jun), 12 (Dec) — **Empirical CSD peaks** (not default {1,4,6,10,12}) |
 | Split Method | Locked date-based (time-series) |
 | Train End | 2025-02 |
 | Val End | 2025-08 |

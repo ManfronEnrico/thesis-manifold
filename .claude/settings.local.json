@@ -38,7 +38,9 @@
       "Bash(python3 -m py_compile thesis/data/converted/nielsen/jsonl_to_parquet/convert_category.py)",
       "Bash(python3 -m py_compile thesis/data/preprocessing/preprocessing_csd.py)",
       "Bash(python3 -m py_compile thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(time python thesis/data/preprocessing/nielsen/CSD/preprocessing_csd.py)",
+      "Bash(python *)"
     ]
   }
 }

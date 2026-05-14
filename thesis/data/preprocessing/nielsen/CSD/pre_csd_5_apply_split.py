@@ -7,12 +7,18 @@ Input:  Step 4 output (engineered_features.parquet)
 
 Output: Step 5 output (split_applied.parquet)
 		- Same data plus 'split' column (train, val, or test)
-		- Split boundaries locked: train ≤ 2025-02, val 2025-03–2025-08, test ≥ 2025-09
+		- Split boundaries from CSD EDA analysis: train ≤ 2024-10, val ≤ 2025-04, test ≥ 2025-04
 
 Logic:
   - Import apply_split() from shared codebase
-  - Apply locked train/val/test split dates
+  - Apply CSD-specific train/val/test split dates (from EDA, Cell 7)
   - Add split column to DataFrame
+
+CATEGORY-SPECIFIC NOTES (CSD EDA):
+  - TRAIN_END = (2024, 10): 24 months training data for stable pattern learning
+  - VAL_END = (2025, 4): 6 months validation for tuning
+  - TEST: Remaining 13 months (2025-04 to 2026-04) for final evaluation
+  - Rationale: Data-driven split vs arbitrary defaults, maximizes test data
 """
 
 import sys, time
@@ -35,8 +41,6 @@ from PATHS import THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outp
 from METADATA import describe_column
 from thesis.thesis_agents.ai_research_framework.features.engineer_features import (
 	apply_split as shared_apply_split,
-	DEFAULT_TRAIN_END as TRAIN_END,
-	DEFAULT_VAL_END as VAL_END,
 )
 from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
@@ -50,10 +54,10 @@ from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timin
 # This step applies time-series train/val/test splits based on locked date boundaries.
 # Key split semantics:
 #
-# SPLIT BOUNDARIES (locked per research design):
-#   - Train: period_year-period_month ≤ 2025-02 (2022-10 to 2025-02)
-#   - Val: 2025-03 ≤ period_year-period_month ≤ 2025-08 (2025-03 to 2025-08)
-#   - Test: 2025-09 ≤ period_year-period_month (2025-09 to 2026-03)
+# SPLIT BOUNDARIES (per CSD EDA analysis — Cell 7):
+#   - Train: 2022-10 to 2024-10 (24 months — 2 years for stable pattern learning)
+#   - Val: 2024-10 to 2025-04 (6 months — tuning window)
+#   - Test: 2025-04 to 2026-04 (13 months — final evaluation)
 #
 # IMPORTANT NOTES:
 #   - Splits applied on TIME, not random sampling (time-series integrity required)
@@ -72,6 +76,11 @@ from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timin
 CATEGORY = "CSD"
 STEP_NUM = 5
 STEP_NAME = "Apply Split"
+
+# CSD-specific split dates (from EDA analysis, Cell 7)
+CSD_TRAIN_END = (2024, 10)  # 24 months training data
+CSD_VAL_END = (2025, 4)     # 6 months validation data
+# Test automatically: remaining data (2025-04 to 2026-04)
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
@@ -102,13 +111,14 @@ def main():
 		print_file_load(INPUT_ENGINEERED_FEATURES_PARQUET, input_shape, load_elapsed)
 
 		# Process
-		print(f"\nApplying train/val/test split...")
-		print_info(f"Train end: {TRAIN_END[0]}-{TRAIN_END[1]:02d}")
-		print_info(f"Val end: {VAL_END[0]}-{VAL_END[1]:02d}")
+		print(f"\nApplying train/val/test split (CSD EDA-driven)...")
+		print_info(f"Train end: {CSD_TRAIN_END[0]}-{CSD_TRAIN_END[1]:02d} (24 months)")
+		print_info(f"Val end: {CSD_VAL_END[0]}-{CSD_VAL_END[1]:02d} (6 months)")
+		print_info(f"Test: Remaining data until 2026-04")
 
 		process_start = time.perf_counter()
 
-		df = shared_apply_split(df)
+		df = shared_apply_split(df, train_end=CSD_TRAIN_END, val_end=CSD_VAL_END)
 
 		process_elapsed = time.perf_counter() - process_start
 		print(f"  ✓ Split applied in {process_elapsed:.2f}s")

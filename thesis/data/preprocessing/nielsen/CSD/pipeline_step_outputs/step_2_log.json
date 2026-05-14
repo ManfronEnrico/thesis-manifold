@@ -168,5 +168,25 @@
     "output_rows": 5964,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T13:52:42.785851",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.17,
+    "output_rows": 6006,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T15:41:13.707727",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.22,
+    "output_rows": 6149,
+    "input_cols": 8,
+    "output_cols": 8
   }
 ]

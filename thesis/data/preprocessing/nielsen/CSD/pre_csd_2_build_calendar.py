@@ -6,8 +6,8 @@ Input:  Step 1 output (aggregate.parquet)
 		- Brand-period aggregation with sales units, value, etc.
 
 Output: Step 2 output (calendar_filled.parquet)
-		- Same data but with all months from 2022-10 to 2026-03 (gaps filled with NaN)
-		- All brands × all months in complete date range
+		- Same data but with all months from 2022-10 to 2026-04 (gaps filled with NaN)
+		- All brands × all months in complete date range (per EDA analysis)
 
 Logic:
   - Create full date range (monthly granularity, 2022-10 to 2026-03)
@@ -71,8 +71,9 @@ STEP_NUM = 2
 STEP_NAME = "Build Calendar"
 
 # Feature engineering constants (calendar date range)
+# Per CSD EDA analysis (Cell 2): Data spans 2022-10 to 2026-04 (43 months)
 DEFAULT_CALENDAR_START = (2022, 10)
-DEFAULT_CALENDAR_END = (2026, 3)
+DEFAULT_CALENDAR_END = (2026, 4)
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)

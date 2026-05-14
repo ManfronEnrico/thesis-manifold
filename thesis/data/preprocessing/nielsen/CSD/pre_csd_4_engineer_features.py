@@ -59,7 +59,9 @@ from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timin
 # FEATURES ENGINEERED (via shared_engineer_features):
 #   - Lags: lag_1, lag_2, lag_3, lag_4, lag_8, lag_13 (1, 2, 3, 4, 8, 13 months back)
 #   - Rolling: rolling_mean_4, rolling_mean_13, rolling_std_4 (4-month and 13-month windows)
-#   - Calendar: month (1–12), quarter (1–4), holiday_month (binary: 1/4/6/10/12)
+#   - Calendar: month (1–12), quarter (1–4), holiday_month (binary: {3, 6, 12} for CSD)
+#     NOTE: CSD holiday months empirically differ from colleague's default {1, 4, 6, 10, 12}
+#     CSD peaks: March (10.7%, Easter), June (8.8%, Summer), December (12.2%, Holidays)
 #   - Transformation: log_sales_units = ln(sales_units) for positive values; NaN for non-positive
 #
 # NaN HANDLING:
@@ -80,10 +82,11 @@ CATEGORY = "CSD"
 STEP_NUM = 4
 STEP_NAME = "Engineer Features"
 
-# CSD-specific feature engineering parameters
-CSD_LAG_WINDOWS = [1, 2, 3, 4, 8, 13]
-CSD_ROLLING_WINDOWS = [4, 13]
-CSD_HOLIDAY_MONTHS = {1, 4, 6, 10, 12}  # Jan, Apr, Jun, Oct, Dec
+# CSD-specific feature engineering parameters (from CSD EDA analysis)
+CSD_LAG_WINDOWS = [1, 2, 3, 4, 8, 13]           # Cell 5: Weekly to yearly dependencies
+CSD_ROLLING_WINDOWS = [4, 13]                    # Cell 6: Nielsen calendar + quarterly
+CSD_HOLIDAY_MONTHS = {3, 6, 12}                  # Cell 4: March (Easter), June (Summer), Dec (Holidays)
+                                                  # ⚠️ NOTE: Different from default {1, 4, 6, 10, 12}
 CSD_PROMO_CLIPPING = 1.0  # Clip promo intensity to [0, 1]
 
 # Input/Output paths
@@ -98,16 +101,23 @@ LOG_FILE = STEP_OUTPUT_DIR / f"step_{STEP_NUM}_log.json"
 
 def engineer_csd_features(df: pd.DataFrame) -> pd.DataFrame:
 	"""
-	Engineer CSD-specific features.
+	Engineer CSD-specific features with empirically-justified parameters.
 
 	Uses shared engineer_features() function from codebase.
-	Applies CSD-specific lags, rolling windows, and holiday definitions.
+	Applies CSD-specific lags, rolling windows, and holiday definitions from EDA analysis.
 
 	Args:
 		df: DataFrame with brand, period_year, period_month, sales_units columns
 
 	Returns:
 		DataFrame with engineered features added
+
+	CATEGORY-SPECIFIC NOTES (CSD EDA):
+		- LAGS: (1,2,3,4,8,13) from autocorrelation analysis (Cell 5)
+		- ROLLING_WINDOWS: (4,13) aligned to Nielsen calendar & quarters (Cell 6)
+		- HOLIDAY_MONTHS: {3,6,12} empirical peaks — March (Easter), June (Summer), Dec (Holidays)
+		  ⚠️ Different from colleague's default {1,4,6,10,12}
+		- Rationale: CSD shows March peak (10.7%), not April (8.4%)
 	"""
 	# Create date column from period_year and period_month for shared function
 	df["date"] = pd.to_datetime(
@@ -115,8 +125,13 @@ def engineer_csd_features(df: pd.DataFrame) -> pd.DataFrame:
 		format="%Y-%m"
 	)
 
-	# Call shared feature engineering (uses DEFAULT_ constants from codebase)
-	df = shared_engineer_features(df)
+	# Call shared feature engineering with CSD-specific parameters
+	df = shared_engineer_features(
+		df,
+		lags=CSD_LAG_WINDOWS,
+		rolling_windows=CSD_ROLLING_WINDOWS,
+		holiday_months=CSD_HOLIDAY_MONTHS
+	)
 
 	# Add log transformation
 	df["log_sales_units"] = df["sales_units"].apply(lambda x: float('nan') if pd.isna(x) else float(x)).apply(

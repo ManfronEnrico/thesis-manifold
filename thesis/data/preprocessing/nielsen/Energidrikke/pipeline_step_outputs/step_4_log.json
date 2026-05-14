@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-05-14T13:53:48.552002",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.14,
+    "output_rows": 1302,
+    "input_cols": 8,
+    "output_cols": 23
+  }
+]

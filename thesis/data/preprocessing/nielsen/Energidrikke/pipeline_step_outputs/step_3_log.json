@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-05-14T13:53:47.587292",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.1,
+    "output_rows": 1302,
+    "input_cols": 8,
+    "output_cols": 8
+  }
+]

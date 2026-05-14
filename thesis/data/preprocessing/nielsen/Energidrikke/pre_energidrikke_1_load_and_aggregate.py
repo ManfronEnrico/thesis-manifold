@@ -36,7 +36,7 @@ else:
 
 sys.path.insert(0, str(ROOT_DIR))
 
-from PATHS import THESIS_DATA_NIELSEN_JSONL_DIR, THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outputs_dir
+from PATHS import THESIS_DATA_RAW_NIELSEN_JSONL_DIR, THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR, get_category_pipeline_step_outputs_dir
 from METADATA import get_column_definition, describe_column
 from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
@@ -88,7 +88,7 @@ STEP_NAME = "Load and Aggregate"
 TARGET_MARKET = "All Markets"
 
 # Input paths (Nielsen view files)
-INPUT_VIEWS_DIR = THESIS_DATA_NIELSEN_JSONL_DIR / CATEGORY / "views"
+INPUT_VIEWS_DIR = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / CATEGORY / "views"
 
 # Cached parquet from step 0
 CACHED_PARQUET_VIEWS_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"

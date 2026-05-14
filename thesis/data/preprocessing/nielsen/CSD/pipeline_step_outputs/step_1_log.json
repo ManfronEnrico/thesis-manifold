@@ -167,5 +167,41 @@
     "elapsed_sec": 0.81,
     "output_rows": 4040,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T13:50:45.302585",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 2.08,
+    "output_rows": 4140,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T13:52:41.808035",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 2.55,
+    "output_rows": 4140,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T15:02:05.871825",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.94,
+    "output_rows": 4140,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T15:02:26.053696",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 1.62,
+    "output_rows": 4140,
+    "output_cols": 8
   }
 ]

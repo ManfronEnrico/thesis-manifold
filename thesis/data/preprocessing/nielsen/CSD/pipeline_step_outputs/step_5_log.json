@@ -144,5 +144,25 @@
     "output_rows": 3528,
     "input_cols": 23,
     "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T13:52:45.957978",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.12,
+    "output_rows": 3528,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T15:41:26.546337",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.12,
+    "output_rows": 2666,
+    "input_cols": 23,
+    "output_cols": 24
   }
 ]

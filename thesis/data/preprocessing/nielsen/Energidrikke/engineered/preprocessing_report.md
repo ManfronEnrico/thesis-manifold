@@ -1,5 +1,5 @@
 # Nielsen Energidrikke Preprocessing Report
-> Generated: 2026-05-09 11:49:44
+> Generated: 2026-05-14 13:27:56
 > Category: Energidrikke
 > Market scope: DVH EXCL. HD
 > Min periods filter: 30
@@ -12,8 +12,8 @@
 | Total rows | 1,120 |
 | Periods per brand | 40 |
 | Features engineered | 17 |
-| Peak RAM (preprocessing) | 35457.2 MB |
-| Elapsed time | 4637.7 s |
+| Peak RAM (preprocessing) | 270.7 MB |
+| Elapsed time | 3.2 s |
 
 ## Split Boundaries
 

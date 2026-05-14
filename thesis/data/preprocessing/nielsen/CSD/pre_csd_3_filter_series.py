@@ -11,8 +11,15 @@ Output: Step 3 output (filtered_series.parquet)
 
 Logic:
   - Count non-NaN sales_units per brand
-  - Keep only brands with count >= min_periods (default 30)
+  - Keep only brands with count >= min_periods (default 40 for thesis quality focus)
   - Drop other brands entirely
+
+CATEGORY-SPECIFIC NOTES (CSD EDA):
+  - MIN_PERIODS = 40 selected via brand stability analysis
+  - Result: 62 brands retained (43.4% of 143 total)
+  - Rationale: Thesis proof-of-concept with high-quality data (40+ periods each)
+  - vs production approach: 84 brands (58.7%) with ≥30 periods
+  - Downstream impact: Feature engineering and forecasting on clean dataset
 """
 
 import sys, time
@@ -65,7 +72,9 @@ STEP_NUM = 3
 STEP_NAME = "Filter Series"
 
 # Feature engineering constants
-DEFAULT_MIN_PERIODS = 30
+# Per CSD EDA analysis (Cell 3): Thesis quality focus → 62 brands with ≥40 periods
+# (vs production approach: 84 brands with ≥30 periods)
+DEFAULT_MIN_PERIODS = 40
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
