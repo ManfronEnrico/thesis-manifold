@@ -148,7 +148,7 @@ info_df = pd.DataFrame({
 	"Metric": ["Total Rows", "Unique Brands", "Columns"],
 	"Value": [f"{len(df):,}", f"{df['brand'].nunique()}", f"{len(df.columns)}"]
 })
-print("\n📊 Data Shape:")
+print("\nData Shape:")
 print(info_df.to_string(index=False))
 
 # Column information with data quality
@@ -159,139 +159,71 @@ cols_info = pd.DataFrame({
 	"Missing": df.isnull().sum(),
 	"Missing %": (100 * df.isnull().sum() / len(df)).round(1),
 })
-print("\n📋 Columns & Data Quality:")
+print("\nColumns & Data Quality:")
 print(cols_info.to_string(index=False))
 
-print("\n⚠️ Missing Value Analysis:")
+print("\nMissing Value Analysis:")
 missing_df = cols_info[cols_info["Missing"] > 0][["Column", "Missing", "Missing %"]]
 if len(missing_df) > 0:
 	print(missing_df.to_string(index=False))
 else:
 	print("No missing values detected in key metrics")
 
-print("\n📊 Sample Data (first 10 rows):")
+print("\nSample Data (first 10 rows):")
 print(df.head(10).to_string(index=False))
 
+
+# %%
 # ============================================================================
-# %% CELL 1.5: Distribution Analysis with Skewness (NEW — GeeksforGeeks style)
+# CELL 2: Distribution Analysis with Skewness
 # ============================================================================
 
 if HAS_MATPLOTLIB:
 	print("\n" + "=" * 80)
-	print("CELL 1.5: Distribution Analysis with Skewness")
+	print("CELL 2: Distribution Analysis with Skewness")
 	print("=" * 80)
 
 	try:
-		# Histograms with KDE for key metrics (GeeksforGeeks style)
-		numeric_cols = ['sales_units', 'sales_value', 'promo_units']
-		numeric_cols_present = [c for c in numeric_cols if c in df.columns]
+			sns.set_style("darkgrid")
+			numerical_columns = df.select_dtypes(include=["int64", "float64"]).columns
 
-		if numeric_cols_present:
-			fig, axes = plt.subplots(1, len(numeric_cols_present), figsize=(16, 5))
-			if len(numeric_cols_present) == 1:
-				axes = [axes]
+			plt.figure(figsize=(14, len(numerical_columns) * 3))
 
-			for idx, col in enumerate(numeric_cols_present):
-				data_positive = df[df[col] > 0][col]
-				skewness = data_positive.skew()
+			print("\n✓ Skewness Analysis:")
+			for idx, feature in enumerate(numerical_columns, 1):
+					plt.subplot(len(numerical_columns), 2, idx)
+					sns.histplot(df[feature], kde=True)
+					skewness = df[feature].skew()
+					plt.title(f"{feature} | Skewness: {round(skewness, 2)}")
 
-				sns.histplot(data_positive, kde=True, ax=axes[idx], color=PLOT_COLOR, alpha=0.7, edgecolor='black')
-				axes[idx].set_title(f'{col.replace("_", " ").title()}\nSkewness: {skewness:.3f}',
-									fontsize=11, fontweight='bold')
-				axes[idx].set_xlabel('Value', fontsize=10)
-				axes[idx].set_ylabel('Frequency', fontsize=10)
-				axes[idx].grid(True, alpha=0.3, axis='y')
+					# Interpretation → Console output only
+					if skewness > 2:
+						interp = "Highly right-skewed (positive) — substantial non-normality (Kim, 2013) -> Log transform necessary"
+					elif skewness > 0.5:
+						interp = "Right-skewed (positive) — Log transform justified"
+					elif skewness < -0.5:
+						interp = "Left-skewed (negative)"
+					elif skewness < -2:
+						interp = "Highly left-skewed (negative) - substantial non-normality (Kim, 2013) -> Log transform necessary"
+					else:
+						interp = "Approximately symmetric"
 
-				# Interpretation
-				if skewness > 0.5:
-					interp = "Right-skewed (positive) — Log transform justified"
-				elif skewness < -0.5:
-					interp = "Left-skewed (negative)"
-				else:
-					interp = "Approximately symmetric"
-				axes[idx].text(0.95, 0.95, interp, transform=axes[idx].transAxes,
-							  verticalalignment='top', horizontalalignment='right',
-							  bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
-							  fontsize=9)
+					print(f"  {feature}: Skewness = {skewness:.3f} → {interp}")
 
 			plt.tight_layout()
 			if OUTPUT_PLOTS_DIR.exists():
-				plt.savefig(OUTPUT_PLOTS_DIR / "01_distribution_histograms.png", dpi=DPI, bbox_inches='tight')
+					plt.savefig(OUTPUT_PLOTS_DIR / "01_distribution_histograms.png", dpi=DPI, bbox_inches='tight')
 			plt.show()
 
-			print("\n✓ Distribution Analysis Complete")
-			for col in numeric_cols_present:
-				skew = df[df[col] > 0][col].skew()
-				print(f"  {col}: Skewness = {skew:.3f}")
-			print("  → Positive skewness indicates log transform beneficial")
-
 	except Exception as e:
-		print(f"⚠️  Distribution analysis failed: {e}")
+			print(f"⚠️   Distribution analysis failed: {e}")
 
 # ============================================================================
-# %% CELL 1.6: ECDF Distribution Analysis (NEW)
-# ============================================================================
-
-if HAS_MATPLOTLIB and HAS_STATSMODELS:
-	print("\n" + "=" * 80)
-	print("CELL 1.6: ECDF Distribution Analysis")
-	print("=" * 80)
-
-	try:
-		# Filter positive sales only
-		sales_positive = df[df['sales_units'] > 0]['sales_units']
-		sales_value_positive = df[df['sales_value'] > 0]['sales_value']
-
-		# Create ECDF plots (Rossmann style)
-		fig, axes = plt.subplots(1, 3, figsize=(16, 5))
-
-		# ECDF 1: Sales Units
-		cdf_sales = ECDF(sales_positive)
-		axes[0].plot(cdf_sales.x, cdf_sales.y, color=PLOT_COLOR, linewidth=2)
-		axes[0].set_xlabel('Sales Units', fontsize=11)
-		axes[0].set_ylabel('ECDF', fontsize=11)
-		axes[0].set_title('Sales Units — Cumulative Distribution', fontsize=12, fontweight='bold')
-		axes[0].grid(True, alpha=0.3)
-		axes[0].axhline(0.5, color='red', linestyle='--', alpha=0.3, linewidth=1)
-
-		# ECDF 2: Sales Value
-		cdf_value = ECDF(sales_value_positive)
-		axes[1].plot(cdf_value.x, cdf_value.y, color=PLOT_COLOR, linewidth=2)
-		axes[1].set_xlabel('Sales Value', fontsize=11)
-		axes[1].set_ylabel('ECDF', fontsize=11)
-		axes[1].set_title('Sales Value — Cumulative Distribution', fontsize=12, fontweight='bold')
-		axes[1].grid(True, alpha=0.3)
-		axes[1].axhline(0.5, color='red', linestyle='--', alpha=0.3, linewidth=1)
-
-		# ECDF 3: Promo Units
-		promo_positive = df[df['promo_units'] > 0]['promo_units']
-		cdf_promo = ECDF(promo_positive)
-		axes[2].plot(cdf_promo.x, cdf_promo.y, color=PLOT_COLOR, linewidth=2)
-		axes[2].set_xlabel('Promo Units', fontsize=11)
-		axes[2].set_ylabel('ECDF', fontsize=11)
-		axes[2].set_title('Promo Units — Cumulative Distribution', fontsize=12, fontweight='bold')
-		axes[2].grid(True, alpha=0.3)
-		axes[2].axhline(0.5, color='red', linestyle='--', alpha=0.3, linewidth=1)
-
-		plt.tight_layout()
-		if OUTPUT_PLOTS_DIR.exists():
-			plt.savefig(OUTPUT_PLOTS_DIR / "02_ecdf_distributions.png", dpi=DPI, bbox_inches='tight')
-		plt.show()
-
-		print("\n✓ ECDF Analysis Complete")
-		print(f"  Sales units: {len(sales_positive):,} positive observations")
-		print(f"  Skewness indicator: {sales_positive.skew():.3f} (positive = right-skewed)")
-		print(f"  → Log transform likely justified (reduces skew)")
-
-	except Exception as e:
-		print(f"⚠️  ECDF analysis failed: {e}")
-
-# ============================================================================
-# %% CELL 2: Date Range & Time Period Analysis
+# %% CELL 3: Date Range & Time Period Analysis
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 2: Date Range & Time Period Analysis")
+print("CELL 3: Date Range & Time Period Analysis")
 print("=" * 80)
 
 min_year = df['period_year'].min()
@@ -337,14 +269,14 @@ print("\n📊 Rows per Brand Distribution:")
 print(dist_df.to_string(index=False))
 
 # ============================================================================
-# %% CELL 2.5: Stationarity Testing with ADF (NEW)
+# %% CELL 4: Stationarity Testing with ADF (NEW)
 # ============================================================================
 
 log_necessary = None  # Default; overwritten by ADF test if statsmodels available
 
 if HAS_STATSMODELS:
 	print("\n" + "=" * 80)
-	print("CELL 2.5: Stationarity Testing (ADF Test)")
+	print("CELL 4: Stationarity Testing (ADF Test)")
 	print("=" * 80)
 
 	try:
@@ -407,11 +339,11 @@ if HAS_STATSMODELS:
 		log_necessary = None
 
 # ============================================================================
-# %% CELL 3: Brand Stability Analysis (Series Length)
+# %% CELL 5: Brand Stability Analysis (Series Length)
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 3: Brand Stability Analysis")
+print("CELL 5: Brand Stability Analysis")
 print("=" * 80)
 
 non_zero_counts = df[df['sales_units'] > 0].groupby('brand').size()
@@ -458,11 +390,11 @@ recommendation_df = pd.DataFrame({
 print("\n" + recommendation_df.to_string(index=False))
 
 # ============================================================================
-# %% CELL 4: Seasonal Pattern Analysis (Holiday Effect)
+# %% CELL 6: Seasonal Pattern Analysis (Holiday Effect)
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 4: Seasonal Pattern Analysis (Holiday Effect)")
+print("CELL 6: Seasonal Pattern Analysis (Holiday Effect)")
 print("=" * 80)
 
 # Monthly aggregation
@@ -508,12 +440,12 @@ print(f"\n✓ Recommendation: HOLIDAY_MONTHS = {set(holiday_months)}")
 print(f"   Rationale: Top 25% sales months (each ≥ {q75:,.0f} units)")
 
 # ============================================================================
-# %% CELL 4.5: Monthly Sales Bar Plot (NEW — GeeksforGeeks style)
+# %% CELL 7: Monthly Sales Bar Plot (NEW — GeeksforGeeks style)
 # ============================================================================
 
 if HAS_MATPLOTLIB:
 	print("\n" + "=" * 80)
-	print("CELL 4.5: Monthly Sales Distribution (Bar Plot)")
+	print("CELL 7: Monthly Sales Distribution (Bar Plot)")
 	print("=" * 80)
 
 	try:
@@ -555,12 +487,12 @@ if HAS_MATPLOTLIB:
 		print(f"⚠️  Monthly sales plot failed: {e}")
 
 # ============================================================================
-# %% CELL 4.6: Seasonal Decomposition (NEW)
+# %% CELL 8: Seasonal Decomposition (NEW)
 # ============================================================================
 
 if HAS_MATPLOTLIB and HAS_STATSMODELS:
 	print("\n" + "=" * 80)
-	print("CELL 4.6: Seasonal Decomposition (Trend + Seasonal + Residual)")
+	print("CELL 8: Seasonal Decomposition (Trend + Seasonal + Residual)")
 	print("=" * 80)
 
 	try:
@@ -617,12 +549,12 @@ if HAS_MATPLOTLIB and HAS_STATSMODELS:
 		print(f"⚠️  Seasonal decomposition failed: {e}")
 
 # ============================================================================
-# %% CELL 5: Top Brands Time Series (NEW)
+# %% CELL 9: Top Brands Time Series (NEW)
 # ============================================================================
 
 if HAS_MATPLOTLIB:
 	print("\n" + "=" * 80)
-	print("CELL 5: Top Brands Time Series Analysis")
+	print("CELL 9: Top Brands Time Series Analysis")
 	print("=" * 80)
 
 	try:
@@ -662,11 +594,11 @@ if HAS_MATPLOTLIB:
 		print(f"⚠️  Top brands time series failed: {e}")
 
 # ============================================================================
-# %% CELL 5.5: Lag Analysis
+# %% CELL 10: Lag Analysis
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 5.5: Lag Analysis (Autocorrelation)")
+print("CELL 10: Lag Analysis (Autocorrelation)")
 print("=" * 80)
 
 top_brands = df.groupby('brand')['sales_units'].sum().nlargest(5).index
@@ -698,12 +630,12 @@ print(f"\n✓ Recommendation: LAGS = (1, 2, 3, 4, 8, 13)")
 print(f"   Rationale: Capture dependencies across different time scales")
 
 # ============================================================================
-# %% CELL 5.6: ACF/PACF Plots (NEW)
+# %% CELL 11: ACF/PACF Plots (NEW)
 # ============================================================================
 
 if HAS_MATPLOTLIB and HAS_STATSMODELS:
 	print("\n" + "=" * 80)
-	print("CELL 5.6: ACF/PACF Analysis (Autocorrelation Structure)")
+	print("CELL 11: ACF/PACF Analysis (Autocorrelation Structure)")
 	print("=" * 80)
 
 	try:
@@ -742,11 +674,11 @@ if HAS_MATPLOTLIB and HAS_STATSMODELS:
 		print(f"⚠️  ACF/PACF analysis failed: {e}")
 
 # ============================================================================
-# %% CELL 6: Rolling Window Analysis
+# %% CELL 12: Rolling Window Analysis
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 6: Rolling Window Analysis")
+print("CELL 12: Rolling Window Analysis")
 print("=" * 80)
 
 window_analysis = pd.DataFrame({
@@ -765,11 +697,11 @@ print(f"     - Window 13: Matches Nielsen quarter structure")
 print(f"     - Window 8: Omitted (intermediate, redundant)")
 
 # ============================================================================
-# %% CELL 7: Train/Val/Test Split Analysis
+# %% CELL 13: Train/Val/Test Split Analysis
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 7: Train/Val/Test Split Analysis")
+print("CELL 13: Train/Val/Test Split Analysis")
 print("=" * 80)
 
 train_periods = 24
@@ -810,12 +742,12 @@ print(f"   VAL_END = ({val_end_year}, {val_end_month})")
 print(f"   Rationale: {train_periods}m train (2 years), {val_periods}m val, {test_periods}m test")
 
 # ============================================================================
-# %% CELL 8: Promo Intensity Distribution (NEW — GeeksforGeeks categorical)
+# %% CELL 14: Promo Intensity Distribution (NEW — GeeksforGeeks categorical)
 # ============================================================================
 
 if HAS_MATPLOTLIB:
 	print("\n" + "=" * 80)
-	print("CELL 8: Promo Intensity Distribution")
+	print("CELL 14: Promo Intensity Distribution")
 	print("=" * 80)
 
 	try:
@@ -854,12 +786,12 @@ if HAS_MATPLOTLIB:
 		print(f"⚠️  Promo intensity analysis failed: {e}")
 
 # ============================================================================
-# %% CELL 9: Correlation Heatmap (NEW)
+# %% CELL 15: Correlation Heatmap (NEW)
 # ============================================================================
 
 if HAS_MATPLOTLIB:
 	print("\n" + "=" * 80)
-	print("CELL 9: Correlation Heatmap (Metric Relationships)")
+	print("CELL 15: Correlation Heatmap (Metric Relationships)")
 	print("=" * 80)
 
 	try:
@@ -903,11 +835,11 @@ if HAS_MATPLOTLIB:
 		print(f"⚠️  Correlation heatmap failed: {e}")
 
 # ============================================================================
-# %% CELL 10: Summary & Save Findings
+# %% CELL 16: Summary & Save Findings
 # ============================================================================
 
 print("\n" + "=" * 80)
-print("CELL 10: FINAL RECOMMENDATIONS & SUMMARY")
+print("CELL 16: FINAL RECOMMENDATIONS & SUMMARY")
 print("=" * 80)
 
 findings = {
@@ -997,3 +929,5 @@ print("  05_top_brands_timeseries.png — Individual brand temporal patterns")
 print("  06_acf_pacf_plots.png — Autocorrelation structure (top 5 brands)")
 print("  07_promo_intensity_analysis.png — Promo impact on sales")
 print("  08_correlation_heatmap.png — Metric relationships\n")
+
+# %% END OF NOTEBOOK
