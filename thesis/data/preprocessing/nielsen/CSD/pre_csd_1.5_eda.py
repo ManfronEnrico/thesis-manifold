@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
-Nielsen CSD Preprocessing — Comprehensive Enhanced EDA with Full Visualization Suite
+Nielsen CSD Preprocessing — EDA & Parameter Analysis
 
 PURPOSE
 =======
-Complete Exploratory Data Analysis to validate and justify feature engineering parameters
-for CSD category. This comprehensive version includes:
+Canonical Exploratory Data Analysis to validate and justify feature engineering parameters
+for CSD Nielsen preprocessing. Generates all parameters (MIN_PERIODS, LAGS, ROLLING_WINDOWS,
+HOLIDAY_MONTHS, TRAIN_END, VAL_END) via empirical analysis. Serves as template for Phase 5
+replication (Energidrikke, Danskvand, RTD).
+
+ANALYSIS INCLUDES:
   - Data distribution analysis (histograms with skewness, ECDF)
   - Time series decomposition (trend, seasonal, residual)
   - Autocorrelation structure (ACF/PACF, lag analysis)
@@ -30,15 +34,27 @@ EDA findings saved to: csd_eda_findings.json
 Beautiful PNG plots saved to: csd_eda_plots/ (14 visualizations)
 """
 
+# %%
+
+# %pip install statsmodels
+# %pip install matplotlib
+# %pip install seaborn
+
+
+# %%
+
 import sys
 import json
 import warnings
 from pathlib import Path
+import statsmodels
 
 import pandas as pd
 import numpy as np
 
 warnings.filterwarnings("ignore")
+
+# %%
 
 # ============================================================================
 # PROJECT INITIALIZATION
@@ -56,6 +72,9 @@ else:
 sys.path.insert(0, str(ROOT_DIR))
 
 from PATHS import get_category_pipeline_step_outputs_dir
+
+
+# %%
 
 # ============================================================================
 # IMPORTS & CONFIGURATION
@@ -78,6 +97,9 @@ try:
 except ImportError:
 	HAS_STATSMODELS = False
 	print("⚠️  statsmodels not available; skipping time series analysis")
+
+
+# %%
 
 # ============================================================================
 # CONFIGURATION
@@ -317,6 +339,8 @@ print(dist_df.to_string(index=False))
 # ============================================================================
 # %% CELL 2.5: Stationarity Testing with ADF (NEW)
 # ============================================================================
+
+log_necessary = None  # Default; overwritten by ADF test if statsmodels available
 
 if HAS_STATSMODELS:
 	print("\n" + "=" * 80)

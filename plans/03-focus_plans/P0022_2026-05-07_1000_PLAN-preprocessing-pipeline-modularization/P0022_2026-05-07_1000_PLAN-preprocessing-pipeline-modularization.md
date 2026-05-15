@@ -1,8 +1,8 @@
 ---
 created: 2026-05-07 10:00:00
-updated: 2026-05-14 17:30:00
-status: Phase 4 Partial (Filename Bugs Fixed, 3/4 Categories Working)
-focus_detail: "Fixed critical filename case-sensitivity bugs in Nielsen preprocessing orchestrators and Step 1 load scripts for all 4 non-CSD categories (Danskvand, Energidrikke, RTD, Totalbeer). Fixed schema mismatch (promo column now optional). Verified end-to-end: Danskvand (6.8s), Energidrikke, RTD all PASS. Totalbeer skipped (missing facts table). Ready for EDA replication on 3 working categories."
+updated: 2026-05-15 10:30:00
+status: Phase 5 Ready (CSD EDA Canonical, Ready for Replication)
+focus_detail: "CSD EDA consolidated: canonical pre_csd_eda.py established (bug fix: log_necessary default), 3 superseded scripts deleted, 6 planning docs consolidated into 1 reference doc + archive. Ready to replicate for Energidrikke, Danskvand, RTD in Phase 5."
 ---
 
 # P0022: Preprocessing Pipeline Modularization

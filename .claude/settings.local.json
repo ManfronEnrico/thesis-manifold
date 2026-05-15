@@ -44,7 +44,11 @@
       "Skill(data-eda)",
       "Skill(docs-update-all)",
       "Skill(git-draft-commit)",
-      "Skill(plan-update-all)"
+      "Skill(plan-update-all)",
+      "Bash(mv pre_csd_eda_enhanced_with_visualizations_expanded.py pre_csd_eda.py)",
+      "Bash(rm -f pre_csd_eda_and_parameter_analysis.py)",
+      "Bash(rm -f pre_csd_eda_enhanced_with_visualizations.py)",
+      "Skill(git-push)"
     ]
   }
 }
