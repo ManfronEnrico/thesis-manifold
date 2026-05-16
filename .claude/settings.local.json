@@ -50,5 +50,6 @@
       "Bash(rm -f pre_csd_eda_enhanced_with_visualizations.py)",
       "Skill(git-push)"
     ]
-  }
+  },
+  "enabledPlugins": {}
 }
