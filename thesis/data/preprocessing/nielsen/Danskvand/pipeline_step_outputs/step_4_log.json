@@ -28,5 +28,15 @@
     "output_rows": 1134,
     "input_cols": 8,
     "output_cols": 23
+  },
+  {
+    "timestamp": "2026-05-14T18:07:30.481819",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "Danskvand",
+    "elapsed_sec": 0.13,
+    "output_rows": 1134,
+    "input_cols": 8,
+    "output_cols": 23
   }
 ]

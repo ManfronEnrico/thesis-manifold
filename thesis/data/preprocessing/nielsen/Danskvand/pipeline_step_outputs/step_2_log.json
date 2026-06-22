@@ -28,5 +28,15 @@
     "output_rows": 2142,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-05-14T18:07:28.667082",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "Danskvand",
+    "elapsed_sec": 0.11,
+    "output_rows": 2142,
+    "input_cols": 8,
+    "output_cols": 8
   }
 ]

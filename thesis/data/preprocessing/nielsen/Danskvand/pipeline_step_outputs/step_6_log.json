@@ -28,5 +28,15 @@
     "output_rows": 1134,
     "input_cols": 24,
     "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T18:07:32.462336",
+    "step_num": 6,
+    "step_name": "Save Outputs",
+    "category": "Danskvand",
+    "elapsed_sec": 0.2,
+    "output_rows": 1134,
+    "input_cols": 24,
+    "output_cols": 24
   }
 ]

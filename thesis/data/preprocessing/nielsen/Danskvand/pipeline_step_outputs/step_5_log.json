@@ -28,5 +28,15 @@
     "output_rows": 1134,
     "input_cols": 23,
     "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T18:07:31.457281",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Danskvand",
+    "elapsed_sec": 0.07,
+    "output_rows": 1134,
+    "input_cols": 23,
+    "output_cols": 24
   }
 ]
