@@ -1,0 +1,12 @@
+{
+  "id": "10",
+  "subject": "Update P0022 plan frontmatter and task summary",
+  "description": "After all other tasks complete (Tasks #1-9), update the plan file plans/P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/P0022_2026-05-07_10-00_preprocessing-pipeline-modularization.md:\n1. Update frontmatter status to 'complete' (or 'focus' if any tasks remain blocked).\n2. Add completed: timestamp and outcome_summary field.\n3. Mark Phase 5 checkbox items as done.\n4. Add a final session note (2026-06-22) documenting: EDA scripts created for 3 categories, parameters updated, master orchestrator created, docs routed to docs/analysis/.\n5. Verify all success criteria in the plan are met.",
+  "activeForm": "Updating P0022 plan frontmatter",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "8",
+    "9"
+  ]
+}

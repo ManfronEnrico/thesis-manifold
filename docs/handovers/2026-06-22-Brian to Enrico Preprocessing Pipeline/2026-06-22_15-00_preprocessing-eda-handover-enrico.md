@@ -34,7 +34,8 @@ updated: 2026_06_22-16_30
 5. **Reproducibility**: Random seeds not verified — are outputs deterministic?
 
 ### ❌ Out of Scope (Intentionally Skipped)
-- **Totalbeer category**: Skipped due to dataset size → RAM constraint (too large for parquet conversion)
+- **Totalbeer category**: Skipped — source JSONL does not contain the facts table (data missing at source, not a RAM issue)
+- **Per-category EDA**: Danskvand, Energidrikke, RTD have Step 4 scripts but parameters are unchecked defaults. CSD EDA is the template; once finalised by Brian, it will be replicated for each category (same design, different data input → consistent academic proofs)
 - **Cross-category comparison**: Global EDA only; per-brand/per-market analysis deferred
 - **Promotional calendar analysis**: Not yet correlated with seasonality
 
@@ -75,9 +76,9 @@ Step 6: Save Outputs             (Parquet + JSON + markdown report)
 
 **Source**: Nielsen/Prometheus SQL CSD star schema  
 **Fact table**: `csd_clean_facts_v.parquet` (~2.5M rows before aggregation)  
-**Time span**: October 2022 — March 2026 (42 months; actual data up to Dec 2025)  
-**Brands**: 142 unique in CSD category  
-**Aggregation level**: By (brand, year, month) → 4,040 rows × 8 columns
+**Time span**: October 2022 — April 2026 (43 months)  
+**Brands**: 143 unique in CSD category  
+**Aggregation level**: By (brand, year, month) → 4,140 rows × 8 columns
 
 **Aggregated columns**:
 - `sales_units` — total units sold
@@ -113,8 +114,7 @@ Step 6: Save Outputs             (Parquet + JSON + markdown report)
 - **Log-transformed**: Stationary (p=0.028) ✅
 - **First-differenced**: Stationary (p<0.001) ✅
 - **Conclusion**: Log transformation **IS NECESSARY** before feature engineering
-
-**Critical question**: Does Step 4 actually apply the log transform? **(NEEDS VERIFICATION)**
+- **Implementation**: ✅ Confirmed in `pre_csd_4_engineer_features.py` lines 136–139 — `np.log()` applied to `sales_units`, NaN preserved for missing/non-positive values
 
 #### Seasonality (Seasonal Decomposition)
 - **Method**: Additive decomposition (period=12)
@@ -154,14 +154,22 @@ Step 6: Save Outputs             (Parquet + JSON + markdown report)
 - Seasonal indicators: Boolean flags for HOLIDAY_MONTHS
 - Domain features: promo_units, weighted_dist (carried through)
 
-**Claimed feature count**: 24 features per observation
+**Verified feature count**: 20 features per observation (audit T-010 confirmed)
 
 **Output location**: `thesis/data/preprocessing/nielsen/CSD/engineered/csd_feature_matrix.parquet`
 
-**What's unclear**: 
-- Exact 24-feature list (need to read Step 4 code)
-- Are features standardized/normalized?
-- Is brand-level weighting applied?
+**Confirmed feature list** (from T-010 code audit):
+
+| Feature | Count | Description |
+|---|---|---|
+| `lag_1` … `lag_13` | 6 | Lags 1,2,3,4,8,13 of sales_units |
+| `rolling_mean_4`, `rolling_std_4`, `rolling_mean_13` | 3 | Rolling stats (4-month, 13-month) |
+| `month`, `quarter`, `holiday_month` | 3 | Calendar features |
+| `log_sales_units` | 1 | Natural log of sales_units |
+| `promo_intensity` | 1 | promo_units ÷ sales_units (clipped 0–1) |
+| `brand`, `period_year`, `period_month`, `sales_units`, `split` | 5 | Index + target + label |
+
+**NaN behaviour**: Lags and rolling features carry NaN for short history (expected). No imputation in preprocessing — models handle NaN independently.
 
 ---
 
@@ -193,7 +201,7 @@ Step 6: Save Outputs             (Parquet + JSON + markdown report)
 | `{category}_preprocessing_report.md` | Markdown | ~9KB | Step-by-step audit trail |
 
 **CSD example outputs**:
-- `csd_feature_matrix.parquet` — 62 brands × 43 periods × 24 features
+- `csd_feature_matrix.parquet` — 62 brands × 43 periods × 20 features
 - `csd_series_index.csv` — lookup table for (brand_id, date) index
 - `csd_split_dates.json` — train_start, train_end, val_start, val_end, test_start, test_end
 - `csd_preprocessing_report.md` — markdown report of aggregation, filtering, feature creation
@@ -220,22 +228,29 @@ Step 6: Save Outputs             (Parquet + JSON + markdown report)
 
 **Deliverables in plan folder**: `plans/2026-06-22_15-00_preprocessing-pipeline-audit/`
 
-**Key finding**: EDA shows log transformation is statistically necessary (ADF test p=0.028), but unclear if Step 4 actually implements it.
+**Key finding**: EDA proves log transformation necessary (ADF p=0.028). Audit (T-007) confirmed it is implemented in Step 4. Core pipeline is sound.
 
 ---
 
 ## Known Issues & Uncertainties
 
-### Critical for Thesis Writing
+### Resolved (Audit P0023 T-006 to T-010)
 
-| Issue | Impact | How to Verify | Priority |
-|-------|--------|---------------|----------|
-| **Log transform implementation** | Feature engineering integrity | Read `pre_*_4_engineer_features.py` lines for log() calls | 🔴 HIGH |
-| **Feature list interpretation** | System A model feeding | Count/name 24 features in Step 4 output | 🔴 HIGH |
-| **Missing value handling** | Statistical soundness | Grep for 4.3% weighted_dist treatment | 🟡 MEDIUM |
-| **Parameter theory** | Academic rigor | Document why LAGS=(1,2,3,4,8,13) not (1,3,12) | 🟡 MEDIUM |
-| **Reproducibility** | Experimental rigor | Search for `random.seed()` or `np.random.seed()` | 🟡 MEDIUM |
-| **Category variation** | Generalizability | Check if params differ across 4 categories | 🟢 LOW |
+| Issue | Resolution |
+|-------|-----------|
+| **Log transform** | ✅ Confirmed — `np.log()` in `pre_csd_4_engineer_features.py` lines 136–139 |
+| **Feature list** | ✅ Confirmed — 20 features (see feature table in Section 5) |
+| **Missing value handling** | ✅ Confirmed — `weighted_dist` averaged across markets (correct for ACV metric); 4.3% preserved, not a bug |
+| **Reproducibility** | ✅ Confirmed — all operations deterministic |
+
+### Still Open
+
+| Issue | Impact | Notes |
+|-------|--------|-------|
+| **Per-category EDA** | 🔴 HIGH | Danskvand/Energidrikke/RTD Step 4 use unchecked defaults. Brian will finalise CSD EDA first, then replicate with same design |
+| **MIN_PERIODS re-evaluation** | 🟡 MEDIUM | Currently 40 (62 brands). Brian intends to revisit (EDA originally suggested 30 = 84 brands). Defer to Brian |
+| **Parameter theory for thesis** | 🟡 MEDIUM | LAGS, HOLIDAY_MONTHS are EDA-driven for CSD; need prose justification in Chapter 4 |
+| **Feature scaling** | 🟡 MEDIUM | No scaling in preprocessing; each model handles internally — document per-model in System A |
 
 ### Not Blocking, But Would Strengthen Work
 
@@ -247,6 +262,32 @@ Step 6: Save Outputs             (Parquet + JSON + markdown report)
 ---
 
 ## How to Continue (For Enrico)
+
+### If You're Doing Model Training (Current Focus)
+
+The feature matrices are ready. You can go straight to System A:
+
+```python
+import pandas as pd, json
+
+# Load CSD feature matrix
+df = pd.read_parquet("thesis/data/preprocessing/nielsen/CSD/engineered/csd_feature_matrix.parquet")
+print(df.shape)           # (brands × months, 20 features)
+print(df.columns.tolist())
+
+# Load split dates
+with open("thesis/data/preprocessing/nielsen/CSD/engineered/csd_split_dates.json") as f:
+    splits = json.load(f)
+# splits["train_end"], splits["val_start"], etc.
+```
+
+**Feed to models**: Split by `splits["train_end"]` / `splits["val_start"]` / `splits["test_start"]`.  
+**Target column**: `sales_units` (log-transformed as `log_sales_units` in the matrix — use whichever your model expects).  
+**Evaluate**: MAPE on test set (12 months, Apr 2025 – Mar 2026). Target: ≤ 15%.
+
+**Also**: Verify that the updated `thesis/thesis-context/thesis-topic/thesis-topic.md` matches your System A design — Brian rewrote it on 2026-06-22.
+
+---
 
 ### Phase 2–3: Complete the Audit (2–3 hours)
 
@@ -338,12 +379,15 @@ cat thesis/data/preprocessing/nielsen/CSD/engineered/csd_preprocessing_report.md
 - ✅ Split strategy is statistically sound (forward-chaining, 24/6/12 split)
 - ✅ EDA visualizations are thesis-quality (DPI=150, comprehensive)
 
-### Assumptions Needing Verification
-- ❓ Log transformation is actually applied in Step 4
-- ❓ 24 features are interpretable and domain-appropriate
-- ❓ Parameters (LAGS, HOLIDAY_MONTHS) are justified theoretically
-- ❓ Outputs are deterministic (random seeds set)
-- ❓ Missing value handling is documented
+### Resolved (Audit P0023)
+- ✅ Log transformation confirmed in Step 4 (lines 136–139)
+- ✅ 20 features — named and confirmed (see Section 5)
+- ✅ Missing value handling — `weighted_dist` averaged across markets
+- ✅ Outputs are deterministic
+
+### Still Needs Thesis Prose
+- ❓ Parameters (LAGS, HOLIDAY_MONTHS) need theoretical justification in Chapter 4
+- ❓ Feature scaling — no scaling in preprocessing; each model handles independently (document per-model in System A)
 
 ### Timeline
 - **Thesis deadline**: 2026-05-15 (summer defense after May 15)

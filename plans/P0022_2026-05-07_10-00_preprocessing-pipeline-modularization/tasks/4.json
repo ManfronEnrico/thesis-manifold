@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Create RTD EDA script from CSD template",
+  "description": "Copy thesis/data/preprocessing/nielsen/CSD/pre_csd_1.5_eda.py to thesis/data/preprocessing/nielsen/RTD/pre_rtd_1.5_eda.py. Change CATEGORY variable from 'CSD' to 'RTD' (and any csd_ prefixed filenames/paths). Verify the script loads from the correct step_1 parquet (RTD/pipeline_step_outputs/step_1_log.json confirms step 1 ran). Run the script to generate rtd_eda_findings.json in RTD/pipeline_step_outputs/. Confirm JSON findings file is created and contains the key parameters: MIN_PERIODS, LAGS, ROLLING_WINDOWS, HOLIDAY_MONTHS, TRAIN_END, VAL_END.",
+  "activeForm": "Creating RTD EDA script",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

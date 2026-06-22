@@ -1,0 +1,13 @@
+{
+  "id": "7",
+  "subject": "Update RTD Steps 2-6 with EDA-derived parameters",
+  "description": "After rtd_eda_findings.json is generated (Task #4), read the JSON findings and update pre_rtd_4_engineer_features.py with category-specific parameters: RTD_LAG_WINDOWS, RTD_ROLLING_WINDOWS, RTD_HOLIDAY_MONTHS, MIN_PERIODS. Also check if TRAIN_END/VAL_END in pre_rtd_5_apply_split.py match EDA findings and update if needed. Re-run the full pipeline (pre_rtd_2 through pre_rtd_6) and confirm step_6_log shows same or updated row count. Verify output is consistent with EDA parameters.",
+  "activeForm": "Updating RTD feature engineering parameters",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "4"
+  ]
+}

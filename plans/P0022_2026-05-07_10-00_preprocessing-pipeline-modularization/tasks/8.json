@@ -1,0 +1,15 @@
+{
+  "id": "8",
+  "subject": "Create preprocessing_all.py master orchestrator",
+  "description": "Create thesis/data/preprocessing/nielsen/preprocessing_all.py. It should run all 4 working categories (CSD, Energidrikke, Danskvand, RTD) in sequence, calling each category's orchestrator (preprocessing_csd.py, preprocessing_energidrikke.py, etc.). Include: CLI flags --only=CATEGORY to run a single category, --skip=CATEGORY to exclude one. Print per-category timing summary. Totalbeer should be excluded by default with a clear comment explaining the block (missing facts table). Verify by running python preprocessing_all.py and confirming all 4 categories complete with step_6 logs updated.",
+  "activeForm": "Creating master orchestrator",
+  "status": "pending",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "5",
+    "6",
+    "7"
+  ]
+}

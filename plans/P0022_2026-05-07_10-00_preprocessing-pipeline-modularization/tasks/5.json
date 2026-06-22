@@ -1,0 +1,13 @@
+{
+  "id": "5",
+  "subject": "Update Energidrikke Steps 2-6 with EDA-derived parameters",
+  "description": "After energidrikke_eda_findings.json is generated (Task #2), read the JSON findings and update pre_energidrikke_4_engineer_features.py with category-specific parameters: ENERGIDRIKKE_LAG_WINDOWS, ENERGIDRIKKE_ROLLING_WINDOWS, ENERGIDRIKKE_HOLIDAY_MONTHS, MIN_PERIODS. Also check if TRAIN_END/VAL_END in pre_energidrikke_5_apply_split.py match EDA findings and update if needed. Re-run the full pipeline (pre_energidrikke_2 through pre_energidrikke_6) and confirm step_6_log shows same or updated row count. Verify output is consistent with EDA parameters.",
+  "activeForm": "Updating Energidrikke feature engineering parameters",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}

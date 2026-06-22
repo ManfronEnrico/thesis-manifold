@@ -1,4 +1,4 @@
----
+﻿---
 name: preprocessing-audit-status-p0023
 description: REFERENCE - Current audit status, blockers, and next actions for P0023
 category: reference
@@ -354,8 +354,8 @@ for col in df.columns:
 
 ## Next Steps (For Enrico)
 
-1. **Start here**: [preprocessing-eda-handover-enrico.md](preprocessing-eda-handover-enrico.md) — Complete overview
-2. **Understand the pipeline**: [preprocessing-pipeline-diagram.md](preprocessing-pipeline-diagram.md) — Visual flow
+1. **Start here**: [2026-06-22_15-00_preprocessing-eda-handover-enrico.md](2026-06-22_15-00_preprocessing-eda-handover-enrico.md) — Complete overview
+2. **Understand the pipeline**: [2026-06-22_15-00_preprocessing-pipeline-diagram.md](2026-06-22_15-00_preprocessing-pipeline-diagram.md) — Visual flow
 3. **Audit continuation**: Read `plans/2026-06-22_15-00_preprocessing-pipeline-audit/` folder
 4. **Verify critical items**:
    - grep for log transform in Step 4
