@@ -1,8 +1,9 @@
 ﻿---
+pid: P0017
 created: 2026-04-27 14:20:00
-updated: 2026-05-07 16:20:00
-status: Blocked — Awaiting P0022 Phase 2 Completion
-blocked_reason: "Waiting for P0022 to complete Phase 2 (Energidrikke, Danskvand, RTD, Totalbeer preprocessing). Once parquet outputs are stable across all 5 categories, P0017 can proceed with notebook path centralization."
+updated: 2026-06-22 00:00:00
+status: blocked
+blocked_reason: "Waiting for P0022 Phase 2 completion (stable parquet outputs across all 5 categories: Energidrikke, Danskvand, RTD, Totalbeer)."
 ---
 
 # Plan: Jupyter Notebook Path Centralization (P0017)
