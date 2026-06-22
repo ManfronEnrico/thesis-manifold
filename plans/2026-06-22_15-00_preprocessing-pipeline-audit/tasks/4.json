@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Audit parameter choices across all scripts",
+  "description": "Grep all preprocessing scripts for hardcoded parameters: MIN_PERIODS, LAGS, ROLLING_WINDOWS, HOLIDAY_MONTHS, TRAIN_END, VAL_END, log_transform flag. For each, record: value, location (file:line), category (CSD/Danskvand/etc), and justification (if documented). Output: parameter_audit.csv with {parameter, value, script, line, category, justification}",
+  "activeForm": "Auditing parameter choices and justifications",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

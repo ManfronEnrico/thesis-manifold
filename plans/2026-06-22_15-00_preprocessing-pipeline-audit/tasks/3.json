@@ -1,0 +1,14 @@
+{
+  "id": "3",
+  "subject": "Extract feature engineering logic from Step 4 scripts",
+  "description": "Read pre_csd_4_engineer_features.py and each category's Step 4 script. Identify: (a) What features are created (lags, rolling stats, trend, seasonal indicators). (b) Whether log transform is applied to sales_units. (c) How promotional effects are encoded. (d) Whether weighted_dist is used for weighting. Output: feature_engineering_audit.md with actual features list + code snippets.",
+  "activeForm": "Extracting feature engineering specifications",
+  "status": "in_progress",
+  "blocks": [
+    "7",
+    "10"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

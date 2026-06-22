@@ -1,0 +1,13 @@
+{
+  "id": "6",
+  "subject": "Audit data integrity in Step 1 (Load & Aggregate)",
+  "description": "Read pre_csd_1_load_and_aggregate.py. Verify: (a) Missing value handling (4.3% in weighted_dist \u2014 is it preserved or filled?). (b) Schema validation (all expected columns present?). (c) Aggregation logic (sum for sales, mean for weighted_dist, etc.). (d) Output shape matches expectations (4,040 rows \u00d7 8 cols). Output: step1_audit.md with actual code + findings.",
+  "activeForm": "Auditing Step 1 data loading and aggregation",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}

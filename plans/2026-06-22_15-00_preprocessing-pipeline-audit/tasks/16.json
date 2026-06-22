@@ -1,0 +1,11 @@
+{
+  "id": "16",
+  "subject": "Update P0022 plan with audit findings and Phase 5 scope",
+  "description": "Update plans/03-focus_plans/P0022_*/P0022_*.md frontmatter: (1) Status: from 'Phase 4 Partial' to 'Phase 4 Complete + Phase 5 Audit Complete'. (2) Add outcome_summary with audit key findings. (3) Add Phase 5 scope (EDA replication for other 3 categories, dimensional analysis options). (4) Link to audit report. (5) Handoff instructions for thesis writing + System A integration.",
+  "activeForm": "Updating P0022 plan with audit findings",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "15"
+  ]
+}
