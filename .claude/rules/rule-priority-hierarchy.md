@@ -28,9 +28,9 @@ These rules are non-negotiable. They protect integrity and safety.
 
 These rules maintain data integrity and plan discipline.
 
-- **Plan outcome discipline**: A plan is not considered complete until its outcome file exists in `03-outcome_plans/`
-  - Why: Prevents dangling in-progress plans; outcome files = audit trail of completed work
-  - When: Every plan execution must produce an outcome file (Completed, Adjusted, Dropped sections)
+- **Plan status discipline**: A plan's status lives in frontmatter only — no separate outcome files. When complete, update `status: complete`, add `completed:` timestamp and `outcome_summary:` field, then move to `plans/.archive/` if archiving.
+  - Why: Single source of truth; frontmatter is scannable; eliminates duplicate status tracking
+  - When: Every plan execution must update frontmatter with outcome summary before being archived
 
 ---
 
@@ -64,8 +64,8 @@ These rules optimize performance or convenience. Reserved for future use.
 
 **Resolution:**
 1. Check: Does this violate branch strategy (Trust tier)? NO — user is merging (allowed exception)
-2. Check: Does this violate outcome discipline (Correctness tier)? YES if not documented
-3. **Action:** Allow merge, but ensure outcome file exists documenting the merge
+2. Check: Does this violate plan status discipline (Correctness tier)? YES if plan frontmatter not updated
+3. **Action:** Allow merge, but ensure plan frontmatter `outcome_summary` is written before archiving
 
 **Tier precedence:** Trust (allowed) > Correctness (require documentation) → Proceed
 
@@ -98,7 +98,7 @@ When faced with conflicting rules:
 
 - `.claude/rules/trigger-branch-strategy.md` — Branch strategy (Trust tier)
 - `.claude/rules/root-documentation-boundary.md` — Root boundary (Trust tier)
-- `.claude/rules/trigger-plan-workflow.md` — Plan structure (Quality tier)
+- `.claude/rules/workflow-planning-with-files.md` — Plan structure and task tracking (Quality tier)
 - `.claude/rules/one-off-execution.md` — One-off execution default (Quality tier)
 - CLAUDE.md → Thesis section → Bullets-only discipline (Quality tier)
 

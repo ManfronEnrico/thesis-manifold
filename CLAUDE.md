@@ -33,13 +33,18 @@
 | `/write-section <id>` | Convert bullets to prose (manual approve before) |
 | `/cite` | Add APA 7 citation to references |
 
+### Planning & Task Decomposition
+
+| Command | Purpose |
+|---------|---------|
+| `/planning-with-files` | Create new plan with `task_plan.md`, `findings.md`, `progress.md` |
+| `/task-decomposition` | Break feature into atomic 1-3 hr tasks by phase |
+
 ### Enforcement & Validation
 
 | Command | Purpose |
 |---------|---------|
 | `/enforce-repo-cleanliness` | **Master gate**: Run all 4 validators + unified report |
-| `/validate-plan-ids` | Enforce P-ID naming convention (P{NNNN}_YYYY-MM-DD_HHMM_PLAN-{slug}) |
-| `/audit-plan-outcomes` | Verify outcome completeness (Correctness Tier enforcement) |
 | `/audit-cross-references` | Validate all links/references are correct |
 | `/sync-memory-indices` | Keep memory files synchronized with MEMORY.md index |
 
@@ -56,7 +61,7 @@ See [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hiera
 
 ### 🟡 Correctness Tier (Maintain data integrity)
 
-- **Plan status discipline**: Plan status tracked in frontmatter only (no duplicate outcome files). Folder location + frontmatter status must agree. → [trigger-plan-workflow.md](.claude/rules/trigger-plan-workflow.md)
+- **Plan status discipline**: Status in frontmatter only (no outcome files, no folder movement). Archive by moving to `plans/.archive/`. → [workflow-planning-with-files.md](.claude/rules/workflow-planning-with-files.md)
 
 ### 🟢 Quality Tier (Improve usability)
 
@@ -98,7 +103,7 @@ See [.claude/rules/rule-priority-hierarchy.md](.claude/rules/rule-priority-hiera
 
 - [.claude/skills/](\.claude/skills/) — Project-specific skill definitions (now includes enforcement validators)
 - [.claude/IMPORTED_SKILLS_ANALYSIS.md](.claude/IMPORTED_SKILLS_ANALYSIS.md) — Imported skills (22 + 5 new enforcement skills)
-- [plans/PLANS_INDEX.md](plans/PLANS_INDEX.md) — All plans by P-ID (P0001–P0022, 8 status buckets: backlog, in_progress, focus, complete, blocked, paused, cancelled, archived)
+- [plans/PLANS_INDEX.md](plans/PLANS_INDEX.md) — All plans by P-ID (P0001–P0022 legacy; P0023+ flat `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`)
 
 ---
 

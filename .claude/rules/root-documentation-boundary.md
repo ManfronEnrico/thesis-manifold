@@ -38,17 +38,19 @@ ANY markdown documentation not in the whitelist above belongs elsewhere:
 
 ## Destination Routing
 
-When creating markdown documentation, use this routing table:
+**Default rule: when in doubt, go to `docs/`.** All analysis, reports, checklists, session notes, and reference material belong under `docs/` subfolders.
 
 | Document Type | Goes To | Naming Convention |
 |---|---|---|
 | **System Design, Architecture, ADRs** | `docs/architecture/` | Descriptive name |
 | **Setup Guides, Integration, Tooling** | `docs/integration/` | Descriptive name |
-| **Verification / Audits, Test Reports** | `docs/reference/` | Descriptive name |
+| **Verification / Audits, Test Reports, Session Notes, Checklists** | `docs/reference/` | Descriptive name |
 | **Developer Guide, Repo Structure, Git Workflow** | `docs/contributing/` | Descriptive name |
 | **Compliance Notes** | `thesis/thesis-context/formal-requirements/` | Descriptive name |
 | **Workflow Automation** | `.claude/rules/` | For trigger phrases / rules only |
-| **Plan Artifacts** | `plans/{status}/P{NNNN}_.../` | `YYYY-MM-DD_DOC-{slug}.md` |
+| **Plan Artifacts** | `plans/P{NNNN}_YYYY-MM-DD_.../` | `YYYY-MM-DD_DOC-{slug}.md` |
+
+> **If it's analysis, a checklist, a migration guide, a session log, or any ad-hoc reference doc → `docs/reference/`. No exceptions.**
 
 ### Examples
 
@@ -90,14 +92,17 @@ Without boundaries, root becomes a dumping ground: hard to navigate, hard to dis
 
 ## Enforcement
 
-**Automated check (proposed):** `/move-docs-to-folders` skill scans root for violations and prompts relocation.
+**This rule is Trust Tier — non-negotiable. Never write analysis, checklists, session notes, or any ad-hoc docs outside `docs/`.** Not at root, not inside `thesis/` (unless native thesis content), not in any other folder.
 
-**Manual check (now):** Run this to audit:
-```bash
-cd /dev/thesis-manifold
-ls -1 *.md | grep -v "CLAUDE\|INDEX\|README"
-# Should return empty (no violations)
+**Automated check:** `/move-docs-to-folders` skill scans root for violations and prompts relocation.
+
+**Manual audit (PowerShell):**
+```powershell
+Get-ChildItem "Z:\_dev-ssd\thesis-manifold\*.md" | Where-Object { $_.Name -notmatch "^(CLAUDE|INDEX|README)" }
+# Should return nothing — any result is a violation
 ```
+
+**Before writing any `.md` file, ask:** "Is this a foundational project file?" If no → write it under `docs/` (pick the right subfolder from the routing table above). Never create it at root first and move it later.
 
 ---
 
