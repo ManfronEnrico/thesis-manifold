@@ -88,6 +88,7 @@ STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
 INPUT_AGGREGATE = STEP_OUTPUT_DIR / "step_1_aggregate.parquet"
 OUTPUT_FINDINGS = STEP_OUTPUT_DIR / "csd_eda_findings.json"
 OUTPUT_PLOTS_DIR = STEP_OUTPUT_DIR / "csd_eda_plots"
+OUTPUT_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Visualization configuration (Rossmann + GeeksforGeeks style)
 if HAS_MATPLOTLIB:
@@ -540,9 +541,12 @@ if HAS_MATPLOTLIB and HAS_STATSMODELS:
 	print("=" * 80)
 
 	try:
-		# Create proper time series with date index
-		dates = pd.date_range(start=f"{min_year}-{min_month:02d}", periods=len(monthly_sales), freq='MS')
-		ts_monthly = pd.Series(monthly_sales.values, index=dates)
+		# Aggregate all brands per (year, month) to get a full time series
+		ts_raw = df.groupby(['period_year', 'period_month'])['sales_units'].sum().reset_index()
+		ts_raw = ts_raw.sort_values(['period_year', 'period_month'])
+		dates = pd.to_datetime(ts_raw[['period_year', 'period_month']].assign(day=1).rename(
+			columns={'period_year': 'year', 'period_month': 'month'}))
+		ts_monthly = pd.Series(ts_raw['sales_units'].values, index=dates)
 
 		# Decompose (additive model, yearly seasonality = 12 months)
 		decomposition = seasonal_decompose(ts_monthly, model='additive', period=12)
@@ -615,8 +619,11 @@ if HAS_MATPLOTLIB:
 		fig, axes = plt.subplots(5, 1, figsize=(14, 12))
 
 		for idx, brand in enumerate(top_brands):
-			brand_data = df[df['brand'] == brand].sort_values(['period_year', 'period_month'])
-			brand_data['date'] = pd.to_datetime(brand_data[['period_year', 'period_month']].assign(day=1))
+			brand_data = df[df['brand'] == brand].sort_values(['period_year', 'period_month']).copy()
+			brand_data['date'] = pd.to_datetime(
+				brand_data['period_year'].astype(str) + '-' +
+				brand_data['period_month'].astype(str).str.zfill(2) + '-01'
+			)
 			brand_data = brand_data.sort_values('date')
 
 			axes[idx].plot(brand_data['date'], brand_data['sales_units'],
@@ -691,13 +698,15 @@ if HAS_MATPLOTLIB and HAS_STATSMODELS:
 			brand_series = np.where(brand_series == 0, np.nan, brand_series)
 			brand_series = np.nan_to_num(brand_series, nan=np.nanmean(brand_series))
 
+			max_lags = min(30, len(brand_series) // 2 - 1)
+
 			# ACF (left column)
-			plot_acf(brand_series, lags=30, ax=axes[idx, 0], color=PLOT_COLOR)
+			plot_acf(brand_series, lags=max_lags, ax=axes[idx, 0], color=PLOT_COLOR)
 			axes[idx, 0].set_title(f'{brand} - ACF', fontweight='bold')
 			axes[idx, 0].grid(True, alpha=0.3)
 
 			# PACF (right column)
-			plot_pacf(brand_series, lags=30, ax=axes[idx, 1], color=PLOT_COLOR, method='ywm')
+			plot_pacf(brand_series, lags=max_lags, ax=axes[idx, 1], color=PLOT_COLOR, method='ywm')
 			axes[idx, 1].set_title(f'{brand} - PACF', fontweight='bold')
 			axes[idx, 1].grid(True, alpha=0.3)
 
@@ -955,9 +964,7 @@ with open(OUTPUT_FINDINGS, "w") as f:
 
 print(f"\n✓ Findings saved to: {OUTPUT_FINDINGS}")
 
-# Create plots directory if needed
 if HAS_MATPLOTLIB:
-	OUTPUT_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 	print(f"✓ Visualizations saved to: {OUTPUT_PLOTS_DIR}/")
 	print(f"\nGenerated {len(list(OUTPUT_PLOTS_DIR.glob('*.png')))} PNG files (thesis-ready quality)")
 

@@ -140,5 +140,15 @@
     "output_rows": 2666,
     "input_cols": 24,
     "output_cols": 24
+  },
+  {
+    "timestamp": "2026-06-22T18:27:40.967545",
+    "step_num": 6,
+    "step_name": "Save Outputs",
+    "category": "CSD",
+    "elapsed_sec": 0.31,
+    "output_rows": 2666,
+    "input_cols": 24,
+    "output_cols": 24
   }
 ]

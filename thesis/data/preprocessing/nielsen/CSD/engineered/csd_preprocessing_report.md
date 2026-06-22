@@ -1,6 +1,6 @@
 # Nielsen CSD Preprocessing Report
 
-**Generated:** 2026-05-14 15:42:35
+**Generated:** 2026-06-22 18:27:40
 **Category:** CSD
 **Market Scope:** All Market Types (aggregated across all 28 outlet channels)
 **Min Periods Filter:** 40 (Thesis Quality Focus - 62 brands)
@@ -15,7 +15,7 @@
 | Total rows | 2,666 |
 | Rows per brand (avg) | 43 |
 | Features engineered | 18 |
-| Total pipeline time | 2.6s |
+| Total pipeline time | 1.4s |
 
 ---
 
@@ -28,7 +28,7 @@
 | Split Dates | `csd_split_dates.json` | Train/val/test split date boundaries (JSON) |
 | Report | `csd_preprocessing_report.md` | This preprocessing summary report |
 
-**Location:** `/root/dev/thesis-manifold/thesis/data/preprocessing/nielsen/CSD/engineered`
+**Location:** `Z:\_dev-ssd\thesis-manifold\thesis\data\preprocessing\nielsen\CSD\engineered`
 
 ---
 
@@ -42,7 +42,7 @@
 
 | Step | Input Cols | Output Cols | Elapsed (s) | Output Rows |
 |---|---|---|---|---|
-| Step 1 | — | 8 | 1.62s | 4,140 |
+| Step 1 | — | 8 | 0.66s | 4,040 |
 
 ### Step 2: Build Calendar
 - **Input:** Aggregated data (step 1)
@@ -50,7 +50,7 @@
 - **Date Range:** 2022-10 to 2026-03 (42 monthly periods)
 - **Processing:** Created complete calendar grid for all brands
 - **Output file:** `step_2_calendar_filled.parquet`
-- **Columns:** 8 → 8 | **Elapsed:** 0.22s | **Output rows:** 6,149
+- **Columns:** 8 → 8 | **Elapsed:** 0.12s | **Output rows:** 6,106
 
 ### Step 3: Filter Series
 - **Input:** Calendar-filled data (step 2)
@@ -69,7 +69,7 @@
   - Calendar: month, quarter, holiday_month (Jan/Apr/Jun/Oct/Dec)
   - Transformation: log(sales_units) with NaN preservation
 - **Output file:** `step_4_engineered_features.parquet`
-- **Columns:** 8 → 23 | **Elapsed:** 0.17s | **Output rows:** 2,666
+- **Columns:** 8 → 23 | **Elapsed:** 0.11s | **Output rows:** 2,666
 
 ### Step 5: Apply Split
 - **Input:** Engineered features (step 4)
@@ -77,14 +77,14 @@
 - **Split method:** Locked date-based (time-series integrity)
 - **Processing:** Assigned split based on period_year-period_month
 - **Output file:** `step_5_split_applied.parquet`
-- **Columns:** 23 → 24 | **Elapsed:** 0.12s | **Output rows:** 2,666
+- **Columns:** 23 → 24 | **Elapsed:** 0.08s | **Output rows:** 2,666
 
 ### Step 6: Save Outputs
 - **Input:** Split-applied data (step 5)
 - **Output:** Feature matrix, series index, split dates, report
 - **Processing:** Generated final outputs and documentation
 - **Output files:** `csd_feature_matrix.parquet`, `csd_series_index.csv`, `csd_split_dates.json`
-- **Columns:** 24 → 24 | **Elapsed:** 0.35s | **Output rows:** 3,528
+- **Columns:** 24 → 24 | **Elapsed:** 0.34s | **Output rows:** 2,666
 
 ---
 
@@ -102,26 +102,26 @@
 
 | brand             |   n_periods |   n_nonzero | total_units   |   train_periods |   val_periods |   test_periods |
 |:------------------|------------:|------------:|:--------------|----------------:|--------------:|---------------:|
-| COCA COLA         |          43 |          43 | 1317.9M       |              25 |             6 |             12 |
-| HARBOE            |          43 |          43 | 1158.6M       |              25 |             6 |             12 |
-| PEPSI             |          43 |          43 | 1080.4M       |              25 |             6 |             12 |
-| FAXE KONDI        |          43 |          43 | 831.9M        |              25 |             6 |             12 |
-| FANTA             |          43 |          43 | 217.4M        |              25 |             6 |             12 |
-| JOLLY             |          43 |          43 | 117.7M        |              25 |             6 |             12 |
-| TUBORG SQUASH     |          43 |          43 | 116.7M        |              25 |             6 |             12 |
-| SCHWEPPES         |          43 |          43 | 86.0M         |              25 |             6 |             12 |
-| LIDL FREEWAY      |          43 |          43 | 71.0M         |              25 |             6 |             12 |
-| HANCOCK           |          43 |          43 | 56.5M         |              25 |             6 |             12 |
-| SAN PELLEGRINO    |          43 |          43 | 50.9M         |              25 |             6 |             12 |
-| FEVER TREE        |          43 |          43 | 48.8M         |              25 |             6 |             12 |
-| ULUDAG            |          43 |          43 | 30.3M         |              25 |             6 |             12 |
-| HARBOE OTHER      |          43 |          43 | 28.0M         |              25 |             6 |             12 |
-| EGO               |          43 |          43 | 22.2M         |              25 |             6 |             12 |
-| SPRITE            |          43 |          43 | 19.9M         |              25 |             6 |             12 |
-| CARIBIA           |          43 |          43 | 15.2M         |              25 |             6 |             12 |
-| FREM              |          43 |          43 | 13.7M         |              25 |             6 |             12 |
-| THE PERFECT MIXER |          43 |          43 | 12.8M         |              25 |             6 |             12 |
-| MOUNTAIN DEW.     |          43 |          43 | 10.9M         |              25 |             6 |             12 |
+| COCA COLA         |          43 |          42 | 1291.3M       |              25 |             6 |             12 |
+| HARBOE            |          43 |          42 | 1129.7M       |              25 |             6 |             12 |
+| PEPSI             |          43 |          42 | 1058.4M       |              25 |             6 |             12 |
+| FAXE KONDI        |          43 |          42 | 813.9M        |              25 |             6 |             12 |
+| FANTA             |          43 |          42 | 212.3M        |              25 |             6 |             12 |
+| JOLLY             |          43 |          42 | 115.9M        |              25 |             6 |             12 |
+| TUBORG SQUASH     |          43 |          42 | 113.4M        |              25 |             6 |             12 |
+| SCHWEPPES         |          43 |          42 | 84.7M         |              25 |             6 |             12 |
+| LIDL FREEWAY      |          43 |          42 | 69.9M         |              25 |             6 |             12 |
+| HANCOCK           |          43 |          42 | 55.0M         |              25 |             6 |             12 |
+| SAN PELLEGRINO    |          43 |          42 | 49.8M         |              25 |             6 |             12 |
+| FEVER TREE        |          43 |          42 | 47.8M         |              25 |             6 |             12 |
+| ULUDAG            |          43 |          42 | 30.0M         |              25 |             6 |             12 |
+| HARBOE OTHER      |          43 |          42 | 27.6M         |              25 |             6 |             12 |
+| EGO               |          43 |          42 | 21.6M         |              25 |             6 |             12 |
+| SPRITE            |          43 |          42 | 19.4M         |              25 |             6 |             12 |
+| CARIBIA           |          43 |          42 | 14.8M         |              25 |             6 |             12 |
+| FREM              |          43 |          42 | 13.5M         |              25 |             6 |             12 |
+| THE PERFECT MIXER |          43 |          42 | 12.8M         |              25 |             6 |             12 |
+| MOUNTAIN DEW.     |          43 |          42 | 10.8M         |              25 |             6 |             12 |
 
 ---
 
@@ -211,5 +211,5 @@
 - **Total brands processed:** 62
 - **Total rows in final matrix:** 2,666
 - **Features engineered:** 18
-- **Pipeline execution time:** 2.6s
-- **Generated:** 2026-05-14 15:42:35
+- **Pipeline execution time:** 1.4s
+- **Generated:** 2026-06-22 18:27:40

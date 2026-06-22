@@ -180,5 +180,15 @@
     "output_rows": 2666,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-22T18:27:37.214691",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.08,
+    "output_rows": 2666,
+    "input_cols": 8,
+    "output_cols": 8
   }
 ]

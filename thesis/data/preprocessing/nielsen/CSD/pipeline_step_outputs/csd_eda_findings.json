@@ -1,12 +1,14 @@
 {
   "category": "CSD",
-  "analysis_date": "2026-05-14T15:45:34.753729",
+  "analysis_date": "2026-06-22T18:28:16.189650",
   "approach": "THESIS QUALITY FOCUS (high-quality data for proof-of-concept validation)",
+  "visualizations_generated": true,
+  "total_visualizations": 8,
   "data_overview": {
-    "total_rows": 4140,
-    "unique_brands": 143,
-    "date_range": "2022-10 to 2026-04",
-    "total_months": 43
+    "total_rows": 4040,
+    "unique_brands": 142,
+    "date_range": "2022-10 to 2026-03",
+    "total_months": 42
   },
   "parameters": {
     "MIN_PERIODS": 40,
@@ -19,7 +21,7 @@
       8,
       13
     ],
-    "LAGS_rationale": "Weekly (1-4), bi-weekly (8), yearly (13) capture different time-scale dependencies",
+    "LAGS_rationale": "Weekly (1-4), bi-weekly (8), yearly (13) capture different time-scale dependencies. Validated via ACF/PACF analysis.",
     "ROLLING_WINDOWS": [
       4,
       13
@@ -30,7 +32,8 @@
       6,
       12
     ],
-    "HOLIDAY_MONTHS_rationale": "Top 25% sales months (\u2265464,156,681 units): March (Easter), June (Summer), December (Holidays)",
+    "HOLIDAY_MONTHS_rationale": "Top 25% sales months (\u2265461,397,622 units). Validated via seasonal decomposition.",
+    "LOG_TRANSFORM_NECESSARY": true,
     "TRAIN_END": [
       2024,
       10
