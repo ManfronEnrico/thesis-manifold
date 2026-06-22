@@ -62,8 +62,8 @@ docs/integration/zotero-integration-setup.md
 docs/integration/tooling-issues.md
 docs/reference/verification-report.md
 docs/reference/CHEATSHEET.md
-docs/handovers/preprocessing-handover-enrico.md
-docs/handovers/HANDOVER_INDEX.md
+docs/handovers/2026-06-22_15-00_preprocessing-eda-handover-enrico.md
+docs/handovers/2026-06-22_15-00_HANDOVER_INDEX.md
 docs/contributing/repository_map.md
 docs/contributing/git-branch-strategy.md
 plans/03-focus_plans/P0019_.../2026-05-04_DOC-test-report.md

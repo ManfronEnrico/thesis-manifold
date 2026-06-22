@@ -140,12 +140,12 @@ CMT_Codebase/
     │   ├── testing-quick-reference.md ← System A test quick card
     │   ├── integration-quick-reference.md ← All integrations status table
     │   └── git-branch-strategy.md    ← Git branching conventions
-    ├── handovers/                     ← Cross-session & cross-person handover docs
-    │   ├── HANDOVER_INDEX.md          ← Navigation hub (choose your path)
-    │   ├── preprocessing-eda-handover-enrico.md ← Full preprocessing overview
-    │   ├── preprocessing-pipeline-diagram.md    ← Visual data flow diagram
-    │   ├── preprocessing-enrico-quickstart.md   ← Quick-start + verification
-    │   └── preprocessing-audit-status-p0023.md  ← Audit status & blockers
+    ├── handovers/                     ← Cross-session & cross-person handover docs (timestamped YYYY-MM-DD_HH-mm_)
+    │   ├── 2026-06-22_15-00_HANDOVER_INDEX.md          ← Navigation hub (choose your path)
+    │   ├── 2026-06-22_15-00_preprocessing-eda-handover-enrico.md ← Full preprocessing overview
+    │   ├── 2026-06-22_15-00_preprocessing-pipeline-diagram.md    ← Visual data flow diagram
+    │   ├── 2026-06-22_15-00_preprocessing-enrico-quickstart.md   ← Quick-start + model training entry
+    │   └── 2026-06-22_15-00_preprocessing-audit-status-p0023.md  ← Audit status & blockers
     ├── claude-tooling/                ← Claude Code skill/workflow docs
     │   ├── skill-activation-summary.md
     │   └── skill-creation-summary.md

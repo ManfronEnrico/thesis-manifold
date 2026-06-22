@@ -34,7 +34,7 @@ from typing import Dict, Optional, List
 
 # Lazy-load metadata on first import
 _METADATA_CACHE = {}
-_METADATA_PATH = Path(__file__).parent / "thesis" / "data" / "raw_nielsen" / "NIELSEN_METADATA_INDEX.json"
+_METADATA_PATH = Path(__file__).parent / "thesis" / "data" / "raw" / "nielsen" / "NIELSEN_METADATA_INDEX.json"
 
 
 def _load_metadata(category: str = 'CSD') -> Dict:
