@@ -45,12 +45,13 @@ ANY markdown documentation not in the whitelist above belongs elsewhere:
 | **System Design, Architecture, ADRs** | `docs/architecture/` | Descriptive name |
 | **Setup Guides, Integration, Tooling** | `docs/integration/` | Descriptive name |
 | **Verification / Audits, Test Reports, Session Notes, Checklists** | `docs/reference/` | Descriptive name |
+| **Handover Documents (cross-session, cross-person)** | `docs/handovers/` | `{topic}-handover-{person}.md` or index |
 | **Developer Guide, Repo Structure, Git Workflow** | `docs/contributing/` | Descriptive name |
 | **Compliance Notes** | `thesis/thesis-context/formal-requirements/` | Descriptive name |
 | **Workflow Automation** | `.claude/rules/` | For trigger phrases / rules only |
 | **Plan Artifacts** | `plans/P{NNNN}_YYYY-MM-DD_.../` | `YYYY-MM-DD_DOC-{slug}.md` |
 
-> **If it's analysis, a checklist, a migration guide, a session log, or any ad-hoc reference doc → `docs/reference/`. No exceptions.**
+> **If it's analysis, a checklist, a migration guide, or session log → `docs/reference/`. Handovers for another person or session → `docs/handovers/`. No exceptions.**
 
 ### Examples
 
@@ -61,6 +62,8 @@ docs/integration/zotero-integration-setup.md
 docs/integration/tooling-issues.md
 docs/reference/verification-report.md
 docs/reference/CHEATSHEET.md
+docs/handovers/preprocessing-handover-enrico.md
+docs/handovers/HANDOVER_INDEX.md
 docs/contributing/repository_map.md
 docs/contributing/git-branch-strategy.md
 plans/03-focus_plans/P0019_.../2026-05-04_DOC-test-report.md
