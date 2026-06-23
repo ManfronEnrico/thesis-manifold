@@ -18,9 +18,14 @@ snapshot — no Prometheus/Nika needed.
 | brand×month matrices `_03` | ✅ COMPLETED | 77/24/27/42 brands |
 | brand×chain matrices `_04` | ✅ COMPLETED | 15606/4570/6006/7684 rows, d15a1a7 |
 | SRQ1 benchmark (baselines+LGB+XGB, WMAPE) | ✅ COMPLETED | untuned 1st pass, both datasets (E1/E2) |
-| SRQ1 Optuna tuning (LGB+XGB, 30 trials) | 🔄 IN PROGRESS | running bg; script committed a928525 |
+| SRQ1 Optuna tuning (LGB+XGB, 30 trials) | ✅ COMPLETED | 59f331c; XGB best 8/8; tuned WMAPE in _05 |
 | Ch4 §4.3.6 per-category EDA | ✅ COMPLETED | a928525, [PENDING APPROVAL] prose |
-| SHAP + publication figures | 🔮 FUTURE | after tuning completes |
+| Publication figures (ladder/granularity/overlay) | ✅ COMPLETED | 4c7a98b, _05/figures/ |
+| Ch6 §6.5 results drafted | ✅ COMPLETED | 665210a, [PENDING APPROVAL] |
+| SHAP feature importance | 🔮 FUTURE | next iteration |
+| Ch7/Ch8 drafting from results | 🔮 FUTURE | next iterations |
+| Agentic System A/B code (local + stub) | 🔮 FUTURE | next iterations |
+| ARIMA/Prophet baselines, RAM/latency, calibration | 🧯 TECH DEBT | flagged in Ch6 §6.5.3 |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
 | Ch6/Ch7/Ch8 from regenerated results | 🔮 FUTURE | after benchmark |
@@ -39,7 +44,7 @@ snapshot — no Prometheus/Nika needed.
 | 3 Methodology | 60 | prose draft, RQs v4 |
 | 4 Data assessment | 78 | abs-numbers fixed; 3-cat §4.3 EDA prose pending |
 | 5 Framework design | 55 | prose draft, prototype rebuilding |
-| 6 Model benchmark | 10 | skeleton — unblocked by this run's results |
+| 6 Model benchmark | 40 | §6.5 results drafted [PENDING APPROVAL]; ARIMA/Prophet/RAM pending |
 | 7 Synthesis | 10 | skeleton |
 | 8 Evaluation | 10 | skeleton |
 | 9 Discussion | 10 | skeleton |
@@ -51,11 +56,15 @@ snapshot — no Prometheus/Nika needed.
 | E1 | _04 bychain | Naive/Ridge/LGB/XGB (untuned, seed42) | CSD 23.3 / dansk 22.9 / energi 16.0 / RTD 41.2 (XGB) | scripts/srq1_benchmark.py | _05_results_srq1/ |
 | E2 | _03 brand | same | CSD 19.0 / dansk 31.8 / energi 15.6 / RTD 36.4 | same | same |
 
-**Key finding (E1 vs E2):** "more rows = better" is NOT confirmed — granularity
-gain is category-dependent. brand×month wins for CSD (19.0 vs 23.3) and RTD;
-brand×chain wins for danskvand (22.9 vs 31.8); energidrikke ~tie. XGBoost is best
-model in 7/8 cases; every model beats SeasonalNaive (real skill). UNTUNED — Optuna
-pass pending.
+| E3 | _04 + _03 | Optuna-tuned LGB+XGB (30 trials, seed42) | tuned XGB WMAPE: CSD 16.5(brand)/20.8(chain), dansk 22.0(chain), energi 11.4(brand), RTD 31.0(brand) | scripts/srq1_benchmark_tuned.py | _05/tuned_*, tuned_params.json |
+| E4 | corrected results | 3 publication figures | model-ladder / granularity / forecast-overlay | scripts/srq1_figures.py | _05/figures/*.png |
+
+**Key finding:** "more rows = better" is NOT confirmed — granularity gain is
+category-dependent (brand×month wins CSD/energi/RTD, chain wins danskvand). XGBoost
+best in all 8; every model beats SeasonalNaive; tuning gained ~2–4 pp WMAPE.
+energidrikke 11.4% WMAPE ≈ the ≤15% industry target. METRIC NOTE: mean-MAPE is
+degenerate on low-volume series (tiny denominator → billions %); WMAPE + median
+MAPE are the reported robust metrics.
 
 ## ASSUMPTIONS LOG
 - A1: WMAPE (volume-weighted) is the primary business metric; plain mean-MAPE
