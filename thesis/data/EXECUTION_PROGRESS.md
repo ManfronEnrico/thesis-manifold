@@ -19,7 +19,7 @@ snapshot — no Prometheus/Nika needed.
 | brand×chain matrices `_04` | ✅ COMPLETED | 15606/4570/6006/7684 rows, d15a1a7 |
 | SRQ1 benchmark (baselines+LGB+XGB, WMAPE) | ✅ COMPLETED | untuned 1st pass, both datasets (E1/E2) |
 | SRQ1 Optuna tuning + SHAP | 🔮 FUTURE | next loop iterations |
-| Ch4 absolute-volume number fix (27.4B etc.) | 🔄 IN PROGRESS | factual fix, queued |
+| Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
 | Ch6/Ch7/Ch8 from regenerated results | 🔮 FUTURE | after benchmark |
 | Agentic System A/B code (local-runnable) | 🔮 FUTURE | stub Prometheus data layer |
@@ -35,7 +35,7 @@ snapshot — no Prometheus/Nika needed.
 | 1 Introduction | 60 | prose draft, RQs v3/v4 realigned |
 | 2 Literature | 60 | prose draft |
 | 3 Methodology | 60 | prose draft, RQs v4 |
-| 4 Data assessment | 70 | recomputed; abs-numbers fix + 3-cat EDA pending |
+| 4 Data assessment | 78 | abs-numbers fixed; 3-cat §4.3 EDA prose pending |
 | 5 Framework design | 55 | prose draft, prototype rebuilding |
 | 6 Model benchmark | 10 | skeleton — unblocked by this run's results |
 | 7 Synthesis | 10 | skeleton |
