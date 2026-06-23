@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""
+Nielsen Energidrikke Preprocessing — Step 1: Load and Aggregate
+
+Input:  Step 0 output or raw Nielsen JSONL view files
+		- energidrikke_clean_facts_v.jsonl
+		- energidrikke_clean_dim_product_v.jsonl
+		- energidrikke_clean_dim_period_v.jsonl
+		- energidrikke_clean_dim_market_v.jsonl
+
+Output: Step 1 output (aggregate.parquet)
+		- Aggregated to brand × period granularity
+		- Filtered to target market (Denmark)
+		- Columns: brand, period_year, period_month, sales_units, sales_value, sales_liters, promo_units, weighted_dist
+
+Logic:
+  - Load fact and dimension tables from views (cleaned, column-reduced)
+  - Join facts × product × period × market
+  - Filter to target market
+  - Aggregate by brand × period
+"""
+
+import sys, time
+from pathlib import Path
+import pandas as pd
+
+# Find project root
+current = Path.cwd()
+while current != current.parent:
+	if (current / "CLAUDE.md").exists():
+		ROOT_DIR = current
+		break
+	current = current.parent
+else:
+	raise FileNotFoundError("Could not find project root")
+
+sys.path.insert(0, str(ROOT_DIR))
+
+from PATHS import THESIS_DATA_RAW_NIELSEN_JSONL_DIR, THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR, get_category_pipeline_step_outputs_dir
+from METADATA import get_column_definition, describe_column
+from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
+	step_execution, print_file_load, print_file_save, print_data_preview,
+	print_step_summary, print_info
+)
+from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timing
+
+# ============================================================================
+# METADATA DEFINITIONS
+# ============================================================================
+# This step joins Facts × Product × Period × Market dimensions and aggregates to brand × period.
+# Key column definitions from Nielsen metadata:
+#
+# FACTS TABLE (source columns):
+#   - sales_units: Total sales out of store (consumer purchase units). Non-nullable.
+#   - sales_value: Total sales value in DKK. Non-nullable.
+#   - sales_in_liters: Total sales volume in liters. Non-nullable.
+#   - sales_units_any_promo: Sales units with any promotion applied. Nullable; 0 = no data.
+#   - weighted_distribution: ACV-weighted store reach (0–1 fraction). Nullable (~16.7%). NOT additive across products.
+#
+# PRODUCT DIMENSION:
+#   - brand: Brand name (5-level hierarchy: category → manufacturer → brand → variant → UPC).
+#     Never sum/aggregate across hierarchy levels.
+#
+# PERIOD DIMENSION:
+#   - period_year, period_month: Non-nullable integers (safe to use directly for calculations).
+#     Range: 2022-10 to 2026-03 (42 monthly periods on Nielsen 4-4-5 week calendar).
+#
+# MARKET DIMENSION:
+#   - market_description: Retail outlet types (28 types: REMA 1000, NETTO, e-commerce, etc.).
+#     NOT a country filter (all data is Denmark). Aggregate across all markets by default.
+#
+# OUTPUT (this step):
+#   - Aggregates to brand × period granularity
+#   - Null-safe: Keeps NaN from sales_units for missing observations (used in step 2 calendar fill)
+#   - Null-safe: Promo units filled with 0 for missing (no promo data = no promo units)
+#   - weighted_distribution averaged (ACV metric, valid operation on store samples)
+
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+CATEGORY = "Energidrikke"
+STEP_NUM = 1
+STEP_NAME = "Load and Aggregate"
+
+# Note: Nielsen data is already filtered to Denmark by source.
+# MARKET-SCOPE FIX (Enrico): the 28 market_description values are HIERARCHICAL
+# (chains nested in group aggregates nested in grand-total roll-ups). Summing
+# across all of them double-counts the same sale at every level. We therefore
+# scope to the single Nielsen-recommended grand-total level "DVH EXCL. HD"
+# (was "All Markets", which summed every level -> inflated sales).
+TARGET_MARKET = "DVH EXCL. HD"
+
+# Input paths (Nielsen view files)
+INPUT_VIEWS_DIR = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / CATEGORY / "views"
+
+# Cached parquet from step 0
+CACHED_PARQUET_VIEWS_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"
+
+# Output paths
+STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
+OUTPUT_AGGREGATE_PARQUET = STEP_OUTPUT_DIR / f"step_{STEP_NUM}_aggregate.parquet"
+LOG_FILE = STEP_OUTPUT_DIR / f"step_{STEP_NUM}_log.json"
+
+# ============================================================================
+# STEP LOGIC
+# ============================================================================
+
+def load_and_aggregate(input_dir: Path, target_market: str, cached_parquet_dir: Path = None) -> pd.DataFrame:
+	"""
+	Load Nielsen Energidrikke data from parquet cache (if available) or JSONL files.
+
+	Tries cached parquet first (from step 0, if available). Falls back to JSONL.
+	"""
+	# Try cached parquet first
+	if cached_parquet_dir and (cached_parquet_dir / "energidrikke_clean_facts_v.parquet").exists():
+		print("  Loading view parquet files (cached from step 0)...")
+		facts = pd.read_parquet(cached_parquet_dir / "energidrikke_clean_facts_v.parquet")
+		products = pd.read_parquet(cached_parquet_dir / "energidrikke_clean_dim_product_v.parquet")
+		periods = pd.read_parquet(cached_parquet_dir / "energidrikke_clean_dim_period_v.parquet")
+		markets = pd.read_parquet(cached_parquet_dir / "energidrikke_clean_dim_market_v.parquet")
+	else:
+		# Fallback to JSONL
+		print("  Loading view JSONL files...")
+		facts = pd.read_json(input_dir / "energidrikke_clean_facts_v.jsonl", lines=True)
+		products = pd.read_json(input_dir / "energidrikke_clean_dim_product_v.jsonl", lines=True)
+		periods = pd.read_json(input_dir / "energidrikke_clean_dim_period_v.jsonl", lines=True)
+		markets = pd.read_json(input_dir / "energidrikke_clean_dim_market_v.jsonl", lines=True)
+
+	print(f"  Facts shape: {facts.shape}")
+	print(f"  Products shape: {products.shape}")
+	print(f"  Periods shape: {periods.shape}")
+	print(f"  Markets shape: {markets.shape}")
+
+	# Join facts × product × period (market dimension included for reference)
+	df = facts.merge(products[["product_id", "brand"]], on="product_id")
+	df = df.merge(periods[["period_id", "period_year", "period_month"]], on="period_id")
+
+	# ════════════════════════════════════════════════════════════════════════
+	# MARKET-SCOPE FIX (DVH EXCL. HD) — added by Enrico
+	# Previously the markets dimension was loaded but never merged, so the
+	# groupby below summed across ALL market_ids (every hierarchy level) and
+	# double-counted sales. Merge market_description and scope to target_market.
+	df = df.merge(markets[["market_id", "market_description"]], on="market_id")
+	df = df[df["market_description"] == target_market].copy()
+	# ════════════════════════════════════════════════════════════════════════
+
+	# Filter to positive sales (non-zero units)
+	df = df[df["sales_units"] > 0].copy()
+
+	# Aggregate by brand × period
+	agg_dict = {
+		"sales_units": "sum",
+		"sales_value": "sum",
+		"sales_in_liters": "sum",
+		"sales_units_any_promo": lambda x: sum(pd.Series(x).fillna(0)),
+		"weighted_distribution": "mean",
+	}
+
+	aggregated = df.groupby(["brand", "period_year", "period_month"]).agg(agg_dict).reset_index()
+	aggregated.columns = ["brand", "period_year", "period_month", "sales_units", "sales_value",
+						 "sales_liters", "promo_units", "weighted_dist"]
+
+	return aggregated
+
+
+def main():
+	"""Execute step 1: Load and aggregate."""
+	with step_execution(STEP_NUM, STEP_NAME, CATEGORY):
+		step_start = time.perf_counter()
+
+		# Validate input
+		if not INPUT_VIEWS_DIR.exists():
+			raise FileNotFoundError(f"Input not found: {INPUT_VIEWS_DIR}")
+
+		# Load
+		print("\nLoading view files...")
+		load_start = time.perf_counter()
+		df = load_and_aggregate(INPUT_VIEWS_DIR, TARGET_MARKET, CACHED_PARQUET_VIEWS_DIR)
+		load_elapsed = time.perf_counter() - load_start
+
+		input_shape = df.shape
+		print_file_load(INPUT_VIEWS_DIR, input_shape, load_elapsed)
+		print_info(f"Target market: {TARGET_MARKET}")
+		print_info(f"Unique brands: {df['brand'].nunique()}")
+		if len(df) > 0:
+			month_min = int(df['period_month'].min())
+			month_max = int(df['period_month'].max())
+			print_info(f"Date range: {df['period_year'].min()}-{month_min:02d} to {df['period_year'].max()}-{month_max:02d}")
+		else:
+			print_info(f"Date range: (no data)")
+
+		# Save
+		print(f"\nSaving aggregated data...")
+		STEP_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+		save_start = time.perf_counter()
+		df.to_parquet(OUTPUT_AGGREGATE_PARQUET, index=False)
+		save_elapsed = time.perf_counter() - save_start
+
+		output_shape = df.shape
+		print_file_save(OUTPUT_AGGREGATE_PARQUET, output_shape, save_elapsed)
+
+		# Preview
+		print("\nData preview:")
+		print_data_preview(df, title=f"{CATEGORY} Aggregated Data", max_rows=10)
+
+		# Summary
+		step_elapsed = time.perf_counter() - step_start
+		log_step_timing(STEP_NUM, STEP_NAME, CATEGORY, step_elapsed, output_shape[0], LOG_FILE,
+					   input_cols=None, output_cols=output_shape[1])
+
+		print_step_summary(
+			STEP_NUM, STEP_NAME, step_elapsed,
+			input_rows=input_shape[0],
+			output_rows=output_shape[0],
+			input_cols=None,  # Views are aggregated; no direct input cols tracked
+			output_cols=output_shape[1],
+			output_file=OUTPUT_AGGREGATE_PARQUET
+		)
+
+
+if __name__ == "__main__":
+	main()

@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-05-14T16:49:01.676368",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "RTD",
+    "elapsed_sec": 0.13,
+    "output_rows": 4284,
+    "input_cols": 8,
+    "output_cols": 8
+  }
+]

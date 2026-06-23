@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2026-05-14T13:53:49.610393",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.12,
+    "output_rows": 1302,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T16:48:57.350408",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.07,
+    "output_rows": 1302,
+    "input_cols": 23,
+    "output_cols": 24
+  }
+]

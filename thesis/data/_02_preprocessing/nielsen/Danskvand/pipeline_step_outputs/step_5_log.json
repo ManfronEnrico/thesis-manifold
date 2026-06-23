@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2026-05-14T16:44:34.824197",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Danskvand",
+    "elapsed_sec": 0.06,
+    "output_rows": 1134,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T16:48:48.325758",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Danskvand",
+    "elapsed_sec": 0.09,
+    "output_rows": 1134,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T16:54:03.796919",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Danskvand",
+    "elapsed_sec": 0.1,
+    "output_rows": 1134,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-05-14T18:07:31.457281",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "Danskvand",
+    "elapsed_sec": 0.07,
+    "output_rows": 1134,
+    "input_cols": 23,
+    "output_cols": 24
+  }
+]

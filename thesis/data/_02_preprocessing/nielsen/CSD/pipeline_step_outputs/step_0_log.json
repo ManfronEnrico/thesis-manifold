@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2026-05-07T10:57:32.197635",
+    "step_num": 0,
+    "step_name": "Cache Raw Data",
+    "category": "CSD",
+    "elapsed_sec": 23.73,
+    "output_rows": 2537695
+  },
+  {
+    "timestamp": "2026-05-14T14:39:08.371672",
+    "step_num": 0,
+    "step_name": "Verify Parquet Cache",
+    "category": "CSD",
+    "elapsed_sec": 0.0,
+    "output_rows": 0
+  },
+  {
+    "timestamp": "2026-05-14T14:43:29.222722",
+    "step_num": 0,
+    "step_name": "Verify Parquet Cache",
+    "category": "CSD",
+    "elapsed_sec": 0.0,
+    "output_rows": 0
+  }
+]
