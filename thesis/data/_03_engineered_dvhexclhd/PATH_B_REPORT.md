@@ -87,3 +87,15 @@ the pipeline is deterministic and the committed matrices are reproducible.
 ---
 _Loop converged after the iterations above. No recurring loop scheduled: the
 remaining items are decisions for you, not automatable work._
+
+## ✅ VERIFIED STABLE — 2026-06-23 18:40 (independent verification iteration)
+- Re-ran `build_feature_matrix.py` from a clean tree → brand counts identical
+  (CSD 77 / danskvand 24 / energidrikke 27 / RTD 42); `git diff` on the matrices
+  is **empty** → outputs are byte-stable and reproducible.
+- Working tree has **no uncommitted Path B files** (all 5 commits clean).
+- Repo scan for stale all-markets numbers (5.24 / 32.2B / 168.6B): the only hits
+  are a false positive inside a DOI string (`...2025.2451806`); no real residuals
+  in active surfaces. "All Markets" appears only in the consolidated builder's
+  docstring describing the inherited behaviour (not an active scope). 6.16×
+  is consistent across Ch4, eda_findings, and this report.
+- **Verdict: stable. Loop ended (no further wakeup scheduled).**
