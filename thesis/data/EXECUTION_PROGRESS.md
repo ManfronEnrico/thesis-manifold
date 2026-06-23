@@ -25,8 +25,8 @@ snapshot — no Prometheus/Nika needed.
 | SHAP feature importance | ✅ COMPLETED | ffa1836; lag_1 + weighted_distribution top |
 | ARIMA/Prophet baselines (SRQ4) | ✅ COMPLETED | 907b135; ARIMA stable, Prophet unstable 2/4 |
 | Ch6 §6.5.3 SRQ4 comparison | ✅ COMPLETED | ML beats ARIMA 3/4 categories |
-| RAM/latency profiling | 🔮 FUTURE | unblocked; instrument model fits |
-| Calibration / prediction intervals (SRQ2) | 🔮 FUTURE | unblocked; conformal/quantile |
+| RAM/latency profiling | ✅ COMPLETED | 2cfcc38; all models ≪8GB |
+| Calibration / prediction intervals (SRQ2) | ✅ COMPLETED | 07803f4; CSD 90→90.5% coverage |
 | Ch7/Ch8 drafting | ⛔ BLOCKED | needs NEW agentic A/B results (not fabricate) |
 | Agentic System A/B code (local + stub) | 🔮 FUTURE | large refactor; partly PROMETHEUS-DEP data layer |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
@@ -47,7 +47,7 @@ snapshot — no Prometheus/Nika needed.
 | 3 Methodology | 60 | prose draft, RQs v4 |
 | 4 Data assessment | 78 | abs-numbers fixed; 3-cat §4.3 EDA prose pending |
 | 5 Framework design | 55 | prose draft, prototype rebuilding |
-| 6 Model benchmark | 55 | §6.5 ML+ARIMA/Prophet+SHAP+SRQ4 drafted [PENDING APPROVAL]; RAM/calibration pending |
+| 6 Model benchmark | 65 | §6.5 fully drafted [PENDING APPROVAL]: ML+baselines+SHAP+SRQ4+RAM+calibration. §6.6/6.7 interpretive prose pending approval |
 | 7 Synthesis | 10 | skeleton |
 | 8 Evaluation | 10 | skeleton |
 | 9 Discussion | 10 | skeleton |

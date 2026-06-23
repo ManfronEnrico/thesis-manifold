@@ -160,13 +160,30 @@ on back-transformation. Prophet is therefore unreliable on this panel and ARIMA 
 treated as the primary traditional baseline; the danskvand result (Prophet 16.9%)
 is the one category where an additive-seasonality model is competitive.
 
-### 6.5.4 Not yet run (honest gaps)
-- **Peak RAM / inference latency** profiling (§6.4) — pending; needed for the
-  ≤8 GB operational claim.
-- **Calibration / prediction-interval coverage** (§6.4) — pending; the SRQ2
-  confidence signal.
-- Mean-MAPE is intentionally omitted (degenerate on low-volume series); WMAPE and
-  median per-series MAPE are the reported metrics throughout.
+### 6.5.4 Operational profile and calibration `[PENDING APPROVAL]`
+
+<!-- DRAFT pending approval. Numbers from scripts/srq1_profiling.py and
+srq1_calibration.py; results _05_results_srq1/profiling.* and calibration.*. -->
+
+**Operational cost (≤8 GB claim).** Peak RAM (tracemalloc) on the largest matrix is
+in the tens of MB for every model — Ridge 1.5, LightGBM 18.7, XGBoost 0.2, ARIMA
+0.5 MB — i.e. orders of magnitude under the 8 GB sequential budget; the constraint
+is non-binding at this data scale. Latency: XGBoost trains in ~1.7 s and predicts
+in ~16 ms; LightGBM ~7.7 s (its tuned `n_estimators`); ARIMA is per-series.
+
+**Prediction-interval calibration (SRQ2).** A split-conformal wrapper on the tuned
+XGBoost (half-width calibrated on validation residuals in log space) gives test
+coverage close to nominal for CSD (90% → 90.5%) and RTD (90% → 88.0%), with mild
+under-coverage for danskvand (85.8%) and energidrikke (81.0%) — pointing to
+residual heteroskedasticity that a global half-width cannot capture (a per-series
+or quantile-regression interval is future work). The intervals are nonetheless a
+usable confidence signal for the agentic layer.
+
+### 6.5.5 Remaining gaps
+- ARIMA / Prophet are profiled per-series; a full per-series statistical sweep is
+  not run for every brand (cost) — the reported baselines use the protocol in §6.5.3.
+- Mean-MAPE and mean interval-width are omitted (degenerate on low-volume series);
+  WMAPE, median per-series MAPE, and empirical coverage are the reported metrics.
 
 ---
 
