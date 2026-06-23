@@ -18,7 +18,9 @@ snapshot — no Prometheus/Nika needed.
 | brand×month matrices `_03` | ✅ COMPLETED | 77/24/27/42 brands |
 | brand×chain matrices `_04` | ✅ COMPLETED | 15606/4570/6006/7684 rows, d15a1a7 |
 | SRQ1 benchmark (baselines+LGB+XGB, WMAPE) | ✅ COMPLETED | untuned 1st pass, both datasets (E1/E2) |
-| SRQ1 Optuna tuning + SHAP | 🔮 FUTURE | next loop iterations |
+| SRQ1 Optuna tuning (LGB+XGB, 30 trials) | 🔄 IN PROGRESS | running bg; script committed a928525 |
+| Ch4 §4.3.6 per-category EDA | ✅ COMPLETED | a928525, [PENDING APPROVAL] prose |
+| SHAP + publication figures | 🔮 FUTURE | after tuning completes |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
 | Ch6/Ch7/Ch8 from regenerated results | 🔮 FUTURE | after benchmark |
