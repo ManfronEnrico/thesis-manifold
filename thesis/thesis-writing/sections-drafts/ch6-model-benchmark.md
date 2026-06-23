@@ -136,13 +136,37 @@ explained by the signal-to-noise trade-off of finer granularity (see
 `fig2_granularity.png`). energidrikke reaches **11.4% WMAPE**, near the ≤15%
 industry target.
 
-### 6.5.3 Not yet run (honest gaps)
-- **ARIMA / Prophet** statistical baselines (§6.2.1–6.2.2) — pending.
+### 6.5.3 Statistical baselines and the SRQ4 comparison `[PENDING APPROVAL]`
+
+<!-- DRAFT pending approval. Numbers factual, from scripts/srq1_baselines_stat.py;
+results _05_results_srq1/stat_baselines.{csv,md}. -->
+
+ARIMA (statsmodels SARIMAX(1,1,1) on log sales) and Prophet were fitted per brand
+as univariate traditional baselines. ARIMA test WMAPE: CSD 24.2%, danskvand 33.4%,
+energidrikke 15.7%, RTD 48.2%. The SRQ4 question — does the ML approach beat
+traditional forecasting — resolves in favour of the gradient-boosted models in
+three of four categories:
+
+| Category | Best ML (tuned XGBoost) | ARIMA | Prophet | SRQ4 verdict |
+|---|---|---|---|---|
+| CSD | **16.5%** | 24.2% | unstable* | ML wins (+7.7 pp) |
+| danskvand | 22.0% | 33.4% | **16.9%** | Prophet wins |
+| energidrikke | **11.4%** | 15.7% | unstable* | ML wins (+4.3 pp) |
+| RTD | **31.0%** | 48.2% | 45.4% | ML wins (+17.2 pp) |
+
+*Prophet WMAPE diverges for CSD and energidrikke: fitting a linear trend on
+log-transformed short monthly series lets the trend extrapolate to extreme values
+on back-transformation. Prophet is therefore unreliable on this panel and ARIMA is
+treated as the primary traditional baseline; the danskvand result (Prophet 16.9%)
+is the one category where an additive-seasonality model is competitive.
+
+### 6.5.4 Not yet run (honest gaps)
 - **Peak RAM / inference latency** profiling (§6.4) — pending; needed for the
-  ≤8 GB operational claim and SRQ4.
+  ≤8 GB operational claim.
 - **Calibration / prediction-interval coverage** (§6.4) — pending; the SRQ2
   confidence signal.
-- Mean-MAPE is intentionally omitted (degenerate on low-volume series).
+- Mean-MAPE is intentionally omitted (degenerate on low-volume series); WMAPE and
+  median per-series MAPE are the reported metrics throughout.
 
 ---
 

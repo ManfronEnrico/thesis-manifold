@@ -22,10 +22,13 @@ snapshot — no Prometheus/Nika needed.
 | Ch4 §4.3.6 per-category EDA | ✅ COMPLETED | a928525, [PENDING APPROVAL] prose |
 | Publication figures (ladder/granularity/overlay) | ✅ COMPLETED | 4c7a98b, _05/figures/ |
 | Ch6 §6.5 results drafted | ✅ COMPLETED | 665210a, [PENDING APPROVAL] |
-| SHAP feature importance | 🔮 FUTURE | next iteration |
-| Ch7/Ch8 drafting from results | 🔮 FUTURE | next iterations |
-| Agentic System A/B code (local + stub) | 🔮 FUTURE | next iterations |
-| ARIMA/Prophet baselines, RAM/latency, calibration | 🧯 TECH DEBT | flagged in Ch6 §6.5.3 |
+| SHAP feature importance | ✅ COMPLETED | ffa1836; lag_1 + weighted_distribution top |
+| ARIMA/Prophet baselines (SRQ4) | ✅ COMPLETED | 907b135; ARIMA stable, Prophet unstable 2/4 |
+| Ch6 §6.5.3 SRQ4 comparison | ✅ COMPLETED | ML beats ARIMA 3/4 categories |
+| RAM/latency profiling | 🔮 FUTURE | unblocked; instrument model fits |
+| Calibration / prediction intervals (SRQ2) | 🔮 FUTURE | unblocked; conformal/quantile |
+| Ch7/Ch8 drafting | ⛔ BLOCKED | needs NEW agentic A/B results (not fabricate) |
+| Agentic System A/B code (local + stub) | 🔮 FUTURE | large refactor; partly PROMETHEUS-DEP data layer |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
 | Ch6/Ch7/Ch8 from regenerated results | 🔮 FUTURE | after benchmark |
@@ -44,7 +47,7 @@ snapshot — no Prometheus/Nika needed.
 | 3 Methodology | 60 | prose draft, RQs v4 |
 | 4 Data assessment | 78 | abs-numbers fixed; 3-cat §4.3 EDA prose pending |
 | 5 Framework design | 55 | prose draft, prototype rebuilding |
-| 6 Model benchmark | 40 | §6.5 results drafted [PENDING APPROVAL]; ARIMA/Prophet/RAM pending |
+| 6 Model benchmark | 55 | §6.5 ML+ARIMA/Prophet+SHAP+SRQ4 drafted [PENDING APPROVAL]; RAM/calibration pending |
 | 7 Synthesis | 10 | skeleton |
 | 8 Evaluation | 10 | skeleton |
 | 9 Discussion | 10 | skeleton |
