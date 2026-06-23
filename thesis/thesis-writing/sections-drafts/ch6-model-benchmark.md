@@ -1,6 +1,10 @@
 # Chapter 6 — Model Benchmark & Selection
-> Status: BULLET POINT SKELETON — not prose yet
-> Last updated: 2026-03-14
+> Status: SKELETON + §6.5 RESULTS DRAFTED [PENDING APPROVAL] — 2026-06-23. Tabular
+> models (Ridge/LightGBM/XGBoost + SeasonalNaive) benchmarked on the corrected DVH
+> EXCL. HD matrices (WMAPE/median MAPE; results in thesis/data/_05_results_srq1/).
+> ARIMA/Prophet, RAM/latency, and calibration coverage are NOT yet run (§6.5.3).
+> Rest of chapter still bullets. Prose pending human approval.
+> Last updated: 2026-06-23
 
 ---
 
@@ -20,7 +24,7 @@
 - Role: statistical baseline — represents "best traditional forecasting" for SRQ4 comparison
 - Parameters: p, d, q determined via AIC minimisation; auto_arima (pmdarima) for grid search within RAM budget
 - RAM: ~5–20MB; negligible
-- Limitation: assumes stationarity; no exogenous variables by default (can extend to ARIMAX for consumer signals)
+- Limitation: assumes stationarity; no exogenous variables by default (can extend to ARIMAX)
 
 ### 6.2.2 Prophet (Meta)
 - Additive decomposition: trend + seasonality + holidays
@@ -32,7 +36,7 @@
 ### 6.2.3 LightGBM
 - Gradient boosting with leaf-wise tree growth; GOSS sampling for speed
 - Role: primary ML model — expected best accuracy based on domain literature
-- Features: lag features, rolling statistics, promotional flags, Indeks Danmark consumer signals (SRQ3)
+- Features: lag features, rolling statistics, promotional flags
 - RAM: ~100–300MB depending on feature set; acceptable
 - HPO: Optuna Bayesian search, ≤50 trials to stay within time/RAM budget
 
@@ -65,7 +69,6 @@
 - Rolling statistics: 4-week, 8-week, 13-week rolling mean/std
 - Calendar: week of year, month, quarter, Danish public holidays
 - Promotional: price discount flag, display/feature flag (if available in Nielsen data)
-- Consumer signals (SRQ3): Indeks Danmark-derived retailer-level demand indices (PCA + k-means output)
 
 ### 6.3.3 Execution protocol
 - Sequential model execution: load → fit → predict → unload → gc.collect()
@@ -92,13 +95,54 @@
 
 ## 6.5 Results
 
-*(to be completed once data available)*
+### 6.5.1 Tabular-model benchmark `[PENDING APPROVAL]`
 
-- Comparative results table: all 5 models × all 6 metrics
-- Best model per SKU category analysis
-- RAM profile table: peak RAM per model per data volume
-- Calibration coverage curves (actual vs stated confidence level)
-- Key finding hypothesis: LightGBM or XGBoost achieves lowest MAPE; ARIMA lowest RAM; Ridge fastest inference
+<!-- DRAFT pending human approval. All numbers are factual, from the committed,
+reproducible benchmark (scripts/srq1_benchmark.py + srq1_benchmark_tuned.py,
+seed=42) on the corrected DVH EXCL. HD matrices. Results: thesis/data/
+_05_results_srq1/. Figures: _05_results_srq1/figures/. ARIMA/Prophet, RAM/latency,
+and calibration coverage are NOT yet run — flagged under §6.5.3 gaps. -->
+
+The tabular models (Ridge, LightGBM, XGBoost) plus a SeasonalNaive baseline were
+benchmarked on both dataset granularities under the DVH EXCL. HD scope. The
+reported metrics are **WMAPE** (volume-weighted — the operationally meaningful
+error) and **median per-series MAPE** (robust to low-volume series). Plain mean
+MAPE is *not* reported: on the low-volume categories it diverges to absurd values
+because a handful of near-zero-actual test rows blow up the percentage denominator
+— a known MAPE pathology, and itself a finding about metric choice for this panel.
+
+**Headline (tuned XGBoost, test set, WMAPE):**
+
+| Category | brand × month (_03) | brand × chain (_04) | SeasonalNaive (chain) |
+|---|---|---|---|
+| CSD | **16.5%** | 20.8% | 39.9% |
+| danskvand | 23.8% | **22.0%** | 37.7% |
+| energidrikke | **11.4%** | 13.9% | 31.9% |
+| RTD | **31.0%** | 38.8% | 58.8% |
+
+XGBoost is the best model in all eight (category × granularity) cells; LightGBM is
+a close second; both clearly beat Ridge and SeasonalNaive. Optuna tuning (TPE, 30
+trials, validation WMAPE objective) improved WMAPE by roughly 2–4 pp over untuned
+defaults. See `fig1_model_ladder.png` (every model beats the naive baseline) and
+`fig3_forecast_overlay.png` (top CSD brand, actual vs forecast).
+
+### 6.5.2 Granularity finding `[PENDING APPROVAL]`
+
+Disaggregating to a retail-chain dimension multiplies training rows ~6× but does
+**not** uniformly improve accuracy — the gain is category-dependent: brand×month
+wins for CSD, energidrikke and RTD (less noise per series), while brand×chain wins
+for danskvand. This refutes a naïve "more rows is always better" assumption and is
+explained by the signal-to-noise trade-off of finer granularity (see
+`fig2_granularity.png`). energidrikke reaches **11.4% WMAPE**, near the ≤15%
+industry target.
+
+### 6.5.3 Not yet run (honest gaps)
+- **ARIMA / Prophet** statistical baselines (§6.2.1–6.2.2) — pending.
+- **Peak RAM / inference latency** profiling (§6.4) — pending; needed for the
+  ≤8 GB operational claim and SRQ4.
+- **Calibration / prediction-interval coverage** (§6.4) — pending; the SRQ2
+  confidence signal.
+- Mean-MAPE is intentionally omitted (degenerate on low-volume series).
 
 ---
 
@@ -117,7 +161,7 @@
 |---|---|
 | SRQ1 | Direct answer: which models work best for retail CSD forecasting within ≤8GB RAM |
 | SRQ2 | Prediction intervals + calibration coverage provide the raw confidence signal for SRQ2 |
-| SRQ3 | Consumer signal features included in ML models; ablation test quantifies contribution |
+| SRQ3 | Not addressed here; integration readiness is addressed in Ch3 and Ch5 |
 | SRQ4 | MAPE/RMSE of best ML model vs ARIMA baseline establishes the predictive vs descriptive gain |
 
 ---
