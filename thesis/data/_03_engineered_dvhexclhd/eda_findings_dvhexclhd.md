@@ -15,15 +15,19 @@ Nielsen-recommended grand-total `DVH EXCL. HD` removes the double-count.
 
 | Category | Market levels | ALL-markets sum | DVH EXCL. HD | Inflation |
 |---|---|---|---|---|
-| CSD | 28 | 1180.2B units | 191.6B units | **6.16×** |
+| CSD | 28 | 168.6B units | 27.4B units | **6.16×** |
 | danskvand | 86 | 171.5B units | 11.6B units | **14.76×** |
 | energidrikke | 86 | 269.4B units | 15.9B units | **16.92×** |
 | RTD | 86 | 49.5B units | 3.4B units | **14.41×** |
 
 ⚠️ Supersedes the journal's earlier "5.24× / true 32.2B" figure, which does NOT
-reproduce on the current `data/raw` snapshot: CSD DVH EXCL. HD = 191.6B units (a
-legitimate grand-total, comparable to DVH/CONVENIENCE INCL. HD = 225.2B and
-EXCL. HD = 207.0B); the all-markets sum is 6.16× that. Use 6.16× in Ch4.
+reproduce on the current `data/raw` snapshot. After de-duplicating the
+slowly-changing market dimension on `market_id` (501 duplicate rows for CSD; an
+un-deduped merge fans out ~7×), CSD DVH EXCL. HD = 27.4B units (a legitimate
+grand-total, comparable to DVH/CONVENIENCE INCL. HD = 32.2B and EXCL. HD = 29.6B);
+the all-markets sum (168.6B) is 6.16× that. The journal's 32.2B was actually
+DVH/CONVENIENCE INCL. HD, not DVH EXCL. HD — hence the wrong 5.24× ratio. Use 6.16×
+and the deduped absolutes in Ch4.
 
 ## Canonical vs reference code
 
