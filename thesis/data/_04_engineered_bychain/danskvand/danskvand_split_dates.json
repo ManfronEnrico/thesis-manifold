@@ -1,0 +1,12 @@
+{
+  "n_periods": 37,
+  "train": 23,
+  "val": 6,
+  "test": 8,
+  "train_start": "2023-03",
+  "train_end": "2025-01",
+  "val_start": "2025-02",
+  "val_end": "2025-07",
+  "test_start": "2025-08",
+  "test_end": "2026-03"
+}
