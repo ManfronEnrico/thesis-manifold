@@ -105,6 +105,23 @@ CSD is the worked category. The structural counts and the stationarity, seasonal
 
 These parameters are EDA-driven rather than theory-first; their academic justification is developed in the modelling chapter, and their empirical (not theoretical) origin is stated honestly as a limitation.
 
+### 4.3.6 Per-category EDA — danskvand, energidrikke, RTD `[PENDING APPROVAL]`
+
+<!-- DRAFT pending human approval. Numbers are factual, recomputed locally under
+DVH EXCL. HD from the regenerated matrices (source: thesis/data/_03_engineered_dvhexclhd/
+eda_findings_dvhexclhd.md, 2026-06-23). Prose to be reviewed before finalisation. -->
+
+The three proof-of-concept categories were taken through the identical pipeline and their EDA recomputed under the corrected DVH EXCL. HD scope, closing the gap previously flagged in §4.6.
+
+| Category | Promo correlation | Peak month | Top brand | ADF (log level) | Verdict | ACF lag1 / lag3 |
+|---|---|---|---|---|---|---|
+| CSD | r = 0.937 | December | HARBOE | p = 0.421 | non-stationary, I(1) | +0.78 / +0.55 |
+| danskvand | none (promo-zero) | June | HARBOE | p = 0.998 | non-stationary, I(1) | +0.55 / +0.25 |
+| energidrikke | r = 0.988 | March | RED BULL | p = 0.901 | non-stationary, I(1) | +0.71 / +0.39 |
+| RTD | none (promo-zero) | December | BREEZER | p = 0.000 | stationary in level | +0.82 / +0.58 |
+
+Three of the four category-level series are difference-stationary (I(1)); RTD is already stationary in log level. All show strong positive short-horizon autocorrelation (lag-1 +0.55…+0.82), supporting the shared lag/rolling feature set, with near-zero lag-13 carry. Seasonality is category-appropriate (water peaks in summer, the others in autumn/spring). danskvand and RTD carry no promotional signal — the unmeasured-variable limitation already noted. These findings confirm the CSD-derived parameter defaults (`MIN_PERIODS`, `LAGS`, `HOLIDAY_MONTHS`) transfer reasonably across categories; per-series lag structure is brand-dependent and not separately optimised (a stated scope bound).
+
 ---
 
 ## 4.4 Feature Engineering (forecasting substrate)
