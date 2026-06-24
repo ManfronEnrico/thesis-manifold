@@ -30,8 +30,11 @@ snapshot — no Prometheus/Nika needed.
 | Ch4 §4.3.6 + Ch6 §6.5 prose | ✅ APPROVED | Enrico 2026-06-24; markers removed |
 | Per-category granularity decision | ✅ DECIDED | Ch6 §6.5.6: CSD/energi/RTD brand×month, danskvand brand×chain |
 | Prometheus access | ➖ OUT OF SCOPE | not needed (local snapshot canonical); not available |
-| Ch7/Ch8 drafting | ⛔ BLOCKED | needs agentic A/B run (local harness + LLM, NOT Prometheus) |
-| Agentic System A/B code (local) | 🔮 FUTURE | next phase; runs on local artifacts + forecasts |
+| SRQ2 synthesis engine (deterministic) | ✅ COMPLETED | scripts/srq2_synthesis.py → _06_results_srq2; coverage 80-98% |
+| Ch7 §7.2.3 synthesis results | ✅ WRITTEN | 886559e; from real outputs |
+| Ch8 §8.2.5 (Level 1) + §8.4.4 (Level 3) | ✅ WRITTEN | 886559e; from real runs |
+| LLM rec-text / LLM-as-Judge / SRQ4 code-as-action | ⛔ BLOCKED | needs LLM API (NOT Prometheus) — the real remaining blocker |
+| Agentic harness (System A/B) | 🔮 FUTURE | local + LLM API; consumes _05/_06 outputs |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
 | Ch6/Ch7/Ch8 from regenerated results | 🔮 FUTURE | after benchmark |
@@ -51,8 +54,8 @@ snapshot — no Prometheus/Nika needed.
 | 4 Data assessment | 78 | abs-numbers fixed; 3-cat §4.3 EDA prose pending |
 | 5 Framework design | 55 | prose draft, prototype rebuilding |
 | 6 Model benchmark | 65 | §6.5 fully drafted [PENDING APPROVAL]: ML+baselines+SHAP+SRQ4+RAM+calibration. §6.6/6.7 interpretive prose pending approval |
-| 7 Synthesis | 10 | skeleton |
-| 8 Evaluation | 10 | skeleton |
+| 7 Synthesis | 45 | §7.2.3 deterministic synthesis results written; LLM parts need API |
+| 8 Evaluation | 45 | Level 1 + Level 3 written from real runs; Level 2 needs API |
 | 9 Discussion | 10 | skeleton |
 | 10 Conclusion | 10 | skeleton |
 
