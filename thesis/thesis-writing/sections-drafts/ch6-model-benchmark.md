@@ -1,10 +1,11 @@
 # Chapter 6 — Model Benchmark & Selection
-> Status: SKELETON + §6.5 RESULTS DRAFTED [PENDING APPROVAL] — 2026-06-23. Tabular
-> models (Ridge/LightGBM/XGBoost + SeasonalNaive) benchmarked on the corrected DVH
-> EXCL. HD matrices (WMAPE/median MAPE; results in thesis/data/_05_results_srq1/).
-> ARIMA/Prophet, RAM/latency, and calibration coverage are NOT yet run (§6.5.3).
-> Rest of chapter still bullets. Prose pending human approval.
-> Last updated: 2026-06-23
+> Status: §6.5 RESULTS APPROVED (Enrico, 2026-06-24) — tabular models
+> (Ridge/LightGBM/XGBoost + SeasonalNaive) + ARIMA/Prophet baselines benchmarked on
+> the corrected DVH EXCL. HD matrices; SHAP, RAM/latency, and conformal calibration
+> complete (results in thesis/data/_05_results_srq1/). §6.6/§6.7 interpretive prose
+> and §6.1–6.4 setup bullets still to be finalised. Decision: best (model ×
+> granularity) is selected PER CATEGORY (§6.5.6).
+> Last updated: 2026-06-24
 
 ---
 
@@ -95,9 +96,9 @@
 
 ## 6.5 Results
 
-### 6.5.1 Tabular-model benchmark `[PENDING APPROVAL]`
+### 6.5.1 Tabular-model benchmark
 
-<!-- DRAFT pending human approval. All numbers are factual, from the committed,
+<!-- Approved by Enrico 2026-06-24. All numbers are factual, from the committed,
 reproducible benchmark (scripts/srq1_benchmark.py + srq1_benchmark_tuned.py,
 seed=42) on the corrected DVH EXCL. HD matrices. Results: thesis/data/
 _05_results_srq1/. Figures: _05_results_srq1/figures/. ARIMA/Prophet, RAM/latency,
@@ -126,7 +127,7 @@ trials, validation WMAPE objective) improved WMAPE by roughly 2–4 pp over untu
 defaults. See `fig1_model_ladder.png` (every model beats the naive baseline) and
 `fig3_forecast_overlay.png` (top CSD brand, actual vs forecast).
 
-### 6.5.2 Granularity finding `[PENDING APPROVAL]`
+### 6.5.2 Granularity finding
 
 Disaggregating to a retail-chain dimension multiplies training rows ~6× but does
 **not** uniformly improve accuracy — the gain is category-dependent: brand×month
@@ -136,9 +137,9 @@ explained by the signal-to-noise trade-off of finer granularity (see
 `fig2_granularity.png`). energidrikke reaches **11.4% WMAPE**, near the ≤15%
 industry target.
 
-### 6.5.3 Statistical baselines and the SRQ4 comparison `[PENDING APPROVAL]`
+### 6.5.3 Statistical baselines and the SRQ4 comparison
 
-<!-- DRAFT pending approval. Numbers factual, from scripts/srq1_baselines_stat.py;
+<!-- Approved by Enrico 2026-06-24. Numbers factual, from scripts/srq1_baselines_stat.py;
 results _05_results_srq1/stat_baselines.{csv,md}. -->
 
 ARIMA (statsmodels SARIMAX(1,1,1) on log sales) and Prophet were fitted per brand
@@ -160,9 +161,9 @@ on back-transformation. Prophet is therefore unreliable on this panel and ARIMA 
 treated as the primary traditional baseline; the danskvand result (Prophet 16.9%)
 is the one category where an additive-seasonality model is competitive.
 
-### 6.5.4 Operational profile and calibration `[PENDING APPROVAL]`
+### 6.5.4 Operational profile and calibration
 
-<!-- DRAFT pending approval. Numbers from scripts/srq1_profiling.py and
+<!-- Approved by Enrico 2026-06-24. Numbers from scripts/srq1_profiling.py and
 srq1_calibration.py; results _05_results_srq1/profiling.* and calibration.*. -->
 
 **Operational cost (≤8 GB claim).** Peak RAM (tracemalloc) on the largest matrix is
@@ -184,6 +185,33 @@ usable confidence signal for the agentic layer.
   not run for every brand (cost) — the reported baselines use the protocol in §6.5.3.
 - Mean-MAPE and mean interval-width are omitted (degenerate on low-volume series);
   WMAPE, median per-series MAPE, and empirical coverage are the reported metrics.
+
+### 6.5.6 Selected configuration per category
+
+<!-- Approved by Enrico 2026-06-24. The thesis adopts the best (model × granularity)
+configuration PER category rather than one global setting — consistent with the
+specialised-models finding. Numbers from _05_results_srq1/tuned_summary.md. -->
+
+Because the granularity gain is category-dependent (§6.5.2), the thesis does **not**
+impose a single global representation. Instead it selects, for each category, the
+(model × granularity) configuration with the lowest test WMAPE — a per-category
+specialisation directly consistent with the SRQ1 finding that category-specific
+models outperform a one-size-fits-all setup. The retained configurations are:
+
+| Category | Selected model | Selected granularity | Test WMAPE |
+|---|---|---|---|
+| CSD | XGBoost | brand × month | **16.5%** |
+| danskvand | XGBoost | brand × chain | **22.0%** |
+| energidrikke | XGBoost | brand × month | **11.4%** |
+| RTD | XGBoost | brand × month | **31.0%** |
+
+XGBoost is the model of choice in every category; three categories forecast best at
+the aggregated brand×month level, while danskvand benefits from the finer
+brand×chain representation. Both matrix granularities are retained in the
+repository (`_03`, `_04`) so each category is trained on its selected one; the
+pipeline and feature set are identical across categories, so the comparison remains
+controlled. This mixed-granularity selection is a deliberate methodological choice,
+stated as such, not an inconsistency.
 
 ---
 

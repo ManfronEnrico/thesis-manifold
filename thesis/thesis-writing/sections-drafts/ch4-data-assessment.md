@@ -105,11 +105,10 @@ CSD is the worked category. The structural counts and the stationarity, seasonal
 
 These parameters are EDA-driven rather than theory-first; their academic justification is developed in the modelling chapter, and their empirical (not theoretical) origin is stated honestly as a limitation.
 
-### 4.3.6 Per-category EDA — danskvand, energidrikke, RTD `[PENDING APPROVAL]`
+### 4.3.6 Per-category EDA — danskvand, energidrikke, RTD
 
-<!-- DRAFT pending human approval. Numbers are factual, recomputed locally under
-DVH EXCL. HD from the regenerated matrices (source: thesis/data/_03_engineered_dvhexclhd/
-eda_findings_dvhexclhd.md, 2026-06-23). Prose to be reviewed before finalisation. -->
+<!-- Approved by Enrico 2026-06-24. Numbers factual, recomputed locally under
+DVH EXCL. HD (source: thesis/data/_03_engineered_dvhexclhd/eda_findings_dvhexclhd.md). -->
 
 The three proof-of-concept categories were taken through the identical pipeline and their EDA recomputed under the corrected DVH EXCL. HD scope, closing the gap previously flagged in §4.6.
 

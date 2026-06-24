@@ -27,8 +27,11 @@ snapshot — no Prometheus/Nika needed.
 | Ch6 §6.5.3 SRQ4 comparison | ✅ COMPLETED | ML beats ARIMA 3/4 categories |
 | RAM/latency profiling | ✅ COMPLETED | 2cfcc38; all models ≪8GB |
 | Calibration / prediction intervals (SRQ2) | ✅ COMPLETED | 07803f4; CSD 90→90.5% coverage |
-| Ch7/Ch8 drafting | ⛔ BLOCKED | needs NEW agentic A/B results (not fabricate) |
-| Agentic System A/B code (local + stub) | 🔮 FUTURE | large refactor; partly PROMETHEUS-DEP data layer |
+| Ch4 §4.3.6 + Ch6 §6.5 prose | ✅ APPROVED | Enrico 2026-06-24; markers removed |
+| Per-category granularity decision | ✅ DECIDED | Ch6 §6.5.6: CSD/energi/RTD brand×month, danskvand brand×chain |
+| Prometheus access | ➖ OUT OF SCOPE | not needed (local snapshot canonical); not available |
+| Ch7/Ch8 drafting | ⛔ BLOCKED | needs agentic A/B run (local harness + LLM, NOT Prometheus) |
+| Agentic System A/B code (local) | 🔮 FUTURE | next phase; runs on local artifacts + forecasts |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
 | Ch6/Ch7/Ch8 from regenerated results | 🔮 FUTURE | after benchmark |

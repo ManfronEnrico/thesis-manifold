@@ -9,7 +9,7 @@
 6. Key finding: **"more rows = better" is false** — granularity gain is category-dependent (brand wins CSD/energi/RTD, chain wins danskvand).
 7. All models run in tens-of-MB RAM (≤8 GB claim non-binding); conformal intervals give ~90% coverage for CSD (SRQ2 signal).
 8. 18 commits on `enrico/local-backup` (NOT pushed). Nothing finalized as prose without approval — thesis prose is all `[PENDING APPROVAL]`.
-9. Loop stopped because remaining work is genuinely blocked: Ch7/Ch8 need NEW agentic A/B results; the System A/B refactor's data layer is PROMETHEUS-dependent.
+9. Enrico (2026-06-24): approved the prose; chose PER-CATEGORY granularity; Prometheus not needed (local snapshot is canonical). Remaining work = the agentic A/B experiment (local harness + LLM, no Prometheus) → Ch7/Ch8.
 10. Backup folder "thesis meaningful copy" exists; everything here is reversible via git.
 
 ---
@@ -70,16 +70,21 @@ PROMETHEUS-DEP); per-series quantile intervals; full per-brand ARIMA sweep;
 ## 5. Chapter completion %
 Ch1 60 · Ch2 60 · Ch3 60 · Ch4 78 · Ch5 55 · **Ch6 65** · Ch7 10 · Ch8 10 · Ch9 10 · Ch10 10.
 
-## 6. Blockers — exact unblock actions
-- **PROMETHEUS** (live Nielsen data platform): blocks fresh/expanded Nielsen pulls
-  (weekly data, more categories, fields absent from `data/raw`). Unblock = obtain
-  Prometheus access. All current work used the local snapshot instead.
-- **NIKA** (access gatekeeper): regenerate the Azure client secret
-  (`docs/notes/2026_04_20-nielsen_data_access_strategy.md`). Needed for Prometheus.
-- **HUMAN APPROVAL**: every thesis-prose draft this run is `[PENDING APPROVAL]`
-  (Ch4 §4.3.6, all of Ch6 §6.5). Review and approve/finalize.
-- **Agentic A/B results**: Ch7/Ch8 need the System A/B experiment re-run; that
-  system is being rebuilt and its data layer needs the Prometheus stub designed.
+## 6. Blockers — status (updated 2026-06-24 with Enrico's answers)
+- **PROMETHEUS** (live Nielsen data platform): access is NOT available — and NOT
+  needed. The thesis runs entirely on the local `data/raw` snapshot, which is the
+  canonical source. Prometheus is therefore OUT OF SCOPE, not a blocker. (Only
+  fresh/expanded pulls would need it, and none are required.)
+- **NIKA** (access gatekeeper): not on the critical path (Prometheus not needed).
+- **HUMAN APPROVAL**: RESOLVED — Enrico approved the drafts (Ch4 §4.3.6, Ch6 §6.5);
+  markers removed, sections marked approved 2026-06-24.
+- **GRANULARITY DECISION**: RESOLVED — best (model × granularity) selected PER
+  category (Ch6 §6.5.6): CSD/energidrikke/RTD = brand×month, danskvand = brand×chain;
+  XGBoost throughout. Both `_03` and `_04` retained.
+- **Remaining real blocker — Agentic A/B results** (Ch7/Ch8): need the System A/B
+  experiment run. This requires the agentic harness (being rebuilt) + LLM API, but
+  runs on LOCAL artifacts + the forecasting outputs — NO Prometheus dependency. This
+  is in-scope local work for the next phase.
 
 ## 7. Assumptions made (to avoid waiting)
 - WMAPE is the primary metric; mean-MAPE omitted as degenerate.
