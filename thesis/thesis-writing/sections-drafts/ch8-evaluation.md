@@ -1,6 +1,9 @@
 # Chapter 8 — Experimental Evaluation
-> Status: BULLET POINT SKELETON — not prose yet
-> Last updated: 2026-03-14
+> Status: SKELETON + LEVEL 1 (§8.2.5) and LEVEL 3 (§8.4.4) RESULTS written from real
+> runs (2026-06-24; _05_results_srq1/). Level 2 (§8.3, LLM-as-Judge) and the
+> failure-mode analysis (§8.4.3) need an LLM API and are deferred to the agentic
+> phase. Design bullets otherwise unchanged.
+> Last updated: 2026-06-24
 
 ---
 
@@ -31,15 +34,22 @@
 - Naïve seasonal: last year's same week (simple but competitive in seasonal FMCG data)
 - Manifold descriptive baseline: descriptive analytics output from current Manifold AI tool (SRQ4 — requires access to baseline outputs)
 
-### 8.2.4 SRQ3 ablation: consumer signal contribution
-- Run LightGBM (best expected ML model) with and without Indeks Danmark features
-- Report MAPE improvement attributable to consumer signals
-- Cite: Customer Segmentation + Sales Prediction 2023; Cost-Aware 3PL Forecasting (Xu et al.) for contextual signal value
+### 8.2.5 Results (Level 1 — SRQ1)
 
-### 8.2.5 Expected results
-*(to be filled once data available)*
-- Hypothesis: LightGBM + consumer signals achieves MAPE ≤12%; pure ARIMA ≥20%; ensemble ≤15%
-- Hypothesis: consumer signals provide ~5–10% MAPE improvement on retailers with strong Indeks Danmark alignment
+<!-- Factual, from scripts/srq1_benchmark*.py + srq1_baselines_stat.py on the
+corrected DVH EXCL. HD matrices; results thesis/data/_05_results_srq1/. Approved
+configuration per Ch6 §6.5.6. Metric = WMAPE (volume-weighted); see §6.5.1 on why
+mean-MAPE is omitted. -->
+
+On the selected per-category configuration (Ch6 §6.5.6), tuned **XGBoost** is the
+best model in every category. Test WMAPE: CSD 16.5%, danskvand 22.0%, energidrikke
+**11.4%** (≈ the ≤15% industry target), RTD 31.0%. Against the traditional
+baselines, the ML model beats ARIMA (CSD 24.2%, danskvand 33.4%, energidrikke
+15.7%, RTD 48.2%) in three of four categories; for danskvand an additive
+Prophet model (16.9%) is competitive. Every model beats the SeasonalNaive
+baseline (e.g. CSD 39.9%, RTD 58.8%), confirming genuine learned skill rather than
+trend persistence. SHAP attributes the forecasts chiefly to `lag_1` (last-month
+sales) and `weighted_distribution` (shelf availability) across all categories.
 
 ---
 
@@ -52,7 +62,7 @@
   1. **Accuracy**: is the forecast number consistent with the stated confidence?
   2. **Calibration quality**: does the recommendation correctly communicate uncertainty?
   3. **Actionability**: does the recommendation give the category manager a clear action?
-  4. **Relevance**: is the consumer context used appropriately?
+  4. **Relevance**: is the provided context used appropriately?
   5. **Clarity**: is the recommendation written clearly and concisely?
 - Cite: ANAH evaluation framework; Humans vs. LLMs (IJF 2024)
 
@@ -94,11 +104,24 @@
 - Deliberately trigger: API timeout (synthesis), memory pressure (all models loaded simultaneously), missing data (incomplete Nielsen week)
 - Document agent recovery behaviour: does the Coordinator handle gracefully? Does the system fall back to the next-best model?
 
-### 8.4.4 Expected results
-*(to be filled)*
-- Hypothesis: peak RAM 4–6GB (within constraint); LightGBM + feature set is the bottleneck
-- Hypothesis: training latency ~10–20 min (one-time); inference latency ~30–90 seconds per request
-- Hypothesis: API timeout handled gracefully; model failure falls back correctly
+### 8.4.4 Results (Level 3 — operational)
+
+<!-- Factual, from scripts/srq1_profiling.py; results _05_results_srq1/profiling.*. -->
+
+Peak RAM (tracemalloc) is in the **tens of MB** for every model — Ridge 1.5,
+LightGBM 18.7, XGBoost 0.2, ARIMA 0.5 MB — i.e. three orders of magnitude below
+the 8 GB ceiling; the constraint is non-binding at this data scale (a different
+result from the hypothesised 4–6 GB, because the corrected matrices are far
+smaller than the all-markets ones). Training latency is seconds, not minutes
+(XGBoost ~1.7 s, LightGBM ~7.7 s with its tuned `n_estimators`); inference is
+~16 ms for XGBoost. The Synthesis Agent adds only structured arithmetic plus,
+optionally, one LLM API call (~1–3 s, no local RAM). The end-to-end pipeline
+therefore runs comfortably within the operational budget. Note: tracemalloc
+captures Python-level allocations; native LightGBM/XGBoost C++ buffers are
+additional but small at this scale.
+
+*(Failure-mode analysis §8.4.3 — API timeout / fallback — is part of the agentic
+harness evaluation and is run with the LLM-dependent layer.)*
 
 ---
 
@@ -120,7 +143,7 @@
 |---|---|
 | SRQ1 | Level 1: MAPE/RMSE/MAE vs. baselines; Level 3: RAM + latency within constraints |
 | SRQ2 | Level 2: LLM-as-Judge scores; calibration coverage; Level 3: synthesis latency |
-| SRQ3 | Level 1 ablation: MAPE with vs. without consumer signals |
+| SRQ3 | Not addressed here; integration readiness is addressed in Ch3 and Ch5 |
 | SRQ4 | Level 2 comparison: AI system vs. human descriptive baseline on recommendation quality |
 
 ---

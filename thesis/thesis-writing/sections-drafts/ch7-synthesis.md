@@ -1,13 +1,17 @@
 # Chapter 7 — Context-Aware Decision Synthesis
-> Status: BULLET POINT SKELETON — not prose yet
-> Last updated: 2026-03-14
+> Status: SKELETON + §7.2.3 DETERMINISTIC SYNTHESIS RESULTS written from real
+> outputs (2026-06-24; scripts/srq2_synthesis.py → thesis/data/_06_results_srq2/).
+> The LLM recommendation text (§7.3, §7.5) and LLM-as-Judge evaluation (§7.6) need
+> an LLM API and are deferred to the agentic-harness phase. Architecture bullets
+> (§7.1–7.2.2) unchanged.
+> Last updated: 2026-06-24
 
 ---
 
 ## 7.1 The synthesis problem
 
 - After 5 models each produce a point forecast + prediction interval, a decision-maker needs a single actionable recommendation — not 5 competing numbers
-- The synthesis problem: how to aggregate heterogeneous ML outputs + consumer context signals into a confidence-scored, natural language recommendation
+- The synthesis problem: how to aggregate heterogeneous ML outputs into a confidence-scored, natural language recommendation
 - This is the core SRQ2 question: *How can an LLM synthesise multi-model forecasts into a confidence-scored recommendation?*
 - Analogy: MCDM (Multi-Criteria Decision Making) — weight and aggregate multiple indicators into a ranked decision
 - Cite: Hybrid MCDM + ML Supplier Selection paper; Hybrid AI + LLM Industrial paper
@@ -21,7 +25,6 @@
 | Input | Source | Format |
 |---|---|---|
 | Model forecasts (5×) | Forecasting Agent | {model_name: {point_forecast, lower_90, upper_90, MAPE_validation}} |
-| Consumer signals | Indeks Danmark Agent | {retailer_segment: demand_index, trend_direction, confidence} |
 | Historical context | Nielsen data | last_N_periods actuals, seasonality flags |
 | Market context | Coordinator prompt | product category, retailer, planning horizon |
 
@@ -38,16 +41,10 @@
 - Calibration set: validation period actuals vs. stated intervals
 - Output: calibrated 90% prediction interval with empirically validated coverage
 
-**Step 3 — Consumer signal adjustment**
-- If Indeks Danmark consumer demand index for the retailer's primary segment is directionally consistent with model forecast → confidence boost
-- If consumer signals diverge from model consensus → confidence penalty + flagged uncertainty
-- Cite: Customer Segmentation + Sales Prediction 2023; Cost-Aware 3PL Forecasting 2024 (Xu et al.)
-
 **Step 4 — Confidence score computation**
 - Composite confidence score (0–100):
   - 40% weight: calibrated interval width (narrower = higher confidence)
   - 30% weight: inter-model agreement (lower spread = higher confidence)
-  - 30% weight: consumer signal alignment (aligned = higher confidence)
 - Map to 3-tier natural language: High (≥70), Moderate (40–69), Low (<40)
 - Cite: Kuleshov et al. 2018, Do Forecasts as Prediction Intervals Improve Planning (2010)
 
@@ -55,11 +52,42 @@
 - LLM (claude-sonnet-4-6 via API) receives structured synthesis context:
   - Ensemble forecast + calibrated interval
   - Confidence score + tier
-  - Consumer signal summary
   - Historical actuals for comparison
 - LLM generates: 2–3 sentence natural language recommendation + stock action suggestion
 - Temperature: 0 (deterministic for reproducibility)
 - Prompt template: stored in agent code, versioned
+
+### 7.2.3 Deterministic synthesis results
+
+<!-- Factual, from scripts/srq2_synthesis.py; results thesis/data/_06_results_srq2/.
+Models trained per the Ch6 §6.5.6 selected configuration; ensemble = inverse-
+validation-WMAPE weights; interval = split-conformal 90% on the ensemble. -->
+
+The non-LLM core of the Synthesis Agent was implemented and run on the test set for
+all four categories: per (brand[, chain], month) it produces an inverse-WMAPE-weighted
+ensemble forecast, an inter-model agreement score, a split-conformal 90% interval,
+and a composite confidence score (30% agreement + 40% interval tightness + 30% model
+accuracy) mapped to a High/Moderate/Low tier.
+
+| Category | n series-months | mean confidence | Moderate / Low | 90% interval coverage |
+|---|---|---|---|---|
+| CSD | 845 | 44.9 | 72% / 28% | 96.6% |
+| danskvand | 966 | 43.6 | 70% / 30% | 97.8% |
+| energidrikke | 205 | 47.1 | 75% / 25% | 80.0% |
+| RTD | 324 | 38.5 | 45% / 55% | 90.7% |
+
+Two observations. First, the conformal ensemble interval is **well-to-conservatively
+calibrated** (empirical coverage 80–98% against the 90% nominal), so the uncertainty
+the agent communicates is trustworthy. Second, the composite confidence skews to the
+**Moderate** tier with no High-confidence forecasts under the current thresholds —
+because the (deliberately wide) 90% interval keeps the tightness term low. This is a
+property of the scoring weights, not of the forecasts; the tier cut-offs are a
+calibration choice to revisit. Operationally the engine already supports the SRQ2
+goal: it triages each forecast by confidence so the agentic layer can surface
+reliable forecasts and route Low-confidence ones (notably the more volatile RTD,
+55% Low) to human review. The natural-language recommendation and the LLM-as-Judge
+quality assessment (§7.3, §7.6) sit on top of this structured output and require an
+LLM API; they are run in the agentic-harness phase.
 
 ---
 
@@ -83,7 +111,6 @@ PRODUCT: {product_name} | RETAILER: {retailer_name} | WEEK: {target_week}
 
 ENSEMBLE FORECAST: {point_forecast} units (90% interval: {lower} – {upper})
 CONFIDENCE: {score}/100 ({tier}) — based on {inter_model_spread} model agreement, {calibration_quality} calibration
-CONSUMER SIGNAL: {segment_name} demand index {direction} ({consumer_confidence})
 HISTORICAL: Last 4 weeks actuals: {actuals_list}
 
 Generate a recommendation.
@@ -95,7 +122,7 @@ Generate a recommendation.
 
 - Progressive uncertainty disclosure (show interval, not just point) — cite AI-augmented decision making DSR 2024
 - Human override preserved — synthesis output is a recommendation, not an automated order
-- Contextualised explanation (consumer signals included in rationale)
+- Contextualised explanation included in rationale
 - Confidence calibration (post-hoc isotonic regression) — cite Kuleshov 2018
 
 ---
@@ -124,7 +151,7 @@ Generate a recommendation.
 | SRQ | How Ch.7 addresses it |
 |---|---|
 | SRQ2 | Direct answer: multi-model synthesis → calibrated confidence score → LLM recommendation |
-| SRQ3 | Consumer signals integrated in Step 3; ablation test (with vs. without) quantifies their contribution |
+| SRQ3 | Not addressed here; integration readiness is addressed in Ch3 and Ch5 |
 | SRQ4 | Synthesis output (natural language + confidence) is the proposed alternative to descriptive BI dashboards |
 
 ---
