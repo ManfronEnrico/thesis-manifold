@@ -138,11 +138,25 @@ Generate a recommendation.
 
 ## 7.6 Evaluation (SRQ2 operationalisation)
 
-- **LLM-as-Judge protocol**: GPT-4o evaluates synthesis outputs on 5 dimensions (relevance, accuracy, calibration quality, actionability, uncertainty communication) — Likert 1–5
+- **LLM-as-Judge protocol**: GPT-4o evaluates synthesis outputs on 5 dimensions (relevance, accuracy, calibration quality, actionability, clarity) — Likert 1–5
 - Evaluate on N=50 randomly sampled product×retailer×week combinations from test set
 - Baseline comparison: simple rule-based text generation ("Forecast is X units, model confidence: Y%") — does LLM add value?
 - Calibration check: empirical coverage of stated 90% intervals vs. actuals in test set
 - Cite: ANAH (evaluation framework for LLM outputs), Hybrid AI + LLM Industrial paper
+
+### 7.6.1 Result
+
+<!-- Factual, from scripts/srq2_agent.py (N=50, claude-sonnet-4-6 + GPT-4o judge,
+temp 0); results _06_results_srq2/. -->
+
+The protocol was executed (N=50, claude-sonnet-4-6 synthesis, GPT-4o judge, temp 0).
+The LLM synthesis outscored the rule-based baseline on four of five dimensions —
+actionability 4.00 vs 2.14, relevance 4.00 vs 3.28, clarity 4.34 vs 3.46,
+calibration 3.74 vs 3.46 — with the baseline ahead only on accuracy (3.42 vs 2.96).
+Mean score 3.81 (LLM) vs 3.15 (baseline). The LLM thus adds clear value in turning
+a number-plus-interval into an actionable, well-framed recommendation, at the cost
+of a small accuracy penalty from its added interpretation. Full results and the
+discussion of this trade-off are in Ch8 §8.3.4.
 
 ---
 

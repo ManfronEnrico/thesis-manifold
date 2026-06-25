@@ -33,7 +33,10 @@ snapshot — no Prometheus/Nika needed.
 | SRQ2 synthesis engine (deterministic) | ✅ COMPLETED | scripts/srq2_synthesis.py → _06_results_srq2; coverage 80-98% |
 | Ch7 §7.2.3 synthesis results | ✅ WRITTEN | 886559e; from real outputs |
 | Ch8 §8.2.5 (Level 1) + §8.4.4 (Level 3) | ✅ WRITTEN | 886559e; from real runs |
-| LLM rec-text / LLM-as-Judge / SRQ4 code-as-action | ⛔ BLOCKED | needs LLM API (NOT Prometheus) — the real remaining blocker |
+| SRQ2 LLM layer (Synthesis Agent + LLM-as-Judge) | ✅ COMPLETED | 759f678; LLM beats baseline 4/5 dims (N=50) |
+| Ch7 §7.6.1 + Ch8 §8.3.4 (Level 2) | ✅ WRITTEN | from real GPT-4o judge results |
+| SRQ4 code-as-action baseline | ⛔ BLOCKED | needs E2B sandbox key (not in .env) |
+| Human-analyst baseline (Ch8 §8.3.3) | ⛔ BLOCKED | needs Manifold team member |
 | Agentic harness (System A/B) | 🔮 FUTURE | local + LLM API; consumes _05/_06 outputs |
 | Ch4 absolute-volume number fix (27.4B etc.) | ✅ COMPLETED | cb2e718, docx regenerated |
 | Ch4 §4.3 EDA for danskvand/energi/RTD | 🔄 IN PROGRESS | numbers ready in eda_findings |
@@ -54,8 +57,8 @@ snapshot — no Prometheus/Nika needed.
 | 4 Data assessment | 78 | abs-numbers fixed; 3-cat §4.3 EDA prose pending |
 | 5 Framework design | 55 | prose draft, prototype rebuilding |
 | 6 Model benchmark | 65 | §6.5 fully drafted [PENDING APPROVAL]: ML+baselines+SHAP+SRQ4+RAM+calibration. §6.6/6.7 interpretive prose pending approval |
-| 7 Synthesis | 45 | §7.2.3 deterministic synthesis results written; LLM parts need API |
-| 8 Evaluation | 45 | Level 1 + Level 3 written from real runs; Level 2 needs API |
+| 7 Synthesis | 65 | §7.2.3 + §7.6.1 written from real results; LLM judge done |
+| 8 Evaluation | 60 | Levels 1+2+3 written from real runs; human baseline + SRQ4 sandbox pending |
 | 9 Discussion | 10 | skeleton |
 | 10 Conclusion | 10 | skeleton |
 
