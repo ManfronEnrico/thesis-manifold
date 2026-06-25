@@ -1,69 +1,102 @@
 # Chapter 10 — Conclusion
-> Status: BULLET POINT SKELETON — not prose yet
-> Last updated: 2026-03-14
+> Status: DRAFT written from real results 2026-06-24 (§10.1 SRQ answers). RQs v4.
+> SRQ4 partial (code-as-action sandbox pending). Pending human review.
+> Last updated: 2026-06-24
 
 ---
 
 ## 10.1 Summary of contributions
 
-- Restate the main RQ: *How can AI systems be designed to provide reliable predictive decision-support in real-world business environments under computational constraints?*
-- Answer each SRQ in 2–3 sentences based on findings:
-  - SRQ1: [best model, MAPE achieved, RAM footprint — within/at/near constraint]
-  - SRQ2: [confidence calibration coverage, LLM-as-Judge score, quality vs. baseline]
-  - SRQ3: [consumer signal contribution to MAPE, which retailer segments benefited]
-  - SRQ4: [AI system vs. descriptive BI comparison — dimensions of superiority and where human judgment still dominates]
-- State the thesis's position: the system achieves [X] on all 4 SRQs, constituting a validated proof-of-concept for AI-augmented demand forecasting in SME retail contexts
+This thesis asked: *How can production-oriented agentic decision-support systems
+without native predictive capabilities be extended with lightweight forecasting
+models to support reliable, forecast-informed, and cost-justified decision-making
+under computational and deployment constraints?* The answer it substantiates is
+that a **lightweight gradient-boosted forecasting substrate, exposed through a
+structured, calibrated interface and synthesised by an LLM, extends a
+non-predictive agentic system reliably and within an SME-grade resource budget** —
+with the dedicated-model layer justified over both classical and template baselines
+on the decision-relevant dimensions. The sub-questions resolve as follows.
+
+- **SRQ1 (models & efficiency).** Tuned XGBoost is the best lightweight model in
+  every category (test WMAPE 11.4–31.0%; energidrikke near the ≤15% target),
+  beating LightGBM, Ridge and SeasonalNaive. Category specialisation matters:
+  the best *representation* differs by category (brand×month for CSD/energidrikke/
+  RTD, brand×chain for danskvand), so "more data" via finer granularity is not
+  uniformly better. All models run in tens of MB — the ≤8 GB constraint is
+  non-binding.
+- **SRQ2 (structured interface).** Forecasts are exposed with point estimate,
+  split-conformal 90% interval (empirical coverage 80–98%), and a confidence tier;
+  an LLM synthesises these into recommendations that an independent GPT-4o judge
+  rates above a rule-based template on four of five dimensions (mean 3.81 vs 3.15),
+  establishing reliability and traceability with a usefulness/accuracy trade-off
+  to manage.
+- **SRQ3 (integration readiness).** Assessed, not enacted: the substrate is
+  reproducible and tool-call-ready; the gap to live integration with the Prometheus
+  Graph Engine is operational (access/credentials), not architectural.
+- **SRQ4 (dedicated ML vs baselines).** Dedicated ML beats the ARIMA traditional
+  baseline in three of four categories; the code-as-action LLM comparator — the
+  central v4 test — requires an execution sandbox (E2B) not configured here and is
+  the main open empirical item. On the evidence gathered, dedicated integration is
+  justified over classical and templated alternatives.
+
+The thesis thus delivers a working DSR design artefact plus transferable design
+knowledge for cost-justified, forecast-informed agentic decision-support under
+resource constraints; the code-as-action comparison and a production integration
+remain for a second cycle.
 
 ---
 
 ## 10.2 Theoretical contribution (design principles)
 
-- Propose 3–5 generalisable design principles from the thesis findings (DSR design theory output):
-  1. **Sequential execution principle**: ML pipeline RAM budgets must be planned assuming sequential (not concurrent) model execution; load–run–unload protocol enables sub-8GB multi-model forecasting
-  2. **Post-hoc calibration principle**: confidence scoring in recommendation systems must use held-out calibration data; raw model uncertainty estimates are systematically miscalibrated
-  3. **Consumer signal integration principle**: demand forecasting accuracy improves when external consumer demand indices are included as features; survey-derived consumer segments are a viable proxy where transaction loyalty data is unavailable
-  4. **LLM-as-synthesiser principle**: LLM orchestration adds measurable decision quality value when it translates calibrated multi-model outputs into contextualised natural language recommendations; LLMs should not replace ML models but synthesise their outputs
-  5. **Computational transparency principle**: AI pipeline artefacts evaluated for practical deployment should report RAM and latency alongside accuracy metrics; these are decision-relevant properties for SME adopters
-- Cite: Pathways for Design Research on AI (ISR 2024), AI-Based DSR Framework 2024, AI-augmented decision making DSR 2024
+- Propose generalisable design principles (DSR design-theory output):
+  1. **Sequential execution principle**: ML pipeline RAM budgets must be planned for sequential, not concurrent, model execution; a load, run, unload protocol enables sub-8GB multi-model forecasting
+  2. **Delegation-over-generation principle**: the LLM should orchestrate and delegate numerical prediction to dedicated models rather than generate predictions, or its own forecasting code, itself, when correctness, consistency, and replicability matter
+  3. **Cost-justification principle**: dedicated-model integration should be adopted only where it demonstrably beats a code-as-action LLM baseline on the decision-relevant dimensions at justified cost and latency; otherwise an LLM-plus-code approach may suffice
+  4. **Structured-interface reliability principle**: exposing forecasts through a structured tool/action interface with output validation and a recorded tool-call-to-recommendation mapping is what makes agentic numerical decision-support auditable
+  5. **Computational transparency principle**: deployment-oriented AI artefacts should report RAM, cost, and latency alongside accuracy; these are decision-relevant properties for SME adopters
+- Note: uncertainty calibration is a design consideration deferred to future work (see §10.5)
+- Cite: DSR design-theory sources (Hevner et al., 2004; Peffers et al., 2007; plus AI-DSR references)
 
 ---
 
 ## 10.3 Practical recommendations for Manifold AI
 
-- Phase 1: integrate the sequential ML ensemble as the predictive backbone of the AI Colleague tool (replace/augment current descriptive analytics)
-- Phase 2: add Indeks Danmark consumer signal enrichment for retailers with available segment data
-- Phase 3: deploy Synthesis Agent as a recommendation layer on top of the predictive outputs
-- Infrastructure: deployable on M2 MacBook (≤8GB RAM) or equivalent cloud instance (t3.large, 8GB RAM, ~$0.10/hr) — no GPU required
+- Integrate the lightweight forecasting substrate as a callable tool in the production agentic system (Prometheus) via its Graph Engine, exposing forecasts and uncertainty through the structured interface
+- Adopt dedicated-model integration where the SRQ4 evaluation shows it beats the code-as-action baseline on correctness, consistency, and replicability at acceptable cost; otherwise rely on the LLM-plus-code approach
+- Infrastructure: deployable within an approximately 8GB RAM budget (for example a t3.large-class cloud instance), no GPU required [cloud-pricing citation: resolve in global references pass]
 
 ---
 
 ## 10.4 Limitations recap
 
-- Single empirical context (Danish CSD market, one partner company)
-- One DSR design cycle — findings require validation across additional contexts before generalisation
-- LLM API dependency: Synthesis Agent requires internet access and Anthropic API availability
+- Empirical context bounded to the Danish beverage retail market (five Nielsen categories) and a single partner company
+- One DSR design cycle; findings require validation across additional contexts before generalisation
+- SRQ4 evaluation at pilot scale (on the order of fifty prompts), not a full study; results provisional pending the final improved models
+- SRQ3 assessed as integration readiness (production access pending), not a live integration
+- LLM API dependency for the agentic layer; uncertainty calibration is designed but not empirically validated
 
 ---
 
 ## 10.5 Future research
 
-- Second DSR cycle: refine design principles based on this evaluation and re-implement
-- Extend to other FMCG categories: grocery, dairy, beer — same architecture, different feature profiles
-- Adapt for streaming data: real-time pipeline for weekly automated forecasts
-- Validate consumer signal methodology with alternative data sources (loyalty cards, scanner data)
+- Full-scale SRQ4 evaluation across the complete prompt set; a second DSR cycle refining the design principles
+- Active integration into the production system (Prometheus Graph Engine) once access is granted: a before/after study on reliability and cost
+- Empirical calibration of forecast uncertainty (post-hoc isotonic regression), currently designed only
+- Adapt for streaming/real-time forecasting (currently monthly batch processing)
+- Code-as-action as the artefact's *own* action format (replacing JSON function-calling), distinct from its use as the SRQ4 baseline, where the prototype's 0% numerical hallucination under JSON makes the marginal benefit an open question (Wang et al., 2024)
 
 ---
 
 ## 10.6 Final statement
 
-- The thesis demonstrates that a resource-constrained, multi-agent AI system can meaningfully augment FMCG demand forecasting — not by replacing domain expertise, but by structuring and contextualising it
-- This positions AI not as a replacement for the category manager, but as a calibrated decision partner
-- Close with the IS research framing: the framework is a validated DSR artefact that advances IS design knowledge on AI-augmented decision making in SME retail contexts
+- The thesis demonstrates how a resource-constrained agentic decision-support system can be extended with lightweight forecasting, the LLM structuring and contextualising dedicated-model predictions rather than replacing domain expertise or generating the predictions itself
+- This positions AI as a calibrated decision partner, not a replacement for the category manager
+- Close with the IS research framing: a validated DSR artefact plus design knowledge on cost-justified, forecast-informed agentic decision-support in SME retail contexts
 
 ---
 
 ## Outstanding decisions
 
-- Exact language for the "answer" to each SRQ — depends on empirical results
+- Exact "answer" language for each SRQ, dependent on the final empirical results
 - Whether to include a one-page executive summary before Chapter 1 (not counted toward page limit)
-- Whether to add a reflective paragraph on the collaborative human-AI research process (relevant to philosophy of science section)
+- Whether to add a reflective paragraph on the collaborative human-AI research process (relevant to the philosophy-of-science section)

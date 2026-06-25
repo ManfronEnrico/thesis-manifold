@@ -59,8 +59,8 @@ snapshot — no Prometheus/Nika needed.
 | 6 Model benchmark | 65 | §6.5 fully drafted [PENDING APPROVAL]: ML+baselines+SHAP+SRQ4+RAM+calibration. §6.6/6.7 interpretive prose pending approval |
 | 7 Synthesis | 65 | §7.2.3 + §7.6.1 written from real results; LLM judge done |
 | 8 Evaluation | 60 | Levels 1+2+3 written from real runs; human baseline + SRQ4 sandbox pending |
-| 9 Discussion | 10 | skeleton |
-| 10 Conclusion | 10 | skeleton |
+| 9 Discussion | 55 | §9.1 interpretation + DP table written from real results |
+| 10 Conclusion | 55 | §10.1 SRQ answers written from real results |
 
 ## EXPERIMENTS LEDGER
 | # | Dataset | Models | Headline (best WMAPE, test) | Script | Output |
