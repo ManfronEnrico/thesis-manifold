@@ -72,11 +72,24 @@ sales) and `weighted_distribution` (shelf availability) across all categories.
 - Plot calibration curve (stated vs. empirical coverage across quantiles)
 - Cite: Kuleshov et al. 2018; Evaluating and Calibrating Uncertainty 2023 (MDPI Sensors)
 
-### 8.3.3 Human baseline comparison (SRQ4)
-- Present N=20 product×retailer×week cases to a human analyst (Manifold AI team member or category manager)
-- Human analyst produces their own recommendation using current descriptive BI tools
-- LLM-as-Judge evaluates both human and AI recommendations on same 5 dimensions
-- This provides the SRQ4 answer: does the AI multi-agent system match or exceed descriptive BI in recommendation quality?
+### 8.3.3 SRQ4 baseline — code-as-action agent (Prometheus), not a human analyst
+
+<!-- Scope change 2026-06-24 (Enrico): the human-analyst baseline is REMOVED from
+scope — not feasible within the timeline and never strictly in scope. The SRQ4
+comparator is the production code-as-action agent (Prometheus / Graph Engine),
+which the v4 RQs already designate as the baseline. -->
+
+The SRQ4 baseline is **not** a human analyst (that comparison is out of scope —
+infeasible within the project timeline). It is the **production code-as-action
+agent, Prometheus** (the Manifold/Royal Unibrew Graph Engine): a LangGraph +
+PydanticAI agent whose coder writes and executes SQL/Python in an E2B sandbox in an
+investigate-and-verify loop to answer a data/forecasting brief. SRQ4 therefore
+compares the **dedicated-model integration** (this thesis: an LLM that *delegates*
+forecasting to pre-trained XGBoost models exposed as a structured tool) against the
+**code-as-action baseline** (Prometheus: an LLM that *writes its own* forecasting
+code), on correctness, consistency, replicability, cost and latency over a common
+prompt set. Both run on the same Nielsen categories (CSD, danskvand, energidrikke,
+RTD); execution is local + sandbox, with no human-in-the-loop baseline.
 
 ### 8.3.4 Results (Level 2 — SRQ2)
 
