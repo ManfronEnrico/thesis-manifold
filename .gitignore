@@ -76,3 +76,6 @@ build/
 !docs/thesis/analysis/outputs_agentic/*.json
 .claude/settings.local.json
 .claude/logs/
+
+# External confidential code (Manifold/RU Graph Engine) — local working copy only
+graph-engine/
