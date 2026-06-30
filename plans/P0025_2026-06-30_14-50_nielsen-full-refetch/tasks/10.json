@@ -1,0 +1,12 @@
+{
+  "id": "10",
+  "subject": "Run full preprocessing pipeline for all 5 categories",
+  "description": "Run all 5 orchestrators in sequence. Each runs steps 1-6. Verify non-zero feature matrices in thesis/data/_03_engineered/nielsen/{CATEGORY}/.",
+  "activeForm": "Running full preprocessing pipeline",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "8",
+    "9"
+  ]
+}

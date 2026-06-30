@@ -4,7 +4,7 @@
 > New plans: `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`
 > Archived plans: `plans/.archive/`
 > Status tracked in plan frontmatter only — no outcome files, no folder movement on status change.
-> Next available P-ID: **P0023**
+> Next available P-ID: **P0027**
 
 ---
 
@@ -14,14 +14,17 @@
 
 | P-ID | Folder | Status | Detail |
 |------|--------|--------|--------|
-| **P0022** | `P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/` | in_progress | Phase 4 partial — 3/4 categories working; EDA replication next |
+| **P0026** | `P0026_2026-06-30_16-38_aggregation-grain-analysis/` | complete | Implemented brand×region×period grain (9 DVH geographic regions, MIN_PERIODS=24). CSD pipeline: 25,124 rows / 571 series — 10.6× more data than previous grain. |
+| **P0024** | `P0024_2026-06-30_12-40_market-filter-fix/` | complete | Fix DVH EXCL. HD market filter across all 5 Nielsen category preprocessing pipelines (CSD, Danskvand, Energidrikke, RTD, Totalbeer) |
+| **P0023** | `P0023_2026-06-30_12-38_csd-eda-critique/` | in_progress | EDA critique from predictive ML + FMCG perspective; 13 issues across P0/P1/P2; output doc pending |
+| **P0022** | `P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/` | in_progress | Phase 5 next: EDA replication for Energidrikke, Danskvand, RTD (data folder now clean) |
+| **P0017** | `P0017_2026-04-27_14-20_jupyter-notebook-path-centralization/` | in_progress | Path infra complete; remaining: notebook template (comparison §1-5, 7+ notebooks); data folder cleanup needed first |
 
 ### Blocked
 
 | P-ID | Folder | Blocked By |
 |------|--------|------------|
 | **P0005** | `P0005_2026-04-23_08-00_system-a-feature-eng-integration/` | Decision needed: packaging fix Option A vs B |
-| **P0017** | `P0017_2026-04-27_14-20_jupyter-notebook-path-centralization/` | P0022 Phase 2 completion (stable parquet outputs) |
 
 ### Paused
 

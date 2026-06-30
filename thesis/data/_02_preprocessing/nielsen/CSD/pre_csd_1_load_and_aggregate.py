@@ -5,9 +5,9 @@ Nielsen CSD Preprocessing — Step 1: Load and Aggregate
 PURPOSE
 =======
 Load all Nielsen CSD view parquet files (validated by Step 0), join them into a
-complete merged dataset, and aggregate to brand × period granularity. This step
-produces an intermediate aggregate table that feeds into Steps 2-6 for calendar
-fill, series filtering, feature engineering, split application, and indexing.
+complete merged dataset, and aggregate to brand × region × period granularity.
+This step produces an intermediate aggregate table that feeds into Steps 2-6 for
+calendar fill, series filtering, feature engineering, split application, and indexing.
 
 INPUT
 =====
@@ -20,10 +20,20 @@ From Step 0 (cached parquet views):
 OUTPUT
 ======
 Step 1 output (aggregate.parquet):
-  - Aggregated to brand × period granularity
-  - Joined across all market types (retail outlet types)
-  - Columns: brand, period_year, period_month, sales_units, sales_value,
-    sales_liters, promo_units, weighted_dist
+  - Aggregated to brand × market_id × period granularity
+  - Filtered to 9 DVH EXCL. HD geographic regions (REG. 1–9, mutually exclusive)
+  - Columns: brand, market_id, market_description, period_year, period_month,
+    sales_units, sales_value, sales_liters, promo_units, weighted_dist
+
+GRAIN DECISION (P0026, 2026-06-30)
+===================================
+  brand × region × period chosen over brand × period because:
+  - Enables regional predictive questions for Prometheus (e.g. "Forecast Faxe Kondi
+    sales in Copenhagen next quarter")
+  - 9 geographic regions are mutually exclusive → no double-counting
+  - Brand-total forecast = sum of regional forecasts
+  - 55% of brand×region series have ≥24 non-zero periods (viable for ML)
+  - Size tiers excluded (overlap with regions → double-count); Phase 2 enhancement
 
 LOGIC
 =====
@@ -105,8 +115,9 @@ from pre_csd_0_cache import validate_parquet_cache
 #     Range: 2022-10 to 2026-03 (42 monthly periods on Nielsen 4-4-5 week calendar).
 #
 # MARKET DIMENSION:
-#   - market_description: Retail outlet types (28 types: REMA 1000, NETTO, e-commerce, etc.).
-#     NOT a country filter (all data is Denmark). Aggregated across all markets.
+#   - market_description: Retail outlet types. Filter to "DVH EXCL. HD" — Nielsen's
+#     standard Danish grocery scope (supermarkets excl. hard discounters Aldi/Lidl).
+#     Per Nielsen metadata: "Unless the user specifies a particular market, always use DVH EXCL. HD".
 #
 # OUTPUT (this step):
 #   - Aggregates to brand × period granularity
@@ -121,6 +132,21 @@ from pre_csd_0_cache import validate_parquet_cache
 CATEGORY = "CSD"
 STEP_NUM = 1
 STEP_NAME = "Load and Aggregate"
+
+# 9 mutually exclusive geographic regions within DVH EXCL. HD scope.
+# Excludes size tiers (Superettes/Small/Large/Hypermarkets) and rollups
+# (EAST/WEST, national DVH EXCL. HD total) to prevent double-counting.
+DVH_REGION_IDS = {
+    1586000,  # DVH EXCL. HD - REG. 2 - KBH
+    1585996,  # DVH EXCL. HD - REG. 1 - SJÆLLAND NORD
+    1586002,  # DVH EXCL. HD - REG. 3 - SJÆLLAND SYD
+    1647654,  # DVH EXCL. HD - REG. 4 - SJÆLLAND VEST
+    1586001,  # DVH EXCL. HD - REG. 5 - FYN
+    1585998,  # DVH EXCL. HD - REG. 6 - SYD JYLLAND
+    1586003,  # DVH EXCL. HD - REG. 7 - ØST JYLLAND
+    1585997,  # DVH EXCL. HD - REG. 8 - NORD JYLLAND
+    1585999,  # DVH EXCL. HD - REG. 9 - VEST JYLLAND
+}
 
 # Parquet cache location validated by Step 0
 CACHE_VIEWS_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"
@@ -149,24 +175,21 @@ def load_and_aggregate(parquet_dir: Path) -> pd.DataFrame:
 	pd.DataFrame
 		Aggregated data with columns:
 		  - brand: Brand identifier (from product dimension)
+		  - market_id: Region identifier (one of 9 DVH EXCL. HD geographic regions)
+		  - market_description: Region name (e.g. "DVH EXCL. HD - REG. 2 - KBH")
 		  - period_year: Year (from period dimension)
 		  - period_month: Month (from period dimension)
-		  - sales_units: Summed sales units across all market types
-		  - sales_value: Summed sales value (DKK) across all market types
-		  - sales_liters: Summed sales volume (liters) across all market types
-		  - promo_units: Summed promotional units across all market types
-		  - weighted_dist: Mean ACV-weighted distribution across all market types
+		  - sales_units: Summed sales units within region
+		  - sales_value: Summed sales value (DKK) within region
+		  - sales_liters: Summed sales volume (liters) within region
+		  - promo_units: Summed promotional units within region
+		  - weighted_dist: Mean ACV-weighted distribution within region
 
 	NOTES
 	-----
-	This step merges all 4 Nielsen view tables (facts + 3 dimensions) into one
-	complete dataset. The merge preserves all rows from facts and joins relevant
-	dimensions. After joining, data is filtered to positive sales (non-zero units)
-	and then aggregated to brand × period granularity, combining data across all
-	market types (retail outlet channels like REMA 1000, NETTO, e-commerce, etc.).
-
-	The output is an intermediate aggregate ready for downstream feature engineering
-	(calendar fill, series filtering, feature creation, split application, indexing).
+	Aggregates to brand × region × period (not brand × period as previously).
+	Regions are mutually exclusive geographic segments — summing across regions
+	gives the correct national total without double-counting.
 	"""
 
 	print("  Loading view parquet files...")
@@ -180,18 +203,18 @@ def load_and_aggregate(parquet_dir: Path) -> pd.DataFrame:
 	print(f"  Periods shape: {periods.shape}")
 	print(f"  Markets shape: {markets.shape}")
 
-	# Join facts × product × period × market to create complete merged dataset.
-	# All dimensions are joined to preserve complete context before aggregation.
+	# Join facts × product × period × market
 	df = facts.merge(products[["product_id", "brand"]], on="product_id")
 	df = df.merge(periods[["period_id", "period_year", "period_month"]], on="period_id")
 	df = df.merge(markets[["market_id", "market_description"]], on="market_id")
 
-	# Filter to positive sales (non-zero units). Rows with zero sales are noise
-	# and excluded from aggregation.
+	# Filter to the 9 mutually exclusive geographic regions within DVH EXCL. HD.
+	df = df[df["market_id"].isin(DVH_REGION_IDS)].copy()
+
+	# Filter to positive sales only.
 	df = df[df["sales_units"] > 0].copy()
 
-	# Aggregate by brand × period, combining across all market types.
-	# This creates a monolithic dataset at brand × period granularity.
+	# Aggregate by brand × region × period.
 	agg_dict = {
 		"sales_units": "sum",
 		"sales_value": "sum",
@@ -200,9 +223,15 @@ def load_and_aggregate(parquet_dir: Path) -> pd.DataFrame:
 		"weighted_distribution": "mean",
 	}
 
-	aggregated = df.groupby(["brand", "period_year", "period_month"]).agg(agg_dict).reset_index()
-	aggregated.columns = ["brand", "period_year", "period_month", "sales_units", "sales_value",
-						 "sales_liters", "promo_units", "weighted_dist"]
+	aggregated = (
+		df.groupby(["brand", "market_id", "market_description", "period_year", "period_month"])
+		.agg(agg_dict)
+		.reset_index()
+	)
+	aggregated.columns = [
+		"brand", "market_id", "market_description", "period_year", "period_month",
+		"sales_units", "sales_value", "sales_liters", "promo_units", "weighted_dist",
+	]
 
 	return aggregated
 
@@ -251,10 +280,11 @@ def main():
 		input_shape = df.shape
 		print_file_load(CACHE_VIEWS_DIR, input_shape, load_elapsed)
 		print_info(f"Unique brands: {df['brand'].nunique()}")
+		print_info(f"Unique regions: {df['market_id'].nunique()}")
 		if len(df) > 0:
-			month_min = int(df['period_month'].min())
-			month_max = int(df['period_month'].max())
-			print_info(f"Date range: {df['period_year'].min()}-{month_min:02d} to {df['period_year'].max()}-{month_max:02d}")
+			df_sorted = df.sort_values(["period_year", "period_month"])
+			first, last = df_sorted.iloc[0], df_sorted.iloc[-1]
+			print_info(f"Date range: {int(first.period_year)}-{int(first.period_month):02d} to {int(last.period_year)}-{int(last.period_month):02d}")
 		else:
 			print_info(f"Date range: (no data)")
 

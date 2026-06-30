@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Fix market filter in CSD pre_csd_1_load_and_aggregate.py",
+  "description": "Add TARGET_MARKET=DVH EXCL. HD, market dim join, and market_description filter before groupby.",
+  "activeForm": "Fixing CSD market filter",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

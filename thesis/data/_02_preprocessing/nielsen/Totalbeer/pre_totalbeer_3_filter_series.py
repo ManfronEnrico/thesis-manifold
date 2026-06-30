@@ -33,11 +33,11 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from PATHS import THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outputs_dir
 from METADATA import describe_column
-from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
+from thesis.data._02_preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
 	print_step_summary, print_info
 )
-from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timing
+from thesis.data._02_preprocessing.nielsen.shared.timing_utils import log_step_timing
 
 # ============================================================================
 # METADATA DEFINITIONS

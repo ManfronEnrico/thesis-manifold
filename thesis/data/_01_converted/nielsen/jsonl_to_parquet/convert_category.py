@@ -64,16 +64,66 @@ def _is_up_to_date(src_jsonl: Path, dst_parquet: Path) -> bool:
     return dst_parquet.stat().st_mtime >= src_jsonl.stat().st_mtime
 
 
+def _clean_jsonl_lines(src_jsonl: Path):
+    """Yield clean lines from a JSONL file, skipping null-byte/empty lines.
+
+    Null-byte lines appear at the old-file boundary when a re-fetch overwrites
+    a previously larger file (OS doesn't truncate before the first write).
+    """
+    with open(src_jsonl, encoding="utf-8") as fh:
+        for line in fh:
+            stripped = line.strip()
+            if stripped and '\x00' not in stripped:
+                yield stripped
+
+
 def convert_one(src_jsonl: Path, dst_parquet: Path, force: bool) -> dict:
-    """Convert a single JSONL → Parquet. Returns stats dict."""
+    """Convert a single JSONL → Parquet. Uses chunked reading for large files."""
     if not force and _is_up_to_date(src_jsonl, dst_parquet):
         return {"status": "skipped", "rows": None, "elapsed": 0.0}
 
     t0 = time.perf_counter()
-    df = pd.read_json(src_jsonl, lines=True)
     dst_parquet.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(dst_parquet, index=False)
-    return {"status": "converted", "rows": len(df), "elapsed": time.perf_counter() - t0}
+
+    size_mb = src_jsonl.stat().st_size / (1024 * 1024)
+    if size_mb > 100:
+        # Chunked path for large files — streams via clean line generator to avoid RAM spike
+        import io
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+
+        writer = None
+        total_rows = 0
+        chunk_lines = []
+        CHUNK = 200_000
+
+        def flush(lines):
+            nonlocal writer, total_rows
+            buf = io.StringIO("\n".join(lines))
+            chunk_df = pd.read_json(buf, lines=True)
+            table = pa.Table.from_pandas(chunk_df, preserve_index=False)
+            if writer is None:
+                writer = pq.ParquetWriter(dst_parquet, table.schema)
+            writer.write_table(table)
+            total_rows += len(chunk_df)
+
+        for line in _clean_jsonl_lines(src_jsonl):
+            chunk_lines.append(line)
+            if len(chunk_lines) >= CHUNK:
+                flush(chunk_lines)
+                chunk_lines = []
+
+        if chunk_lines:
+            flush(chunk_lines)
+        if writer:
+            writer.close()
+        rows = total_rows
+    else:
+        df = pd.read_json(src_jsonl, lines=True)
+        df.to_parquet(dst_parquet, index=False)
+        rows = len(df)
+
+    return {"status": "converted", "rows": rows, "elapsed": time.perf_counter() - t0}
 
 
 def convert_subdir(src_dir: Path, dst_dir: Path, label: str, force: bool) -> int:

@@ -1,0 +1,9 @@
+{
+  "id": "11",
+  "subject": "Compare additive vs multiplicative seasonal decomposition",
+  "description": "Update Cell 8: run both additive and multiplicative decompose. Compare residual variance. Select lower-variance model automatically. Update plot title with selected model.",
+  "activeForm": "Comparing additive vs multiplicative decomposition",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

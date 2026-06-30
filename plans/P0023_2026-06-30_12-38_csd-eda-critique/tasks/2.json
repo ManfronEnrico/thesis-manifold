@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Fix train/val/test split for data leakage and warmup buffer",
+  "description": "Rewrite Cell 13: per-brand split validation, warmup buffer of max(LAGS+ROLLING_WINDOWS)=13 periods, validate split dates exist in data, per-brand summary table.",
+  "activeForm": "Fixing train/val/test split leakage and warmup buffer",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

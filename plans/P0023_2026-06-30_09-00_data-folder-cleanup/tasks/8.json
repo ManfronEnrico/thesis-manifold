@@ -1,0 +1,15 @@
+{
+  "blockedBy": [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+  ],
+  "subject": "Update P0022 and P0017 plan files with cleanup outcome",
+  "id": "8",
+  "description": "Append outcome note to P0022 and P0017 plan files. Add P0023 to PLANS_INDEX.md. Update progress.md with completion status.",
+  "activeForm": "Updating plan files with cleanup outcome",
+  "status": "pending",
+  "blocks": []
+}

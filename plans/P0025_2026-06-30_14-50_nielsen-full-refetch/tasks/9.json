@@ -1,0 +1,13 @@
+{
+  "id": "9",
+  "subject": "Review MIN_PERIODS threshold for non-CSD categories",
+  "description": "Check pre_*_3_filter_series.py for Danskvand/Energidrikke/RTD/Totalbeer. Danskvand/RTD have 39 periods, Energidrikke/Totalbeer have 41. Lower DEFAULT_MIN_PERIODS if set to 40 so brands pass the filter. Files: thesis/data/_02_preprocessing/nielsen/{category}/pre_*_3_filter_series.py.",
+  "activeForm": "Reviewing MIN_PERIODS thresholds",
+  "status": "pending",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "8"
+  ]
+}

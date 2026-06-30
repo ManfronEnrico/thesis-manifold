@@ -1,0 +1,9 @@
+{
+  "id": "3",
+  "subject": "Fix market filter in Energidrikke pre_energidrikke_1_load_and_aggregate.py",
+  "description": "Add TARGET_MARKET=DVH EXCL. HD, market dim join, and market_description filter before groupby.",
+  "activeForm": "Fixing Energidrikke market filter",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

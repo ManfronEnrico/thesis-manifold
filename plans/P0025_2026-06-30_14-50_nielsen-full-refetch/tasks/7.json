@@ -1,0 +1,11 @@
+{
+  "id": "7",
+  "subject": "Re-fetch all Nielsen JSONL from Fabric warehouse",
+  "description": "Run save_all_datasets.py to overwrite stale JSONL with full history. Command: python thesis/data/_00_raw/nielsen/scripts/save_all_datasets.py. Views + metadata only (~10 min). Verify MANIFEST.json: CSD facts ~9.8M rows.",
+  "activeForm": "Re-fetching Nielsen JSONL from Fabric",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": []
+}

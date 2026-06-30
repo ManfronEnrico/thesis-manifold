@@ -38,11 +38,11 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from PATHS import THESIS_DATA_RAW_NIELSEN_JSONL_DIR, THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR, get_category_pipeline_step_outputs_dir
 from METADATA import get_column_definition, describe_column
-from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
+from thesis.data._02_preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
 	print_step_summary, print_info
 )
-from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timing
+from thesis.data._02_preprocessing.nielsen.shared.timing_utils import log_step_timing
 
 # ============================================================================
 # METADATA DEFINITIONS
@@ -66,8 +66,9 @@ from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timin
 #     Range: 2022-10 to 2026-03 (42 monthly periods on Nielsen 4-4-5 week calendar).
 #
 # MARKET DIMENSION:
-#   - market_description: Retail outlet types (28 types: REMA 1000, NETTO, e-commerce, etc.).
-#     NOT a country filter (all data is Denmark). Aggregate across all markets by default.
+#   - market_description: Retail outlet types. Filter to "DVH EXCL. HD" — Nielsen's
+#     standard Danish grocery scope (supermarkets excl. hard discounters Aldi/Lidl).
+#     Per Nielsen metadata: "Unless the user specifies a particular market, always use DVH EXCL. HD".
 #
 # OUTPUT (this step):
 #   - Aggregates to brand Ã— period granularity
@@ -83,9 +84,8 @@ CATEGORY = "Danskvand"
 STEP_NUM = 1
 STEP_NAME = "Load and Aggregate"
 
-# Note: Nielsen data is already filtered to Denmark by source
-# We aggregate across all outlet types (markets) in the data
-TARGET_MARKET = "All Markets"
+# Nielsen standard scope: Danish grocery retail excl. hard discounters (Aldi/Lidl)
+TARGET_MARKET = "DVH EXCL. HD"
 
 # Input paths (Nielsen view files)
 INPUT_VIEWS_DIR = THESIS_DATA_RAW_NIELSEN_JSONL_DIR / CATEGORY / "views"
@@ -128,9 +128,14 @@ def load_and_aggregate(input_dir: Path, target_market: str, cached_parquet_dir: 
 	print(f"  Periods shape: {periods.shape}")
 	print(f"  Markets shape: {markets.shape}")
 
-	# Join facts Ã— product Ã— period (market dimension included for reference)
+	# Join facts × product × period × market
 	df = facts.merge(products[["product_id", "brand"]], on="product_id")
 	df = df.merge(periods[["period_id", "period_year", "period_month"]], on="period_id")
+	df = df.merge(markets[["market_id", "market_description"]], on="market_id")
+
+	# Filter to DVH EXCL. HD — Nielsen's standard Danish grocery scope.
+	# Excludes hierarchical aggregate rows (totals, groups) that would double-count sales.
+	df = df[df["market_description"] == TARGET_MARKET].copy()
 
 	# Filter to positive sales (non-zero units)
 	df = df[df["sales_units"] > 0].copy()

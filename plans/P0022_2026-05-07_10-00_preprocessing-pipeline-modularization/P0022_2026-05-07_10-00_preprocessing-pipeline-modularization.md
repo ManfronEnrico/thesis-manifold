@@ -73,6 +73,17 @@ focus_detail: "Phase 4 partial: filename bugs fixed, 3/4 categories working (Dan
   - RTD: PASS
 - ⏭️ Totalbeer: SKIPPED (missing facts table in source JSONL)
 
+## Completed (Data Folder Cleanup — P0023 ✅)
+
+**2026-06-30: Content-verified cleanup executed on branch `chore/data-folder-cleanup`**
+- ✅ `_03_engineered/nielsen/CSD/` now has correct data (2,666 rows, 62 brands) — overwritten corrupt empty run
+- ✅ Stale `engineered/` subfolders deleted from `_02_preprocessing/nielsen/{Danskvand,Energidrikke,RTD}/`
+- ✅ Stray CSD metadata parquets deleted from `_02_preprocessing/nielsen/CSD/metadata/`
+- ✅ Orphan `metadata_energidrikke_columns.parquet` moved to `_01_converted/nielsen/parquet_nielsen/Energidrikke/metadata/`
+- ✅ Stray Energidrikke `views/` and `metadata/` deleted from `_02_preprocessing/`
+- ✅ `_02_preprocessing/` now contains only scripts + `pipeline_step_outputs/` (correct)
+- ✅ `_03_engineered/` is the single canonical destination for final outputs
+
 ## In Progress (Phase 5 — 4-Category EDA Replication 🔧)
 
 **Next Steps (3 Working Categories):**

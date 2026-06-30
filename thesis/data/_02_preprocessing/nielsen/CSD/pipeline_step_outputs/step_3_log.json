@@ -200,5 +200,65 @@
     "output_rows": 0,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T14:35:28.007857",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.07,
+    "output_rows": 0,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T15:20:49.229629",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 1.15,
+    "output_rows": 0,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T16:14:22.858072",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.09,
+    "output_rows": 2365,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T16:38:37.537731",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.1,
+    "output_rows": 2464,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T17:01:02.469675",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.12,
+    "output_rows": 25124,
+    "input_cols": 10,
+    "output_cols": 10
+  },
+  {
+    "timestamp": "2026-06-30T17:11:56.488753",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.11,
+    "output_rows": 25124,
+    "input_cols": 10,
+    "output_cols": 10
   }
 ]

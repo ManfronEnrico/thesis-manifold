@@ -1,0 +1,13 @@
+{
+  "blockedBy": [
+    "4"
+  ],
+  "subject": "Delete stray Energidrikke views and metadata from _02_preprocessing",
+  "id": "6",
+  "description": "After T-004, delete remaining stray parquets: _02_preprocessing/nielsen/Energidrikke/views/ (3 parquets with fewer columns than _01_converted) and the now-empty metadata/ folder.",
+  "activeForm": "Deleting stray Energidrikke views/metadata",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ]
+}

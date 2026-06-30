@@ -1,0 +1,14 @@
+{
+  "id": "8",
+  "subject": "Convert all JSONL to parquet (Stage 1)",
+  "description": "Command: python thesis/data/_01_converted/nielsen/jsonl_to_parquet/run_all_conversions.py --force. Verify parquet files updated and CSD facts parquet substantially larger.",
+  "activeForm": "Converting JSONL to parquet",
+  "status": "pending",
+  "blocks": [
+    "9",
+    "10"
+  ],
+  "blockedBy": [
+    "7"
+  ]
+}
