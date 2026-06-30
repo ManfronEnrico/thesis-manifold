@@ -184,5 +184,15 @@
     "output_rows": 0,
     "input_cols": 8,
     "output_cols": 23
+  },
+  {
+    "timestamp": "2026-06-30T14:35:29.084427",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.1,
+    "output_rows": 0,
+    "input_cols": 8,
+    "output_cols": 23
   }
 ]

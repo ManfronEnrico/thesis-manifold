@@ -200,5 +200,25 @@
     "output_rows": 0,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T14:35:28.007857",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 0.07,
+    "output_rows": 0,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T15:20:49.229629",
+    "step_num": 3,
+    "step_name": "Filter Series",
+    "category": "CSD",
+    "elapsed_sec": 1.15,
+    "output_rows": 0,
+    "input_cols": 8,
+    "output_cols": 8
   }
 ]

@@ -21,7 +21,7 @@ OUTPUT
 ======
 Step 1 output (aggregate.parquet):
   - Aggregated to brand × period granularity
-  - Joined across all market types (retail outlet types)
+  - Filtered to "DVH EXCL. HD" market (Nielsen standard Danish grocery scope)
   - Columns: brand, period_year, period_month, sales_units, sales_value,
     sales_liters, promo_units, weighted_dist
 
@@ -105,8 +105,9 @@ from pre_csd_0_cache import validate_parquet_cache
 #     Range: 2022-10 to 2026-03 (42 monthly periods on Nielsen 4-4-5 week calendar).
 #
 # MARKET DIMENSION:
-#   - market_description: Retail outlet types (28 types: REMA 1000, NETTO, e-commerce, etc.).
-#     NOT a country filter (all data is Denmark). Aggregated across all markets.
+#   - market_description: Retail outlet types. Filter to "DVH EXCL. HD" — Nielsen's
+#     standard Danish grocery scope (supermarkets excl. hard discounters Aldi/Lidl).
+#     Per Nielsen metadata: "Unless the user specifies a particular market, always use DVH EXCL. HD".
 #
 # OUTPUT (this step):
 #   - Aggregates to brand × period granularity
@@ -121,6 +122,9 @@ from pre_csd_0_cache import validate_parquet_cache
 CATEGORY = "CSD"
 STEP_NUM = 1
 STEP_NAME = "Load and Aggregate"
+
+# Nielsen standard scope: Danish grocery retail excl. hard discounters (Aldi/Lidl)
+TARGET_MARKET = "DVH EXCL. HD"
 
 # Parquet cache location validated by Step 0
 CACHE_VIEWS_DIR = THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / CATEGORY / "views"
@@ -185,6 +189,10 @@ def load_and_aggregate(parquet_dir: Path) -> pd.DataFrame:
 	df = facts.merge(products[["product_id", "brand"]], on="product_id")
 	df = df.merge(periods[["period_id", "period_year", "period_month"]], on="period_id")
 	df = df.merge(markets[["market_id", "market_description"]], on="market_id")
+
+	# Filter to DVH EXCL. HD — Nielsen's standard Danish grocery scope.
+	# Excludes hierarchical aggregate rows (totals, groups) that would double-count sales.
+	df = df[df["market_description"] == TARGET_MARKET].copy()
 
 	# Filter to positive sales (non-zero units). Rows with zero sales are noise
 	# and excluded from aggregation.
