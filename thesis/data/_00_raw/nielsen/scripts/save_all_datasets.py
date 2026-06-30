@@ -22,6 +22,7 @@ import json
 import tracemalloc
 import time
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import importlib
 from datetime import datetime, date
 from dotenv import load_dotenv
@@ -133,18 +134,18 @@ def get_connection() -> pyodbc.Connection:
     )
     return pyodbc.connect(connection_string, attrs_before={1256: token_struct})
 
-def save_table_to_jsonl(conn, table_name: str, output_path: Path, chunk_size: int = 100000) -> dict:
+def save_table_to_jsonl(conn, table_name: str, output_path: Path, chunk_size: int = 500000) -> dict:
     """
     Query and save a table/view to JSONL with chunked fetching and Rich progress bar.
 
-    Writes one JSON object per line, 100k rows at a time. Much faster than CSV
+    Writes one JSON object per line, 500k rows at a time. Much faster than CSV
     (no string escaping), and loads directly into Pandas with pd.read_json(lines=True).
 
     Args:
         conn: pyodbc connection
         table_name: Nielsen table name
         output_path: Output JSONL path
-        chunk_size: Rows to fetch per batch (default 100000)
+        chunk_size: Rows to fetch per batch (default 500000)
     """
     try:
         tracemalloc.start()
@@ -221,12 +222,35 @@ def save_table_to_jsonl(conn, table_name: str, output_path: Path, chunk_size: in
         console.print(f"  [red]ERROR[/red]: {table_name}: {e}")
         return {"status": "error", "name": table_name, "error": str(e)}
 
-def main():
-    """Save all Nielsen views, raw tables, and metadata organized by category and type."""
-    print(f"Connecting to Nielsen Fabric warehouse...")
-    conn = get_connection()
-    print("Connection OK\n")
+def _is_facts_table(table_name: str) -> bool:
+    return table_name.endswith("_facts_v") or table_name.endswith("_facts")
 
+
+VALID_CATEGORIES = ["CSD", "Totalbeer", "Energidrikke", "Danskvand", "RTD"]
+
+
+def _save_category(category: str, config: dict, workers: int = 8) -> list:
+    """Download all tables for one category using a single sequential connection per table."""
+    results = []
+    for data_type in ["views", "raw", "metadata"]:
+        if not config[data_type]:
+            continue
+        if data_type == "raw" and not DOWNLOAD_RAW_DATA:
+            continue
+        type_dir = OUTPUT_DIR / category / data_type
+        type_dir.mkdir(parents=True, exist_ok=True)
+        for table_name in config[data_type]:
+            conn = get_connection()
+            try:
+                result = save_table_to_jsonl(conn, table_name, type_dir / f"{table_name}.jsonl")
+            finally:
+                conn.close()
+            results.append(result)
+    return results
+
+
+def main(only: list = None, parallel: bool = False):
+    """Save all Nielsen views, raw tables, and metadata organized by category and type."""
     # Display configuration
     if DOWNLOAD_RAW_DATA:
         print("⚠️  DOWNLOAD_RAW_DATA = True")
@@ -333,33 +357,40 @@ def main():
 
     manifest = []
 
-    # Save each category's data organized by type
-    for category, config in categories_config.items():
-        print(f"\n{'='*60}")
-        print(f"CATEGORY: {category}")
-        print(f"{'='*60}")
+    active = only if only else list(categories_config.keys())
+    active_config = {k: v for k, v in categories_config.items() if k in active}
 
-        for data_type in ["views", "raw", "metadata"]:
-            if not config[data_type]:
-                continue
+    if parallel and len(active_config) > 1:
+        print(f"Mode: PARALLEL ({len(active_config)} categories, one connection each)\n")
+        with ThreadPoolExecutor(max_workers=len(active_config)) as executor:
+            futures = {
+                executor.submit(_save_category, cat, cfg): cat
+                for cat, cfg in active_config.items()
+            }
+            for future in as_completed(futures):
+                cat = futures[future]
+                try:
+                    results = future.result()
+                    manifest.extend(results)
+                    console.print(f"[green]✓[/green] {cat} complete")
+                except Exception as e:
+                    console.print(f"[red]✗[/red] {cat} FAILED: {e}")
+    else:
+        if parallel:
+            print("Mode: SEQUENTIAL (only one category selected, --parallel has no effect)\n")
+        else:
+            print("Mode: SEQUENTIAL\n")
+        for category, config in active_config.items():
+            print(f"\n{'='*60}")
+            print(f"CATEGORY: {category}")
+            print(f"{'='*60}")
+            results = _save_category(category, config)
+            manifest.extend(results)
 
-            # Skip raw tables if DOWNLOAD_RAW_DATA is False
-            if data_type == "raw" and not DOWNLOAD_RAW_DATA:
-                print(f"\n  RAW: [SKIPPED - DOWNLOAD_RAW_DATA = False]")
-                continue
-
-            print(f"\n  {data_type.upper()}:")
-
-            # Create type-specific subdirectory
-            type_dir = OUTPUT_DIR / category / data_type
-            type_dir.mkdir(parents=True, exist_ok=True)
-
-            for table_name in config[data_type]:
-                result = save_table_to_jsonl(conn, table_name, type_dir / f"{table_name}.jsonl")
-                manifest.append(result)
-
-    _generate_schema_snapshot(conn, THESIS_DATA_RAW_NIELSEN_DESC_DIR)
-    conn.close()
+    # Schema snapshot uses a fresh connection (categories may have closed theirs)
+    snap_conn = get_connection()
+    _generate_schema_snapshot(snap_conn, THESIS_DATA_RAW_NIELSEN_DESC_DIR)
+    snap_conn.close()
 
     # Write manifest
     manifest_path = OUTPUT_DIR / "MANIFEST.json"
@@ -387,7 +418,9 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python save_all_datasets.py              # Download views + metadata only (~10 min)
+  python save_all_datasets.py              # All categories, sequential (~15 min)
+  python save_all_datasets.py --only CSD  # CSD only (~3 min)
+  python save_all_datasets.py --parallel  # All categories in parallel, one connection each (~3 min)
   python save_all_datasets.py --download-raw  # Include raw tables (~2 hours total)
         """
     )
@@ -396,8 +429,19 @@ Examples:
         action="store_true",
         help="Download raw tables in addition to views and metadata (takes ~2 hours)"
     )
-
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        choices=VALID_CATEGORIES,
+        metavar="CATEGORY",
+        help=f"Restrict to specific categories. Choices: {', '.join(VALID_CATEGORIES)}"
+    )
+    parser.add_argument(
+        "--parallel",
+        action="store_true",
+        help="Fetch all categories simultaneously (one connection per category). Faster for full runs."
+    )
     args = parser.parse_args()
     DOWNLOAD_RAW_DATA = args.download_raw
 
-    main()
+    main(only=args.only, parallel=args.parallel)

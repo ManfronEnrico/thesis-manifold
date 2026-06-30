@@ -65,15 +65,36 @@ def _is_up_to_date(src_jsonl: Path, dst_parquet: Path) -> bool:
 
 
 def convert_one(src_jsonl: Path, dst_parquet: Path, force: bool) -> dict:
-    """Convert a single JSONL → Parquet. Returns stats dict."""
+    """Convert a single JSONL → Parquet. Uses chunked reading for large files."""
     if not force and _is_up_to_date(src_jsonl, dst_parquet):
         return {"status": "skipped", "rows": None, "elapsed": 0.0}
 
     t0 = time.perf_counter()
-    df = pd.read_json(src_jsonl, lines=True)
     dst_parquet.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(dst_parquet, index=False)
-    return {"status": "converted", "rows": len(df), "elapsed": time.perf_counter() - t0}
+
+    size_mb = src_jsonl.stat().st_size / (1024 * 1024)
+    if size_mb > 100:
+        # Chunked path for large files — avoids loading everything into RAM at once
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+
+        writer = None
+        total_rows = 0
+        for chunk in pd.read_json(src_jsonl, lines=True, chunksize=200_000):
+            table = pa.Table.from_pandas(chunk, preserve_index=False)
+            if writer is None:
+                writer = pq.ParquetWriter(dst_parquet, table.schema)
+            writer.write_table(table)
+            total_rows += len(chunk)
+        if writer:
+            writer.close()
+        rows = total_rows
+    else:
+        df = pd.read_json(src_jsonl, lines=True)
+        df.to_parquet(dst_parquet, index=False)
+        rows = len(df)
+
+    return {"status": "converted", "rows": rows, "elapsed": time.perf_counter() - t0}
 
 
 def convert_subdir(src_dir: Path, dst_dir: Path, label: str, force: bool) -> int:
