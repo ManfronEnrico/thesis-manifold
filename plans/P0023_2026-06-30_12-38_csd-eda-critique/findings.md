@@ -263,6 +263,23 @@ else: ...
 
 ---
 
+## Phase 5 — Further Improvements (Post-P0023)
+
+See full assessment: `thesis/data/_02_preprocessing/nielsen/docs/eda-improvement-candidates.md`
+
+| # | Improvement | Literature | Add to Zotero first? |
+|---|-------------|-----------|----------------------|
+| 1 | Walk-forward CV feasibility check | Hyndman 2021, Bergmeir 2012 | Yes |
+| 2 | Lagged scatter plots | Tukey 1977 (weak) | No — appendix only |
+| 3 | Per-volume-tier distribution analysis | Pesaran & Smith 1995 | Yes |
+| 4 | Weighted distribution threshold (empirical) | Ataman et al. 2010 | Yes |
+| 5 | Fourier / spectral multi-frequency analysis | Cleveland 1990, Taylor 2018 | Yes |
+| 6 | Train-size adequacy curve (MIN_PERIODS sensitivity) | Cerqueira et al. 2020 | Yes |
+
+**Zotero status (2026-06-30)**: None of these 6 canonical references are in the library. Must be added via `/cite` before thesis chapter justification can be written.
+
+---
+
 ## What the EDA Does Well (Strengths)
 
 - ACF/PACF analysis (Cell 11) is methodologically correct and multi-brand.
