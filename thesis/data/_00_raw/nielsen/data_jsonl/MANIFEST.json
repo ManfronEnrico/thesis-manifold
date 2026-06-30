@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-30T15:13:13.709828",
+  "timestamp": "2026-06-30T15:55:16.543335",
   "database": "Nielsen_clean",
   "output_dir": "Z:\\_dev-ssd\\thesis-manifold\\thesis\\data\\_00_raw\\nielsen\\data_jsonl",
   "files": [
@@ -11,7 +11,7 @@
       "size_mb": 0.02,
       "file": "csd_clean_dim_market_v.jsonl",
       "peak_ram_mb": 0.3,
-      "elapsed_sec": 0.2
+      "elapsed_sec": 3.1
     },
     {
       "status": "saved",
@@ -21,7 +21,7 @@
       "size_mb": 0.01,
       "file": "csd_clean_dim_period_v.jsonl",
       "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.2
+      "elapsed_sec": 0.4
     },
     {
       "status": "saved",
@@ -31,7 +31,7 @@
       "size_mb": 1.48,
       "file": "csd_clean_dim_product_v.jsonl",
       "peak_ram_mb": 2.9,
-      "elapsed_sec": 0.5
+      "elapsed_sec": 0.8
     },
     {
       "status": "saved",
@@ -40,8 +40,8 @@
       "columns": 32,
       "size_mb": 10861.14,
       "file": "csd_clean_facts_v.jsonl",
-      "peak_ram_mb": 0,
-      "elapsed_sec": 565.5
+      "peak_ram_mb": 751.2,
+      "elapsed_sec": 1422.9
     },
     {
       "status": "saved",
@@ -51,7 +51,7 @@
       "size_mb": 0.0,
       "file": "metadata_csd_clean_dim_market.jsonl",
       "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.4
+      "elapsed_sec": 0.7
     },
     {
       "status": "saved",
@@ -61,7 +61,7 @@
       "size_mb": 0.0,
       "file": "metadata_csd_clean_dim_period.jsonl",
       "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.1
+      "elapsed_sec": 0.3
     },
     {
       "status": "saved",
@@ -71,7 +71,17 @@
       "size_mb": 0.0,
       "file": "metadata_csd_clean_dim_product.jsonl",
       "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.1
+      "elapsed_sec": 0.2
+    },
+    {
+      "status": "saved",
+      "name": "metadata_csd_clean_facts",
+      "rows": 10,
+      "columns": 4,
+      "size_mb": 0.0,
+      "file": "metadata_csd_clean_facts.jsonl",
+      "peak_ram_mb": 0.2,
+      "elapsed_sec": 0.2
     },
     {
       "status": "saved",
@@ -81,13 +91,13 @@
       "size_mb": 0.02,
       "file": "metadata_csd_columns.jsonl",
       "peak_ram_mb": 0.2,
-      "elapsed_sec": 0.1
+      "elapsed_sec": 0.4
     }
   ],
   "summary": {
     "total": 9,
-    "saved": 8,
+    "saved": 9,
     "empty": 0,
-    "errors": 1
+    "errors": 0
   }
 }

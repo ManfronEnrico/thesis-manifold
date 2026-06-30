@@ -228,5 +228,45 @@
     "output_rows": 3784,
     "input_cols": 8,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T16:14:21.811591",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.18,
+    "output_rows": 6020,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T16:38:36.335939",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.53,
+    "output_rows": 6160,
+    "input_cols": 8,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-06-30T17:01:01.639831",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.43,
+    "output_rows": 45716,
+    "input_cols": 10,
+    "output_cols": 10
+  },
+  {
+    "timestamp": "2026-06-30T17:11:55.583153",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.49,
+    "output_rows": 45716,
+    "input_cols": 10,
+    "output_cols": 10
   }
 ]

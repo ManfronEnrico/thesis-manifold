@@ -194,5 +194,45 @@
     "output_rows": 0,
     "input_cols": 8,
     "output_cols": 23
+  },
+  {
+    "timestamp": "2026-06-30T16:14:23.882046",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.13,
+    "output_rows": 2365,
+    "input_cols": 8,
+    "output_cols": 23
+  },
+  {
+    "timestamp": "2026-06-30T16:38:38.741350",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.17,
+    "output_rows": 2464,
+    "input_cols": 8,
+    "output_cols": 23
+  },
+  {
+    "timestamp": "2026-06-30T17:01:03.363805",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.19,
+    "output_rows": 25124,
+    "input_cols": 10,
+    "output_cols": 25
+  },
+  {
+    "timestamp": "2026-06-30T17:11:57.537292",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.18,
+    "output_rows": 25124,
+    "input_cols": 10,
+    "output_cols": 25
   }
 ]

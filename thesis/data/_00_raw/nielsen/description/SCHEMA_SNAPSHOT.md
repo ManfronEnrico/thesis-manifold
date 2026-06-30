@@ -1,6 +1,6 @@
 # Nielsen Fabric Database Schema
 
-**Snapshot:** 2026-06-30T15:13:10.671791
+**Snapshot:** 2026-06-30T15:55:08.954204
 **Total Objects:** 52 (Views: 20, Tables: 32)
 
 ## Views (Cleaned Data for Modeling)

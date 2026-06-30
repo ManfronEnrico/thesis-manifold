@@ -194,5 +194,45 @@
     "output_rows": 0,
     "input_cols": 23,
     "output_cols": 24
+  },
+  {
+    "timestamp": "2026-06-30T16:14:24.840997",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.1,
+    "output_rows": 2365,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-06-30T16:38:39.884248",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.1,
+    "output_rows": 2464,
+    "input_cols": 23,
+    "output_cols": 24
+  },
+  {
+    "timestamp": "2026-06-30T17:01:04.186536",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.13,
+    "output_rows": 25124,
+    "input_cols": 25,
+    "output_cols": 26
+  },
+  {
+    "timestamp": "2026-06-30T17:11:58.498867",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.15,
+    "output_rows": 25124,
+    "input_cols": 25,
+    "output_cols": 26
   }
 ]
