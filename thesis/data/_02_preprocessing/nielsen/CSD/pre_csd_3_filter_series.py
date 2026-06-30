@@ -71,10 +71,11 @@ CATEGORY = "CSD"
 STEP_NUM = 3
 STEP_NAME = "Filter Series"
 
-# Feature engineering constants
-# Per CSD EDA analysis (Cell 3): Thesis quality focus → 62 brands with ≥40 periods
-# (vs production approach: 84 brands with ≥30 periods)
-DEFAULT_MIN_PERIODS = 40
+# Minimum non-zero periods per brand×region series.
+# 24 = 2 full years — captures seasonality twice, empirically defensible for ML.
+# (Previous value was 40 at brand×period grain; now operating at brand×region grain
+# where series are naturally sparser — 24 is the appropriate floor.)
+DEFAULT_MIN_PERIODS = 24
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
@@ -99,14 +100,15 @@ def filter_series(df: pd.DataFrame, min_periods: int) -> pd.DataFrame:
 	Returns:
 		DataFrame with only brands meeting the threshold
 	"""
-	# Count non-NaN sales_units per brand
-	brand_counts = df[df["sales_units"].notna()].groupby("brand").size()
+	# Count non-NaN sales_units per brand × region series
+	series_counts = df[df["sales_units"].notna()].groupby(["brand", "market_id"]).size()
 
-	# Identify brands with sufficient data
-	valid_brands = brand_counts[brand_counts >= min_periods].index
+	# Keep only series with sufficient observations
+	valid_series = series_counts[series_counts >= min_periods].index
 
-	# Filter to keep only valid brands
-	df_filtered = df[df["brand"].isin(valid_brands)].copy()
+	# Filter to keep only valid brand × region combinations
+	df_filtered = df.set_index(["brand", "market_id"])
+	df_filtered = df_filtered[df_filtered.index.isin(valid_series)].reset_index()
 
 	return df_filtered
 
@@ -130,7 +132,9 @@ def main():
 		print_file_load(INPUT_CALENDAR_FILLED_PARQUET, input_shape, load_elapsed)
 
 		brands_before = df["brand"].nunique()
+		series_before = df.groupby(["brand", "market_id"]).ngroups if "market_id" in df.columns else brands_before
 		print_info(f"Brands before filter: {brands_before}")
+		print_info(f"Series (brand×region) before filter: {series_before}")
 
 		# Process
 		print(f"\nFiltering series with < {DEFAULT_MIN_PERIODS} non-zero periods...")
@@ -140,10 +144,12 @@ def main():
 
 		process_elapsed = time.perf_counter() - process_start
 		brands_after = df["brand"].nunique()
-		brands_removed = brands_before - brands_after
+		series_after = df.groupby(["brand", "market_id"]).ngroups if "market_id" in df.columns else brands_after
+		series_removed = series_before - series_after
 
 		print(f"  ✓ Filter applied in {process_elapsed:.2f}s")
-		print_info(f"Brands after filter: {brands_after} (removed {brands_removed})")
+		print_info(f"Brands after filter: {brands_after}")
+		print_info(f"Series (brand×region) after filter: {series_after} (removed {series_removed})")
 
 		# Save
 		print(f"\nSaving filtered series data...")

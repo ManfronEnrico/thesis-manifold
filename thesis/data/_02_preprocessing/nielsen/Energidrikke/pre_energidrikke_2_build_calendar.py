@@ -70,9 +70,7 @@ CATEGORY = "Energidrikke"
 STEP_NUM = 2
 STEP_NAME = "Build Calendar"
 
-# Feature engineering constants (calendar date range)
-DEFAULT_CALENDAR_START = (2022, 10)
-DEFAULT_CALENDAR_END = (2026, 3)
+# Calendar bounds are derived from the data in main() — no hardcoded dates.
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
@@ -159,18 +157,22 @@ def main():
 		print_file_load(INPUT_AGGREGATE_PARQUET, input_shape, load_elapsed)
 
 		if len(df) > 0:
-			month_min = int(df['period_month'].min())
-			month_max = int(df['period_month'].max())
-			print_info(f"Date range: {df['period_year'].min()}-{month_min:02d} to {df['period_year'].max()}-{month_max:02d}")
+			df_sorted = df.sort_values(["period_year", "period_month"])
+			first = df_sorted.iloc[0]
+			last = df_sorted.iloc[-1]
+			cal_start = (int(first["period_year"]), int(first["period_month"]))
+			cal_end = (int(last["period_year"]), int(last["period_month"]))
+			print_info(f"Date range: {cal_start[0]}-{cal_start[1]:02d} to {cal_end[0]}-{cal_end[1]:02d}")
 		else:
 			print_info(f"Date range: (no data)")
+			raise ValueError("No data in step 1 output — cannot build calendar.")
 		print_info(f"Unique brands: {df['brand'].nunique()}")
 
 		# Process
-		print(f"\nBuilding calendar index ({DEFAULT_CALENDAR_START[0]}-{DEFAULT_CALENDAR_START[1]:02d} to {DEFAULT_CALENDAR_END[0]}-{DEFAULT_CALENDAR_END[1]:02d})...")
+		print(f"\nBuilding calendar index ({cal_start[0]}-{cal_start[1]:02d} to {cal_end[0]}-{cal_end[1]:02d})...")
 		process_start = time.perf_counter()
 
-		df = build_calendar_index(df, DEFAULT_CALENDAR_START, DEFAULT_CALENDAR_END)
+		df = build_calendar_index(df, cal_start, cal_end)
 
 		process_elapsed = time.perf_counter() - process_start
 		print(f"  ✓ Calendar filled in {process_elapsed:.2f}s")

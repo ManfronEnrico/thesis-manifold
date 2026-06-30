@@ -4,7 +4,7 @@
 > New plans: `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`
 > Archived plans: `plans/.archive/`
 > Status tracked in plan frontmatter only — no outcome files, no folder movement on status change.
-> Next available P-ID: **P0026**
+> Next available P-ID: **P0027**
 
 ---
 
@@ -14,6 +14,7 @@
 
 | P-ID | Folder | Status | Detail |
 |------|--------|--------|--------|
+| **P0026** | `P0026_2026-06-30_16-38_aggregation-grain-analysis/` | complete | Implemented brand×region×period grain (9 DVH geographic regions, MIN_PERIODS=24). CSD pipeline: 25,124 rows / 571 series — 10.6× more data than previous grain. |
 | **P0024** | `P0024_2026-06-30_12-40_market-filter-fix/` | complete | Fix DVH EXCL. HD market filter across all 5 Nielsen category preprocessing pipelines (CSD, Danskvand, Energidrikke, RTD, Totalbeer) |
 | **P0023** | `P0023_2026-06-30_12-38_csd-eda-critique/` | in_progress | EDA critique from predictive ML + FMCG perspective; 13 issues across P0/P1/P2; output doc pending |
 | **P0022** | `P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/` | in_progress | Phase 5 next: EDA replication for Energidrikke, Danskvand, RTD (data folder now clean) |

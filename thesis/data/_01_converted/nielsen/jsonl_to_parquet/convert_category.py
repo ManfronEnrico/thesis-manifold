@@ -64,6 +64,19 @@ def _is_up_to_date(src_jsonl: Path, dst_parquet: Path) -> bool:
     return dst_parquet.stat().st_mtime >= src_jsonl.stat().st_mtime
 
 
+def _clean_jsonl_lines(src_jsonl: Path):
+    """Yield clean lines from a JSONL file, skipping null-byte/empty lines.
+
+    Null-byte lines appear at the old-file boundary when a re-fetch overwrites
+    a previously larger file (OS doesn't truncate before the first write).
+    """
+    with open(src_jsonl, encoding="utf-8") as fh:
+        for line in fh:
+            stripped = line.strip()
+            if stripped and '\x00' not in stripped:
+                yield stripped
+
+
 def convert_one(src_jsonl: Path, dst_parquet: Path, force: bool) -> dict:
     """Convert a single JSONL → Parquet. Uses chunked reading for large files."""
     if not force and _is_up_to_date(src_jsonl, dst_parquet):
@@ -74,18 +87,34 @@ def convert_one(src_jsonl: Path, dst_parquet: Path, force: bool) -> dict:
 
     size_mb = src_jsonl.stat().st_size / (1024 * 1024)
     if size_mb > 100:
-        # Chunked path for large files — avoids loading everything into RAM at once
+        # Chunked path for large files — streams via clean line generator to avoid RAM spike
+        import io
         import pyarrow as pa
         import pyarrow.parquet as pq
 
         writer = None
         total_rows = 0
-        for chunk in pd.read_json(src_jsonl, lines=True, chunksize=200_000):
-            table = pa.Table.from_pandas(chunk, preserve_index=False)
+        chunk_lines = []
+        CHUNK = 200_000
+
+        def flush(lines):
+            nonlocal writer, total_rows
+            buf = io.StringIO("\n".join(lines))
+            chunk_df = pd.read_json(buf, lines=True)
+            table = pa.Table.from_pandas(chunk_df, preserve_index=False)
             if writer is None:
                 writer = pq.ParquetWriter(dst_parquet, table.schema)
             writer.write_table(table)
-            total_rows += len(chunk)
+            total_rows += len(chunk_df)
+
+        for line in _clean_jsonl_lines(src_jsonl):
+            chunk_lines.append(line)
+            if len(chunk_lines) >= CHUNK:
+                flush(chunk_lines)
+                chunk_lines = []
+
+        if chunk_lines:
+            flush(chunk_lines)
         if writer:
             writer.close()
         rows = total_rows
