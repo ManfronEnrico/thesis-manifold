@@ -1,0 +1,13 @@
+{
+  "blockedBy": [
+    "1"
+  ],
+  "subject": "Delete byte-identical _02_preprocessing engineered copies (Danskvand, Energidrikke, RTD)",
+  "id": "3",
+  "description": "Content audit confirmed all files in _02_preprocessing/nielsen/{Danskvand,Energidrikke,RTD}/engineered/ are byte-identical to _03_engineered/nielsen/{category}/. Delete the three engineered/ subfolders entirely.",
+  "activeForm": "Deleting duplicate engineered copies",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ]
+}

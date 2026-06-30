@@ -14,14 +14,14 @@
 
 | P-ID | Folder | Status | Detail |
 |------|--------|--------|--------|
-| **P0022** | `P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/` | in_progress | Phase 4 partial — 3/4 categories working; EDA replication next |
+| **P0022** | `P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/` | in_progress | Phase 5 next: EDA replication for Energidrikke, Danskvand, RTD (data folder now clean) |
+| **P0017** | `P0017_2026-04-27_14-20_jupyter-notebook-path-centralization/` | in_progress | Path infra complete; remaining: notebook template (comparison §1-5, 7+ notebooks); data folder cleanup needed first |
 
 ### Blocked
 
 | P-ID | Folder | Blocked By |
 |------|--------|------------|
 | **P0005** | `P0005_2026-04-23_08-00_system-a-feature-eng-integration/` | Decision needed: packaging fix Option A vs B |
-| **P0017** | `P0017_2026-04-27_14-20_jupyter-notebook-path-centralization/` | P0022 Phase 2 completion (stable parquet outputs) |
 
 ### Paused
 

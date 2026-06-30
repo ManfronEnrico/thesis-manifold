@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "1"
+  ],
+  "subject": "Move orphan Energidrikke metadata parquet to _01_converted",
+  "id": "4",
+  "description": "metadata_energidrikke_columns.parquet exists only in _02_preprocessing/nielsen/Energidrikke/metadata/ — no copy in _01_converted/. Move to thesis/data/_01_converted/nielsen/parquet_nielsen/Energidrikke/metadata/.",
+  "activeForm": "Moving Energidrikke metadata to _01_converted",
+  "status": "pending",
+  "blocks": [
+    "6",
+    "8"
+  ]
+}

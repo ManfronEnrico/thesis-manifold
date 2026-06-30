@@ -1,0 +1,14 @@
+{
+  "blockedBy": [
+    "1"
+  ],
+  "subject": "Move good CSD outputs from _02_preprocessing to _03_engineered",
+  "id": "2",
+  "description": "Content audit showed _02_preprocessing/nielsen/CSD/engineered/ has the correct 62-brand run; _03_engineered/nielsen/CSD/ has a corrupt empty run (0 rows). Copy 4 files to _03_engineered/nielsen/CSD/, overwriting corrupt copies, then delete _02 engineered/ subfolder.",
+  "activeForm": "Moving CSD outputs to _03_engineered",
+  "status": "pending",
+  "blocks": [
+    "7",
+    "8"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "blockedBy": [
+    "1"
+  ],
+  "subject": "Delete stray CSD metadata parquets from _02_preprocessing",
+  "id": "5",
+  "description": "4 CSD metadata parquets in _02_preprocessing/nielsen/CSD/metadata/ are byte-identical to _01_converted/nielsen/parquet_nielsen/CSD/metadata/. Delete the entire _02_preprocessing/nielsen/CSD/metadata/ subfolder.",
+  "activeForm": "Deleting stray CSD metadata parquets",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ]
+}
