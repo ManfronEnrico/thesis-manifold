@@ -1,0 +1,9 @@
+{
+  "id": "9",
+  "subject": "Fix dead-code skewness threshold elif ordering",
+  "description": "Fix Cell 2 elif order so skewness < -2 branch is reachable. Correct order: >2, >0.5, <-2, <-0.5. Add Kim (2013) citation. Verify with synthetic skewness=-3 test.",
+  "activeForm": "Fixing skewness threshold dead code",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

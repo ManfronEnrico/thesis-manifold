@@ -1,0 +1,9 @@
+{
+  "id": "7",
+  "subject": "Characterise zero-sales periods and define imputation strategy",
+  "description": "New Cell 5b: classify zeros as clustered (entry/exit) vs scattered (gap). Heatmap brand x year. Define imputation rule: clustered at edges=trim, clustered middle=flag, scattered=forward-fill. Add zero_sales_strategy to findings JSON.",
+  "activeForm": "Characterising zero-sales periods",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

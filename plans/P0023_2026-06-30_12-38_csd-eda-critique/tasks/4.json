@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Extend lag analysis to all brands with significance testing",
+  "description": "Rewrite Cell 10: compute lag correlations for ALL brands across lags [1,2,3,4,6,8,12,13]. Report median corr + IQR + % significant per lag. Include only lags where >=50% of brands show |corr|>0.2.",
+  "activeForm": "Extending lag analysis to all brands",
+  "status": "pending",
+  "blocks": [
+    "5"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

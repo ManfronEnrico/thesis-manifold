@@ -1,0 +1,13 @@
+{
+  "id": "1",
+  "subject": "Define target variable Y and forecast horizon",
+  "description": "Add Cell 0 in pre_csd_1.5_eda.py defining TARGET_COL, FORECAST_HORIZON, LOG_TRANSFORM_TARGET constants. Y = log1p(sales_units) at t+1, H=1 month, per brand. All subsequent cells reference these constants.",
+  "activeForm": "Defining target variable Y and forecast horizon",
+  "status": "pending",
+  "blocks": [
+    "2",
+    "4",
+    "8"
+  ],
+  "blockedBy": []
+}

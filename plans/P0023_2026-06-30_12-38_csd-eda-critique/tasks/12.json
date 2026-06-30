@@ -1,0 +1,9 @@
+{
+  "id": "12",
+  "subject": "Add Spearman correlation alongside Pearson in heatmap",
+  "description": "Cell 15: compute both Pearson and Spearman. Side-by-side heatmaps. Difference table flagging non-linear pairs (|diff|>0.2). Update findings JSON with both matrices.",
+  "activeForm": "Adding Spearman correlation alongside Pearson",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

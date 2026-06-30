@@ -1,0 +1,9 @@
+{
+  "id": "13",
+  "subject": "Add structural break and concept drift check",
+  "description": "New Cell 8b: split CSD series at 2020-03. Compare mean/variance/autocorrelation pre vs post. Chow test approximation. Plot with vertical break line. Add structural_break_detected and break_point to findings JSON.",
+  "activeForm": "Adding structural break and concept drift check",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}
