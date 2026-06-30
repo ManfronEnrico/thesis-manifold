@@ -48,7 +48,8 @@
       "Bash(mv pre_csd_eda_enhanced_with_visualizations_expanded.py pre_csd_eda.py)",
       "Bash(rm -f pre_csd_eda_and_parameter_analysis.py)",
       "Bash(rm -f pre_csd_eda_enhanced_with_visualizations.py)",
-      "Skill(git-push)"
+      "Skill(git-push)",
+      "Skill(planning-with-files)"
     ]
   },
   "enabledPlugins": {}

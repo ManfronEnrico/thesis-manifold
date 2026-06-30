@@ -4,7 +4,7 @@
 > New plans: `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`
 > Archived plans: `plans/.archive/`
 > Status tracked in plan frontmatter only — no outcome files, no folder movement on status change.
-> Next available P-ID: **P0025**
+> Next available P-ID: **P0026**
 
 ---
 
