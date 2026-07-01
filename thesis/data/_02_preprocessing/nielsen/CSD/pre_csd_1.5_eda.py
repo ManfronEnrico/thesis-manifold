@@ -966,10 +966,15 @@ for brand in sample_brands:
     for w in WINDOW_CANDIDATES:
         if len(series) < w + FORECAST_HORIZON + 2:
             continue
-        rolling_mean = np.array([series[max(0, i-w):i].mean() for i in range(len(series))])
+        # i=0 slice is empty -> mean()=NaN; mask NaN warmup rows so std/corr
+        # are computed on valid pairs only (otherwise no window ever qualifies)
+        rolling_mean = np.array([series[max(0, i-w):i].mean() if i > 0 else np.nan
+                                 for i in range(len(series))])
         feature = rolling_mean[:-FORECAST_HORIZON]    # align with y_next
-        if len(feature) > 2 and np.std(feature) > 0:
-            corr = np.corrcoef(feature, y_next[:len(feature)])[0, 1]
+        target = y_next[:len(feature)]
+        valid = ~np.isnan(feature)
+        if valid.sum() > 2 and np.std(feature[valid]) > 0:
+            corr = np.corrcoef(feature[valid], target[valid])[0, 1]
             if not np.isnan(corr):
                 window_pred_corrs[w].append(corr)
 
@@ -986,6 +991,8 @@ for w in WINDOW_CANDIDATES:
             "P75": round(float(np.percentile(arr, 75)), 3),
         })
 
+if not window_summary:
+    raise RuntimeError("Cell 12: no window produced a valid predictive correlation - check input series length")
 window_df = pd.DataFrame(window_summary).sort_values("Median PredCorr", ascending=False)
 print(f"\n{window_df.to_string(index=False)}")
 
@@ -1002,11 +1009,14 @@ for w in selected_windows:
     series = np.log1p(df[df['brand'] == ref_brand]
                       .sort_values(['period_year','period_month'])[TARGET_COL].fillna(0).values)
     keep = True
-    feat_w = np.array([series[max(0, i-w):i].mean() for i in range(len(series))])
+    feat_w = np.array([series[max(0, i-w):i].mean() if i > 0 else np.nan
+                       for i in range(len(series))])
     for pw in pruned_windows:
-        feat_pw = np.array([series[max(0, i-pw):i].mean() for i in range(len(series))])
-        if len(feat_w) > 2 and len(feat_pw) > 2:
-            col = abs(np.corrcoef(feat_w, feat_pw)[0, 1])
+        feat_pw = np.array([series[max(0, i-pw):i].mean() if i > 0 else np.nan
+                            for i in range(len(series))])
+        both = ~(np.isnan(feat_w) | np.isnan(feat_pw))
+        if both.sum() > 2:
+            col = abs(np.corrcoef(feat_w[both], feat_pw[both])[0, 1])
             if col > COLLINEARITY_THRESHOLD:
                 keep = False
                 break
