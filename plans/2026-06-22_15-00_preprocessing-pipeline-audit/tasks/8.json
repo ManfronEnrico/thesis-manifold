@@ -1,0 +1,13 @@
+{
+  "id": "8",
+  "subject": "Audit feature engineering for all 6 categories",
+  "description": "Read Step 4 scripts for Danskvand, Energidrikke, RTD, Totalbeer, and shared base. Compare feature engineering logic across categories. Are parameters identical or category-specific? Is log transform applied consistently? Output: cross_category_feature_comparison.md with {category: {features, parameters, differences}}",
+  "activeForm": "Auditing feature engineering across all categories",
+  "status": "pending",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

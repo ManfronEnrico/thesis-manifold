@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Empirically select rolling window sizes via predictive correlation",
+  "description": "Replace Cell 12: for windows [2,3,4,6,8,12,13], compute rolling mean shifted by 1, correlate with sales[t+1]. Report median predictive corr + collinearity across brands. Justify ROLLING_WINDOWS empirically.",
+  "activeForm": "Empirically selecting rolling window sizes",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

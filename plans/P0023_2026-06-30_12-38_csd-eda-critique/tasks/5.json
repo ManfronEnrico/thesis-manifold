@@ -1,0 +1,11 @@
+{
+  "id": "5",
+  "subject": "Derive LAGS parameter programmatically from ACF/PACF significance",
+  "description": "Rewrite Cell 11: extract significant lags (outside +-1.96/sqrt(n) band) from ACF for all top brands. Derive LAGS_EMPIRICAL = lags significant for >=50% brands. Compare to current hardcoded LAGS. Update findings JSON.",
+  "activeForm": "Deriving LAGS from ACF/PACF significance",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "4"
+  ]
+}

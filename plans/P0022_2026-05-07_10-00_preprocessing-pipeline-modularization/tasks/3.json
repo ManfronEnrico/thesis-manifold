@@ -1,0 +1,13 @@
+{
+  "id": "3",
+  "subject": "Create Danskvand EDA script from CSD template",
+  "description": "Copy thesis/data/preprocessing/nielsen/CSD/pre_csd_1.5_eda.py to thesis/data/preprocessing/nielsen/Danskvand/pre_danskvand_1.5_eda.py. Change CATEGORY variable from 'CSD' to 'Danskvand' (and any csd_ prefixed filenames/paths). Verify the script loads from the correct step_1 parquet (Danskvand/pipeline_step_outputs/step_1_log.json confirms step 1 ran). Run the script to generate danskvand_eda_findings.json in Danskvand/pipeline_step_outputs/. Confirm JSON findings file is created and contains the key parameters: MIN_PERIODS, LAGS, ROLLING_WINDOWS, HOLIDAY_MONTHS, TRAIN_END, VAL_END.",
+  "activeForm": "Creating Danskvand EDA script",
+  "status": "pending",
+  "blocks": [
+    "6"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

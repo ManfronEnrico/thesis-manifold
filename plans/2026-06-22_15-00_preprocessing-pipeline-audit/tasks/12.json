@@ -1,0 +1,13 @@
+{
+  "id": "12",
+  "subject": "Assess FMCG domain-specific feature completeness",
+  "description": "Evaluate: (1) Promotional effects isolated? (2) Regional variation (market/retailer) incorporated? (3) Brand-level differences captured? (4) Category effects (CSD subcategories) considered? (5) Inventory/supply constraints noted? (6) Seasonality source identified (calendar vs promotional)? Output: fmcg_domain_assessment.md with findings + recommendations.",
+  "activeForm": "Assessing FMCG domain feature completeness",
+  "status": "pending",
+  "blocks": [
+    "14"
+  ],
+  "blockedBy": [
+    "11"
+  ]
+}

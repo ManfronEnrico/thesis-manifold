@@ -1,0 +1,11 @@
+{
+  "blockedBy": [
+    "2"
+  ],
+  "subject": "Verify _03_engineered CSD data is readable and correct",
+  "id": "7",
+  "description": "Smoke test: load _03_engineered/nielsen/CSD/csd_feature_matrix.parquet, assert shape==(2666,24), brand count==62, split_dates train_start=='2022-10'. Confirm no engineered/, views/, metadata/ remain in _02_preprocessing/nielsen/.",
+  "activeForm": "Verifying _03_engineered CSD data",
+  "status": "pending",
+  "blocks": []
+}

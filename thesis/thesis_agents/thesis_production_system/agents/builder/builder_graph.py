@@ -249,8 +249,8 @@ def build_graph():
 def run_builder(
     goal: str,
     max_trials: int = 30,
-    feature_matrix_path: str = "results/phase1/feature_matrix.parquet",
-    consumer_signals_path: str = "results/phase1/consumer_signals.json",
+    feature_matrix_path: str = "thesis/analysis/outputs/phase1/feature_matrix.parquet",
+    consumer_signals_path: str = "thesis/analysis/outputs/phase1/consumer_signals.json",
 ) -> BuilderState:
     """
     Convenience function to run the full Builder loop from the Thesis Coordinator.

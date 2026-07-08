@@ -1,0 +1,15 @@
+{
+  "id": "10",
+  "subject": "Extract actual feature matrix dimensions and definitions",
+  "description": "Run preprocessing_csd.py and load the output csd_feature_matrix.parquet. Verify: (a) Shape = 62 brands \u00d7 43 periods \u00d7 24 features (or actual dimensions). (b) Column names and types (lags, rolling means, seasonal indicators, trend, etc.). (c) No NaN values after engineering. (d) Feature scaling applied? Output: feature_matrix_spec.md with {columns: [names], dtypes: [types], shape: [...], sample_data: [...]}",
+  "activeForm": "Extracting feature matrix dimensions and definitions",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "7",
+    "8",
+    "9"
+  ]
+}

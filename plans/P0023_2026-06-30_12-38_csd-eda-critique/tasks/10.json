@@ -1,0 +1,9 @@
+{
+  "id": "10",
+  "subject": "Fix promo intensity metric to remove denominator bias",
+  "description": "Cell 14: replace /(sales_units+1) with /sales_units.clip(lower=1). Add assertion promo_intensity<=1.0 for rows where sales_units>0. Add zero-sales row count with promo_units>0 as data quality flag.",
+  "activeForm": "Fixing promo intensity metric bias",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

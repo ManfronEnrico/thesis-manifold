@@ -1,0 +1,11 @@
+{
+  "id": "9",
+  "subject": "Move persistent reference docs from plan folder to docs/analysis/",
+  "description": "Move the following docs from plans/P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/ to docs/analysis/nielsen-preprocessing/ (create subdirectory):\n- 2026-05-14_DOC-monolithic-to-modularized-insights.md \u2192 MOVE to docs/analysis/nielsen-preprocessing/ (architectural reference, useful beyond P0022)\n- 2026-05-15_DOC-eda-design-rationale.md \u2192 MOVE to docs/analysis/nielsen-preprocessing/ (CSD EDA parameter justification, thesis-citable reference)\nThe following STAY in plan folder (plan artifacts only):\n- STEP_SCRIPT_TEMPLATE.md (template, plan-scoped)\n- 2026-05-14_DOC-consolidation-and-cleanup-plan.md (plan artifact)\n- 2026-05-07_DOC-* series (phase completion notes, plan-scoped)\n- archive/ subfolder (already correctly placed)\nCreate docs/analysis/nielsen-preprocessing/ directory. Move 2 files. Update any cross-references in P0022 plan doc that point to the moved files.",
+  "activeForm": "Routing plan docs to docs/analysis/",
+  "status": "completed",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": []
+}

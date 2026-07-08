@@ -1,0 +1,14 @@
+{
+  "blockedBy": [],
+  "subject": "Create feature branch for data folder cleanup",
+  "id": "1",
+  "description": "Run: git checkout -b chore/data-folder-cleanup. All cleanup file moves and deletes must happen on this branch, not main. Verify with git branch --show-current.",
+  "activeForm": "Creating feature branch",
+  "status": "pending",
+  "blocks": [
+    "2",
+    "3",
+    "4",
+    "5"
+  ]
+}

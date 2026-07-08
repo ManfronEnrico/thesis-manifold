@@ -1,0 +1,9 @@
+{
+  "id": "3",
+  "subject": "Add per-brand ADF stationarity analysis",
+  "description": "Replace Cell 4: run ADF per brand on raw, log1p, and diff series. Summary table with recommended_transform per brand. Replace single log_necessary flag with per-brand dict. Update findings JSON.",
+  "activeForm": "Adding per-brand ADF stationarity analysis",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -35,7 +35,7 @@ else:
 
 sys.path.insert(0, str(ROOT_DIR))
 
-from PATHS import THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outputs_dir
+from PATHS import get_category_pipeline_step_outputs_dir, get_category_engineered_dir
 from METADATA import get_dimension_info
 from thesis.thesis_agents.ai_research_framework.features.engineer_features import (
 	build_series_index,
@@ -44,10 +44,10 @@ from thesis.thesis_agents.ai_research_framework.features.engineer_features impor
 	DEFAULT_TRAIN_END as TRAIN_END,
 	DEFAULT_VAL_END as VAL_END,
 )
-from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
+from thesis.data._02_preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_info, print_data_preview
 )
-from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timing
+from thesis.data._02_preprocessing.nielsen.shared.timing_utils import log_step_timing
 from rich.table import Table
 from rich.console import Console
 
@@ -89,7 +89,7 @@ STEP_NAME = "Save Outputs"
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
 INPUT_SPLIT_APPLIED_PARQUET = STEP_OUTPUT_DIR / f"step_5_split_applied.parquet"
 
-OUTPUT_ENGINEERED_DIR = THESIS_DATA_PREPROCESSING_DIR / "nielsen" / CATEGORY / "engineered"
+OUTPUT_ENGINEERED_DIR = get_category_engineered_dir(CATEGORY)
 OUTPUT_FEATURE_MATRIX = OUTPUT_ENGINEERED_DIR / f"{CATEGORY.lower()}_feature_matrix.parquet"
 OUTPUT_SERIES_INDEX = OUTPUT_ENGINEERED_DIR / f"{CATEGORY.lower()}_series_index.csv"
 OUTPUT_SPLIT_DATES = OUTPUT_ENGINEERED_DIR / f"{CATEGORY.lower()}_split_dates.json"

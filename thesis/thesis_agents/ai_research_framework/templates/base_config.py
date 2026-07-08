@@ -11,10 +11,10 @@ re-running PCA (which is both slow and RAM-intensive).
 
 Usage (standalone — executed by the Executor sub-agent as a subprocess):
     python base_config.py --config '{"trial_id": "t_001", ...}' \
-                          --feature-matrix results/phase1/feature_matrix.parquet \
-                          --consumer-signals results/phase1/consumer_signals.json
+                          --feature-matrix thesis/analysis/outputs/phase1/feature_matrix.parquet \
+                          --consumer-signals thesis/analysis/outputs/phase1/consumer_signals.json
 
-Output written to: results/trial_{trial_id}.json
+Output written to: thesis/analysis/outputs/trial_{trial_id}.json
 Schema:
     {
       "trial_id": str,
@@ -282,8 +282,8 @@ def extract_metrics(model_forecasts: Dict[str, Any]) -> Tuple[float, float]:
 
 def write_output(trial_id: str, result: Dict[str, Any]) -> Path:
     """
-    Write the trial result JSON to results/trial_{trial_id}.json.
-    Creates the results/ directory if it does not exist.
+    Write the trial result JSON to thesis/analysis/outputs/trial_{trial_id}.json.
+    Creates the thesis/analysis/outputs/ directory if it does not exist.
 
     Parameters
     ----------
@@ -329,7 +329,7 @@ def run_trial(
     Returns
     -------
     dict
-        TrialResult-compatible dict written to results/trial_{trial_id}.json.
+        TrialResult-compatible dict written to thesis/analysis/outputs/trial_{trial_id}.json.
     """
     result: Dict[str, Any] = {
         "trial_id": trial_id,
@@ -398,13 +398,13 @@ def main() -> None:
     parser.add_argument(
         "--feature-matrix",
         type=str,
-        default="results/phase1/feature_matrix.parquet",
+        default="thesis/analysis/outputs/phase1/feature_matrix.parquet",
         help="Path to Phase 1 feature matrix file",
     )
     parser.add_argument(
         "--consumer-signals",
         type=str,
-        default="results/phase1/consumer_signals.json",
+        default="thesis/analysis/outputs/phase1/consumer_signals.json",
         help="Path to Phase 1 consumer signals JSON",
     )
     args = parser.parse_args()

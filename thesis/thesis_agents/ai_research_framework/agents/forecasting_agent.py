@@ -19,7 +19,7 @@ Models (7 total):
   5. XGBoost v2      -- larger grid, colsample_bytree added
   6. Ensemble        -- weighted average XGBoost + Ridge (Ridge weight 0 if unstable)
 
-Output files (results/phase1/):
+Output files (thesis/analysis/outputs/phase1/):
   benchmark_results_v2.csv    -- one row per (brand x model)
   benchmark_summary_v2.md     -- ranked summary table + RAM profile
 
@@ -644,7 +644,7 @@ def main():
 
 ## Raw Results
 
-`results/phase1/benchmark_results_v2.csv`
+`thesis/analysis/outputs/phase1/benchmark_results_v2.csv`
 """
     (OUT / "benchmark_summary_v2.md").write_text(report)
     print(f"\nReport: {OUT / 'benchmark_summary_v2.md'}")

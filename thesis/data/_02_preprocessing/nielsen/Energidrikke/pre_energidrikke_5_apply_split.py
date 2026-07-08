@@ -38,11 +38,11 @@ from thesis.thesis_agents.ai_research_framework.features.engineer_features impor
 	DEFAULT_TRAIN_END as TRAIN_END,
 	DEFAULT_VAL_END as VAL_END,
 )
-from thesis.data.preprocessing.nielsen.shared.terminal_utils import (
+from thesis.data._02_preprocessing.nielsen.shared.terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
 	print_step_summary, print_info
 )
-from thesis.data.preprocessing.nielsen.shared.timing_utils import log_step_timing
+from thesis.data._02_preprocessing.nielsen.shared.timing_utils import log_step_timing
 
 # ============================================================================
 # METADATA DEFINITIONS

@@ -1,0 +1,13 @@
+{
+  "id": "2",
+  "subject": "Verify data source and cache reorganization",
+  "description": "Read pre_csd_0_cache.py and verify parquet cache location resolves to thesis/data/converted/nielsen/parquet_nielsen/CSD/views/. Check that all 4 view files exist (facts_v, dim_product_v, dim_period_v, dim_market_v). Confirm post-June22-fix that preprocessing_csd.py no longer throws 'cache not found' error. Output: data_integrity_checklist.md",
+  "activeForm": "Verifying data source and cache setup",
+  "status": "pending",
+  "blocks": [
+    "6"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "13",
+  "subject": "Evaluate CBS Design Science Research compliance",
+  "description": "Check preprocessing documentation against DSR framework (Hevner 2004, Peffers 2007): (1) Problem stated (forecast-informed decision support)? (2) Design objectives clear (8GB RAM, \u226415% MAPE)? (3) Artefact design choices documented? (4) Implementation justified (why these steps, these parameters)? (5) Evaluation plan stated (System A integration criteria)? Output: dsr_compliance_audit.md with gaps + recommendations for thesis Chapter 4.",
+  "activeForm": "Evaluating DSR compliance for thesis methodology",
+  "status": "pending",
+  "blocks": [
+    "14"
+  ],
+  "blockedBy": [
+    "11"
+  ]
+}

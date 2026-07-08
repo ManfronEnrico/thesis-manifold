@@ -1,0 +1,14 @@
+{
+  "id": "14",
+  "subject": "Assess System A integration readiness",
+  "description": "Verify preprocessing outputs meet System A requirements: (1) Feature matrix ready for Ridge/ARIMA/Prophet/LightGBM/XGBoost? (2) Missing values handled (or will models reject them)? (3) Feature scaling needed? (4) Time index deterministic? (5) Train/val/test split aligned with agent evaluation plan? (6) Uncertainty quantification ready (intervals for forecasts)? Output: system_a_readiness.md with blockers + recommendations.",
+  "activeForm": "Assessing System A forecasting model readiness",
+  "status": "pending",
+  "blocks": [
+    "15"
+  ],
+  "blockedBy": [
+    "12",
+    "13"
+  ]
+}

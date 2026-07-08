@@ -1,0 +1,13 @@
+{
+  "id": "2",
+  "subject": "Create Energidrikke EDA script from CSD template",
+  "description": "Copy thesis/data/preprocessing/nielsen/CSD/pre_csd_1.5_eda.py to thesis/data/preprocessing/nielsen/Energidrikke/pre_energidrikke_1.5_eda.py. Change CATEGORY variable from 'CSD' to 'Energidrikke' (and any csd_ prefixed filenames/paths). Verify the script loads from the correct step_1 parquet (Energidrikke/pipeline_step_outputs/step_1_log.json confirms step 1 ran). Run the script to generate energidrikke_eda_findings.json in Energidrikke/pipeline_step_outputs/. Confirm JSON findings file is created and contains the key parameters: MIN_PERIODS, LAGS, ROLLING_WINDOWS, HOLIDAY_MONTHS, TRAIN_END, VAL_END.",
+  "activeForm": "Creating Energidrikke EDA script",
+  "status": "pending",
+  "blocks": [
+    "5"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

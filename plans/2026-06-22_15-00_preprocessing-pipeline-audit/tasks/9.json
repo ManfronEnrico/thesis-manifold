@@ -1,0 +1,13 @@
+{
+  "id": "9",
+  "subject": "Verify train/val/test split dates and forward-chaining",
+  "description": "Read Step 5 (Apply Split) script for CSD. Verify: (a) Train end = (2024, 10), Val end = (2025, 4). (b) No look-ahead bias (test data is temporal future). (c) Forward-chaining enforced (no random shuffling). (d) Check if split dates are hardcoded (CSD-only) or parameterized (all categories). Output: split_verification.md",
+  "activeForm": "Verifying train/val/test split integrity",
+  "status": "pending",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "6"
+  ]
+}

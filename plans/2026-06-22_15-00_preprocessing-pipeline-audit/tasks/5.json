@@ -1,0 +1,13 @@
+{
+  "id": "5",
+  "subject": "Check for random seed and reproducibility",
+  "description": "Search all preprocessing scripts for: np.random.seed(), random.seed(), train_test_split(random_state=...), or any non-deterministic operations. Verify output is deterministic (same input \u2192 same output). Output: reproducibility_checklist.md with findings.",
+  "activeForm": "Checking reproducibility and random seeds",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

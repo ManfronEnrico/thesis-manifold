@@ -1,0 +1,14 @@
+{
+  "id": "1",
+  "subject": "Map all preprocessing scripts across 6 categories",
+  "description": "List all preprocessing scripts in thesis/data/preprocessing/nielsen/. For each category (CSD, Danskvand, Energidrikke, RTD, Totalbeer, and shared), identify step scripts (pre_CATEGORY_N_*.py) and orchestrators. Verify paths match PATHS.py constants. Output: inventory.json with {category: {step: filepath, ...}}",
+  "activeForm": "Mapping preprocessing script inventory",
+  "status": "completed",
+  "blocks": [
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "blockedBy": []
+}

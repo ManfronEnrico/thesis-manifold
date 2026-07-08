@@ -1,0 +1,13 @@
+{
+  "id": "15",
+  "subject": "Create comprehensive preprocessing audit report",
+  "description": "Synthesize all findings into single audit report (markdown): (1) Executive summary (what works, what's missing). (2) Detailed findings per phase (data integrity, feature engineering, stationarity, seasonality, parameters). (3) Critical issues (blockers for thesis/System A). (4) Recommendations (fix now vs document vs defer to Phase 5). (5) Decision matrix: priority \u00d7 effort \u00d7 impact. Output: preprocessing_audit_report.md (2000+ words)",
+  "activeForm": "Writing comprehensive preprocessing audit report",
+  "status": "pending",
+  "blocks": [
+    "16"
+  ],
+  "blockedBy": [
+    "14"
+  ]
+}

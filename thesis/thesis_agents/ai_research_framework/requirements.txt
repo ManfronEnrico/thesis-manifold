@@ -1,4 +1,4 @@
-# AI Research Framework — Python Dependencies
+e# AI Research Framework — Python Dependencies
 # Install: pip install -r ai_research_framework/requirements.txt
 # All packages must be documented in docs/context.md after installation.
 

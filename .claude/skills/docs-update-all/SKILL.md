@@ -16,7 +16,7 @@ Synchronize all living project documentation after completing significant work, 
 ## Quick Start
 
 ```
-/update-all-docs
+/docs-update-all
 ```
 
 **No arguments required.** The skill auto-detects what changed this session and updates only affected documents.
@@ -25,7 +25,7 @@ Synchronize all living project documentation after completing significant work, 
 
 ## When to Use This Skill
 
-Use `/update-all-docs` when you:
+Use `/docs-update-all` when you:
 
 - **Complete major work**: After finishing a chapter, refactoring session, or feature implementation
 - **Change project structure**: After moving files, renaming modules, or reorganizing directories
@@ -62,11 +62,11 @@ The skill activates when you use any of these phrases:
 - `Grep` — Search for stale references across files
 
 **File system access required:**
-- Read: `docs/`, `.claude/rules/`, `.claude/plans/`, `project_updates/`
+- Read: `docs/`, `.claude/rules/`, `plans/`, `project_updates/`
 - Write: All of the above locations
 
 **Git integration:**
-- Does not require git operations; complements `git status` and `/draft-commit`
+- Does not require git operations; complements `git status` and `/git-draft-commit`
 - Works on any branch; output can be committed separately
 
 ---
@@ -74,6 +74,53 @@ The skill activates when you use any of these phrases:
 ## How It Works
 
 The skill processes documents in this strict order, updating only those affected by this session:
+
+### Phase 0: Root Documentation Boundary Check (Optional)
+
+**Purpose:** Proactively detect markdown files at root that may violate project documentation boundaries.
+
+**When to check:**
+- Every time this skill runs (proactive, can be disabled per project)
+- Especially after documentation generation or reorganization
+- Only if your project enforces a root documentation boundary rule
+
+**Action:**
+1. Scan root directory for all `.md` files
+2. Compare against whitelist (define per project; examples: CLAUDE.md, INDEX.md, README.md, setup scripts, requirements files)
+3. If violations found and root-documentation-boundary rule exists:
+   - ⚠️ **Warn user:** List violations with suggested destinations
+   - 📋 **Offer choice:**
+     - **Auto-move:** "Run `/move-docs-to-folders` to relocate files"
+     - **Manual move:** User addresses separately
+     - **Proceed:** Continue with doc updates despite violations
+   - 🛑 **Log violations:** Report at end of workflow with recommendation
+
+**Example output (project-specific):**
+```
+⚠️ ROOT DOCUMENTATION VIOLATIONS DETECTED:
+
+  1. PREPROCESSING_ANALYSIS.md
+     → Suggested destination: docs/tooling/preprocessing-analysis.md
+  
+  2. TEST_REPORT.md
+     → Suggested destination: plans/P{ID}/2026-05-04_DOC-*.md
+
+RECOMMENDATION: Run /move-docs-to-folders to relocate these files
+              to enforce root-documentation-boundary rule.
+
+Continue with doc updates? [Yes] [No - fix violations first]
+```
+
+**Configuration:**
+- Whitelist: Define in `.claude/rules/root-documentation-boundary.md` or project config
+- Routing table: Map document types to folders in rule or config
+- Disable: Skip Phase 0 if your project doesn't enforce root boundaries
+
+**Files checked:**
+- Root directory (*.md files only)
+- Project rule file (if exists): `.claude/rules/root-documentation-boundary.md`
+
+---
 
 ### Phase 1: Session Record — `project_updates/standup_draft.md`
 
@@ -188,7 +235,7 @@ The skill processes documents in this strict order, updating only those affected
 
 **Example output:**
 ```
-✅ CLAUDE.md — added new /update-all-docs workflow description
+✅ CLAUDE.md — added new /docs-update-all workflow description
 ```
 
 ---
@@ -206,7 +253,7 @@ The skill processes documents in this strict order, updating only those affected
 
 **Example output:**
 ```
-✅ CHEATSHEET.md — added /update-all-docs trigger phrase list
+✅ CHEATSHEET.md — added /docs-update-all trigger phrase list
 ```
 
 ---
@@ -246,7 +293,7 @@ The skill processes documents in this strict order, updating only those affected
 
 ---
 
-### Phase 9: Plan Files — `.claude/plans/`
+### Phase 9: Plan Files — `plans/`
 
 **When to update:**
 - Plan was actively discussed, executed, or partially implemented
@@ -340,22 +387,69 @@ After processing all ten phases, the skill produces a summary table:
 
 ---
 
+## Integration with `/move-docs-to-folders` Skill
+
+This skill optionally includes **Phase 0: Root Documentation Boundary Check** (enable per project) to detect violations and offer remediation:
+
+**Workflow:**
+1. User runs `/docs-update-all` after documentation work
+2. Phase 0 (if enabled) scans root for markdown violations
+3. If violations found and project has a boundary rule:
+   - ⚠️ Lists files and suggests destinations (using project routing table)
+   - Offers to run `/move-docs-to-folders` automatically
+   - Or user can proceed with updates despite violations
+4. Violations logged in output with recommendations
+
+**Example (Thesis Project):**
+```
+/docs-update-all
+
+⚠️ ROOT DOCUMENTATION VIOLATIONS DETECTED:
+
+  PREPROCESSING_ANALYSIS.md → docs/tooling/
+  TEST_REPORT.md → plans/P0019_*/2026-05-04_DOC-*.md
+
+Run /move-docs-to-folders first? [Yes] [No] [Cancel]
+```
+
+**For Projects Without Boundary Rules:**
+Phase 0 is skipped entirely. The skill proceeds directly to Phase 1.
+
+---
+
+## Related Skills
+
+- `/move-docs-to-folders` — Auto-scan and move root violations to correct locations
+- `/git-draft-commit` — Works with updated docs to generate commit messages
+- `/git-commit` — Stages all changed documentation for commit
+
+---
+
+## See Also
+
+- `.claude/rules/root-documentation-boundary.md` — Root whitelist and routing table
+- `.claude/rules/trigger-docs-workflow.md` — Complete docs workflow specification
+- `.claude/skills/move-docs-to-folders/` — Auto-relocation skill
+```
+
+---
+
 ## Workflow Integration
 
 This skill is part of the **Thesis Production System** and works alongside:
 
-- **`/draft-commit`** — Generates commit messages from session + standup records
+- **`/git-draft-commit`** — Generates commit messages from session + standup records
 - **`/write-section`** — Converts bullets to prose (outputs feed into Phase 2)
 - **`/update-outline`** — Modifies thesis structure (triggering Phase 2 updates)
-- **`/log-standup`** — Manual standup logging (feeds Phase 1)
+- **`/standup-log`** — Manual standup logging (feeds Phase 1)
 
 **Typical flow:**
 ```
 1. /write-section 02_lit_review
    ↓ (outputs approved prose)
-2. /update-all-docs
+2. /docs-update-all
    ↓ (syncs all docs)
-3. /draft-commit
+3. /git-draft-commit
    ↓ (stages files)
 4. git push
 ```
@@ -374,16 +468,16 @@ This skill is part of the **Thesis Production System** and works alongside:
 - Plans must follow `YYYY-MM-DD_<slug>.md` naming. The skill auto-renames during Phase 8.
 
 **Q: "CLAUDE.md Quick Start order doesn't match my workflow"**
-- Edit CLAUDE.md manually to reorder, then `/update-all-docs` will preserve that order.
+- Edit CLAUDE.md manually to reorder, then `/docs-update-all` will preserve that order.
 
 ---
 
 ## Notes & Best Practices
 
-- **Run before committing**: Use `/update-all-docs` → `/draft-commit` → `git add` → `git push` workflow
+- **Run before committing**: Use `/docs-update-all` → `/git-draft-commit` → `git add` → `git push` workflow
 - **Skip full sync on minor edits**: You can manually edit single files (e.g., CHEATSHEET.md) without invoking this skill
 - **Combine with standup**: This skill auto-includes standup entries from `project_updates/standup_draft.md`
-- **Plan outcomes are manual**: The skill appends the outcome section; you provide the content via `/log-standup` or manual entry
+- **Plan outcomes are manual**: The skill appends the outcome section; you provide the content via `/standup-log` or manual entry
 
 ---
 
@@ -392,5 +486,5 @@ This skill is part of the **Thesis Production System** and works alongside:
 - `.claude/rules/trigger-docs-workflow.md` — Complete workflow spec
 - `CLAUDE.md` — Project navigation hub
 - `docs/dev/repository_map.md` — File and module inventory
-- `/draft-commit` — Generate commit messages from updated docs
+- `/git-draft-commit` — Generate commit messages from updated docs
 - `/write-section` — Thesis writing workflow that feeds docs updates

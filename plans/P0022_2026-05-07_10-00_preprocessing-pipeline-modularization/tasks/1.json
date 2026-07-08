@@ -1,0 +1,13 @@
+{
+  "id": "1",
+  "subject": "Audit and canonicalize CSD EDA script",
+  "description": "Verify which EDA scripts exist in thesis/data/preprocessing/nielsen/CSD/. Currently confirmed: pre_csd_1.5_eda.py and pre_csd_1.5_eda.ipynb. The 2026-05-14 consolidation plan called for renaming the _expanded variant to pre_csd_eda.py and deleting the superseded scripts. Check what files actually exist (glob), determine which is the canonical/most complete version, rename it to pre_csd_1.5_eda.py (or confirm current name is final), delete any superseded duplicates. Verify the log_necessary NameError bug fix (add `log_necessary = None` before the statsmodels block) is already applied. Verify by running: python pre_csd_1.5_eda.py --help or a dry import check. Output: single canonical EDA script with no duplicates.",
+  "activeForm": "Auditing CSD EDA scripts",
+  "status": "pending",
+  "blocks": [
+    "2",
+    "3",
+    "4"
+  ],
+  "blockedBy": []
+}

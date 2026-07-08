@@ -10,12 +10,10 @@ __pycache__/
 venv/
 env/
 *.egg-info/
-
 # Environment / secrets
 .env
 .env.*
 *.key
-
 # Data files (do not upload sensitive datasets)
 *.csv
 *.xlsx
@@ -25,25 +23,19 @@ env/
 *.db
 *.sqlite
 *.7z
-
 # Exception: literature review CSV is safe to track
 !2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv
-
 # Model artifacts & intermediate binaries (regenerable from notebook)
 *.npy
 *.pkl
-
 # OS
 .DS_Store
 Thumbs.db
-
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
-
 # Claude local memory (machine-specific)
 .claude/projects/
-
 # LaTeX build artifacts
 build/
 *.pdf
@@ -61,11 +53,9 @@ build/
 *.nav
 *.snm
 *.vrb
-
 # Obsidian workspace (machine-specific)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
-
 # Exception: thesis notebooks + their structured CSV outputs
 # (placed last so they override *.ipynb and *.csv rules above)
 !docs/thesis/analysis/thesis_notebook.ipynb
@@ -76,6 +66,7 @@ build/
 !docs/thesis/analysis/outputs_agentic/*.json
 .claude/settings.local.json
 .claude/logs/
-
 # External confidential code (Manifold/RU Graph Engine) — local working copy only
 graph-engine/
+*.jsonl
+**\settings.local.json

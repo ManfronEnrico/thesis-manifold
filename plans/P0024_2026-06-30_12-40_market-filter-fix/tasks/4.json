@@ -1,0 +1,9 @@
+{
+  "id": "4",
+  "subject": "Fix market filter in RTD pre_rtd_1_load_and_aggregate.py",
+  "description": "Add TARGET_MARKET=DVH EXCL. HD, market dim join, and market_description filter before groupby.",
+  "activeForm": "Fixing RTD market filter",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,26 @@
+# Nielsen Fabric Database Schema
+
+**Snapshot:** 2026-06-30T15:55:08.954204
+**Total Objects:** 52 (Views: 20, Tables: 32)
+
+## Views (Cleaned Data for Modeling)
+- csd_clean_dim_market_v (86 rows)
+- csd_clean_dim_period_v (44 rows)
+- csd_clean_dim_product_v (2,103 rows)
+- csd_clean_facts_v (9,824,601 rows)
+- danskvand_clean_dim_market_v (86 rows)
+- danskvand_clean_dim_period_v (39 rows)
+- danskvand_clean_dim_product_v (570 rows)
+- danskvand_clean_facts_v (1,315,542 rows)
+- energidrikke_clean_dim_market_v (86 rows)
+- energidrikke_clean_dim_period_v (41 rows)
+- energidrikke_clean_dim_product_v (770 rows)
+- energidrikke_clean_facts_v (3,290,631 rows)
+- rtd_clean_dim_market_v (86 rows)
+- rtd_clean_dim_period_v (39 rows)
+- rtd_clean_dim_product_v (623 rows)
+- rtd_clean_facts_v (2,299,796 rows)
+- totalbeer_clean_dim_market_v (86 rows)
+- totalbeer_clean_dim_period_v (41 rows)
+- totalbeer_clean_dim_product_v (5,701 rows)
+- totalbeer_clean_facts_v (16,292,742 rows)

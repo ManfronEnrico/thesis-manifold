@@ -80,7 +80,7 @@ STEP_NAME = "Apply Split"
 # CSD-specific split dates (from EDA analysis, Cell 7)
 CSD_TRAIN_END = (2024, 10)  # 24 months training data
 CSD_VAL_END = (2025, 4)     # 6 months validation data
-# Test automatically: remaining data (2025-04 to 2026-04)
+# Test automatically: remaining data (2025-04 to 2026-05)
 
 # Input/Output paths
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)

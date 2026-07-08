@@ -7,7 +7,7 @@ test set (Sep 2025 - Mar 2026, 7 periods).
 Training strategy: retrain on train+val combined (35 periods) before
 predicting test -- this is the correct procedure for final evaluation.
 
-Output files (results/phase1/):
+Output files (thesis/analysis/outputs/phase1/):
   test_results.csv       -- one row per (brand x model)
   test_summary.md        -- final ranked table for thesis
 

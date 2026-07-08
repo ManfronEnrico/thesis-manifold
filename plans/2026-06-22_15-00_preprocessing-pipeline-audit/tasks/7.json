@@ -1,0 +1,14 @@
+{
+  "id": "7",
+  "subject": "Verify stationarity treatment in feature engineering",
+  "description": "From Step 4 script, confirm: (a) Is sales_units log-transformed before feature creation? (b) Is differencing applied? (c) Are features created on stationary or non-stationary base? Cross-reference with EDA findings (ADF test shows log transform necessary). Output: stationarity_treatment.md with code + verification.",
+  "activeForm": "Verifying stationarity treatment and transformations",
+  "status": "pending",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "3",
+    "6"
+  ]
+}

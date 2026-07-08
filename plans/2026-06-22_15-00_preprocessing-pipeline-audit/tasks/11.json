@@ -1,0 +1,16 @@
+{
+  "id": "11",
+  "subject": "Compare preprocessing against time series academic standards",
+  "description": "Against 10 time series best practices checklist: (1) stationarity testing, (2) autocorrelation analysis (ACF/PACF), (3) seasonality decomposition, (4) lag justification, (5) outlier detection, (6) feature scaling, (7) multicollinearity check, (8) causality (Granger, if applicable), (9) regime change detection, (10) reproducibility. For each, rate: \u2705 Done / \ud83d\udfe1 Partial / \u274c Missing. Output: academic_standards_assessment.md",
+  "activeForm": "Assessing against academic time series standards",
+  "status": "pending",
+  "blocks": [
+    "12",
+    "13"
+  ],
+  "blockedBy": [
+    "4",
+    "5",
+    "10"
+  ]
+}
