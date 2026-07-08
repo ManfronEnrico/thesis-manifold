@@ -6,7 +6,14 @@
       "Bash(git log*)",
       "Bash(git diff*)",
       "Bash(git add*)",
-      "Bash(git commit*)"
+      "Bash(git commit*)",
+      "Bash(ssh -o BatchMode=yes -o ConnectTimeout=10 enrico@52.158.35.239 ' *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(find notebooks/preprocessing_pipeline -maxdepth 2 -type d)",
+      "Bash(ls -1 notebooks/preprocessing_pipeline/)",
+      "Bash(ls -1 thesis/data/)",
+      "Bash(ls -1 docs/handovers/)",
+      "Bash(ls -1 docs/handover/)"
     ]
   },
   "model": "opus"

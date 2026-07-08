@@ -1,0 +1,48 @@
+<svg viewBox="0 0 760 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hierarchy with soft translucent colours: main research question and four subsidiary questions">
+  <title>Research question hierarchy</title>
+  <rect x="0" y="0" width="760" height="290" fill="#ffffff"/>
+
+  <rect x="210" y="16" width="340" height="66" rx="8" fill="#a8322f" fill-opacity="0.18" stroke="#cf938e" stroke-width="1.4"/>
+  <text x="380" y="38" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="9.5" font-weight="700" letter-spacing="1.2" fill="#9b2c28">MAIN RESEARCH QUESTION</text>
+  <text x="380" y="58" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" fill="#6f201d">Extending non-predictive agentic systems</text>
+  <text x="380" y="74" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" fill="#6f201d">with cost-justified forecast-informed support</text>
+
+  <g stroke="#c2c8d0" stroke-width="1.4" fill="none">
+    <path d="M380 82 V110"/>
+    <path d="M92 110 H668"/>
+    <path d="M92 110 V150"/>
+    <path d="M284 110 V150"/>
+    <path d="M476 110 V150"/>
+    <path d="M668 110 V150"/>
+  </g>
+
+  <g font-family="Helvetica Neue, Arial, sans-serif" text-anchor="middle">
+    <rect x="8" y="150" width="168" height="120" rx="8" fill="#f1d36e" fill-opacity="0.32" stroke="#e0c66f" stroke-width="1.2"/>
+    <rect x="65" y="166" width="54" height="20" rx="10" fill="#ecd48a"/><text x="92" y="180" font-size="10.5" font-weight="700" fill="#6b5618">SRQ&#8201;1</text>
+    <text x="92" y="210" font-size="12.5" font-weight="700" fill="#3d3320">Forecasting</text>
+    <text x="92" y="226" font-size="12.5" font-weight="700" fill="#3d3320">substrate</text>
+    <text x="92" y="247" font-size="10.5" fill="#7c6c44">Accuracy vs deployability</text>
+    <text x="92" y="261" font-size="10.5" fill="#7c6c44">under an 8&#8201;GB budget</text>
+
+    <rect x="200" y="150" width="168" height="120" rx="8" fill="#f1d36e" fill-opacity="0.32" stroke="#e0c66f" stroke-width="1.2"/>
+    <rect x="257" y="166" width="54" height="20" rx="10" fill="#ecd48a"/><text x="284" y="180" font-size="10.5" font-weight="700" fill="#6b5618">SRQ&#8201;2</text>
+    <text x="284" y="210" font-size="12.5" font-weight="700" fill="#3d3320">Structured tool</text>
+    <text x="284" y="226" font-size="12.5" font-weight="700" fill="#3d3320">interface</text>
+    <text x="284" y="247" font-size="10.5" fill="#7c6c44">Reliability, uncertainty,</text>
+    <text x="284" y="261" font-size="10.5" fill="#7c6c44">and traceability</text>
+
+    <rect x="392" y="150" width="168" height="120" rx="8" fill="#f1d36e" fill-opacity="0.32" stroke="#e0c66f" stroke-width="1.2"/>
+    <rect x="449" y="166" width="54" height="20" rx="10" fill="#ecd48a"/><text x="476" y="180" font-size="10.5" font-weight="700" fill="#6b5618">SRQ&#8201;3</text>
+    <text x="476" y="210" font-size="12.5" font-weight="700" fill="#3d3320">Integration</text>
+    <text x="476" y="226" font-size="12.5" font-weight="700" fill="#3d3320">readiness</text>
+    <text x="476" y="247" font-size="10.5" fill="#7c6c44">Capabilities of the host</text>
+    <text x="476" y="261" font-size="10.5" fill="#7c6c44">agentic system</text>
+
+    <rect x="584" y="150" width="168" height="120" rx="8" fill="#f1d36e" fill-opacity="0.32" stroke="#e0c66f" stroke-width="1.2"/>
+    <rect x="641" y="166" width="54" height="20" rx="10" fill="#ecd48a"/><text x="668" y="180" font-size="10.5" font-weight="700" fill="#6b5618">SRQ&#8201;4</text>
+    <text x="668" y="210" font-size="12.5" font-weight="700" fill="#3d3320">ML integration</text>
+    <text x="668" y="226" font-size="12.5" font-weight="700" fill="#3d3320">vs LLM-coder</text>
+    <text x="668" y="247" font-size="10.5" fill="#7c6c44">Correctness, consistency,</text>
+    <text x="668" y="261" font-size="10.5" fill="#7c6c44">replicability, cost</text>
+  </g>
+</svg>

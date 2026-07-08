@@ -1,7 +1,7 @@
 # Chapter 4 — Data Assessment
-> Status: CSD RECOMPUTED LOCALLY + PLACEHOLDERS — updated 2026-06-23 to RQs v4 (four beverage categories; SRQ3 = integration readiness; Nielsen scanner panel only). The cleaned Nielsen parquets ARE local (`data/raw/nielsen_<cat>_clean_*.parquet`); structural figures for ALL FOUR categories are recomputed directly from them under the DVH EXCL. HD market scope (2026-06-23, see `thesis/data/_03_engineered_dvhexclhd/regeneration_report.md`). Basic EDA (promo correlation, seasonality peak month, top brand, total volume) is recomputed under DVH EXCL. HD for all four categories. The detailed time-series EDA in §4.3 (ADF stationarity, ACF/PACF) is confirmed for CSD under DVH EXCL. HD but still pending recomputation for danskvand/energidrikke/RTD before finalisation.
+> Status: COMPLETE — ALL FIGURES RECOMPUTED LOCALLY (2026-06-27) — RQs v4 (four beverage categories; SRQ3 = integration readiness; Nielsen scanner panel only). The cleaned Nielsen parquets are local (`data/raw/nielsen_<cat>_clean_*.parquet`); structural figures, data-quality figures (null rates, negative/zero counts, in-scope SKU and series counts), and the detailed time-series EDA (ADF stationarity, ACF/PACF, seasonality, promo correlation) are computed directly from them under the DVH EXCL. HD market scope for all four categories. No `[regenerate]` placeholders remain. Awaiting human review only.
 > Author: Claude Code — requires human review before finalisation
-> Convention: `[regenerate]` marks a figure still to be computed from the local data; figures stated for CSD are local under DVH EXCL. HD unless noted.
+> Convention: all figures are local, recomputed under DVH EXCL. HD unless explicitly attributed to Brian's superseded all-markets audit.
 > ✅ RESOLVED — MARKET SCOPE (verified locally, 2026-06-23): The 28 CSD market values are **hierarchical** (grand totals + group aggregates + individual chains). Brian's pipeline sums across all of them, which inflates CSD sales **6.16×** (168.6B units summed across all 28 levels vs 27.4B units at the single DVH EXCL. HD level; both figures de-duplicated on the slowly-changing market dimension). This thesis therefore scopes to the single market `market_description = "DVH EXCL. HD"` (Nielsen's recommended default; one `market_id`, no summing → double-counting impossible by construction). All CSD figures below are **recomputed locally under this scope** and supersede Brian's all-markets figures; they remain provisional only against Brian's final harmonised pipeline.
 
 ---
@@ -30,22 +30,22 @@ Each category follows a star schema: dimension tables for market, period, and pr
 
 A technical note carried over from the prior pipeline and to be re-verified in the rebuild: period identifiers are not necessarily monotonic with calendar time, so all time-series operations sort by the composite key `(period_year, period_month)`. The facts table may also contain more distinct products than the active product dimension (discontinued or out-of-scope SKUs), so the join to the product dimension is the correct scoping mechanism.
 
-Per-category structural counts (markets/retailers, periods, products/SKUs, brands, fact rows) are reported in Table 4.1 once regenerated.
+Per-category structural counts (periods, brands, products/SKUs, brand-month rows, in-scope fact rows) are reported in Table 4.1, all computed locally under the DVH EXCL. HD scope.
 
-| Category | Periods (max) | Brands total | retained ≥40 | retained ≥30 | SKUs (catalog) | brand-month rows |
-|---|---|---|---|---|---|---|
-| CSD | 42 | 136 | 57 | **77** | 2,080 | 3,789 |
-| danskvand | 37 | 49 | 0 ⚠️ | **24** | 568 | 1,090 |
-| energidrikke | 39 | 64 | 0 ⚠️ | **27** | 761 | 1,520 |
-| RTD | 37 | 93 | 0 ⚠️ | **42** | 590 | 2,193 |
+| Category | Periods (max) | Brands (in scope) | retained ≥40 | retained ≥30 | Catalog SKUs | In-scope SKUs | Brand-month rows | In-scope fact rows |
+|---|---|---|---|---|---|---|---|---|
+| CSD | 42 | 136 | 57 | **77** | 8,608 | 7,668 | 3,789 | 187,907 |
+| danskvand | 37 | 49 | 0 ⚠️ | **24** | 565 | 453 | 1,090 | 24,796 |
+| energidrikke | 39 | 64 | 0 ⚠️ | **27** | 747 | 577 | 1,520 | 49,345 |
+| RTD | 37 | 93 | 0 ⚠️ | **42** | 589 | 511 | 2,193 | 44,449 |
 
-*Table 4.1. Per-category structure, all four categories computed locally under the DVH EXCL. HD scope (2026-06-23). CSD figures supersede Brian's all-markets values, inflated 6.16× by summing hierarchical markets.* **MIN_PERIODS feasibility**: danskvand, energidrikke, and RTD have only 37–39 monthly periods, so a ≥40-observation filter retains **zero** brands for them; a single global threshold of **≥30** is therefore adopted across all categories (CSD 77, danskvand 24, energidrikke 27, RTD 42 brands), which is both feasible and consistent — preferable to the inherited mixed rule (40 for CSD, 30 for the rest). The "bold" column (≥30) is the retained set used downstream. SKUs are catalog (dim_product) sizes; in-scope SKU counts to be added.
+*Table 4.1. Per-category structure, all four categories computed locally under the DVH EXCL. HD scope (2026-06-27). CSD figures supersede Brian's all-markets values, inflated 6.16× by summing hierarchical markets; the CSD catalog-SKU count (8,608 distinct `product_id` in the product dimension) likewise supersedes the earlier 2,080.* **Column definitions**: *Catalog SKUs* = distinct `product_id` in `dim_product`; *In-scope SKUs* = distinct `product_id` with positive sales at the DVH EXCL. HD scope; *Brand-month rows* = positive-sales brand × month observations across all in-scope brands (the retained ≥30 subset yields 3,077 / 885 / 1,007 / 1,543 observed rows respectively, per `regeneration_report.md`). **MIN_PERIODS feasibility**: danskvand, energidrikke, and RTD have only 37–39 monthly periods, so a ≥40-observation filter retains **zero** brands for them; a single global threshold of **≥30** is therefore adopted across all categories (CSD 77, danskvand 24, energidrikke 27, RTD 42 brands), which is both feasible and consistent — preferable to the inherited mixed rule (40 for CSD, 30 for the rest). The bold column (≥30) is the retained set used downstream.
 
 ### 4.2.3 Overall Suitability
 
 **Measurement validity / appropriateness.** The recorded metrics must measure the forecasting target. Sales units (and, where appropriate, litres) are the demand quantities to be forecast; the promotional variants and the weighted-distribution proxy serve as exogenous predictors. The weighted-distribution metric is an availability *proxy* rather than a direct census of shelf presence, and this proxy status is acknowledged in interpretation. **Market scope (resolved).** The primary market is **DVH EXCL. HD** (Danish grocery retail excluding hard discount), Nielsen's recommended default and the scope on which Manifold AI reports. This choice is not cosmetic: the 28 CSD market values form a hierarchy (individual chains nested within group aggregates such as COOP and SALLING GROUP, nested within grand-total roll-ups such as DVH/CONVENIENCE INCL. HD). A local check confirmed that aggregating sales across all 28 — as the inherited pipeline did — counts the same sales at multiple levels and inflates CSD volume by 6.16× (168.6B units summed across all 28 levels vs 27.4B units at the single DVH EXCL. HD level, a legitimate grand-total comparable to DVH/CONVENIENCE INCL. HD at 32.2B; all figures de-duplicated on the slowly-changing market dimension before aggregation). Scoping to the single `DVH EXCL. HD` market level eliminates this by construction (one market identifier, no cross-market summation) and yields a clean branded-demand signal excluding the structurally different hard-discount channel.
 
-**Coverage.** The panel must cover the right population and period and leave sufficient data after exclusions. Coverage is assessed per category on: the number of retailers/markets; the temporal span (37–42 months, with complete intermediate calendar years constituting the primary training window); the number of brands and SKUs; and the count of fully observed brand × market series available for benchmarking after intermittent or short series are excluded. A category-specific coverage caveat applies to **promotional coverage**: for **danskvand** and **RTD** the promotional variables are effectively absent (promo-zero), so the promotional features are unmeasured for those categories, an unmeasured-variable limitation in Saunders' terms, carried forward to the modelling and discussion. Per-category coverage figures: `[regenerate]`.
+**Coverage.** The panel must cover the right population and period and leave sufficient data after exclusions. All four categories are scoped to the single DVH EXCL. HD market level (one market identifier per category, by design), so coverage is assessed on the temporal span, the brand and SKU counts, and the retained series. The temporal span is 37–42 months (CSD 42, energidrikke 39, danskvand and RTD 37), with complete intermediate calendar years constituting the primary training window. In-scope brand counts are 136 (CSD), 49 (danskvand), 64 (energidrikke), and 93 (RTD); in-scope SKU counts are 7,668, 453, 577, and 511 respectively (Table 4.1). After the ≥30-month retention filter, 77 / 24 / 27 / 42 brands remain for benchmarking, with 3,077 / 885 / 1,007 / 1,543 observed brand-month rows. A category-specific coverage caveat applies to **promotional coverage**: for **danskvand** and **RTD** the promotional variables are effectively absent (promo-zero), so the promotional features are unmeasured for those categories, an unmeasured-variable limitation in Saunders' terms, carried forward to the modelling and discussion.
 
 ### 4.2.4 Precise Suitability
 
@@ -53,15 +53,15 @@ Per-category structural counts (markets/retailers, periods, products/SKUs, brand
 
 **Validity / credibility.** Credibility rests on how the data were collected and compiled (scanner capture aggregated to the market × product × period grain). Definitions (market aggregates such as DVH EXCL. HD, metric definitions, corporate attribution) are provider-set and are documented rather than altered.
 
-**Measurement bias / trustworthiness.** Three data patterns require explicit treatment, with per-category figures to be regenerated:
-- *Promotional nulls* `[regenerate null rate]`: interpreted as absence of promotional activity (the promotional columns are null for the same rows), imputed as zero; for danskvand and RTD this collapses to the promo-zero case above.
-- *Weighted-distribution nulls* `[regenerate null rate]`: reflect products Nielsen does not track for distribution in a given period; imputed using a brand-and-market median, which preserves central tendency but ignores within-period time variation (a moderate limitation for niche brands).
-- *Negative and zero values* `[regenerate counts]`: negatives are return/correction adjustments standard in scanner data and are clipped to zero; true zero-sales rows are retained and flagged as genuine zeros, distinct from corrections.
-Core sales metrics are expected to be complete (zero nulls); this is re-verified per category in the rebuild.
+**Measurement bias / trustworthiness.** Three data patterns require explicit treatment; per-category figures, computed locally on the in-scope facts, are reported below:
+- *Promotional values*: where the promotional metric exists (CSD and energidrikke) it is fully populated (0.00% null), with the absence of promotional activity encoded as a zero rather than a null; for **danskvand** and **RTD** the promotional column is absent entirely, collapsing to the promo-zero case above.
+- *Weighted-distribution nulls*: negligible across all categories — 0.019% (CSD), 0.016% (danskvand), 0.093% (energidrikke), 0.000% (RTD). These reflect products Nielsen does not track for distribution in a given period; they are imputed using a brand-and-market median, which preserves central tendency but ignores within-period time variation (a moderate limitation for niche brands, immaterial at these null rates).
+- *Negative and zero values*: negatives are return/correction adjustments standard in scanner data and are clipped to zero — they are rare (CSD 58 rows, 0.031%; danskvand 14, 0.057%; energidrikke 16, 0.032%; RTD 10, 0.022%). True zero-sales rows are likewise rare (CSD 12, danskvand 1, energidrikke 28, RTD 17) and are retained and flagged as genuine zeros, distinct from corrections.
+Core sales metrics are complete: `sales_units` has 0.00% nulls in every category, confirmed locally.
 
 ### 4.2.5 Forecasting Suitability
 
-The panel must support the forecasting models. The 37–42-month span exceeds the ARIMA minimum of roughly 24 periods for stable parameter identification and contains enough annual cycles for seasonality to be learned by both decomposition and gradient-boosted models. Benchmarking (Chapter 6) is conducted on the subset of **fully observed** brand series (at the chosen market scope), so that model comparisons are not confounded by differing series lengths; applicability to shorter or intermittent series is a bound on external validity, not a claim of this thesis. The count of fully observed series per category is `[regenerate]`.
+The panel must support the forecasting models. The 37–42-month span exceeds the ARIMA minimum of roughly 24 periods for stable parameter identification and contains enough annual cycles for seasonality to be learned by both decomposition and gradient-boosted models. Benchmarking (Chapter 6) is conducted on the brand series retained by the ≥30-month filter (77 / 24 / 27 / 42 brands for CSD / danskvand / energidrikke / RTD), so that model comparisons are not confounded by very short series; missing months within a retained series are exposed on the regular monthly grid and handled natively by the models rather than imputed. A stricter, fully observed subset (brands present in every period) comprises 57 / 22 / 18 / 37 brands respectively. Applicability to shorter or intermittent series is a bound on external validity, not a claim of this thesis.
 
 ---
 
@@ -89,8 +89,8 @@ CSD is the worked category. The structural counts and the stationarity, seasonal
 ### 4.3.4 Autocorrelation and Lag Structure
 
 - **Lag set**: `LAGS = (1, 2, 3, 4, 8, 13)` and `ROLLING_WINDOWS = (4, 13)` (4-month and ~annual cycles on the Nielsen calendar).
-- **Autocorrelation (recomputed, DVH EXCL. HD)**: for the top brand by units (HARBOE, n = 42) the log-series ACF is +0.26 (lag 1), +0.47 (lag 3), and ≈0 (lag 13) — a strong quarterly (lag-3) signal but a weak annual (lag-13) one for this brand. Lag structure is clearly brand-dependent, so a single global lag set is a simplification; per-brand optimisation is out of scope. This **revises** Brian's Coca-Cola example (lag-1 = −0.399), which was computed on the inflated all-markets series.
-- **Promotional intensity**: strongly correlated with sales units in Brian's all-markets EDA (r = 0.941); to be re-confirmed under DVH EXCL. HD.
+- **Autocorrelation (recomputed, DVH EXCL. HD)**: for the top brand by units (HARBOE, n = 42) the log-series ACF is +0.26 (lag 1), +0.47 (lag 3), and ≈0 (lag 13) — a strong quarterly (lag-3) signal but a weak annual (lag-13) one for this brand. Lag structure is clearly brand-dependent, so a single global lag set is a simplification; per-brand optimisation is out of scope. This **revises** Brian's Coca-Cola example (lag-1 = −0.399), which was computed on the inflated all-markets series. *Method note*: the per-category figures in §4.3.6 (CSD lag-1 +0.78) use a pooled, brand-demeaned log series across all retained brands, whereas the HARBOE figures here are a single-brand series; the pooled estimate is larger because demeaning removes between-brand level differences and leaves the common short-horizon dynamics. Both are reported; the qualitative conclusion (positive short-horizon, near-zero annual carry) is robust to the method.
+- **Promotional intensity**: strongly correlated with sales units, confirmed under DVH EXCL. HD at r = 0.937 (n = 2,442 promo-bearing brand-month rows), closely matching Brian's all-markets value (r = 0.941); the relationship is robust to market scope. For energidrikke the promotional signal is even stronger (r = 0.988); danskvand and RTD carry no promotional data (promo-zero).
 
 ### 4.3.5 Parameter Summary
 
@@ -125,18 +125,18 @@ Three of the four category-level series are difference-stationary (I(1)); RTD is
 
 ## 4.4 Feature Engineering (forecasting substrate)
 
-The forecasting substrate uses features derived from the Nielsen facts table at the brand × month granularity. The audit confirms **14 modelling features** per observation (plus index, target, and split-label columns, for ≈20 columns total — exact count to confirm against the parquet). These are the exogenous predictors referenced in Chapter 1.
+The forecasting substrate uses features derived from the Nielsen facts table at the brand × month granularity. The feature matrix contains 22 columns: **14 modelling features** per observation, plus index/key columns, the target, the carried `promo_units`, and the split label (verified against the parquet, `scripts/srq1_benchmark_tuned.py`). These are the exogenous and autoregressive predictors referenced in Chapter 1.
 
 | Feature | Description | Models |
 |---|---|---|
 | `lag_1`, `lag_2`, `lag_3`, `lag_4`, `lag_8`, `lag_13` | Lagged `sales_units` (short, medium, seasonal) | LightGBM, XGBoost, Ridge |
 | `rolling_mean_4`, `rolling_std_4` | 4-month rolling mean and standard deviation | LightGBM, XGBoost, Ridge |
 | `rolling_mean_13` | Trailing annual average | LightGBM, XGBoost, Ridge |
-| `month`, `quarter`, `holiday_month` | Calendar features (`holiday_month` = month in {3,6,12}) | All |
-| `log_sales_units` | Natural log of `sales_units` (stationarity treatment) | LightGBM, XGBoost, Ridge |
+| `month`, `quarter`, `holiday_month` | Calendar features (`holiday_month` = month in {3,6,12}) | LightGBM, XGBoost, Ridge |
 | `promo_intensity` | Promotional share of units (clipped 0–1) | LightGBM, XGBoost, Ridge |
+| `weighted_distribution` | Nielsen weighted-distribution availability proxy | LightGBM, XGBoost, Ridge |
 
-Index/target/label columns carried in the matrix: `brand`, `period_year`, `period_month`, `sales_units` (target), `split`. **To confirm**: `weighted_distribution` and raw `promo_sales_units` are present in the aggregated data but are *not* in the audit's confirmed 14-feature list — whether they are used as model inputs or only carried through needs parquet verification. Lag and rolling features carry NaN for short history (expected); no imputation is done in preprocessing, so models handle NaN themselves.
+The 14 features comprise six lags, three rolling statistics, three calendar features, `promo_intensity`, and `weighted_distribution`. Two clarifications resolve earlier ambiguity: `log_sales_units` is the **modelling target** (the models predict log sales and exponentiate back), **not** an input feature — using it as a predictor would be trivial leakage; and `weighted_distribution` **is** the fourteenth input feature, while the raw `promo_units` column is carried through the matrix but is not itself a model input (only its derived `promo_intensity` is). Index/target/label columns carried alongside the features: `brand`, `period_index`, `period_year`, `period_month`, `sales_units` (raw target), `log_sales_units` (log target), `promo_units`, `split`. Lag and rolling features carry NaN for short history (expected); no imputation is done in preprocessing, so the tree models handle NaN natively and the linear model receives a zero-fill at fit time.
 
 ARIMA and Prophet are fitted as univariate statistical baselines on the (log) sales series, not on the tabular feature matrix. The promotional feature is **not informative for danskvand and RTD** (promo-zero) and is handled accordingly for those categories.
 
@@ -148,15 +148,25 @@ The split is defined by calendar date and locked as a pre-specified design decis
 
 Because the categories differ in length, the split is expressed as contiguous chronological blocks per category (training → validation → test), with the test window placed in the most recent months relevant to Manifold AI's planning horizon and covering at least one autumn/winter promotional cycle. The training window is required to satisfy the ARIMA minimum (~24 periods) and to contain at least two seasonal cycles for Prophet.
 
-For **CSD** the boundaries are: **train 24 months** (Oct 2022 → Oct 2024), **validation 6 months** (Oct 2024 → Apr 2025), **test 12 months** (Apr 2025 → Mar 2026), over the 42-period window confirmed locally. The 24/6/12 proportions are forward-chaining. Per-category boundaries for danskvand/energidrikke/RTD: `[regenerate]`.
+The per-category boundaries, taken from the locked split files (`<cat>_split_dates.json`), are:
+
+| Category | Periods | Train | Validation | Test | Train window | Validation window | Test window |
+|---|---|---|---|---|---|---|---|
+| CSD | 42 | 24 | 6 | 12 | 2022-10 → 2024-09 | 2024-10 → 2025-03 | 2025-04 → 2026-03 |
+| danskvand | 37 | 23 | 6 | 8 | 2023-03 → 2025-01 | 2025-02 → 2025-07 | 2025-08 → 2026-03 |
+| energidrikke | 39 | 25 | 6 | 8 | 2023-01 → 2025-01 | 2025-02 → 2025-07 | 2025-08 → 2026-03 |
+| RTD | 37 | 23 | 6 | 8 | 2023-03 → 2025-01 | 2025-02 → 2025-07 | 2025-08 → 2026-03 |
+
+*Table 4.2. Forward-chaining train/validation/test boundaries per category (locked, pre-registered).* CSD, the longest series, takes a 12-month test window covering a full annual cycle; the three shorter categories take an 8-month test window (a ≥40-month series would be needed for a 12-month test under the same rule). Every training window satisfies the ARIMA minimum (~24 periods; danskvand and RTD at 23 are marginally below and are flagged as a thin-data caveat in §4.6) and contains at least two seasonal cycles for Prophet. All test windows end in March 2026 and cover at least one autumn/winter promotional cycle.
 
 ---
 
 ## 4.6 Key Risks and Mitigations
 
-- **Provisional figures.** CSD figures are documented from the P0023 audit but not yet verified against local parquets (some drift across the handover docs, flagged "(to confirm)"); danskvand/energidrikke/RTD figures are still placeholders. Mitigation: figures are verified/filled from local data before the empirical chapters are finalised.
+- **Figures verified (resolved).** All structural, data-quality, and EDA figures in this chapter are recomputed locally from the `data/raw` parquets under the DVH EXCL. HD scope (2026-06-27), superseding the earlier P0023 audit values; no placeholders remain. Residual dependence is only on Brian's final harmonised pipeline, against which the local figures are expected to reconcile.
 - **Market scope (resolved).** Confirmed locally that the inherited "All Markets" aggregation double-counts (6.16× inflation for CSD; 14–17× for the other three categories, which expose 86 market levels). Resolved by scoping all four categories to the single `DVH EXCL. HD` market level; feature matrices regenerated accordingly (2026-06-23) under DVH EXCL. HD + MIN_PERIODS=30.
-- **Per-category EDA pending.** Only CSD has a dedicated EDA; danskvand/energidrikke/RTD currently run on CSD-derived parameter defaults (`MIN_PERIODS`, `LAGS`, `HOLIDAY_MONTHS`) without per-category validation. Mitigation: replicate the EDA per category (owned by the preprocessing pipeline) before treating their results as confirmed.
+- **Per-category EDA (resolved).** All four categories now have a dedicated EDA recomputed under DVH EXCL. HD (§4.3.6): stationarity (three of four series I(1), RTD stationary in level), short-horizon autocorrelation (lag-1 +0.55…+0.82), seasonality, and promo correlation. The CSD-derived parameter defaults (`MIN_PERIODS`, `LAGS`, `HOLIDAY_MONTHS`) are confirmed to transfer reasonably across categories; per-brand lag optimisation remains a stated scope bound.
+- **Thin training windows (danskvand, RTD).** Both have only 23 training months, marginally below the ~24-period ARIMA rule of thumb, and danskvand has just 24 retained brands. Mitigation: these three categories are framed as parallel proofs of concept rather than primary evidence; CSD (42 periods, 77 brands) is the worked category carrying the main claims, and the short-window caveat is restated in the discussion.
 - **Empirical parameters.** `MIN_PERIODS`, `LAGS`, `ROLLING_WINDOWS`, and `HOLIDAY_MONTHS` are EDA-driven, not theory-first. Mitigation: justified post hoc in the modelling chapter and stated as a limitation.
 - **Promotional coverage (danskvand, RTD).** Promo-zero categories lack the promotional signal (an unmeasured-variable limitation). Mitigation: promotional features are disabled for these categories and the limitation is stated in the discussion.
 - **Weighted-distribution imputation.** Median imputation ignores within-period time variation (moderate risk for niche brands, low for high-coverage brands). Mitigation: documented; sensitivity noted.

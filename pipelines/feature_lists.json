@@ -1,0 +1,59 @@
+{
+  "numeric_cols": [
+    "weighted_dist",
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_4",
+    "lag_8",
+    "lag_13",
+    "rolling_mean_4",
+    "rolling_std_4",
+    "rolling_mean_13",
+    "month",
+    "quarter",
+    "holiday_month",
+    "promo_intensity",
+    "sales_units_lag_6",
+    "sales_units_lag_12",
+    "sales_units_rm_3",
+    "sales_units_rstd_3",
+    "sales_units_rmedian_3",
+    "sales_units_rm_6",
+    "sales_units_rstd_6",
+    "sales_units_rmedian_6",
+    "sales_units_yoy_growth_lag1",
+    "month_sin",
+    "month_cos",
+    "months_since_start",
+    "unit_price_lag_1",
+    "promo_momentum_3",
+    "brand_mean_sales",
+    "brand_std_sales",
+    "brand_rank"
+  ],
+  "cat_cols": [
+    "brand"
+  ],
+  "non_features": [
+    "brand",
+    "cv_fold",
+    "date",
+    "log_sales_units",
+    "promo_units",
+    "sales_liters",
+    "sales_units",
+    "sales_value",
+    "split"
+  ],
+  "target_raw": "sales_units",
+  "target_log": "log_sales_units",
+  "out_shape_linear": [
+    2233,
+    107
+  ],
+  "out_shape_tree": [
+    2233,
+    32
+  ]
+}

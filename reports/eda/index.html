@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>EDA — Baseline feature matrix</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1 { border-bottom: 2px solid #3b7ddd; padding-bottom: .3em; }
+.fig { margin: 2em 0; }
+.fig img { max-width: 100%; border: 1px solid #ddd; border-radius: 6px; }
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { padding: .4em 1em; border: 1px solid #ddd; text-align: left; }
+th { background: #f4f6f8; }
+</style>
+</head>
+<body>
+<h1>EDA — Baseline feature matrix</h1>
+<p>Generated 2026-04-16T19:09:02</p>
+<h2>Summary statistics</h2>
+<table><tbody>
+  <tr><td>rows</td><td>3234</td></tr>
+  <tr><td>brands</td><td>77</td></tr>
+  <tr><td>date_range</td><td>2022-10-01 → 2026-03-01</td></tr>
+  <tr><td>periods</td><td>42</td></tr>
+  <tr><td>mean_sales_units</td><td>265499.7875874459</td></tr>
+  <tr><td>median_sales_units</td><td>4142.40005</td></tr>
+  <tr><td>std_sales_units</td><td>973854.5525045788</td></tr>
+  <tr><td>skew_sales_units</td><td>4.487944993204424</td></tr>
+  <tr><td>zero_sales_count</td><td>157</td></tr>
+</tbody></table>
+<h2>Figures</h2>
+  <div class="fig"><h3>01_sales_distribution</h3><img src="01_sales_distribution.png" /></div>
+  <div class="fig"><h3>02_brand_volume_distribution</h3><img src="02_brand_volume_distribution.png" /></div>
+  <div class="fig"><h3>03_correlation_heatmap</h3><img src="03_correlation_heatmap.png" /></div>
+  <div class="fig"><h3>04_stl_decomposition</h3><img src="04_stl_decomposition.png" /></div>
+  <div class="fig"><h3>05_acf_pacf</h3><img src="05_acf_pacf.png" /></div>
+  <div class="fig"><h3>06_top_brands_timeseries</h3><img src="06_top_brands_timeseries.png" /></div>
+</body>
+</html>

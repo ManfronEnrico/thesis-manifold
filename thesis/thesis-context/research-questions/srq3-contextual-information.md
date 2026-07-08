@@ -3,6 +3,8 @@ name: SRQ3 — Contextual Information & Decision Support
 description: Sub-research question 3 scope and context for NotebookLM curation
 updated: 2026-04-20
 ---
+> ⚠️ **SUPERSEDED — pre-v4 framing (kept for history only).** This file reflects the old thesis framing (v2: multi-agent architecture / consumer-survey enrichment / comparison vs traditional BI). It is NOT a source of truth. Canonical research questions: `thesis/thesis-context/research-questions/research-questions.md` (v4). Canonical title and scope: see the thesis contract / Ch1.
+
 
 # SRQ3: Contextual Information & Decision Support
 

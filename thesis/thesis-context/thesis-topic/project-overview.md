@@ -1,4 +1,6 @@
 # Project Overview — Manifold AI Thesis
+
+> ⚠️ **SUPERSEDED — pre-v4 framing (kept for history only).** This file reflects the old thesis framing (v2: multi-agent architecture / consumer-survey enrichment / comparison vs traditional BI). It is NOT a source of truth. Canonical research questions: `thesis/thesis-context/research-questions/research-questions.md` (v4). Canonical title and scope: see the thesis contract / Ch1.
 > *A Multi-Agent AI Framework for Predictive Decision-Support in FMCG Retail*
 > CBS Master's Thesis · Business Administration & Data Science · Deadline 15 May 2026
 > Last updated: 2026-03-15
