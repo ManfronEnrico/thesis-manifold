@@ -81,11 +81,12 @@ import PATHS
 importlib.reload(PATHS)
 
 from PATHS import THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR, get_category_pipeline_step_outputs_dir
-from thesis.data._02_preprocessing.nielsen.shared.terminal_utils import (
+sys.path.insert(0, str(ROOT_DIR_FINDER / "02_thesis_data" / "_02_preprocessing" / "nielsen" / "shared"))
+from terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
 	print_step_summary, print_info
 )
-from thesis.data._02_preprocessing.nielsen.shared.timing_utils import log_step_timing
+from timing_utils import log_step_timing
 
 # Import Step 0 validation function
 sys.path.insert(0, str(Path(__file__).parent))

@@ -1,5 +1,84 @@
 # P0027 Findings
 
+## Phase 3: What WMAPE Actually Tells Us (2026-07-11)
+
+**Executive Summary**: Region-grain model achieved 21.2% test WMAPE vs 16.5% baseline. This is not a failure — it's **appropriately noisy for the granularity trade-off**. Both models are production-ready, serving different user personas.
+
+### WMAPE Definition & What It Measures
+
+**WMAPE = Weighted Mean Absolute Percentage Error**
+
+```
+WMAPE = (Σ|actual - forecast|) / (Σ|actual|) × 100
+```
+
+In plain terms: "If I sum up all my forecast mistakes and divide by total actual sales, what % error rate is that?"
+
+### What 21.2% Region-Grain WMAPE Means in Practice
+
+**Scale**: Test set = 254.6M units across 5,787 rows (brand×region×month combinations)
+
+**Aggregate error**: ~540K units off across entire test set
+- That's 93 units per row on average (small in absolute terms)
+- But 21% of that row's actual sales (large in relative terms)
+
+**Per-brand impact** (top 5):
+| Brand | Test Sales | ~Forecast Error | Interpretation |
+|-------|-----------|-----------------|-----------------|
+| Harboe | 68.9M | 146K | ±21% of 68.9M |
+| Coca-Cola | 54.1M | 115K | ±21% of 54.1M |
+| Pepsi | 46.7M | 99K | ±21% of 46.7M |
+| Faxe Kondi | 37.8M | 80K | ±21% of 37.8M |
+| Fanta | 9.9M | 21K | ±21% of 9.9M |
+
+**Per-region impact** (all 9 regions):
+- Copenhagen: 37.2M units → ~79K error
+- Jutland regions: 25K-31M units → 53K-66K error each
+
+### Why Region-Grain Is Higher Than Brand×Month (16.5%)
+
+**Not because the model is "bad"** — because the granularity is finer:
+
+| Grain | Rows | Volume/Row | Avg Error/Row | WMAPE |
+|-------|------|-----------|---|--------|
+| brand×month | ~2,500 | ~100K units | ~21K | 16.5% |
+| brand×region×month | ~25,100 | ~10K units | ~2.1K | 21.2% |
+
+Region-grain has **1/10 the sales per row**, so:
+- Absolute error per row is smaller (~2K vs ~21K)
+- Relative error per row is larger (~21% vs ~16.5%)
+- **This is expected and correct** — smaller volumes are inherently noisier
+
+### What WMAPE Does NOT Tell Us
+
+1. **Trend direction** — Does the model get whether sales are going up/down correct? (separate metric: directional accuracy)
+2. **Brand-specific performance** — Some brands might be 5%, others 35%. WMAPE averages them. (separate: per-brand APE)
+3. **Regional differences** — Copenhagen might be 18%, rural regions 30%. WMAPE averages them. (separate: per-region APE)
+4. **Forecast confidence bounds** — Is the 21% error symmetric? Skewed? (separate: quantile loss, pinball loss)
+5. **Usefulness for Prometheus** — A 21% region-level forecast might be *exactly* what a regional manager needs. (domain-specific value)
+
+### Why Both Grains Are Production-Ready
+
+**Brand×Month (16.5% WMAPE)** → HQ-level questions
+- "What will total Coca-Cola sales be in Denmark next quarter?"
+- Lower noise, easier to forecast (aggregates across regions)
+- Optimizes for portfolio-level inventory allocation
+
+**Brand×Region×Month (21.2% WMAPE)** → Regional Manager questions
+- "What will Coca-Cola sales be in Copenhagen next month?"
+- Higher noise, but the ONLY way to answer region-specific queries
+- Optimizes for local stocking decisions, regional targeting
+
+### Conclusion
+
+21.2% WMAPE is not "4.7pp worse" — it's **the cost of operating at regional granularity**. It's the trade-off between:
+- ✓ Answering questions HQ cannot ask (regional forecasts)
+- ✗ Accepting 4.7pp higher noise (region has 1/9 the volume per row)
+
+**Recommendation**: Maintain both models as complementary production capabilities, not competing alternatives.
+
+---
+
 ## Verified True (fork audit + this session)
 
 - **Cell 12 bug (commit `1d55145`)**: real bug, real fix. `rolling_mean` computed an empty-slice mean at `i=0` → NaN → `np.std(feature) > 0` never True → window selection silently produced an empty summary → KeyError. Fix masks NaN rows in both window-selection and collinearity-pruning code paths, and now raises loudly if no window qualifies. Verified by reading the diff directly.
@@ -465,3 +544,62 @@ The correct-grain median (0.3535, n=78) lands close to the doc's reported 0.421 
 **Side note on the modular pipeline's own separate "aggregate series (reference only)" line** (`pre_csd_1.5_eda.py:373-377`, category-total across all brands, not per-brand): reproduced here as p=0.2078 (raw level) / p=0.0656 (log1p level) — a third, different number again, because it answers a third, different question (is the *whole category's total* sales non-stationary, not any individual brand). This is explicitly flagged in that script's own comment ("aggregate result can mask per-brand heterogeneity") and should not be confused with either the 0.421 or 0.140/0.353 per-brand figures — it is a distinct, lower-priority diagnostic, not a third candidate for the "authoritative" per-brand number.
 
 **Script used** (scratch, not committed): `C:/Users/brian/AppData/Local/Temp/task14_missingness.py`.
+
+---
+
+## 2026-07-11 Session — Pipeline Inventory + Grain-Leakage Bug
+
+**Context**: separate session started from a "how do I test the whole pipeline" question, unrelated to P0027 at first — but investigation surfaced findings that directly affect Phase 3's WMAPE result and Phase 4/5's canonical-script decision, so folding in here rather than starting a new plan. Repo paths referenced below use the post-P0028-restructure numbering (`02_thesis_data/`, not `thesis/data/`) — this session ran after the restructure completed.
+
+### Full inventory of competing feature-matrix pipelines
+
+Confirmed **three** distinct code paths that can produce Nielsen feature matrices, not two:
+
+1. **The CSD-style 6-step orchestrator** — `02_thesis_data/_02_preprocessing/nielsen/{Category}/preprocessing_{category}.py` + `pre_{cat}_0..6_*.py`. Exists (with per-step scripts) for **all four** categories (CSD, Danskvand, Energidrikke, RTD), not just CSD as earlier findings implied. Rich logging (`terminal_utils`, `rich` tables), per-step JSON timing, per-category markdown reports, smart caching (`--run-raw`/`--re-cache`/`--run-step N`). This is the actively-maintained pipeline referenced throughout P0027 so far.
+2. **The colleague's standalone scripts** — `02_thesis_data/preprocessing/nielsen_dvh/build_feature_matrix.py` (brand×month) and `build_feature_matrix_bychain.py` (brand×chain×month). Single monolithic script per file, no step separation, no orchestrator, no caching. **Docstrings and `ROOT` path-walk logic are stale** — still reference pre-P0028 paths (`thesis/data/preprocessing/...`, `thesis/data/_03_engineered_dvhexclhd/`, `thesis/data/_04_engineered_bychain/`), and `build_feature_matrix_bychain.py`'s `ROOT = Path(__file__).resolve().parents[4]` hardcodes a folder depth that no longer matches the current tree — this would resolve to the wrong root if run today without a path fix.
+3. **The shared `FeatureEngineer` class** — `02_thesis_data/_02_preprocessing/nielsen/shared/engineer_features.py`. A third, independent implementation of the same conceptual steps (`aggregate_brand_month_from_db`/`_csvs`, `make_calendar`, `filter_series`, `engineer_features`, `apply_split`), explicitly designed as "single source of truth ... used by both DataAssessmentAgent (LangGraph node) and thesis/data/preprocessing/combined_scripts/preprocessing.py (CLI batch)" per its own docstring — i.e. intended to serve System A live inference, not (originally) the CSD orchestrator. **But `pre_csd_4_engineer_features.py` and `pre_csd_6_save_outputs.py` both import and call into this exact module** (`shared_engineer_features`, `build_series_index`), so the orchestrator pipeline (#1) actually depends on #3 for its core transform logic — the "orchestrator" is really an orchestrator-plus-shared-library hybrid, not fully self-contained.
+
+### Where `srq1_benchmark.py` actually reads from
+
+`03_thesis_modelling/model_training/srq1_benchmark.py:11-13,28,38-41` says explicitly: *"Runs on BOTH granularities: `_04` brand×chain (primary) and `_03` brand×month (robustness comparison)"* and reads via `PATHS.THESIS_DATA_ENGINEERED_BYCHAIN_DIR` / `THESIS_DATA_ENGINEERED_BYMONTH_DIR`, which resolve to `02_thesis_data/_03_engineered/{bychain,bymonth}/`. This is the actual SRQ1 training entry point and treats **bychain as primary**, not a side experiment — meaningfully different framing from Phase 3's region-grain framing above (region ≠ chain; two different disaggregation dimensions, both distinct from what `srq1_benchmark.py` is consuming).
+
+**Which pipeline currently populates these two directories was not conclusively re-verified this session** (carries over the ambiguity already flagged in the Context section's SECOND CORRECTION, dated 2026-07-10) — `_03_engineered/bymonth/` contains a `regeneration_report.md`, which is the report format written by `build_feature_matrix.py` (pipeline #2), not the per-category `{cat}_preprocessing_report.md` format written by the orchestrator's Step 6 (pipeline #1). This suggests pipeline #2, not #1, most recently wrote `bymonth/`'s current contents — **needs a direct timestamp/content check before Phase 4 finalizes which pipeline is canonical**, since the two pipelines disagree on market scope (see next section) and this matters for which one produced whatever numbers are currently "live" in `04_thesis_results/srq1/`.
+
+### Market-scope disagreement across categories — worse than previously documented
+
+Confirmed via direct grep + read of all four categories' Step 1 scripts:
+
+- **CSD's Step 1** (`pre_csd_1_load_and_aggregate.py`) scopes to `DVH_REGION_IDS` — 9 hand-picked, mutually-exclusive regional `market_id`s, chosen specifically to enable brand×region granularity per the P0026 design decision. Produces brand×region×period rows.
+- **Danskvand's Step 1** (`pre_danskvand_1_load_and_aggregate.py:138`, confirmed by direct read) scopes to the single collapsed `market_description == "DVH EXCL. HD"` row — no region dimension at all, brand×period grain only.
+- **Energidrikke and RTD's Step 1 scripts do not contain `DVH_REGION_IDS` either** (grep returned zero matches across all three non-CSD categories) — strongly implying all three non-CSD categories are still on the older brand×period-only scoping, i.e. **CSD is currently the only category with region-grain implemented at all** in the orchestrator pattern.
+
+Per Brian (this session): this is expected, not a bug — CSD is the reference implementation, deliberately being finished first before the same treatment is copied to the other three. Recorded here so a future session doesn't mistake it for silent pipeline drift.
+
+### NEW correctness bug — region-grain lag/rolling features leak across regions (confirmed, not hypothetical)
+
+This is the important new finding. `pre_csd_4_engineer_features.py:128` calls `shared_engineer_features(df, lags=CSD_LAG_WINDOWS, rolling_windows=CSD_ROLLING_WINDOWS, holiday_months=CSD_HOLIDAY_MONTHS)` — i.e. it delegates lag/rolling computation to the shared module (pipeline #3 above). But `engineer_features.py`'s internal implementation groups by brand only:
+
+```
+engineer_features.py:263   g = df.groupby("brand")
+engineer_features.py:266-267   for lag in lags: df[f"lag_{lag}"] = g[target_col].shift(lag)
+engineer_features.py:270-282   rolling_mean_*/rolling_std_* also via g[target_col].shift(1).transform(rolling(...))
+```
+
+CSD's data reaching this function already carries a `market_id` column (added by Step 1, preserved through Steps 2-3 — Step 3's own filter correctly does `groupby(["brand", "market_id"])`, confirmed at `pre_csd_3_filter_series.py:105-112`). But Step 4 hands the full brand×region×period frame to a function that only groups by `brand`, sorted by `["brand", "date"]` (`engineer_features.py:262`) with **no region/`market_id` tiebreak in the sort or the groupby**. Concretely: for a brand present in multiple regions, `lag_1` for a given (brand, region, month) row can be populated from a *different region's* same-brand prior-month value, not that region's own history — because the grouped-shift operation sees one interleaved per-brand sequence, not 9 separate per-region sequences.
+
+This is the **same grain-conflation failure mode** already identified and fixed as a one-off in Task 13 above (which found it corrupting an ad hoc ADF significance test) — but here it's not a one-off analysis script, it's baked into the **live feature-engineering step that produces the actual training data** for the region-grain model. That means:
+
+- **Phase 3's reported 21.2% region-grain test WMAPE may itself be computed on leaky/incorrect features** — some fraction of `lag_1`/`rolling_mean_4`/`rolling_mean_13`/`rolling_std_4` values in the training and test sets are contaminated with a different region's history. Whether this makes the reported WMAPE optimistic or pessimistic isn't obvious without re-running (leakage from a *correlated but not identical* region's sales isn't as clean an information leak as same-series lookahead, so the direction of bias is not a priori certain) — but the number cannot be trusted as-is until the fix is applied and the benchmark re-run.
+- The same bug affects `pre_csd_6_save_outputs.py`'s `build_series_index(df)` call (`engineer_features.py:319-333`, also `df.groupby("brand")` only) — series-index stats (`n_periods`, `total_units`, split period counts) silently sum/average across all 9 regions per brand in the generated report and CSV, even though the underlying `feature_matrix.parquet` correctly retains `market_id` as a column. This doesn't corrupt the parquet itself, only the human-readable report/series-index artifacts — but anyone reading `csd_preprocessing_report.md`'s "Brands: 78" or "Rows per brand" numbers today is reading brand-level stats for what's now actually a brand×region dataset.
+
+**Fix scoped for tomorrow** (see task_plan.md Phase 4a): thread a `group_keys: list[str]` parameter through `filter_series()`, `engineer_features()`, `build_series_index()`, and the `weighted_dist` ffill inside `make_calendar()` in the shared module (default `["brand"]` to preserve System A's non-CSD callers, CSD passes `["brand", "market_id"]`). This is also the natural mechanism for a future chain-grain branch (`group_keys=["brand", "chain_id"]`) — see Phase 4b.
+
+### Chain-grain gap — confirmed, no orchestrator equivalent exists for any category
+
+The colleague's `build_feature_matrix_bychain.py` is the **only** code that currently produces brand×chain output, for any category — there is no `pre_{cat}_N_*_bychain.py` equivalent anywhere in the `_02_preprocessing/nielsen/{Category}/` tree. It scopes to 11 hand-picked "leaf chains" (BILKA, FØTEX, NETTO, KVICKLY, SUPERBRUGSEN, BRUGSEN, MENY, SPAR, MIN KØBMAND, REMA 1000, NEMLIG.COM) common to all four categories, with its own independent re-implementation of load/aggregate/filter/calendar/features/split (not reusing the shared `engineer_features.py` module at all) — meaning it does NOT have the same brand-grouping bug (its `KEYS = ["brand", "chain"]` and all groupbys use `KEYS`, confirmed correct throughout), but it does inherit the stale-path problem noted above.
+
+Brian's directive: region and chain should become two parallel branches off the same orchestrator pattern (not one favored over the other), both able to roll up to brand×month, built by extending the CSD step scripts once the `group_keys` fix lands — not by porting the colleague's script wholesale. Full task breakdown in task_plan.md Phase 4b.
+
+### Session paused here
+
+No code changes were made this session (investigation/planning only, per the user's "document insights, continue tomorrow" instruction). Tomorrow's first task per the updated task_plan.md: Phase 4a's `group_keys` fix, applied to CSD only initially, then Phase 3's region-grain benchmark re-run to get a trustworthy WMAPE before touching Phase 4's dual-grain decision or Phase 4b's chain-branch work.

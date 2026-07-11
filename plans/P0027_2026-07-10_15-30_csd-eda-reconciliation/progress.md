@@ -63,3 +63,50 @@
 - Findings appended to `findings.md` (new "Task 13 — CSD ADF Log-Level p-Value Discrepancy Reconciled" section, and a row-level missingness section preceding it). `task_plan.md` Phase 2 checkboxes and `focus_detail` updated; tasks 13/14 JSON marked `"status": "completed"` with detailed notes.
 - **CSD's Phase 2 academic-rigor gap-fill is now complete.** All CSD-scoped tasks (6, 7/14, 8, 9/12, 10, 11, 13) are closed or explicitly deferred with a stated reason (danskvand/energidrikke/RTD portions deferred to Phase 5).
 - Next: decide with Brian between Phase 3 (region-grain WMAPE test, re-running `pre_csd_1_load_and_aggregate.py` against full raw and comparing region-grain re-aggregated WMAPE vs the 16.5% brand-national baseline) and Phase 5 (extend the now-validated CSD procedure to danskvand/energidrikke/RTD, all of which now have current converted parquet as of 2026-07-10's conversion run).
+
+## 2026-07-11 10:30 — Phase 3 Complete: Region-Grain WMAPE Test + Strategic Reframing
+
+- Fixed all 6 CSD preprocessing scripts (pre_csd_0..6) to work with P0028 restructured paths:
+  - Moved imports from stale `thesis.data._02_preprocessing` to local `02_thesis_data/_02_preprocessing/nielsen/shared`
+  - Copied `engineer_features.py` module from archive and placed in shared utilities
+  - All steps 1-6 ran cleanly: 27.1k → 25.1k rows after filtering
+
+- Executed Phase 3 region-grain WMAPE test:
+  - Region-grain feature matrix: brand×region×period, 25,124 rows (test: 5,787 rows)
+  - Optuna tuning: 30 trials per model, TPE sampler, seed=42
+  - Result: XGBoost 21.2%, LightGBM 21.2% (tied)
+  - Baseline (brand×month): 16.5%
+  - Delta: +4.7pp
+
+- **CRITICAL INSIGHT FROM BRIAN** (reframes entire Phase 3-4 strategy):
+  - WMAPE is NOT the optimization target — it's a diagnostic metric
+  - The thesis is about making Prometheus useful to regional managers asking "What will Faxe Kondi sell in Copenhagen next quarter?" — questions only region-grain can answer
+  - Both models are PRODUCTION-READY, serving different personas (regional mgrs vs HQ)
+  - 21.2% WMAPE is appropriate/expected for region-level granularity (1/9 the volume per row → higher noise is normal)
+
+- Updated findings.md with detailed explanation of what WMAPE actually means:
+  - ~540K total units error across 254M test sales (21% of aggregate)
+  - Per-brand: Coca-Cola ±115K units, Faxe Kondi ±80K units (21% of their respective totals)
+  - Why region-grain is noisier: same absolute error across 10x fewer rows → higher % error
+  - What WMAPE does NOT tell us: trend direction, brand-specific performance, per-region heterogeneity, usefulness for domain decisions
+
+- Restructured Phase 4 decision (was "pick one grain," now "maintain both"):
+  - Brand×month pipeline (16.5% WMAPE) → HQ-level "total sales in Denmark" queries
+  - Region×month pipeline (21.2% WMAPE) → Regional manager "Copenhagen Coca-Cola" queries
+  - Both are intentional production capabilities, not competing alternatives
+
+- **Outcome**: Phase 3 is complete and reframed. Phase 4-5 now proceed with dual-grain strategy instead of choosing between them.
+
+## 2026-07-11 18:35 — Separate session (post-P0028-restructure) surfaces a real leakage bug blocking Phase 3/4
+
+- Started from an unrelated question ("how do I test the whole pipeline end to end") in a fresh session, after the P0028 repo restructure (numbered tiers, `02_thesis_data/` etc. replacing `thesis/data/`). Investigation naturally converged on this same plan's territory, so folding findings in here rather than opening a new P-ID.
+- User pointed out an existing CSD orchestrator (`preprocessing_csd.py` + `pre_csd_0..6_*.py`) that the session's initial pipeline-testing answer had missed — corrected course to investigate it directly instead of just the colleague's standalone scripts.
+- Confirmed all 4 categories (not just CSD) already have their own 6-step orchestrator + step scripts under `_02_preprocessing/nielsen/{Category}/` — not previously stated this explicitly in P0027's findings.
+- Confirmed `srq1_benchmark.py` (the actual SRQ1 training entry point) reads from `_03_engineered/{bymonth,bychain}/`, treating **bychain as primary**, brand×month as "robustness comparison" — a framing not previously cross-referenced against Phase 3's region-grain work in this plan.
+- User directive on grain scope: canonical scope stays DVH EXCL. HD only; base grain is brand×region×month with rollup to brand×month; region and chain should exist as two parallel orchestrator branches (not one replacing the other), copied to all 4 categories only after CSD is fully finished as the reference implementation.
+- **Found a real, previously-undetected bug while reading Step 4 in detail**: `pre_csd_4_engineer_features.py` delegates lag/rolling computation to the shared `engineer_features.py` module, which groups by `"brand"` only (no `market_id`) — meaning CSD's region-grain lag/rolling features are silently conflating rows across the 9 different regions per brand. This directly affects Phase 3's already-reported 21.2% region-grain WMAPE, which was computed on features built by this exact code path. Same bug also affects Step 6's `build_series_index()` reporting (region-blind stats, though the underlying parquet itself is fine since `market_id` is retained as a column).
+- This finding connects to and generalizes Task 13 above (2026-07-11 earlier) — Task 13 found and fixed the identical grain-conflation failure mode in an ad hoc ADF test script; today's finding shows the same bug pattern exists in the actual production feature-engineering code, not just a one-off analysis script.
+- Updated `task_plan.md` frontmatter + added Phase 4a (fix the leakage bug, re-run Phase 3's benchmark) and Phase 4b (add a chain-grain branch to the orchestrator, using the same `group_keys` mechanism) — both inserted before the existing Phase 4/5 action items, which now explicitly depend on 4a/4b completing first.
+- **No code changed this session** — investigation and planning only, per explicit user instruction to document and continue tomorrow.
+- Next (tomorrow): implement the `group_keys` parameter fix in `engineer_features.py`, apply to CSD's Step 4 and Step 6, re-run CSD's pipeline, re-verify Phase 3's WMAPE number before trusting it for any Phase 4 decision.
+

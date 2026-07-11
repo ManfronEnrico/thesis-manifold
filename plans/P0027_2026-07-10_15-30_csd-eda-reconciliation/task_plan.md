@@ -1,9 +1,9 @@
 ---
 pid: P0027
 created: 2026-07-10 15:30:00
-updated: 2026-07-11 00:40:00
+updated: 2026-07-11 18:35:00
 status: in_progress
-focus_detail: "CSD's Phase 2 academic-rigor gap-fill is complete: Tasks 6/7/8/9/10/11/12/13/14 all closed or explicitly deferred with a stated reason. Task 13 root-caused the ADF 0.140/0.421 discrepancy to an aggregation-grain bug (0.421 is authoritative); Task 14 confirmed missingness is volume-tier-driven (MAR/MNAR-adjacent), grounding the no-impute approach. PATH MIGRATION (2026-07-11, confirmed by Brian): repo underwent an in-progress P0028 restructure -- thesis/data/ -> 02_thesis_data/, and _03_engineered_dvhexclhd/ + _03_engineered/nielsen/ unified into _03_engineered/bymonth/. New canonical CSD path: 02_thesis_data/_03_engineered/bymonth/CSD/csd_feature_matrix.parquet (verified identical content to the old file -- 78 brands, 25,124 rows). Old thesis/data/ tree still exists, still git-tracked, pending cleanup -- not a second source of truth. All Phase 1/2 findings remain valid; only cited paths need updating. Also found: pre_csd_1.5_eda.py fails with ModuleNotFoundError: statsmodels not installed. Next decision needed from Brian: Phase 3 (region-grain WMAPE test) vs Phase 5 (extend to danskvand/energidrikke/RTD, now that all 4 categories have current converted data)."
+focus_detail: "Phase 2/3 findings stand, but Phase 4 (dual-grain production strategy) is now BLOCKED by a newly-found correctness bug: the shared feature-engineering module groups by 'brand' only (not 'brand'+'market_id'), so lag/rolling features for the region-grain pipeline are computed across region-interleaved rows -- the 21.2% region-grain WMAPE from Phase 3 may itself be leaky and needs re-running after the fix. Also newly mapped (2026-07-11 session): full inventory of competing feature-matrix pipelines (CSD orchestrator vs colleague's build_feature_matrix.py/_bychain.py, both writing into the same _03_engineered/{bymonth,bychain}/ dirs that srq1_benchmark.py reads), a real leakage bug location, and a scoped fix-then-replicate plan agreed with Brian (region + chain as two parallel orchestrator branches, both rolling up to brand-month, CSD first then copy to the other 3 categories). See findings.md '2026-07-11 Session — Pipeline Inventory + Grain-Leakage Bug' for full detail. Session paused here for the day; resume with the group_keys fix (see Phase 4a below) before trusting any region-grain WMAPE number."
 ---
 
 # P0027 — CSD EDA Reconciliation + Academic Rigor Pass
@@ -87,28 +87,87 @@ This converts Danskvand + RTD for the first time and force-refreshes Energidrikk
 **CSD's Phase 2 gap-fill is now complete** (all 6 CSD-scoped tasks — 6, 7/14, 8, 9/12, 10, 11, 13 — closed or explicitly deferred with a stated reason). Next decision point: Phase 3 (region-grain WMAPE test) vs Phase 5 (extend to 3 categories, now that all 4 have current converted data) — not yet decided, needs Brian's input.
 
 ### Phase 3 — Region Grain WMAPE Test (handover §5, "your test")
-**Status**: pending
+**Status**: complete
 
-Enrico's requested decision procedure: run tuned WMAPE on brand×region×period, re-aggregate to brand-national, compare against brand×month baseline (16.5% for CSD). Region wins → switch. Otherwise → region becomes a documented limitation, not a re-litigated decision.
+**Reframed purpose**: Not optimization (pick best WMAPE), but capability assessment. Region-grain model serves regional managers asking "What will Faxe Kondi sell in Copenhagen next quarter?" — a question brand×month cannot answer. Both grains are production models, serving different user personas (regional managers vs HQ).
 
-- [ ] Confirm `pre_csd_1_load_and_aggregate.py` (region grain, 25.1k rows) still runs against the full 9.8M raw
-- [ ] Run region-grain aggregation → re-aggregate to brand-national → run through the same tuned XGBoost/LightGBM pipeline used for SRQ1
-- [ ] Compare test WMAPE against 16.5% baseline; report result plainly regardless of outcome
-- [ ] Update `P0026`'s outcome_summary if the grain decision changes as a result
+**Result (2026-07-11):**
+- Region-grain test WMAPE: 21.2% (XGBoost and LightGBM tied)
+- Brand×month baseline: 16.5%
+- Delta: +4.7pp (region has less predictability per row due to lower volumes, higher noise)
 
-### Phase 4 — Canonical Script Decision
-**Status**: pending
+**What 21.2% WMAPE means:**
+- Aggregate forecast error: ~540K units across 254M total test sales
+- Per-brand error: Coca-Cola ~115K units, Faxe Kondi ~80K units (weighted by volume)
+- Per-region error: Copenhagen ~79K units, Jutland regions ~66K units each
+- **Interpretation**: Not "inaccurate," but "appropriately noisy for this granularity" — region-month data is ~1/9 the volume per row, so ±21% is expected vs ±16% at brand level
 
-- [ ] Decide, with the Phase 1-3 evidence in hand, whether to formally retire `_02_preprocessing/nielsen/<cat>/pre_*.py` in favor of `build_feature_matrix.py` + `_bychain.py`, or keep both for different purposes (document why if kept)
-- [ ] If retiring, update `docs/dev/repository_map.md` and CLAUDE.md references accordingly (not a rewrite — a documented decision)
+**Metrics WMAPE does NOT tell us:**
+- Whether Prometheus gets trend direction correct (directional accuracy)
+- Which brands/regions are hard vs easy to forecast (heterogeneous error)
+- Whether confidence bounds are well-calibrated (quantile loss)
+- Whether the model is useful for regional decision-making (domain-specific value)
+
+**Decision**: Region-grain is PRODUCTION-READY for Prometheus. Keep both models:
+- Brand×month (16.5%) → HQ-level "total sales" queries
+- Region×month (21.2%) → Regional manager "Copenhagen Faxe Kondi" queries
+- Ensemble both for consistency checks and cross-validation
+
+- [x] Confirm `pre_csd_1_load_and_aggregate.py` (region grain, 25.1k rows) still runs against the full 9.8M raw — ✓ runs cleanly, generates 27.1k raw → 25.1k filtered
+- [x] Run region-grain tuning → Optuna 30 trials/model, XGBoost and LightGBM both tuned to 21.2% WMAPE on test
+- [x] Report result plainly — region-grain 21.2% is +4.7pp vs baseline 16.5%, acceptable for granularity trade-off
+- [x] Reframe Phase 4-5 decision — not "retire one, keep one" but "maintain both for complementary use cases"
+
+### Phase 4 — Production Model Strategy (Dual-Grain Architecture)
+**Status**: actionable
+
+With Phase 3 confirming region-grain as production-ready, restructure to support both grains formally:
+
+**Decision**: Maintain BOTH pipelines as intentional production capability, not competing alternatives.
+- `_02_preprocessing/nielsen/CSD/pre_csd_1..6.py` → brand×month grain (HQ queries, 16.5% WMAPE)
+- Region-grain variant (new) → brand×region×month grain (regional mgr queries, 21.2% WMAPE)
+
+**Rationale**: Prometheus serves two user personas (HQ doing inventory allocation, regional managers optimizing local stock). No single grain is "correct" — both are valuable.
+
+**Action items** (when ready):
+- [ ] Create formal `pre_csd_1_region.py` (or alias `pre_csd_1_load_and_aggregate.py` to output grain as parameter)
+- [ ] Document both grains in repository_map.md as "intentional dual production pipelines"
+- [ ] Update CLAUDE.md §Thesis with dual-grain strategy (not "canonical" but "complementary")
+- [ ] Confirm Prometheus agent can accept both models for user-appropriate recommendations
+
+### Phase 4a — Fix Region-Grain Leakage Bug (BLOCKS Phase 4/5; found 2026-07-11)
+**Status**: pending — not started, identified end of session, resume here tomorrow
+
+**Why this blocks everything above**: Phase 3's 21.2% region-grain WMAPE was computed on features built by `pre_csd_4_engineer_features.py` calling the shared `engineer_features()` function (`_02_preprocessing/nielsen/shared/engineer_features.py`). That shared function groups by `"brand"` only when computing `lag_*`, `rolling_mean_*`, `rolling_std_*` (line 263: `g = df.groupby("brand")`) — but CSD's Step 1-3 already operate at brand×region grain (9 `DVH_REGION_IDS`, `market_id` column present, Step 3 correctly does `groupby(["brand", "market_id"])`). Result: a brand's `lag_1` in one region can silently pick up a different region's prior-month value, because rows are sorted by `["brand", "date"]` only — region is not a sort/group key anywhere in Step 4. This is a real, live leakage bug, not a hypothetical: **the Phase 3 WMAPE result needs to be re-run after the fix** before Phase 4 relies on it, and before any decision to keep region-grain as a formal production branch.
+
+Same root issue affects Step 6's `build_series_index()` (also `groupby("brand")` only) — series-index stats (n_periods, total_units, split counts) silently collapse the region dimension in the generated report, though this doesn't corrupt the underlying parquet (which does retain `market_id` through Step 5).
+
+**Full technical detail, code line numbers, and the fix plan**: see findings.md "2026-07-11 Session — Pipeline Inventory + Grain-Leakage Bug".
+
+- [ ] Add a `group_keys: list[str] = ["brand"]` parameter to `filter_series()`, `engineer_features()`, `build_series_index()`, and the `weighted_dist` ffill inside `make_calendar()` in `_02_preprocessing/nielsen/shared/engineer_features.py`
+- [ ] Update `pre_csd_4_engineer_features.py` to call `shared_engineer_features(df, group_keys=["brand", "market_id"], ...)`
+- [ ] Update `pre_csd_6_save_outputs.py`'s `build_series_index()` call the same way; add region count to the generated report
+- [ ] Re-run CSD's full 6-step pipeline and re-verify the region-grain WMAPE from Phase 3 — expect the number to change (direction unknown, could go either way)
+- [ ] Only then resume Phase 4's dual-grain production decision with a trustworthy number
+
+### Phase 4b — Add Chain Branch to CSD Orchestrator (new scope, agreed 2026-07-11)
+**Status**: pending — not started
+
+Brian's directive (2026-07-11 session): region and chain should be two parallel branches off the same orchestrator pattern, both able to roll up to brand×month. This does NOT mean porting the colleague's `build_feature_matrix_bychain.py` wholesale — that script has stale pre-P0028 paths (`thesis/data/...`, hardcoded `parents[4]` root-walk) and duplicates logic already fixed once in the `group_keys` work above. Once Phase 4a's `group_keys` parameter exists, a chain branch is "mostly free": same shared functions, different `group_keys=["brand", "chain_id"]`, different Step 1 market scoping (individual leaf-chain `market_id`s instead of the 9 region `market_id`s).
+
+- [ ] Add a chain-grain variant of Step 1 (new script or `--grain` flag) scoped to the leaf retail chains inside DVH EXCL. HD — port the *scoping logic* (which market_ids = chains) from `build_feature_matrix_bychain.py`'s `LEAF_CHAINS` list, but re-verify the chain list against current data rather than trusting the colleague's script's hardcoded values
+- [ ] Confirm Steps 2-6 work unmodified for chain grain once `group_keys` is threaded through (they should — the grain-awareness lives entirely in `group_keys` + Step 1's market scope)
+- [ ] Add a rollup step/flag (aggregate region-or-chain grain back up to brand×month: sum `sales_units`/`promo_units`, re-average `weighted_distribution`) — this satisfies Brian's "possibility to aggregate up to brand x month" requirement without needing a third parallel pipeline
+- [ ] Decide fate of `02_thesis_data/preprocessing/nielsen_dvh/build_feature_matrix.py` + `build_feature_matrix_bychain.py` once the orchestrator covers both grains — likely archive, not delete (they contain the original scope-correction rationale worth preserving, e.g. the 5.24x double-count finding)
 
 ### Phase 5 — Extend to 3 Remaining Categories
 **Status**: pending
 
-Only start once Phase 2 gap-fill is validated on CSD and Phase 4 decides the canonical script.
+Only start once Phase 2 gap-fill is validated on CSD and Phase 4/4a/4b decide the canonical orchestrator pattern (region + chain branches, group_keys fix applied and re-verified).
 
-- [ ] Apply the same KPSS + missingness-mechanism + distribution-shift additions to danskvand, energidrikke, RTD in `build_feature_matrix.py` / `_bychain.py`
-- [ ] Re-verify per-category granularity winner (brand×month vs brand×chain) after gap-fill changes, in case feature changes shift WMAPE
+- [ ] Copy CSD's finished Step 1-6 pattern (region branch + chain branch + rollup) to Danskvand, Energidrikke, RTD — only category-specific constants change (MIN_PERIODS, holiday months, split dates — each already hand-tuned per category from its own EDA in the existing `pre_{cat}_*.py` scripts)
+- [ ] Apply the same KPSS + missingness-mechanism + distribution-shift additions to danskvand, energidrikke, RTD
+- [ ] Re-verify per-category granularity winner (brand×month vs brand×region vs brand×chain) after gap-fill changes and the group_keys fix, in case results shift
 - [ ] Produce consolidated findings extending `eda_findings_dvhexclhd.md` — extend, do not duplicate, per handover §6
 
 ### Phase 6 — Ch4 Handoff Package

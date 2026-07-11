@@ -1,6 +1,6 @@
 # Nielsen CSD Preprocessing Report
 
-**Generated:** 2026-07-11 17:13:37
+**Generated:** 2026-07-11 19:06:17
 **Category:** CSD
 **Market Scope:** All Market Types (aggregated across all 28 outlet channels)
 **Min Periods Filter:** 40 (Thesis Quality Focus - 62 brands)
@@ -15,7 +15,7 @@
 | Total rows | 25,124 |
 | Rows per brand (avg) | 322 |
 | Features engineered | 20 |
-| Total pipeline time | 18.2s |
+| Total pipeline time | 8.8s |
 
 ---
 
@@ -42,7 +42,7 @@
 
 | Step | Input Cols | Output Cols | Elapsed (s) | Output Rows |
 |---|---|---|---|---|
-| Step 1 | — | 10 | 16.70s | 27,086 |
+| Step 1 | — | 10 | 7.59s | 27,086 |
 
 ### Step 2: Build Calendar
 - **Input:** Aggregated data (step 1)
@@ -50,14 +50,14 @@
 - **Date Range:** 2022-10 to 2026-03 (42 monthly periods)
 - **Processing:** Created complete calendar grid for all brands
 - **Output file:** `step_2_calendar_filled.parquet`
-- **Columns:** 10 → 10 | **Elapsed:** 0.62s | **Output rows:** 45,716
+- **Columns:** 10 → 10 | **Elapsed:** 0.41s | **Output rows:** 45,716
 
 ### Step 3: Filter Series
 - **Input:** Calendar-filled data (step 2)
 - **Output:** Filtered to brands with ≥40 non-zero periods
 - **Processing:** Removed sparse series (insufficient historical observations)
 - **Output file:** `step_3_filtered_series.parquet`
-- **Columns:** 10 → 10 | **Elapsed:** 0.12s | **Output rows:** 25,124
+- **Columns:** 10 → 10 | **Elapsed:** 0.10s | **Output rows:** 25,124
 
 ### Step 4: Engineer Features
 - **Input:** Filtered series (step 3)
@@ -69,7 +69,7 @@
   - Calendar: month, quarter, holiday_month (Jan/Apr/Jun/Oct/Dec)
   - Transformation: log(sales_units) with NaN preservation
 - **Output file:** `step_4_engineered_features.parquet`
-- **Columns:** 10 → 25 | **Elapsed:** 0.24s | **Output rows:** 25,124
+- **Columns:** 10 → 25 | **Elapsed:** 0.18s | **Output rows:** 25,124
 
 ### Step 5: Apply Split
 - **Input:** Engineered features (step 4)
@@ -77,14 +77,14 @@
 - **Split method:** Locked date-based (time-series integrity)
 - **Processing:** Assigned split based on period_year-period_month
 - **Output file:** `step_5_split_applied.parquet`
-- **Columns:** 25 → 26 | **Elapsed:** 0.12s | **Output rows:** 25,124
+- **Columns:** 25 → 26 | **Elapsed:** 0.14s | **Output rows:** 25,124
 
 ### Step 6: Save Outputs
 - **Input:** Split-applied data (step 5)
 - **Output:** Feature matrix, series index, split dates, report
 - **Processing:** Generated final outputs and documentation
 - **Output files:** `csd_feature_matrix.parquet`, `csd_series_index.csv`, `csd_split_dates.json`
-- **Columns:** 26 → 26 | **Elapsed:** 0.40s | **Output rows:** 25,124
+- **Columns:** 26 → 26 | **Elapsed:** 0.37s | **Output rows:** 25,124
 
 ---
 
@@ -213,5 +213,5 @@
 - **Total brands processed:** 78
 - **Total rows in final matrix:** 25,124
 - **Features engineered:** 20
-- **Pipeline execution time:** 18.2s
-- **Generated:** 2026-07-11 17:13:37
+- **Pipeline execution time:** 8.8s
+- **Generated:** 2026-07-11 19:06:17
