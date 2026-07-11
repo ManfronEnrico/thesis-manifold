@@ -10,6 +10,23 @@ hover in your IDE. Use these constants throughout notebooks and scripts
 instead of hardcoded strings.
 
 Reference: PATHS_markdown.ipynb for detailed documentation with examples.
+
+Locked repo structure (P0028 restructure, 2026-07-11) — see
+.claude/rules/repo-tier-structure.md for the full authoritative reference:
+
+    00_thesis_context/    thesis-topic/, formal-requirements/
+    01_thesis_research/   research-questions/, literature/
+    02_thesis_data/       _00_raw/ .. _03_engineered/ (pipeline tiers),
+                          preprocessing/ (per-category scripts, not data)
+    03_thesis_modelling/  model_training/ vs model_serving/ (train vs serve),
+                          notebooks/, prompts/
+    04_thesis_results/    srq{N}/ subfolders — new SRQ results always go here,
+                          never a new top-level tier
+    05_thesis_writing/    sections-drafts/, sections-final/, figures/, analysis/
+
+Everything else at root (utility_scripts/, plans/, user-docs/, .claude/) is
+tooling/governance/docs, not thesis content, and is out of this numbered tier
+scheme by design.
 """
 
 
