@@ -1,9 +1,11 @@
 ---
 pid: P0028
 created: 2026-07-10 16:00:00
-updated: 2026-07-11 19:30:00
-status: in_progress
-focus_detail: "Phases 2, 3, 4, 4b, 5, 6, and 7 all COMPLETE. Root now contains only the numbered tree (00_thesis_context through 05_thesis_writing) plus .archive/, with zero stale thesis/ path bugs in live code and the new structure locked/documented via .claude/rules/repo-tier-structure.md. Phase 7's blocker turned out stale -- a merge to main (4324605) had already absorbed the unrelated 232-path uncommitted state before this session resumed -- so Phase 7 committed cleanly on a new branch (chore/p0028-phase5-6-docs) in 3 chunks. Next: Phase 8 (docs updates) on that same branch, then PR/merge back to main."
+updated: 2026-07-11 20:15:00
+status: complete
+completed: 2026-07-11 20:15:00
+outcome_summary: "All 8 phases complete. Repo root flattened to the locked 00_thesis_context..05_thesis_writing tier structure with zero hardcoded stale-path bugs in live code, the structure documented and locked via .claude/rules/repo-tier-structure.md, and README.md/AGENTS.md/repository_map.md all rewritten to match the current tree (all three were badly stale -- README predated even the docs->user-docs rename). Work is committed on chore/p0028-phase5-6-docs (5 commits) and still needs a PR/merge back to main. Loose ends intentionally left open for a future session: user-docs/handover vs handovers and integration vs integrations folder-name drift, root integrations/ folder duplicate, and a 3-citation literature version reconciliation."
+focus_detail: "COMPLETE. See outcome_summary. Next action for a future session: open a PR from chore/p0028-phase5-6-docs into main and merge."
 ---
 
 ## What's Left (as of end of Session 6, 2026-07-10 21:45) — read this first when resuming

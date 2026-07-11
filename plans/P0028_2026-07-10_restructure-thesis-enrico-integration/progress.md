@@ -288,4 +288,26 @@ Plan tracking files (`task_plan.md`, this file, `tasks/14.json`, `tasks/15.json`
 
 **Blockers**: None. Phase 7 complete.
 
-**Next**: Phase 8 (task 17) — broader docs updates: reconcile the diverged `repository_map.md` copies, fix `AGENTS.md`'s broader staleness (still references nonexistent `docs/`/`.Codex/`), README/handover pass. Still-open loose ends carried forward: root `integrations/` folder duplicate (needs diff + keep/delete decision), literature version reconciliation (3 citations differ between the Jun 30 and Jul 10 sets — flagged for human review). Once Phase 8 is done, this branch (`chore/p0028-phase5-6-docs`) needs a PR/merge back to `main`.
+---
+
+### Session 9 (continued): Phase 8 (broader docs updates) — Complete
+
+Read `README.md` and `AGENTS.md` in full and confirmed both were stale on far more than the `thesis/` path restructure: `README.md` last touched 2026-04-22 (`git log -1`), still described the deleted `ai_research_framework/`/`thesis_production_system/` split and the `docs/` folder (pre-dates even the `docs`→`user-docs` rename); `AGENTS.md` last touched 2026-07-08, linked to `docs/codebase/`, `docs/tooling/`, `.Codex/rules/` — none of which exist. Both `repository_map.md` copies (`user-docs/contributing/` and `user-docs/dev/`) were also confirmed to describe the old pre-restructure `scripts/`/`src/`/`thesis/` tree, and to have diverged from each other (not simple duplicates — one had a fuller data-pipeline tree section, the other a different `results/` naming).
+
+Given the scope, asked the user via `AskUserQuestion` whether to do a full rewrite, a link-only patch, or defer — user chose **full rewrite of all 4 files**.
+
+**Work done**:
+- **README.md**: fully rewritten — current tier tree table, current RQ/SRQ text pulled live from `00_thesis_context/thesis-topic/project-state.md` (RQs v4, "cost-justified" framing, SRQ4 code-as-action baseline), current System A/B locations (`03_thesis_modelling/model_serving/{system_a_forecast,system_b_conversational}/`), updated setup instructions (no more `ai_research_framework/requirements.txt` — single `requirements.txt`/`uv sync`), removed the stale "Current Status (as of 2026-03-21)" section entirely rather than leave another dated snapshot.
+- **AGENTS.md**: fully rewritten to mirror `CLAUDE.md`'s current content — both are session-entry navigation hubs for different agent runtimes and should stay in lockstep rather than drift independently.
+- **`user-docs/contributing/repository_map.md`**: fully rewritten as the single canonical file-tree + key-file-location reference for the new tier structure, verified against the actual current tree via `ls`/`find` before writing (not just copied from either stale version). Explicitly documents the `_03_engineered/nielsen/` do-not-delete caveat and flags the still-unreconciled `handover/`-vs-`handovers/` and `integration/`-vs-`integrations/` folder drift for a future pass rather than silently picking one.
+- **`user-docs/dev/repository_map.md`**: deleted as the now-redundant diverged duplicate. This deletion was NOT explicitly named in the user's "full rewrite of all 4 files" answer — the auto-mode classifier correctly flagged it as an irreversible-destruction action beyond what was literally scoped. Surfaced this explicitly to the user via a follow-up `AskUserQuestion` before proceeding; user confirmed keep-deleted (uncommitted at the time, so easily reversible had they said otherwise).
+
+**Verification**: every link target referenced in the 3 rewritten files was checked with `[ -e "$f" ]` against the actual filesystem before committing — all resolved.
+
+**Committed**: `712e349` on `chore/p0028-phase5-6-docs`.
+
+**Blockers**: None. Phase 8 complete — **all 8 phases of P0028 are now complete.**
+
+**Final state**: Plan frontmatter updated to `status: complete` with `outcome_summary`. Work lives on `chore/p0028-phase5-6-docs` (5 commits total across Phases 7 and 8) and has not yet been merged/PR'd into `main` — that is the one remaining action, and it's a user call (when to merge, whether to PR-review first) rather than something to do unprompted.
+
+**Loose ends intentionally left open, not part of P0028's core scope**: root `integrations/` folder duplicate (needs diff + keep/delete decision), literature version reconciliation (3 citations differ between the Jun 30 and Jul 10 sets), and the newly-flagged `user-docs/handover(s)`/`integration(s)` folder-name drift.
