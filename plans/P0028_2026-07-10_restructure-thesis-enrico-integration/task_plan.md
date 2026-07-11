@@ -1,11 +1,11 @@
 ---
 pid: P0028
 created: 2026-07-10 16:00:00
-updated: 2026-07-11 20:15:00
+updated: 2026-07-11 20:45:00
 status: complete
-completed: 2026-07-11 20:15:00
-outcome_summary: "All 8 phases complete. Repo root flattened to the locked 00_thesis_context..05_thesis_writing tier structure with zero hardcoded stale-path bugs in live code, the structure documented and locked via .claude/rules/repo-tier-structure.md, and README.md/AGENTS.md/repository_map.md all rewritten to match the current tree (all three were badly stale -- README predated even the docs->user-docs rename). Work is committed on chore/p0028-phase5-6-docs (5 commits) and still needs a PR/merge back to main. Loose ends intentionally left open for a future session: user-docs/handover vs handovers and integration vs integrations folder-name drift, root integrations/ folder duplicate, and a 3-citation literature version reconciliation."
-focus_detail: "COMPLETE. See outcome_summary. Next action for a future session: open a PR from chore/p0028-phase5-6-docs into main and merge."
+completed: 2026-07-11 20:45:00
+outcome_summary: "All 8 phases complete. Repo root flattened to the locked 00_thesis_context..05_thesis_writing tier structure with zero hardcoded stale-path bugs in live code, the structure documented and locked via .claude/rules/repo-tier-structure.md, and README.md/AGENTS.md/repository_map.md all rewritten to match the current tree (all three were badly stale -- README predated even the docs->user-docs rename). chore/p0028-phase5-6-docs (6 commits) merged into main locally via --no-ff (merge commit 9273864). Only remaining step is pushing main to origin -- not done yet, left for the user to trigger. Loose ends intentionally left open for a future session/plan: user-docs/handover vs handovers and integration vs integrations folder-name drift, root integrations/ folder duplicate, and a 3-citation literature version reconciliation."
+focus_detail: "COMPLETE and merged into main locally (9273864). Only remaining action: push main to origin, at the user's discretion."
 ---
 
 ## What's Left (as of end of Session 6, 2026-07-10 21:45) — read this first when resuming

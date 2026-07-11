@@ -308,6 +308,16 @@ Given the scope, asked the user via `AskUserQuestion` whether to do a full rewri
 
 **Blockers**: None. Phase 8 complete — **all 8 phases of P0028 are now complete.**
 
-**Final state**: Plan frontmatter updated to `status: complete` with `outcome_summary`. Work lives on `chore/p0028-phase5-6-docs` (5 commits total across Phases 7 and 8) and has not yet been merged/PR'd into `main` — that is the one remaining action, and it's a user call (when to merge, whether to PR-review first) rather than something to do unprompted.
+**Final state (before merge)**: Plan frontmatter updated to `status: complete` with `outcome_summary`. Work lived on `chore/p0028-phase5-6-docs` (6 commits total across Phases 7 and 8), not yet merged into `main`.
 
-**Loose ends intentionally left open, not part of P0028's core scope**: root `integrations/` folder duplicate (needs diff + keep/delete decision), literature version reconciliation (3 citations differ between the Jun 30 and Jul 10 sets), and the newly-flagged `user-docs/handover(s)`/`integration(s)` folder-name drift.
+---
+
+### Session 9 (continued): Merge to `main` — Complete
+
+User asked to merge. Pre-checked `git fetch origin` + `git log origin/main..main`/`main..origin/main` — both empty, local `main` was already in sync with `origin/main`, nothing to reconcile before merging.
+
+`git checkout main` → `git merge --no-ff chore/p0028-phase5-6-docs` — merged cleanly, no conflicts. Merge commit `9273864`. Used `--no-ff` to preserve the branch's commit history rather than fast-forward/squash it away.
+
+**P0028 is now fully complete and merged into local `main`.** Not yet pushed to `origin/main` — that's the one remaining step, left for the user to trigger (not done unprompted, since a push affects the shared remote).
+
+**Loose ends intentionally left open, not part of P0028's core scope** (candidates for a future plan): root `integrations/` folder duplicate (needs diff + keep/delete decision), literature version reconciliation (3 citations differ between the Jun 30 and Jul 10 sets), and the `user-docs/handover(s)`/`integration(s)` folder-name drift.
