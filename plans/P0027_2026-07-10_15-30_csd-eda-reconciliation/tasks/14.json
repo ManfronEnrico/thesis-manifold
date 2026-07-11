@@ -1,0 +1,28 @@
+{
+  "id": "14",
+  "subject": "Run row-level MNAR/MAR/MCAR verification test for CSD",
+  "description": "Task 7 completed only aggregate-level missingness reasoning (grid_rows vs observed_rows from regeneration_report.md) because row-level data was unavailable. The correct, current CSD dataset is thesis/data/_03_engineered/nielsen/CSD/csd_feature_matrix.parquet (25,124 rows, 78 brands, brand x region x period grain, confirmed current as of 2026-06-30 per commit cb615cf). Run the originally-specified row-level test against this file: for CSD, compute a missingness indicator per brand-month cell in the reindexed grid (build_feature_matrix.py Step 5), then test whether missingness correlates with observable variables \u2014 logistic regression or chi-square of the missingness indicator against period (calendar month), brand identity, and volume-tier (e.g. quartile of a brand's mean non-missing sales). Report the test statistic(s) and p-value(s), and state explicitly whether this confirms, weakens, or contradicts the aggregate-level MNAR conclusion from Task 7. Ground the current reindex-and-leave-NaN approach in this stronger evidence. This is CSD-only, per Brian's instruction. Per this repo's rule, draft as a temp Python script under C:/Users/brian/AppData/Local/Temp/, run via Bash, do not Edit/Write .py directly. Write findings to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Running CSD row-level missingness verification",
+  "status": "completed",
+  "phase": "core",
+  "tags": [
+    "academic-rigor",
+    "missingness",
+    "gap-fill",
+    "csd-only"
+  ],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-10T20:30:00.000Z",
+    "started": "2026-07-11T00:00:00.000Z",
+    "completed": "2026-07-11T00:20:00.000Z"
+  },
+  "note": "Row-level test confirms MAR/MNAR-adjacent mechanism: missingness overwhelmingly driven by brand volume tier (chi2=1336.9, p=1.4e-289; Q1 low-volume brands miss 16.3%% of period-cells vs Q4 high-volume 0.4%%). Brand identity itself chi2=4018.6 (p~0), month chi2=48.8 (p=1e-6, small effect), region chi2=36.3 (p=1.6e-5, small effect). Joint logit: volume-tier coefficients dominate (Q4 vs Q1 = -3.90, ~50x odds reduction), month/region effects modest once volume tier included. Strengthens Task 7 aggregate conclusion with row-level evidence: missingness is predictable from an observed variable (brand historical volume), consistent with MAR in the formal sense, while the substantive mechanism (brand sales dropped near-zero, stopped being recorded) reads as MNAR in the colloquial sense -- both point to the same conclusion. Current reindex-and-leave-NaN (no imputation) approach is grounded as correct: imputing zero/mean would inject false signal for a pattern that is predictable but not random."
+}

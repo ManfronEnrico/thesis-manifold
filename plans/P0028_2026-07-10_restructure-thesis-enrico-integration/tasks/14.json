@@ -1,0 +1,10 @@
+{
+  "id": "14",
+  "subject": "Phase 5: cross-reference sweep across .py/.md/.ipynb for old-style paths",
+  "description": "Grep repo-wide for old-style path strings: thesis/data, thesis/modelling, thesis-writing, thesis-context, thesis/literature, utility_scripts/scripts/srq*, utility_scripts/scripts/forecast_service.py, _03_engineered_dvhexclhd, _04_engineered_bychain, _05_results, _06_results, _07_forecast. Update references to point at new tier locations. Specifically check CLAUDE.md, user-docs/contributing/repository_map.md, any notebooks under 03_thesis_modelling/notebooks/ (check .ipynb JSON string literals, not just .py imports), and docs/handover/2026-07-01_enrico-to-brian-merge-handover.md (decide: rewrite historically, or leave as dated snapshot with a pointer to this plan). Verify via: python3 -c imports of new PATHS.py constants, and spot-check 3-4 moved scripts py_compile cleanly from new location.",
+  "activeForm": "Running Phase 5 cross-reference sweep",
+  "status": "pending",
+  "phase": "integration",
+  "blocks": ["15"],
+  "blockedBy": []
+}

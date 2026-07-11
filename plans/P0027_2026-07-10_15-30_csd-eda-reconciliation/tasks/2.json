@@ -1,0 +1,14 @@
+{
+  "id": "2",
+  "subject": "Reproduce per-category granularity winner from tuned_metrics.csv systematically",
+  "description": "Read thesis/data/_05_results_srq1/tuned_metrics.csv (raw) and tuned_summary.md (formatted) in full. For each of the 4 categories (CSD, danskvand, energidrikke, RTD), compare test WMAPE between the 'bychain' and 'brand' dataset variants for BOTH LightGBM and XGBoost, and determine which grain wins by the stated decision rule (lower test WMAPE). Build a small comparison table (in findings.md) showing: category, brand WMAPE (best model), bychain WMAPE (best model), winner, margin. Explicitly check whether the handover's claim ('CSD/energidrikke/RTD = brand×month; danskvand = brand×chain') holds for ALL 4 categories under this rule, or whether the picture is mixed / contradicts the claim for any category. Do not eyeball — compute the actual deltas. Write to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md, append-only.",
+  "activeForm": "Reproducing per-category granularity decision from tuned metrics",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["verification", "data-audit", "srq1"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T15:35:00.000Z", "started": null, "completed": null}
+}

@@ -1,0 +1,14 @@
+{
+  "id": "1",
+  "subject": "Verify MIN_PERIODS=30 and 37-39 period claim for danskvand/energidrikke/RTD",
+  "description": "Read thesis/data/_03_engineered_dvhexclhd/regeneration_report.md — it already lists Periods per category (CSD 42, danskvand 37, energidrikke 39, RTD 37). Cross-check these period counts against the raw calendar span in the underlying facts data (via build_feature_matrix.py's calendar construction, or by checking the min/max period_year+period_month directly in the raw parquet) to confirm the 37-39 figure is a genuine data ceiling and not an artifact of a bug or truncated fetch. Confirm MIN_PERIODS=30 is actually the threshold used in build_feature_matrix.py (grep for MIN_PERIODS or equivalent constant) and that it is consistent across all 4 categories, not silently different per category. Write findings to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under a new '## Phase 1 Verification' section, append-only.",
+  "activeForm": "Verifying MIN_PERIODS and period-count claims",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["verification", "data-audit"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T15:35:00.000Z", "started": null, "completed": null}
+}

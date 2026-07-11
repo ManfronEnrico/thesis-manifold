@@ -1,0 +1,27 @@
+{
+  "stage": "1_jsonl_to_parquet",
+  "categories": [
+    {
+      "category": "Danskvand",
+      "views_converted": 4,
+      "metadata_converted": 1,
+      "elapsed": 14.464516500000173,
+      "error": null
+    },
+    {
+      "category": "Energidrikke",
+      "views_converted": 4,
+      "metadata_converted": 1,
+      "elapsed": 68.09785679999914,
+      "error": null
+    },
+    {
+      "category": "RTD",
+      "views_converted": 4,
+      "metadata_converted": 1,
+      "elapsed": 0.4321428000002925,
+      "error": null
+    }
+  ],
+  "total_elapsed_seconds": 82.9961461999992
+}

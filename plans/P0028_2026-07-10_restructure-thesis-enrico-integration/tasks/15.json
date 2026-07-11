@@ -1,0 +1,10 @@
+{
+  "id": "15",
+  "subject": "Phase 6: document + lock the new structure",
+  "description": "Add a structure-map comment to the top of PATHS.py mirroring the locked target tree. Create .claude/rules/repo-tier-structure.md as the authoritative locked-structure reference: numbered tier order (00-05) and what belongs in each, the model_training/ vs model_serving/ train-vs-serve rule, the rule that new SRQ results always go in 04_thesis_results/srq{N}/ (never a new top-level tier), the utility_scripts/ tooling-only scope rule, and an explicit callout about the stray 02_thesis_data/_03_engineered/nielsen/ folder (old-shape but real data, left in place deliberately -- see findings.md Session 6 #4) so a future session doesn't mistake it for bloat and delete it. Update CLAUDE.md's Quick References section to point at new paths.",
+  "activeForm": "Documenting and locking the new structure",
+  "status": "pending",
+  "phase": "docs",
+  "blocks": ["16"],
+  "blockedBy": ["14"]
+}

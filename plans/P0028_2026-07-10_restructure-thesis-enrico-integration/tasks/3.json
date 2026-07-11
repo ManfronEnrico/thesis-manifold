@@ -1,0 +1,14 @@
+{
+  "id": "3",
+  "subject": "Add engineered bymonth/bychain constants + helpers, resolve get_category_engineered_dir()",
+  "description": "In Z:/_dev-ssd/thesis-manifold/PATHS.py, add THESIS_DATA_ENGINEERED_BYMONTH_DIR (THESIS_DATA_ENGINEERED_DIR / \"bymonth\") and THESIS_DATA_ENGINEERED_BYCHAIN_DIR (THESIS_DATA_ENGINEERED_DIR / \"bychain\"). Add helper functions get_category_engineered_bymonth_dir(category) -> THESIS_DATA_ENGINEERED_BYMONTH_DIR / category and get_category_engineered_bychain_dir(category) -> THESIS_DATA_ENGINEERED_BYCHAIN_DIR / category, following the existing helper-function docstring style in the file (see get_category_parquet_dir as the pattern to match). Decide the fate of the existing get_category_engineered_dir() function (currently returns THESIS_DATA_ENGINEERED_DIR / \"nielsen\" / category, a path shape that will no longer exist once the bymonth/bychain split takes over) -- either mark it deprecated with a docstring pointing at the two new helpers (matching the existing get_category_jsonl_views_dir deprecation pattern in the file), or repoint it if a genuine 'nielsen/{category}' shape still applies somewhere. Depends on task 1 (needs THESIS_DATA_ENGINEERED_DIR to still resolve correctly under renamed THESIS_DATA_DIR). Verify: python3 -c \"from PATHS import THESIS_DATA_ENGINEERED_BYMONTH_DIR, THESIS_DATA_ENGINEERED_BYCHAIN_DIR, get_category_engineered_bymonth_dir, get_category_engineered_bychain_dir; print(get_category_engineered_bymonth_dir('CSD')); print(get_category_engineered_bychain_dir('CSD'))\". Use the safe temp-script edit pattern per project hook rule.",
+  "activeForm": "Adding engineered bymonth/bychain constants and resolving get_category_engineered_dir()",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "4"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

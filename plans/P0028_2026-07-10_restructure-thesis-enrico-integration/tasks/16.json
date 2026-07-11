@@ -1,0 +1,10 @@
+{
+  "id": "16",
+  "subject": "Phase 7: git commits (blocked on user reviewing pre-existing 232-path uncommitted state)",
+  "description": "Cannot start until the user reviews/handles the pre-existing 232-path uncommitted repo state (Brian's own earlier utility_scripts/user-docs raw-move pruning pass, confirmed unrelated to P0028 but sitting in the same working tree). Once cleared: stage and commit in 5 reviewed chunks per task_plan.md Phase 7 -- (1) PATHS.py additions, (2) script updates to use PATHS.py, (3) folder copies, (4) cross-reference fixes, (5) docs/rules. Never git add -A; stage explicit paths only per trigger-git-commit-workflow.md. Verify git status manually before each commit and py_compile every touched script.",
+  "activeForm": "Preparing Phase 7 git commits",
+  "status": "pending",
+  "phase": "integration",
+  "blocks": ["17"],
+  "blockedBy": ["15"]
+}

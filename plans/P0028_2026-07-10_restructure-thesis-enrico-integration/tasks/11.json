@@ -1,0 +1,11 @@
+{
+  "id": "11",
+  "subject": "Verify Phase 4 copy into root was wholesale before deleting stale thesis/ originals",
+  "description": "Re-diff every copied subtree against its thesis/... source to confirm the Phase 4 copy is complete and byte-identical, not just 'folder exists': thesis/thesis-context vs 00_thesis_context, thesis/literature vs 01_thesis_research/literature, thesis/data/* vs 02_thesis_data/* (especially the 16GB _00_raw -- spot-check file counts/sizes, don't trust the earlier background cp exit code alone), thesis/modelling vs 03_thesis_modelling, thesis/thesis-writing vs 05_thesis_writing, thesis/thesis_agents vs .archive/thesis_agents_preintegration. Use file count + total size comparisons (e.g. find <dir> -type f | wc -l and du -sb) per subtree pair. Report any mismatches before proceeding -- do not delete anything in this task, verification only. Once confirmed wholesale and correct, and only after confirming no other concurrent Claude Code session is mid-edit inside thesis/, this clears the way for task 12.",
+  "activeForm": "Verifying Phase 4 copy completeness against thesis/ originals",
+  "status": "completed",
+  "phase": "testing",
+  "blocks": ["12"],
+  "blockedBy": [],
+  "notes": "All subtrees verified wholesale and correct. thesis-context: 18 old vs 13+5 (5 research-questions files correctly relocated to 01_thesis_research/research-questions per Decision Log #1). literature: 65 old vs 67 new (+2 dated-prefix files from user-docs/literature/, expected). _00_raw: 52/52 files, 36,243,857,738 bytes identical on both sides (previously only exit-code-trusted, now properly verified). modelling: 13 old vs 39 new (+12 relocated scripts + __pycache__, expected). thesis-writing: 68 old vs 67 new -- missing file was a 162-byte Word '~$' lock/temp artifact, not real content. thesis_agents: 92 old vs 93 new (+1 relocated test file per Open Items resolution). No other concurrent session activity detected in thesis/ (no files modified in prior 10 minutes, checked twice)."
+}

@@ -1,0 +1,14 @@
+{
+  "id": "1",
+  "subject": "Add tier-root path constants to PATHS.py",
+  "description": "In Z:/_dev-ssd/thesis-manifold/PATHS.py, add the six new tier-root constants: THESIS_CONTEXT_DIR (ROOT_DIR / \"00_thesis_context\"), THESIS_RESEARCH_DIR (ROOT_DIR / \"01_thesis_research\"), THESIS_RESEARCH_QUESTIONS_DIR (THESIS_RESEARCH_DIR / \"research-questions\"), THESIS_RESEARCH_LITERATURE_DIR (THESIS_RESEARCH_DIR / \"literature\"), THESIS_RESULTS_DIR (ROOT_DIR / \"04_thesis_results\"), THESIS_WRITING_DIR (ROOT_DIR / \"05_thesis_writing\"). Rename existing THESIS_DATA_DIR and THESIS_MODELLING_DIR to point at ROOT_DIR / \"02_thesis_data\" and ROOT_DIR / \"03_thesis_modelling\" respectively (currently THESIS_DIR / \"data\" and THESIS_DIR / \"modelling\"). Decide and apply: either set THESIS_DIR = ROOT_DIR (alias) or remove the constant entirely and inline ROOT_DIR at call sites within this file. Verify: python3 -c \"from PATHS import ROOT_DIR, THESIS_CONTEXT_DIR, THESIS_RESEARCH_DIR, THESIS_DATA_DIR, THESIS_MODELLING_DIR, THESIS_RESULTS_DIR, THESIS_WRITING_DIR; print('OK')\" runs without error. Do not edit PATHS.py directly with Edit/Write tools per project hook rule -- use the safe temp-script pattern in C:/Users/brian/AppData/Local/Temp/.",
+  "activeForm": "Adding tier-root path constants to PATHS.py",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "2",
+    "3",
+    "4"
+  ],
+  "blockedBy": []
+}
