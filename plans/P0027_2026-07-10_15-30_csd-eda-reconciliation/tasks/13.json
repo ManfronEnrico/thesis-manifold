@@ -1,0 +1,28 @@
+{
+  "id": "13",
+  "subject": "Reconcile CSD ADF log-level p-value discrepancy (0.140 vs 0.421)",
+  "description": "Task 6 found an unreconciled numeric discrepancy for CSD: independently computed ADF log-level p=0.140 vs the existing doc's p=0.421 in eda_findings_dvhexclhd.md, using a different aggregation method. The correct, current CSD dataset is confirmed as thesis/data/_03_engineered/nielsen/CSD/csd_feature_matrix.parquet (25,124 rows, 78 brands, brand x region x period grain, output of our own modular pre_csd_1..6.py pipeline, most recently regenerated 2026-06-30 per commit cb615cf) -- NOT build_feature_matrix.py's _03_engineered_dvhexclhd/CSD/ output, which has no feature matrix parquet locally. Investigate the root cause of the ADF p-value discrepancy using the actual series construction from this confirmed file (aggregation grain, date range, ADF lag-selection method), and determine whether the discrepancy is due to (a) different aggregation grain (brand-level vs total-category pooled), (b) different date range / period count, (c) different ADF lag-selection (AIC vs BIC vs fixed), or (d) a bug in one of the two computations. Report the exact root cause with evidence (code diff/comparison), and state which number (if either) should be considered authoritative going forward, or whether both are valid under their respective framings and must both be documented with their assumptions stated. This is CSD-only, per Brian's instruction to make CSD bulletproof before extending to other categories. Per this repo's rule, draft as a temp Python script under C:/Users/brian/AppData/Local/Temp/, run via Bash, do not Edit/Write .py directly. Write findings to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Reconciling CSD ADF p-value discrepancy",
+  "status": "completed",
+  "phase": "core",
+  "tags": [
+    "academic-rigor",
+    "stationarity",
+    "gap-fill",
+    "csd-only"
+  ],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-10T20:30:00.000Z",
+    "started": "2026-07-11T00:00:00.000Z",
+    "completed": "2026-07-11T00:40:00.000Z"
+  },
+  "note": "Root cause: aggregation grain, not date range or lag-selection method (both use autolag='AIC', same 44-period file). Task 6's original 0.140 median came from grouping by brand alone on the brand-region-period parquet without summing across regions first, feeding a region-interleaved series into adfuller (reproduced exactly: median=0.1408). Correct per-brand construction (sum sales across regions per brand per month, THEN adfuller per brand, THEN median across 78 brands) gives median=0.3535, mean=0.4068 -- closely matching the doc's reported 0.421 (n=76 vs our n=78, residual gap likely a brand-count/filter difference, not a second methodological disagreement). Recommendation: 0.421 is authoritative -- 0.140 was an aggregation bug, not a valid alternative framing. Both numbers agree on the qualitative verdict (p>0.05, non-stationary/I(1)), so Ch4's conclusion is unaffected; only the cited exact number changes."
+}

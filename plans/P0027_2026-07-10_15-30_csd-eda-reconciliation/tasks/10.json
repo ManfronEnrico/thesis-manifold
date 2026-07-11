@@ -1,0 +1,14 @@
+{
+  "id": "10",
+  "subject": "Verify or correct the 'Kim, 2013' skewness-threshold citation",
+  "description": "The original CSD EDA (pre_csd_1.5_eda.py, inherited from before this plan) cites a skewness threshold attributed to 'Kim, 2013' to justify a log-transform decision. This citation was flagged as suspect in the earlier fork audit (prior session) but not yet resolved. Steps: (1) grep pre_csd_1.5_eda.py and pre_csd_1.5_eda.OURS.py for the exact wording of the 'Kim, 2013' citation and the specific skewness threshold value it's attached to (likely something like |skewness| > 1 or > 2 triggering a log transform recommendation); (2) attempt to identify what real source this might be referring to — common skewness-threshold conventions in stats literature include Bulmer (1979)'s |skew|<0.5 'fairly symmetrical', 0.5-1 'moderately skewed', >1 'highly skewed' convention, or George & Mallery's various cutoffs, or Tabachnick & Fidell's normality guidance — none of which are 'Kim, 2013' as far as commonly known; (3) check thesis/thesis-context or any Zotero-linked reference list for a 'Kim 2013' entry that might legitimately exist and be intended; (4) if no legitimate source is found, do NOT fabricate one — instead replace the citation with either (a) a properly cited real convention (e.g. Bulmer 1979, with correct threshold values matched to what's actually used in code), or (b) explicitly reframe the current threshold as a stated, undefended practical rule of thumb rather than attributing it to an academic source it doesn't verifiably come from. This is a citation-integrity issue, not a code-logic issue — do not change the actual transform logic unless the threshold value itself needs adjusting to match whatever correct convention is adopted. Write findings (what the citation currently says, what you found or didn't find, and the recommended correction) to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Verifying the Kim 2013 skewness citation",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["academic-rigor", "citation", "gap-fill"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T18:00:00.000Z", "started": "2026-07-10T18:05:00.000Z", "completed": "2026-07-10T18:20:00.000Z"}
+}

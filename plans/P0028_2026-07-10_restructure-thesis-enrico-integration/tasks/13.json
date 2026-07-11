@@ -1,0 +1,11 @@
+{
+  "id": "13",
+  "subject": "Resolve root-level results/ and reports/ -- move or archive-and-remove",
+  "description": "Root-level results/ and reports/ are not yet actually resolved: only .archive/enrico_legacy_results_2026-04/ and .archive/enrico_legacy_reports_2026-07/ COPIES exist so far, but the root-level originals are still sitting untouched at repo root. Verify the .archive/ copies are complete and correct (file count/size diff, same method as task 11), then remove the stale root-level results/ and reports/ originals so root is actually decluttered -- per Decision Log #7 (archive, don't delete outright) unless a fresh look decides moving into the numbered tree is better. Do not consider this done while results/ and reports/ still exist at root.",
+  "activeForm": "Resolving root-level results/ and reports/ folders",
+  "status": "completed",
+  "phase": "cleanup",
+  "blocks": [],
+  "blockedBy": [],
+  "notes": "Re-traced git origin per user request rather than trusting Decision Log #7 verbatim: reports/* (eda, final, shap) and results/phase1, results/ml_retrain_2026-04-16 all trace to Enrico's commit ec350d0 (2026-07-08 merge) / 368a967 (2026-04-13 original). CORRECTION to Decision Log #7: results/seaborn_exploratory/ (3 PNGs) actually traces to Brian's OWN commit 85c69b4/14433dd (2026-04-20 seaborn EDA audit trail), not Enrico's -- the original plan's blanket attribution of all of results/ to Enrico was wrong on this one subfolder. Asked user how to treat it (archive / integrate into 04_thesis_results / leave); user chose delete outright, not move to 04_thesis_results (the 'move' fallback only applied if source tracing failed, which it did not). Archive copies (.archive/enrico_legacy_results_2026-04, .archive/enrico_legacy_reports_2026-07) verified byte-identical and file-count-identical before any deletion. All deletions were split into explicitly-confirmed chunks after the auto-mode classifier correctly blocked two overly broad rm -rf attempts that bundled un-named targets (ml_retrain_2026-04-16 was investigated but not explicitly confirmed in the first pass; confirmed and deleted in a follow-up). Final state: results/, reports/ fully removed from root; only 04_thesis_results/ (the correct new location) remains."
+}

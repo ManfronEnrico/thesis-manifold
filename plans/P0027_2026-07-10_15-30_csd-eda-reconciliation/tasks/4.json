@@ -1,0 +1,14 @@
+{
+  "id": "4",
+  "subject": "Confirm gitignore status of engineered/results data tiers",
+  "description": "Check .gitignore for entries covering thesis/data/_03_engineered_dvhexclhd/, _04_engineered_bychain/, _05_results_srq1/, _06_results_srq2/, _07_forecast_service/. Run 'git check-ignore -v <path>' for each directory to confirm actual ignore status (not just presence of a pattern that might not match). Run 'git ls-files thesis/data/_03_engineered_dvhexclhd | head' etc. to confirm none of these are accidentally tracked despite the intended gitignore (large-file risk per handover's stated repo-size constraints: CSD alone 600MB compressed, Git max 100MB/file, repo max 1GB). Flag any tracked large files immediately as a risk, do not fix in this task. Write result to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md, append-only.",
+  "activeForm": "Confirming gitignore status of engineered/results directories",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["verification", "git-hygiene"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T15:35:00.000Z", "started": null, "completed": null}
+}

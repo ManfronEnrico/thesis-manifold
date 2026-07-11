@@ -1,0 +1,15 @@
+{
+  "id": "9",
+  "subject": "Update srq2/srq4/forecast_service scripts to import PATHS.py results + engineered constants",
+  "description": "Update the following scripts, all currently at utility_scripts/scripts/, to replace hardcoded path strings with PATHS.py imports: srq2_agent.py and srq2_synthesis.py (replace hardcoded '_05_results_srq1' with THESIS_RESULTS_SRQ1_DIR from task 2); srq4_experiment.py and srq4_tier2.py (replace hardcoded '_05_results_srq1' and '_06_results_srq2' with THESIS_RESULTS_SRQ1_DIR and THESIS_RESULTS_SRQ2_DIR); forecast_service.py (replace hardcoded '_03_engineered_dvhexclhd' and '_04_engineered_bychain' with get_category_engineered_bymonth_dir() and get_category_engineered_bychain_dir() from task 3). These scripts are NOT being physically moved yet in this task -- only internal path logic changes, in their CURRENT location under utility_scripts/scripts/. Depends on tasks 2 and 3 (constants and helpers must exist). Verify: python3 -m py_compile on each of the 5 files; grep -n \"_03_engineered_dvhexclhd\\|_04_engineered_bychain\\|_05_results\\|_06_results\" on each file should return nothing after the edit. Use the safe temp-script edit pattern per project hook rule -- never Edit/Write .py files directly. NOTE: srq4_tier2.py was ALSO found with hardcoded _08_results_srq4 paths (missed in the original plan grep, which only searched for _05/_06 patterns) and updated in this pass -- now maps to THESIS_RESULTS_SRQ4_DIR. Total scripts touched in T8+T9: 12 (not 11 as originally scoped).",
+  "activeForm": "Updating srq2/srq4/forecast_service scripts to use PATHS.py constants",
+  "status": "completed",
+  "phase": "integration",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "2",
+    "3"
+  ]
+}

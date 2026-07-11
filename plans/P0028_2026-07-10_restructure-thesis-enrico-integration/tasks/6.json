@@ -1,0 +1,12 @@
+{
+  "id": "6",
+  "subject": "Read ambiguous test files and decide placement",
+  "description": "Read Z:/_dev-ssd/thesis-manifold/utility_scripts/tests/test_agent_system_comprehensive.py and Z:/_dev-ssd/thesis-manifold/utility_scripts/scripts/test_group.py in full. Determine what system/component each actually tests: if test_agent_system_comprehensive.py tests the old pre-integration thesis_agents/ code (now archived as .archive/thesis_agents_preintegration/), it should move to .archive/ alongside it rather than remain in active utility_scripts/tests/. If test_group.py tests something still live in the tooling (Zotero/GDrive/NotebookLM helpers), it stays in utility_scripts/scripts/. Record the decision and rationale as a new row under the Open Items table in task_plan.md and in findings.md. No code changes in this task -- investigation and plan-doc update only.",
+  "activeForm": "Reading ambiguous test files and deciding placement",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": []
+}

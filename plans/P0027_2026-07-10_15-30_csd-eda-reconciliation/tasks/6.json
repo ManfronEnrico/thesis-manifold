@@ -1,0 +1,15 @@
+{
+  "id": "6",
+  "subject": "Add KPSS test alongside ADF for all 4 categories",
+  "description": "In thesis/data/preprocessing/nielsen_dvh/ (or a new sibling EDA script — do NOT edit build_feature_matrix.py's core pipeline logic, add a separate analysis script that reads the same category-scoped facts/feature matrices), compute KPSS stationarity test (statsmodels.tsa.stattools.kpss) alongside the existing ADF test, for all 4 categories (CSD, danskvand, energidrikke, RTD), on the same log-level series currently tested with ADF in eda_findings_dvhexclhd.md. Remember: this repo's rule is never Edit/Write .py files directly for execution — write any exploratory/analysis script to a temp file under C:/Users/brian/AppData/Local/Temp/ and run via Bash/PowerShell, then decide what (if anything) becomes a committed script. Report: KPSS statistic + p-value per category, and explicitly resolve cases where ADF and KPSS DISAGREE (ADF null=non-stationary vs KPSS null=stationary; if ADF rejects [stationary] AND KPSS fails to reject [stationary], series is stationary; if ADF fails to reject [non-stationary] AND KPSS rejects [non-stationary], series is non-stationary/I(1); if they disagree, note this explicitly as an ambiguous case requiring judgment, do not silently pick one). Cross-check against the current ADF-only verdicts in eda_findings_dvhexclhd.md (CSD/danskvand/energidrikke currently 'non-stationary I(1)', RTD 'stationary in level') — confirm or revise these verdicts with KPSS added. Write results to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under a new '## Phase 2 Gap-Fill' heading (append, do not overwrite Phase 1 content), including the actual KPSS statistics/p-values as evidence, not just a verdict.",
+  "activeForm": "Adding KPSS test alongside ADF for all 4 categories",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["academic-rigor", "stationarity", "gap-fill", "partial-data"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T18:00:00.000Z", "started": "2026-07-10T18:05:00.000Z", "completed": "2026-07-10T18:45:00.000Z"},
+  "note": "CSD and energidrikke only (danskvand/RTD have no raw/converted parquet locally). Key finding: ADF/KPSS jointly land in the AMBIGUOUS quadrant for both testable categories, not a clean I(1) confirmation. Also found a numeric discrepancy: independently computed CSD ADF log-level p=0.140 vs doc's existing 0.421 — different aggregation method, unreconciled, flagged not papered over."
+}

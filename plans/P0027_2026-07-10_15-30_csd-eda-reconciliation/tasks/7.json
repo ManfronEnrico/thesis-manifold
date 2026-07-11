@@ -1,0 +1,15 @@
+{
+  "id": "7",
+  "subject": "Add formal MCAR/MAR/MNAR missingness-mechanism reasoning per category",
+  "description": "Currently neither pre_csd_1.5_eda.py nor build_feature_matrix.py has any formal missingness-mechanism reasoning (confirmed via grep in Phase 1 fork audit: zero hits for 'mcar'/'mar'/'mnar' in either file) — only a heuristic zero-run classification exists. For each of the 4 categories, examine the gap structure in the monthly brand grid (each brand reindexed to the full period range per build_feature_matrix.py Step 5, exposing gaps as missing rows/NaN sales): (1) compute what fraction of brand-months are missing/zero per category, (2) test whether missingness correlates with observable variables (e.g., is a brand more likely to have a gap in low-volume months, specific calendar months, or specific brands with sparser overall history — i.e. evidence for MAR) versus appearing unrelated to any observed variable (MCAR) versus being structurally tied to the unobserved value itself, e.g. a brand goes quiet because sales dropped to near-zero and stayed there (MNAR — the mechanism a zero-inflated/discontinued-brand pattern would produce). Use a concrete test: e.g. logistic regression or chi-square of missingness indicator against period/brand/volume-tier, or simple stratified missingness rates. Ground the current imputation/no-impute decision (reindex-and-leave-NaN, per Step 5) in this reasoning explicitly - state whether the current approach is appropriate GIVEN the diagnosed mechanism, or whether it needs a documented caveat/change. This repo's rule: write any Python analysis to a temp script under C:/Users/brian/AppData/Local/Temp/ and run via Bash, never Edit/Write .py directly for execution. Write findings to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append), citing the actual missingness rates/test statistics computed, per category.",
+  "activeForm": "Adding formal missingness-mechanism reasoning per category",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["academic-rigor", "missingness", "gap-fill", "partial-data"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T18:00:00.000Z", "started": "2026-07-10T18:05:00.000Z", "completed": "2026-07-10T18:25:00.000Z"},
+  "note": "Completed with aggregate-level reasoning only (grid_rows vs observed_rows from regeneration_report.md) — row-level stratified test (logistic regression of missingness on volume-tier/month) blocked by absence of raw/engineered parquet data in this checkout. Residual gap flagged for future run with data/raw/ present."
+}

@@ -1,0 +1,14 @@
+{
+  "id": "8",
+  "subject": "Update model_training scripts (srq1_*) to import PATHS.py bymonth/bychain constants",
+  "description": "Update the 6 scripts currently at utility_scripts/scripts/srq1_baselines_stat.py, srq1_benchmark.py, srq1_benchmark_tuned.py, srq1_calibration.py, srq1_profiling.py, srq1_shap.py to replace any hardcoded '_03_engineered_dvhexclhd' or '_04_engineered_bychain' path strings with imports from PATHS.py: get_category_engineered_bymonth_dir() and get_category_engineered_bychain_dir() (added in task 3). These scripts are NOT being physically moved yet in this task -- only their internal path logic changes, in their CURRENT location under utility_scripts/scripts/. This is purely an import/path-logic edit, no behavior change. Depends on task 3 (helper functions must exist) and tasks 5-7 being resolved is not a hard blocker here since these specific scripts are unrelated to the open items. Verify: python3 -m py_compile on each of the 6 files; grep -n \"_03_engineered_dvhexclhd\\|_04_engineered_bychain\" on each file should return nothing after the edit. Use the safe temp-script edit pattern per project hook rule -- never Edit/Write .py files directly. NOTE: srq1_figures.py was also found with hardcoded paths (not in original plan list) and updated in this pass alongside the 6 planned scripts.",
+  "activeForm": "Updating model_training srq1_* scripts to use PATHS.py constants",
+  "status": "completed",
+  "phase": "integration",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

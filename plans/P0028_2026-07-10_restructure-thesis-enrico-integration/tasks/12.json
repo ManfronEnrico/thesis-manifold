@@ -1,0 +1,11 @@
+{
+  "id": "12",
+  "subject": "Delete stale thesis/ originals after verified copy (Phase 4b cleanup)",
+  "description": "Only after task 11 confirms the copy was wholesale/byte-identical and the user has explicitly re-confirmed no other concurrent Claude Code session is mid-edit inside thesis/: delete the now-stale deeper originals under thesis/ (thesis-context, literature, data, modelling, thesis-writing, thesis_agents), then remove the resulting empty thesis/ shell. This is the deferred 'Phase 4b' referenced throughout task_plan.md -- user-confirmed as the right eventual move, gated on task 11's verification passing clean. Requires explicit user go-ahead immediately before execution, not just a green task 11.",
+  "activeForm": "Deleting verified-stale thesis/ originals",
+  "status": "completed",
+  "phase": "cleanup",
+  "blocks": [],
+  "blockedBy": ["11"],
+  "notes": "User explicitly confirmed go-ahead. No concurrent-session activity detected (re-checked immediately before deletion). rm -rf thesis/ executed successfully -- thesis/ no longer exists at repo root. All content fully preserved in the new numbered tree per task 11's verification."
+}

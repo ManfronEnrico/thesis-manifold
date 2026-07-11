@@ -1,0 +1,10 @@
+{
+  "id": "17",
+  "subject": "Phase 8: update broader documentation",
+  "description": "Update user-docs/contributing/repository_map.md, README.md (if it has a structure diagram), and any handover docs referencing old paths. docs/handover/2026-07-01_enrico-to-brian-merge-handover.md already references _03_engineered_dvhexclhd-style paths from before this restructure -- decide whether to retroactively edit historical handovers or leave them as a dated snapshot with a pointer to this plan for 'what changed since'.",
+  "activeForm": "Updating broader documentation for Phase 8",
+  "status": "pending",
+  "phase": "docs",
+  "blocks": [],
+  "blockedBy": ["16"]
+}

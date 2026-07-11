@@ -1,0 +1,16 @@
+{
+  "id": "11",
+  "subject": "Reconcile WARMUP_PERIODS=13 / lag-13 tension against corrected ACF",
+  "description": "BLOCKED BY task 8 (per-brand ACF replacement) — needs the corrected, non-pooled ACF numbers before this can be resolved with real evidence rather than the flawed pooled figures. Phase 1 Task 3 surfaced an unreconciled tension: WARMUP_PERIODS=13 and ROLLING_WINDOWS include 13 as an '~annual' feature (per code comment in build_feature_matrix.py:95), but the (old, pooled) ACF showed lag-13 autocorrelation near zero or negative for 3 of 4 categories (CSD -0.15, energidrikke -0.12, RTD +0.00; only danskvand slightly positive +0.05) — meaning the seasonal signal this feature is supposed to capture barely existed in the flawed pooled measurement. Once task 8 produces corrected per-brand-averaged lag-13 ACF values, re-examine this question with real evidence: does lag-13/rolling_mean_13 still look weak (supporting: deprioritize/reconsider/drop this feature, or explicitly document it as a seasonal-convention inclusion despite weak measured signal) or does the correction reveal a real annual signal that the flawed pooled method was masking (supporting: keep as-is, now properly justified)? Render an explicit recommendation: (a) keep lag-13/rolling-13 as-is with documented rationale either way, (b) reweight or flag it as lower-confidence in the writeup, or (c) recommend removing/replacing it with whatever lag the corrected ACF actually supports most strongly. This is an analysis/recommendation task, not a mandate to change build_feature_matrix.py's feature set without human approval — do NOT modify the LAGS/ROLLING_WINDOWS constants; only write the analysis and recommendation. Write findings to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Reconciling WARMUP_PERIODS/lag-13 against corrected ACF",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["academic-rigor", "feature-engineering", "gap-fill"],
+  "complexity": 0,
+  "blockedBy": ["8"],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T18:00:00.000Z", "started": "2026-07-10T19:15:00.000Z", "completed": "2026-07-10T19:30:00.000Z"},
+  "note": "Recommendation: keep lag-13 in place but reweight the narrative (option b) — 2/4 categories tested confirm weak/negative lag-13 autocorrelation across two independent methods, but overreaching to drop the feature from a shared 4-category pipeline based on 2 categories (one low-confidence) isn't warranted. Proposed exact wording for build_feature_matrix.py comment / Ch4 narrative provided. No code changed (correctly out of scope)."
+}
+}

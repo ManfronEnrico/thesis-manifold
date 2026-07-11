@@ -1,0 +1,16 @@
+{
+  "id": "10",
+  "subject": "Run Phase 3 full verification sweep and update progress.md",
+  "description": "After tasks 5-9 complete, run the full Phase 3 verification: (1) grep -rn \"_03_engineered_dvhexclhd|_04_engineered_bychain|_05_results|_06_results|_07_forecast\" utility_scripts/scripts/ -- should return nothing (all 11 scripts from tasks 8-9 now use PATHS.py constants instead); (2) python3 -m py_compile on all 11 updated scripts (srq1_baselines_stat.py, srq1_benchmark.py, srq1_benchmark_tuned.py, srq1_calibration.py, srq1_profiling.py, srq1_shap.py, srq2_agent.py, srq2_synthesis.py, srq4_experiment.py, srq4_tier2.py, forecast_service.py) -- all must compile cleanly; (3) confirm all 3 open items (tasks 5-7) have recorded decisions in task_plan.md's Open Items table and findings.md. Update plans/P0028_2026-07-10_restructure-thesis-enrico-integration/progress.md with a new session entry documenting Phase 2 + Phase 3 completion, and update task_plan.md frontmatter focus_detail to note Phase 4 (folder moves) is next -- explicitly stating the execution strategy changed to copy-then-archive-old rather than git mv, to avoid disrupting other concurrent Claude Code sessions that may still reference old paths. Do not begin Phase 4 folder operations as part of this task.",
+  "activeForm": "Running Phase 3 verification sweep and updating progress.md",
+  "status": "completed",
+  "phase": "testing",
+  "blocks": [],
+  "blockedBy": [
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ]
+}
