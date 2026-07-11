@@ -8,156 +8,63 @@
 
 ## Research Question
 
-> *How can AI systems be designed to provide reliable predictive decision-support in real-world business environments under computational constraints?*
+> *How can AI systems be designed to provide reliable, cost-justified predictive decision-support in real-world business environments under computational constraints?*
 
 **Sub-questions:**
 - **SRQ1** — Which predictive modelling approaches provide the best balance between forecasting accuracy and computational efficiency under realistic cloud resource constraints (≤8 GB RAM)?
 - **SRQ2** — How can a multi-agent architecture coordinate predictive models and heterogeneous data signals to generate actionable managerial recommendations?
-- **SRQ3** — To what extent does additional contextual information improve the predictive and decision-support capabilities of AI systems?
-- **SRQ4** — How does the proposed predictive AI system compare to traditional descriptive analytics approaches used in business intelligence systems?
+- **SRQ3** — To what extent does additional contextual information (Prometheus integration) improve the predictive and decision-support capabilities of AI systems? (Currently scoped as an integration-readiness assessment — Prometheus access pending.)
+- **SRQ4** — How does the proposed predictive AI system compare to a code-as-action LLM baseline, on correctness/consistency/replicability (primary) and cost/latency (secondary)?
+
+See [00_thesis_context/thesis-topic/project-state.md](00_thesis_context/thesis-topic/project-state.md) for the full list of frozen decisions and open questions, and [01_thesis_research/research-questions/](01_thesis_research/research-questions/) for the canonical RQ text.
+
+---
+
+## Repo Structure
+
+**As of 2026-07-11**, the repo root is organized into six numbered thesis tiers plus supporting tooling/docs folders. Full authoritative reference: [.claude/rules/repo-tier-structure.md](.claude/rules/repo-tier-structure.md).
+
+| Tier | Purpose |
+|------|---------|
+| [00_thesis_context/](00_thesis_context/) | Thesis topic, scope, frozen decisions, CBS compliance |
+| [01_thesis_research/](01_thesis_research/) | Research questions, literature corpus |
+| [02_thesis_data/](02_thesis_data/) | Data pipeline: raw → converted → preprocessed → engineered |
+| [03_thesis_modelling/](03_thesis_modelling/) | Model training scripts + serving code (System A/B) |
+| [04_thesis_results/](04_thesis_results/) | Final SRQ1/SRQ2/SRQ4 results |
+| [05_thesis_writing/](05_thesis_writing/) | Thesis chapter drafts, final sections, figures |
+
+| Other folder | Purpose |
+|---|---|
+| `utility_scripts/` | Tooling-only helper scripts (not thesis content) |
+| `user-docs/` | Architecture, integration guides, handovers, reference docs |
+| `plans/` | Dated P-ID session plan folders |
+| `.claude/` | Claude Code rules, skills, agents, commands |
 
 ---
 
 ## What This Repository Contains
 
-This repo contains **two separate systems** that must not be confused:
+Two systems that must not be confused:
 
-| System | Folder | Purpose | In Thesis? |
+| System | Location | Purpose | In Thesis? |
 |---|---|---|---|
-| **System A** — Research Framework | `ai_research_framework/` | The multi-agent forecasting system being studied and evaluated | ✅ Yes — Chapters 5–8 |
-| **System B** — Thesis Production | `thesis_production_system/` | Internal tooling for writing and managing the thesis | ❌ No — invisible to reader |
+| **System A** — Research Framework | `03_thesis_modelling/model_serving/system_a_forecast/` + `model_training/` | The multi-agent forecasting system being studied and evaluated (SRQ1/SRQ2) | ✅ Yes |
+| **System B** — Thesis Production | `03_thesis_modelling/model_serving/system_b_conversational/` + `.claude/` agents/skills | Internal tooling for writing and managing the thesis | ❌ No — invisible to reader |
 
 > ⚠️ **System B never modifies System A logic.** System A is the research object; System B supports the writing process.
 
----
-
-## System A — AI Research Framework
-
-The core research contribution. A multi-agent LLM-orchestrated pipeline that transitions Manifold's AI Colleagues system from descriptive analytics to predictive decision-support.
+### System A — AI Research Framework
 
 **Hard constraint: ≤ 8 GB RAM total** — every architectural decision is justified against this.
 
-### Architecture
-
-```
-ResearchCoordinator (LangGraph StateGraph)
-│
-├── A1 — DataAssessmentAgent      →  Data quality report, forecasting suitability
-├── A2 — ForecastingAgent         →  Benchmark 5 lightweight models (sequential, memory-profiled)
-├── A3 — SynthesisAgent           →  Ensemble + confidence-scored recommendation
-└── A4 — ValidationAgent          →  3-level evaluation (ML accuracy, rec. quality, resource usage)
-```
-
-### Models Benchmarked (SRQ1)
-
-| Model | Package | Est. RAM |
-|---|---|---|
-| AutoARIMA | pmdarima | ~50 MB |
-| Prophet | prophet | ~200 MB |
-| LightGBM | lightgbm | ~100 MB |
-| XGBoost | xgboost | ~150 MB |
-| Ridge | scikit-learn | ~10 MB |
-
-> Models execute **sequentially** — never in parallel — to stay within the 8 GB budget.
+Models benchmarked (SRQ1): AutoARIMA, Prophet, LightGBM, XGBoost, Ridge — run **sequentially**, never in parallel, to stay within budget. Current baselines: XGBoost 45.5% median MAPE (test), LightGBM 46.7% median MAPE (test) — see `02_thesis_data/preprocessing/` and `03_thesis_modelling/model_training/` for the benchmark scripts.
 
 ### Data Sources
 
 | Dataset | Format | Status |
 |---|---|---|
-| Nielsen/Prometheus CSD | Power BI/Fabric API (52 objects, 29 CSV exports, 1.9 GB backup) | ✅ Active — see [Nielsen guide](thesis/data/nielsen/README.md) |
-| Indeks Danmark | CSV (20,134 respondents × 6,364 variables) | 🔴 Blocked — download pending |
-
-### RAM Budget
-
-| Component | Allocation |
-|---|---|
-| DataAssessmentAgent | 1,024 MB |
-| ForecastingAgent (per model) | 512 MB |
-| SynthesisAgent | 200 MB |
-| ValidationAgent | 200 MB |
-| Coordinator + overhead | 712 MB |
-| **Total headroom** | **~2.6 GB** |
-
----
-
-## System B — Thesis Production System
-
-Internal scaffolding that runs the thesis writing process. **Not described in the thesis.**
-
-### Agents
-
-| Agent | File | Purpose |
-|---|---|---|
-| ThesisCoordinator | `core/coordinator.py` | Plan → Execute → Critic loop |
-| PlannerAgent | `agents/planner_agent.py` | Generates TaskPlan from ThesisState |
-| CriticAgent | `agents/critic_agent.py` | Validates all agent outputs |
-| LiteratureAgent | `agents/literature_agent.py` | Corpus management, paper scraping |
-| WritingAgent | `agents/writing_agent.py` | **Bullet points only** — never prose |
-| ComplianceAgent | `agents/compliance_agent.py` | CBS formal requirements checks |
-| DiagramAgent | `agents/diagram_agent.py` | Graphviz + Matplotlib figures |
-| ExperimentTrackingAgent | `agents/experiment_tracking_agent.py` | Registry + summary |
-| ResultsVisualizationAgent | `agents/results_visualization_agent.py` | Data-driven charts |
-| ResultsTablesAgent | `agents/results_tables_agent.py` | Markdown tables for thesis |
-
-> **Rule**: WritingAgent produces ONLY bullet points. All prose requires explicit human sign-off.
-
----
-
-## Project Structure
-
-```
-Thesis Maniflod/
-├── ai_research_framework/          # SYSTEM A — research contribution
-│   ├── config.py                   # RAM budget, model list, LLM config
-│   ├── agents/                     # 4 research agents
-│   ├── core/coordinator.py         # LangGraph StateGraph orchestrator
-│   ├── state/research_state.py     # ResearchState TypedDict
-│   └── requirements.txt
-│
-├── thesis_production_system/       # SYSTEM B — thesis writing tooling
-│   ├── agents/                     # 10 production agents
-│   │   └── builder/                # Autonomous trial loop (Builder Agent)
-│   ├── core/coordinator.py         # Plan→Execute→Critic loop
-│   ├── state/thesis_state.py       # ThesisState Pydantic model
-│   └── requirements.txt
-│
-├── docs/
-│   ├── context.md                  # Session log
-│   ├── architecture.md             # Framework architecture decisions
-│   ├── system-architecture-report.md
-│   ├── literature/
-│   │   ├── gap_analysis.md         # Research gap + novelty (v3)
-│   │   ├── rq_evolution.md         # RQ version history
-│   │   ├── scraping_log.md         # Literature scraping log
-│   │   └── papers/                 # 37 annotated papers
-│   ├── data/
-│   │   ├── nielsen_assessment.md
-│   │   └── indeksdanmark_notes.md
-│   ├── tasks/
-│   │   ├── thesis_state.json       # ThesisState persistence
-│   │   ├── data_assessment.md
-│   │   ├── model_benchmark.md
-│   │   ├── synthesis_module.md
-│   │   └── validation_report.md
-│   ├── thesis/
-│   │   ├── outline.md              # 10-chapter structure
-│   │   ├── sections/               # 11 chapter bullet skeletons
-│   │   └── figures/                # SVG + PNG architecture diagrams
-│   ├── experiments/
-│   │   ├── experiment_registry.json
-│   │   └── experiment_summary.md
-│   └── compliance/
-│       ├── cbs_guidelines_notes.md
-│       └── compliance_checks/
-│
-├── tests/
-│   └── test_builder_integration.py
-├── results/                        # Experiment outputs
-├── generate_figures.py             # Standalone figure generator
-├── CLAUDE.md                       # Master project instructions (read by Claude Code)
-├── CHEATSHEET.md                   # Quick reference for common commands
-└── .gitignore
-```
+| Nielsen/Prometheus CSD | Power BI/Fabric API exports (JSONL → Parquet → engineered) | ✅ Active — see [02_thesis_data/nielsen/](02_thesis_data/nielsen/) |
+| Indeks Danmark | Consumer-survey CSV | ❌ Dropped from scope (2026-06-19) — not used |
 
 ---
 
@@ -183,22 +90,13 @@ Copy the `.env` template and fill in values (ask your co-author for the Nielsen 
 cp .env.example .env   # then open .env and fill in all values
 ```
 
-For full instructions including ODBC driver installation on Windows and macOS:
-→ **[docs/DATA_ACCESS_SETUP.md](docs/DATA_ACCESS_SETUP.md)**
-
 ### 3. Install dependencies
 
-**System A (Research Framework):**
 ```bash
-pip install -r ai_research_framework/requirements.txt
+pip install -r requirements.txt
+# or, if using uv:
+uv sync
 ```
-
-**System B (Thesis Production):**
-```bash
-pip install -r thesis_production_system/requirements.txt
-```
-
-> For Prophet on Apple Silicon: `brew install cmake` may be required first.
 
 ### 4. Install Claude Code and GitHub CLI (for AI-assisted development)
 
@@ -219,39 +117,16 @@ After restarting, authenticate with your own GitHub account (one-time setup per 
 ```powershell
 gh auth login
 # Choose: GitHub.com → HTTPS → Yes → Login with web browser
-# A one-time code appears — paste it in the browser when prompted
-# Requires a GitHub account that has access to this repo
 ```
 
-> Each collaborator runs this independently with their own account. `gh` is a system tool, not a Python package — it does not go in `requirements.txt`.
+> Each collaborator runs this independently with their own account. `gh` is a system tool, not a Python package.
 
 ### 5. Generate architecture figures
 
 ```bash
 pip install graphviz matplotlib
-python generate_figures.py
-# Output: docs/thesis/figures/*.svg and *.png
-```
-
----
-
-## Running the Research Framework (System A)
-
-> ⚠️ Currently blocked — Nielsen and Indeks Danmark data access is pending.
-
-```python
-from ai_research_framework.core.coordinator import build_coordinator
-from ai_research_framework.state.research_state import ResearchState
-
-coordinator = build_coordinator()
-initial_state: ResearchState = {
-    "current_phase": "data_assessment",
-    "ram_budget_mb": 8192,
-    "errors": [],
-    "requires_human_approval": False,
-    # ... data inputs added here once access is confirmed
-}
-result = coordinator.invoke(initial_state)
+python utility_scripts/scripts/generate_figures.py
+# Output: 05_thesis_writing/figures/*.svg and *.png
 ```
 
 ---
@@ -259,11 +134,7 @@ result = coordinator.invoke(initial_state)
 ## Running Tests
 
 ```bash
-# Builder Agent integration tests (no API key or data required)
-python -m pytest tests/test_builder_integration.py -v
-
-# Run all tests
-python -m pytest tests/ -v
+python -m pytest utility_scripts/ -v
 ```
 
 ---
@@ -273,42 +144,16 @@ python -m pytest tests/ -v
 Every phase transition requires **explicit human approval** before proceeding.
 
 ```
-Phase 0 — Setup & pre-start checklist
-Phase 1 — Data Assessment           [BLOCKED — awaiting data access]
-Phase 2 — Literature Review & Gap Analysis
-Phase 3 — Framework Design
-Phase 4 — SRQ1: Model Selection & Benchmark   [BLOCKED — awaiting data]
-Phase 5 — SRQ2: Synthesis Module              [BLOCKED — awaiting Phase 4]
-Phase 6 — SRQ3/4: Evaluation & Validation     [BLOCKED — awaiting Phase 5]
-Phase 7 — Thesis Writing            [bullets only → human approval → prose]
+Phase 0 — Setup & pre-start checklist                         [Complete]
+Phase 1 — Literature Review & Gap Analysis                    [Complete]
+Phase 2 — Data Assessment & Preprocessing                     [Complete]
+Phase 3 — SRQ1: Model Selection & Benchmark                   [Complete]
+Phase 4 — SRQ2: Synthesis Module                              [In progress]
+Phase 5 — SRQ3/SRQ4: Evaluation & Validation                  [In progress]
+Phase 6 — Thesis Writing            [bullets only → human approval → prose]
 ```
 
----
-
-## Current Status (as of 2026-03-21)
-
-### Completed ✅
-- System A skeleton — all 4 research agents + LangGraph coordinator
-- System B — all 10 production agents implemented
-- Literature review — 37 confirmed papers, gap analysis v3, RQs v2
-- CBS compliance checks — all 11 chapters + abstract
-- All thesis chapter bullet skeletons (Ch.1–10 + frontpage + abstract)
-- Architecture figures — 5 SVG + PNG pairs
-- Experiment registry template initialised
-- GitHub repository set up with collaborator access
-
-### Blocked 🔴
-- Indeks Danmark CSVs — must download from Google Drive
-
-### In Progress 🟡
-- Nielsen database — credentials received, connection verified, data exploration in progress
-  → See [docs/DATA_ACCESS_SETUP.md](docs/DATA_ACCESS_SETUP.md) for colleague setup
-  → Run `python scripts/explore_nielsen.py` to inspect the data
-
-### Pending
-- Phase 1–6 implementation (all data-dependent)
-- Tier B paper confirmations (10 papers, user decision pending)
-- Literature Scraping Run 4 (optional)
+See [00_thesis_context/thesis-topic/project-state.md](00_thesis_context/thesis-topic/project-state.md) for the current TODO list and risk flags.
 
 ---
 
@@ -317,13 +162,12 @@ Phase 7 — Thesis Writing            [bullets only → human approval → prose
 | Document | Location | Purpose |
 |---|---|---|
 | Master instructions | `CLAUDE.md` | Read by Claude Code at every session |
-| Quick reference | `CHEATSHEET.md` | Common commands and workflows |
-| Session log | `docs/context.md` | What happened in each session |
-| Architecture report | `docs/system-architecture-report.md` | Full 10-section technical report |
-| Gap analysis | `docs/literature/gap_analysis.md` | Research gap + novelty claim |
-| RQ evolution | `docs/literature/rq_evolution.md` | Version history of research questions |
-| Thesis outline | `docs/thesis/outline.md` | 10-chapter structure |
-| CBS compliance | `docs/compliance/cbs_guidelines_notes.md` | Formal requirements |
+| Agent instructions | `AGENTS.md` | Same navigation hub, for non-Claude-Code agents |
+| Repo tier structure | `.claude/rules/repo-tier-structure.md` | Authoritative folder-layout reference |
+| Repository map | `user-docs/contributing/repository_map.md` | File-to-purpose mapping |
+| Project state | `00_thesis_context/thesis-topic/project-state.md` | Frozen decisions, open questions, TODOs |
+| Formal requirements | `00_thesis_context/formal-requirements/` | CBS compliance checks |
+| Research questions | `01_thesis_research/research-questions/` | Canonical RQ text (v4) |
 
 ---
 
@@ -333,7 +177,7 @@ Phase 7 — Thesis Writing            [bullets only → human approval → prose
 - **Standard page**: 2,275 characters including spaces
 - **Excluded from count**: appendices, bibliography
 - **Citation format**: APA 7th edition
-- All sections checked against 9 CBS guideline PDFs (stored in `Thesis/Thesis Guidelines/`)
+- All sections checked against CBS guideline PDFs — see `00_thesis_context/formal-requirements/`
 
 ---
 
@@ -342,18 +186,16 @@ Phase 7 — Thesis Writing            [bullets only → human approval → prose
 | Layer | Technology |
 |---|---|
 | Agent orchestration | LangGraph (System A) + custom coordinator (System B) |
-| Agent definitions | PydanticAI |
-| LLM | Claude API (`claude-sonnet-4-6`) |
+| LLM | Claude API |
 | ML / Forecasting | pmdarima, Prophet, LightGBM, XGBoost, scikit-learn |
-| State management | LangGraph TypedDict (System A) + Pydantic BaseModel (System B) |
-| Data | Nielsen SQL star schema + Indeks Danmark CSV |
+| Data | Nielsen/Prometheus SQL star schema (JSONL → Parquet pipeline) |
 | Figures | Graphviz + Matplotlib |
-| Runtime | Local Python 3.11 / Google Colab |
+| Runtime | Local Python 3.11 |
 
 ---
 
 ## Security Notes
 
-- **Never commit** actual Nielsen or Indeks Danmark data — `.gitignore` enforces this
+- **Never commit** actual Nielsen data — `.gitignore` enforces this
 - `ANTHROPIC_API_KEY` must be set as an environment variable — never hardcoded
 - Nielsen dataset must not leave the local environment (confidentiality agreement)
