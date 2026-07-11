@@ -3,8 +3,9 @@
   "subject": "Phase 6: document + lock the new structure",
   "description": "Add a structure-map comment to the top of PATHS.py mirroring the locked target tree. Create .claude/rules/repo-tier-structure.md as the authoritative locked-structure reference: numbered tier order (00-05) and what belongs in each, the model_training/ vs model_serving/ train-vs-serve rule, the rule that new SRQ results always go in 04_thesis_results/srq{N}/ (never a new top-level tier), the utility_scripts/ tooling-only scope rule, and an explicit callout about the stray 02_thesis_data/_03_engineered/nielsen/ folder (old-shape but real data, left in place deliberately -- see findings.md Session 6 #4) so a future session doesn't mistake it for bloat and delete it. Update CLAUDE.md's Quick References section to point at new paths.",
   "activeForm": "Documenting and locking the new structure",
-  "status": "pending",
+  "status": "completed",
   "phase": "docs",
   "blocks": ["16"],
-  "blockedBy": ["14"]
+  "blockedBy": ["14"],
+  "notes": "Added a locked-structure map to PATHS.py's module docstring (tier 00-05, what belongs in each, pointer to the new rule file). Created .claude/rules/repo-tier-structure.md with full frontmatter: quick-reference table of all 6 tiers + subfolders, and dedicated rule sections for (1) new SRQ results always go in 04_thesis_results/srq{N}/, (2) model_training/ vs model_serving/ is a train-vs-serve split, (3) utility_scripts/ is tooling-only, (4) preprocessing/ inside 02_thesis_data/ holds scripts not data, (5) explicit do-not-delete callout for 02_thesis_data/_03_engineered/nielsen/ citing findings.md Session 6 #4, (6) 02_thesis_data/ legacy leftovers (nielsen/, preprocessing/, assessment/) flagged as known-legacy not auto-safe-to-delete. Verified CLAUDE.md's existing Key References links all resolve on disk before editing, then added a new row pointing at the new rule file. CLAUDE.md's Quick Start / Folder Map sections were already current from an earlier session (already reflected the 00_thesis_context..05_thesis_writing + user-docs rename) -- no further edit needed there beyond the new rule-file reference row."
 }

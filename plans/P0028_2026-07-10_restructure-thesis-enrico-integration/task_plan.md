@@ -1,24 +1,33 @@
 ---
 pid: P0028
 created: 2026-07-10 16:00:00
-updated: 2026-07-11 00:00:00
-status: in_progress
-focus_detail: "Phases 2, 3, and 4 COMPLETE. Phase 4b cleanup ALSO complete: thesis/, results/, and reports/ have all been verified wholesale/byte-identical against their new-tree copies and then deleted from root. Root now contains only the numbered tree (00_thesis_context through 05_thesis_writing) plus .archive/. Next: Phase 5 (cross-reference sweep across .py/.md/.ipynb for old-style paths)."
+updated: 2026-07-11 20:15:00
+status: complete
+completed: 2026-07-11 20:15:00
+outcome_summary: "All 8 phases complete. Repo root flattened to the locked 00_thesis_context..05_thesis_writing tier structure with zero hardcoded stale-path bugs in live code, the structure documented and locked via .claude/rules/repo-tier-structure.md, and README.md/AGENTS.md/repository_map.md all rewritten to match the current tree (all three were badly stale -- README predated even the docs->user-docs rename). Work is committed on chore/p0028-phase5-6-docs (5 commits) and still needs a PR/merge back to main. Loose ends intentionally left open for a future session: user-docs/handover vs handovers and integration vs integrations folder-name drift, root integrations/ folder duplicate, and a 3-citation literature version reconciliation."
+focus_detail: "COMPLETE. See outcome_summary. Next action for a future session: open a PR from chore/p0028-phase5-6-docs into main and merge."
 ---
 
 ## What's Left (as of end of Session 6, 2026-07-10 21:45) — read this first when resuming
 
 **Done**: Phases 1–4. The full locked tree physically exists at repo root. All PATHS.py constants resolve to real, populated folders. All 12 relocated scripts compile from their new locations. Nothing has been deleted anywhere — every old-location original (`thesis/`, root `results/`, root `reports/`, `utility_scripts/scripts/` originals, `user-docs/literature/` originals) is still on disk untouched.
 
-**Not started — Phase 5 (cross-reference sweep)**:
-- Grep `.py`/`.md`/`.ipynb` repo-wide for old-style path strings (`thesis/data`, `thesis/modelling`, `thesis-writing`, `thesis-context`, `thesis/literature`, `utility_scripts/scripts/srq*`, `utility_scripts/scripts/forecast_service.py`, etc.) and update references to point at the new tier locations.
-- Specifically check: `CLAUDE.md`, `user-docs/contributing/repository_map.md`, any notebooks under `03_thesis_modelling/notebooks/` (check `.ipynb` JSON string literals, not just `.py` imports), and `docs/handover/2026-07-01_enrico-to-brian-merge-handover.md` (decide: rewrite historically, or leave as a dated snapshot with a pointer to this plan).
+**DONE — Phase 5 (cross-reference sweep, Session 8, 2026-07-11)**:
+- Repo-wide grep for all old-style path patterns across `.py`/`.md`/`.ipynb`. Fixed 4 live-code bugs (`OUTPUT_DIR` in `generate_figures.py` x2 copies and `generate_systemB_diagram.py` x2 copies, all pointed at the deleted `thesis/thesis-writing/figures/`) — now point at `05_thesis_writing/figures/`. Everything else matched was cosmetic-only (docstrings/comments/frozen notebook output cells), verified not to affect live path logic (`PATHS.py` constants confirmed resolving correctly via `python3 -c` import check; 5 scripts spot-checked clean with `py_compile`).
+- `user-docs/contributing/repository_map.md` vs `user-docs/dev/repository_map.md` found to have **diverged** (not simple duplicates), both stale — flagged for Phase 6/8 reconciliation rather than patched piecemeal.
 
-**Not started — Phase 6 (document + lock the structure)**:
-- Add a structure-map comment to the top of `PATHS.py`.
-- Create `.claude/rules/repo-tier-structure.md` — the authoritative locked-structure reference (tier order, `model_training/` vs `model_serving/` rule, "new SRQ results always go in `04_thesis_results/srq{N}/`" rule, `utility_scripts/` scope rule).
-- **Add a specific note to that new rule file about the stray `02_thesis_data/_03_engineered/nielsen/` folder** (see findings.md Session 6 #4) so a future session doesn't mistake it for bloat and delete it without checking — it's old-shape but real data, left in place deliberately.
-- Update CLAUDE.md's Quick References section (currently points at old paths).
+**DONE — Phase 7 (git commits, Session 9, 2026-07-11)**:
+- Resumed to find the Phase 7 blocker (232-path unrelated uncommitted state) already resolved: merge `4324605` ("merge: thesis/csd-eda-rerun -> main") had landed on `main` between sessions and absorbed it. Working tree at resume held only this plan's own Phase 5/6 changes.
+- Was on `main` directly (not a feature branch) — confirmed with user before proceeding per branch-strategy Trust-tier rule; created `chore/p0028-phase5-6-docs` off `main`.
+- Committed in 3 chunks (originally planned as 5; folder-copy and cross-ref-fix chunks were already covered by the `4324605` merge): `c890b41` (PATHS.py structure-lock docstring), `1be23ea` (4 OUTPUT_DIR script fixes, py_compile-verified), `aa612c6` (docs/rules: repo-tier-structure.md, CLAUDE.md reference, handover pointer-note).
+- Plan tracking files (this file, progress.md, tasks/14.json, tasks/15.json, tasks/16.json) committed separately as the final Phase 7 chunk.
+- `AGENTS.md` (root) found stale on far more than just `thesis/` paths (still references nonexistent `docs/`/`.Codex/` predating the `docs`→`user-docs` rename) — flagged for the broader docs pass, out of scope for a path-string sweep.
+- `user-docs/handover/2026-07-01_enrico-to-brian-merge-handover.md` — left as a dated historical snapshot (not rewritten), added a pointer note at the top referencing this plan for the old→new path mapping.
+
+**DONE — Phase 6 (document + lock the structure, Session 8, 2026-07-11)**:
+- Added a structure-map comment to `PATHS.py`'s module docstring (tier 00-05, what belongs in each, pointer to the new rule file).
+- Created `.claude/rules/repo-tier-structure.md` — the authoritative locked-structure reference: tier quick-reference table, "new SRQ results always go in `04_thesis_results/srq{N}/`" rule, `model_training/` vs `model_serving/` train-vs-serve rule, `utility_scripts/` tooling-only scope rule, `02_thesis_data/preprocessing/` scripts-not-data clarification, and the explicit do-not-delete callout for `02_thesis_data/_03_engineered/nielsen/` (citing findings.md Session 6 #4) plus a note on `02_thesis_data/`'s other legacy leftovers (`nielsen/`, `preprocessing/`, `assessment/`).
+- Updated CLAUDE.md's Key References table with a new row pointing at the rule file (its Quick Start/Folder Map sections were already current from an earlier session).
 
 **Not started — Phase 7 (git commit)**:
 - Cannot start yet — nothing has been staged. Also: the pre-existing 232-path uncommitted repo state (see findings.md Session 6 #5) needs to be reviewed/handled by the user before any P0028 commit, since it's unrelated prior work sitting in the same working tree.

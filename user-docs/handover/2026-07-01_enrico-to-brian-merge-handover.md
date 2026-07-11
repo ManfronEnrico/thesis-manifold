@@ -8,6 +8,8 @@ created: 2026-07-01
 updated: 2026-07-10
 ---
 
+> **Note (2026-07-11, P0028):** Paths below (`thesis/data/...`, `thesis/thesis-writing/...`, `thesis/thesis-context/...`) reflect the repo layout as of this handover's date and are kept as a historical snapshot, not rewritten. The repo was restructured to `00_thesis_context/` through `05_thesis_writing/` on 2026-07-11 — see `plans/P0028_2026-07-10_restructure-thesis-enrico-integration/task_plan.md` for the old→new path mapping.
+
 # Handover: Enrico → Brian — the 2026-07-01 merge to main
 
 **Status**: main now contains the UNION of your data-engineering track and Enrico's modeling/agentic/thesis track. Nothing of yours was dropped; a few files were superseded (listed below, with reasons).

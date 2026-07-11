@@ -63,6 +63,7 @@
 | Topic | Location |
 |-------|----------|
 | **Architecture** | [user-docs/architecture/architecture.md](user-docs/architecture/architecture.md) |
+| **Repo tier structure** | [.claude/rules/repo-tier-structure.md](.claude/rules/repo-tier-structure.md) |
 | **Git workflow** | [user-docs/contributing/git-branch-strategy.md](user-docs/contributing/git-branch-strategy.md) |
 | **Worktrees** | [user-docs/contributing/git-worktrees-and-parallel-sessions.md](user-docs/contributing/git-worktrees-and-parallel-sessions.md) |
 | **Data access** | [02_thesis_data/nielsen/](02_thesis_data/nielsen/) |
