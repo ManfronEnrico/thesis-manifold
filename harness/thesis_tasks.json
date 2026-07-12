@@ -70,6 +70,9 @@
     {"id": "C20", "track": "CROSS", "phase": "finalize", "title": "CBS page count (chars/2275 per chapter vs limit)", "status": "ready", "walls": ["enrico"], "verify": "per-chapter report; Enrico only for cut decisions"},
     {"id": "C21", "track": "CROSS", "phase": "finalize", "title": "Housekeeping — EXECUTION_PROGRESS + journal in sync", "status": "ready"},
 
+    {"id": "V1", "track": "ENG-REVIEW", "phase": "run", "title": "R1 finding: re-aggregate danskvand bychain forecasts to brand-national, re-score WMAPE vs 23.8% brand (grain-matched)", "status": "ready", "note": "same grain-match test we ask Brian for region; decides §6.5.6 danskvand. Free, no API."},
+    {"id": "V2", "track": "ENG-REVIEW", "phase": "build", "title": "R1 finding: suppress/flag degenerate mean-MAPE in SRQ1 outputs (billions %)", "status": "ready"},
+
     {"id": "B01", "track": "BRIAN", "phase": "run", "title": "Receive 9.8M CSD parquets (drive) OR refetch via RU secret", "status": "blocked_brian", "walls": ["brian"]},
     {"id": "B02", "track": "BRIAN", "phase": "run", "title": "Region-vs-month WMAPE test → grain decision", "status": "blocked_brian", "walls": ["brian", "enrico"]},
     {"id": "B03", "track": "BRIAN", "phase": "write", "title": "EDAs danskvand/energidrikke/RTD + finish Ch4", "status": "blocked_brian", "walls": ["brian"]},
