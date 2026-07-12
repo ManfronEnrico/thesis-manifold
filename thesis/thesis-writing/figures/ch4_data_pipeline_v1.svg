@@ -1,0 +1,102 @@
+<svg viewBox="0 0 780 812" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+<style>
+  .title{fill:#14171c;font-weight:600}
+  .sub{fill:#59636f}
+  .lab{font-weight:600;font-size:13px}
+  .desc{font-size:11.5px}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+  .badge{font-weight:700;font-size:12px;fill:#ffffff}
+
+  .neutral rect{fill:#f2f2ef;stroke:#b7b5ac;stroke-width:1.3}
+  .neutral .lab{fill:#3f4650} .neutral .desc{fill:#5f5e5a} .neutral .mono{fill:#2c2c2a}
+  .neutral .badgebg{fill:#8b8a82}
+
+  .source rect{fill:#eef0f3;stroke:#6b7280;stroke-width:1.4}
+  .source .lab{fill:#1f2937} .source .desc{fill:#4b5563}
+
+  .hi rect{fill:#e6f1fb;stroke:#2e86ab;stroke-width:2.1}
+  .hi .lab{fill:#175f97} .hi .desc{fill:#2f6d97} .hi .mono{fill:#06375f}
+  .hi .badgebg{fill:#2e86ab}
+
+  .out rect{fill:#e1f5ee;stroke:#1a936f;stroke-width:1.6}
+  .out .lab{fill:#0f6e56} .out .desc{fill:#2b7d64}
+
+  .tag rect{fill:#faeeda;stroke:#ef9f27;stroke-width:1}
+  .tag text{fill:#854f0b;font-size:10px;font-weight:600}
+</style>
+<defs>
+  <marker id="ar" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#8b8a82"/>
+  </marker>
+</defs>
+<rect x="0" y="0" width="780" height="812" fill="#ffffff"/>
+
+<text x="60" y="34" class="title" font-size="17">Data preparation pipeline — Nielsen warehouse to model-ready features</text>
+<text x="60" y="54" class="sub" font-size="11.5">Chapter 4 · four stages turn raw retail records into the feature matrix the forecasting models read (Chapter 6)</text>
+
+<!-- SOURCE -->
+<g class="source">
+  <rect x="90" y="76" width="600" height="62" rx="10"/>
+  <text x="112" y="104" class="lab">Nielsen / Prometheus — cloud data warehouse</text>
+  <text x="112" y="124" class="desc">Brand-level FMCG sales · 4 beverage categories · ~28 market levels · ~36 months</text>
+</g>
+<path d="M390 138 L390 160" fill="none" stroke="#8b8a82" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<!-- 1 INGESTION -->
+<g class="neutral">
+  <rect x="90" y="162" width="600" height="80" rx="10"/>
+  <rect class="badgebg" x="106" y="178" width="22" height="22" rx="6"/>
+  <text x="117" y="194" class="badge" text-anchor="middle">1</text>
+  <text x="140" y="194" class="lab">Ingestion — "fetch"</text>
+  <text x="140" y="214" class="desc">Download the raw records from the warehouse into our own storage.</text>
+  <text x="140" y="232" class="mono">→ raw records (JSONL)   +   MANIFEST (delivery note: which files, how many rows)</text>
+</g>
+<path d="M390 242 L390 264" fill="none" stroke="#8b8a82" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<!-- 2 CONVERT -->
+<g class="neutral">
+  <rect x="90" y="266" width="600" height="80" rx="10"/>
+  <rect class="badgebg" x="106" y="282" width="22" height="22" rx="6"/>
+  <text x="117" y="298" class="badge" text-anchor="middle">2</text>
+  <text x="140" y="298" class="lab">Convert to a star schema</text>
+  <text x="140" y="318" class="desc">Reshape the raw records into linked tables (fast, tidy, no repetition).</text>
+  <text x="140" y="336" class="mono">→ facts (the numbers: units sold)  +  dimensions: market · product · period</text>
+</g>
+<path d="M390 346 L390 368" fill="none" stroke="#8b8a82" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<!-- 3 SNAPSHOT -->
+<g class="neutral">
+  <rect x="90" y="370" width="600" height="80" rx="10"/>
+  <rect class="badgebg" x="106" y="386" width="22" height="22" rx="6"/>
+  <text x="117" y="402" class="badge" text-anchor="middle">3</text>
+  <text x="140" y="402" class="lab">Frozen local snapshot</text>
+  <text x="140" y="422" class="desc">Save an immutable copy on disk — the data cannot shift while we model.</text>
+  <text x="140" y="440" class="mono">→ data/raw/nielsen_&lt;category&gt;_clean_{facts, market, product, period}.parquet</text>
+</g>
+<g class="tag"><rect x="556" y="380" width="120" height="20" rx="10"/><text x="616" y="394" text-anchor="middle">reproducible</text></g>
+<path d="M390 450 L390 476" fill="none" stroke="#8b8a82" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<!-- 4 FEATURE BUILD (highlighted) -->
+<g class="hi">
+  <rect x="90" y="478" width="600" height="108" rx="10"/>
+  <rect class="badgebg" x="106" y="494" width="22" height="22" rx="6"/>
+  <text x="117" y="510" class="badge" text-anchor="middle">4</text>
+  <text x="140" y="510" class="lab">Feature engineering  ·  the reviewed stage</text>
+  <text x="140" y="530" class="desc">Scope to one market level (DVH EXCL. HD) so no sale is counted twice,</text>
+  <text x="140" y="547" class="desc">then build past-only predictors on a regular monthly grid.</text>
+  <text x="140" y="567" class="mono">→ lags · rolling means/std · calendar · promo  →  feature matrix</text>
+  <text x="140" y="582" class="mono" fill="#2f6d97">two grains: brand × month (_03)   ·   brand × chain (_04)</text>
+</g>
+<g class="tag"><rect x="524" y="488" width="152" height="20" rx="10"/><text x="600" y="502" text-anchor="middle">no double-count · no leakage</text></g>
+<path d="M390 586 L390 612" fill="none" stroke="#8b8a82" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<!-- OUTPUT -->
+<g class="out">
+  <rect x="90" y="614" width="600" height="66" rx="10"/>
+  <text x="112" y="642" class="lab">Model-ready feature matrix</text>
+  <text x="112" y="663" class="desc">Consumed by the forecasting benchmark → Chapter 6 (SRQ1) and the System A forecast tool (SRQ4).</text>
+</g>
+
+<text x="60" y="716" class="mono" fill="#8b8a82">Stages 1–3 are data-engineering plumbing (identical for every category); stage 4 holds the modelling decisions.</text>
+<text x="60" y="732" class="mono" fill="#8b8a82">"Star schema" = one table of numbers linked by id to small tables of labels — avoids repeating "REMA 1000, Jan-2023" on millions of rows.</text>
+</svg>

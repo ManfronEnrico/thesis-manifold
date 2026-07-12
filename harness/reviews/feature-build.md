@@ -63,3 +63,23 @@ Leakage-safety (docstring L44-46): `lag_k = sales_units.shift(k)`; rolling featu
 
 If new issues surface, add them to `harness/thesis_tasks.json` (track ENG-REVIEW,
 status ready) the way V1/V2 were added, and note them here. Keep it read-only otherwise.
+
+### Findings — review pass 2026-07-12 (Enrico + Claude)
+
+Brief's 6 pre-listed flags all confirmed as described — no defects in the
+load/scope/dedup/grid/lag machinery. Two new issues surfaced and were logged:
+
+- **V3 (CONFIRMED — target leakage).** `promo_intensity = promo_units_t / sales_units_t`
+  (`build_feature_matrix.py:237`, `build_feature_matrix_bychain.py:179`) has the target
+  in its denominator, and `srq1_benchmark_tuned.py:38` uses it as a current-`t` feature
+  against the `log_sales_units` target (`:90`). Fix = shift(1) or drop, re-score CSD +
+  energidrikke (danskvand/RTD promo-zero → unaffected). `weighted_distribution` (`:38`)
+  is a softer contemporaneous-covariate concern noted inside V3.
+- **V4 (robustness).** The single-market filter (`build_feature_matrix.py:133`) guards
+  `len==0` but not `>1`; if `DVH EXCL. HD` ever maps to two market_ids the 6.16× double-count
+  silently returns. Add `assert len(scope_ids) == 1`.
+
+Also noted (not logged): the "two builders differ only by the groupby key" claim
+(flag #5) is optimistic — ROOT resolution (`CLAUDE.md` walk-up vs `parents[4]`),
+`reindex_to_grid`, and `filter_min_periods` are re-implemented differently. Equivalent
+results, but ~90% duplicated logic means V3/V4 fixes must be applied in both files.
