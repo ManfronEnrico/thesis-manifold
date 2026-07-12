@@ -10,6 +10,23 @@ hover in your IDE. Use these constants throughout notebooks and scripts
 instead of hardcoded strings.
 
 Reference: PATHS_markdown.ipynb for detailed documentation with examples.
+
+Locked repo structure (P0028 restructure, 2026-07-11) — see
+.claude/rules/repo-tier-structure.md for the full authoritative reference:
+
+    00_thesis_context/    thesis-topic/, formal-requirements/
+    01_thesis_research/   research-questions/, literature/
+    02_thesis_data/       _00_raw/ .. _03_engineered/ (pipeline tiers),
+                          preprocessing/ (per-category scripts, not data)
+    03_thesis_modelling/  model_training/ vs model_serving/ (train vs serve),
+                          notebooks/, prompts/
+    04_thesis_results/    srq{N}/ subfolders — new SRQ results always go here,
+                          never a new top-level tier
+    05_thesis_writing/    sections-drafts/, sections-final/, figures/, analysis/
+
+Everything else at root (utility_scripts/, plans/, user-docs/, .claude/) is
+tooling/governance/docs, not thesis content, and is out of this numbered tier
+scheme by design.
 """
 
 
@@ -39,24 +56,117 @@ Example:
 # 1. THESIS DIRECTORY
 # ============================================================================
 
-THESIS_DIR: Path = ROOT_DIR / "thesis"
+THESIS_DIR: Path = ROOT_DIR
 """
-Main thesis folder containing all modelling, data, and related files.
+Alias for ROOT_DIR, kept for backwards compatibility with code that still
+imports THESIS_DIR.
 
-This is the central hub for all thesis-related work including computational
-modelling, datasets, figures, and model outputs. It is subdivided into
-'modelling' and 'data' subdirectories for organizational clarity.
+As of the P0028 repo restructure, the "thesis/" folder segment was removed
+entirely — every former thesis/* subfolder now lives directly at repo root
+(00_thesis_context/, 01_thesis_research/, 02_thesis_data/, etc.). THESIS_DIR
+is retained as a plain alias for ROOT_DIR rather than removed outright, to
+avoid breaking any import that hasn't been updated yet.
 
 Example:
     from PATHS import THESIS_DIR
-    print(THESIS_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis
+    print(THESIS_DIR.resolve())  # C:\\dev\\thesis-manifold
+"""
+
+# ============================================================================
+# 0.1 TOP-LEVEL TIER-ROOT DIRECTORIES (P0028 restructure)
+# ============================================================================
+
+THESIS_CONTEXT_DIR: Path = ROOT_DIR / "00_thesis_context"
+"""
+Tier 00 — project context: thesis topic overview and formal/compliance requirements.
+
+Holds 'thesis-topic/' (frozen decisions, project-state.md) and
+'formal-requirements/' (CBS compliance notes). Research questions live in
+THESIS_RESEARCH_QUESTIONS_DIR (tier 01), not here.
+
+Example:
+    from PATHS import THESIS_CONTEXT_DIR
+    print(THESIS_CONTEXT_DIR.resolve())  # C:\\dev\\thesis-manifold\\00_thesis_context
+"""
+
+THESIS_RESEARCH_DIR: Path = ROOT_DIR / "01_thesis_research"
+"""
+Tier 01 — research questions and literature corpus.
+
+Example:
+    from PATHS import THESIS_RESEARCH_DIR
+    print(THESIS_RESEARCH_DIR.resolve())  # C:\\dev\\thesis-manifold\\01_thesis_research
+"""
+
+THESIS_RESEARCH_QUESTIONS_DIR: Path = THESIS_RESEARCH_DIR / "research-questions"
+"""
+Directory containing the thesis research questions (RQs, SRQs).
+
+Example:
+    from PATHS import THESIS_RESEARCH_QUESTIONS_DIR
+    rqs = THESIS_RESEARCH_QUESTIONS_DIR / "research-questions.md"
+"""
+
+THESIS_RESEARCH_LITERATURE_DIR: Path = THESIS_RESEARCH_DIR / "literature"
+"""
+Directory containing the working literature corpus (bibtex.bib, citations.json).
+
+Example:
+    from PATHS import THESIS_RESEARCH_LITERATURE_DIR
+    bib = THESIS_RESEARCH_LITERATURE_DIR / "bibtex.bib"
+"""
+
+THESIS_RESULTS_DIR: Path = ROOT_DIR / "04_thesis_results"
+"""
+Tier 04 — SRQ outputs (forecasting, synthesis, code-as-action) and generated figures.
+
+Example:
+    from PATHS import THESIS_RESULTS_DIR
+    print(THESIS_RESULTS_DIR.resolve())  # C:\\dev\\thesis-manifold\\04_thesis_results
+"""
+
+THESIS_WRITING_DIR: Path = ROOT_DIR / "05_thesis_writing"
+"""
+Tier 05 — thesis prose: section drafts, final sections, references.
+
+Example:
+    from PATHS import THESIS_WRITING_DIR
+    print(THESIS_WRITING_DIR.resolve())  # C:\\dev\\thesis-manifold\\05_thesis_writing
+"""
+
+THESIS_RESULTS_SRQ1_DIR: Path = THESIS_RESULTS_DIR / "srq1"
+"""
+Forecasting benchmark results (tuned XGBoost, calibration, SHAP outputs).
+
+Example:
+    from PATHS import THESIS_RESULTS_SRQ1_DIR
+    print(THESIS_RESULTS_SRQ1_DIR.resolve())
+"""
+
+THESIS_RESULTS_SRQ2_DIR: Path = THESIS_RESULTS_DIR / "srq2"
+"""
+Synthesis engine + LLM-as-Judge results.
+
+Example:
+    from PATHS import THESIS_RESULTS_SRQ2_DIR
+    print(THESIS_RESULTS_SRQ2_DIR.resolve())
+"""
+
+THESIS_RESULTS_SRQ4_DIR: Path = THESIS_RESULTS_DIR / "srq4"
+"""
+Code-as-action vs. dedicated-tool agentic comparison results. Placeholder —
+may be empty until SRQ4 experiments are run.
+
+Example:
+    from PATHS import THESIS_RESULTS_SRQ4_DIR
+    print(THESIS_RESULTS_SRQ4_DIR.resolve())
 """
 
 # ============================================================================
 # 1.1 MODELLING SUBDIRECTORY
 # ============================================================================
 
-THESIS_MODELLING_DIR: Path = THESIS_DIR / "modelling"
+THESIS_MODELLING_DIR: Path = ROOT_DIR / "03_thesis_modelling"
 """
 Directory containing all computational modelling work, notebooks, outputs, and figures.
 
@@ -66,7 +176,7 @@ the hub for all computational and analytical work on the thesis.
 
 Example:
     from PATHS import THESIS_MODELLING_DIR
-    print(THESIS_MODELLING_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis\\modelling
+    print(THESIS_MODELLING_DIR.resolve())  # C:\\dev\\thesis-manifold\\03_thesis_modelling
 """
 
 THESIS_MODELLING_NOTEBOOKS_DIR: Path = THESIS_MODELLING_DIR / "notebooks"
@@ -94,11 +204,50 @@ Example:
     prompts_file = THESIS_MODELLING_PROMPTS_DIR / "system_prompts.json"
 """
 
+THESIS_MODELLING_TRAINING_DIR: Path = THESIS_MODELLING_DIR / "model_training"
+"""
+Directory containing ML model training scripts (SRQ1 forecasting, SRQ2 synthesis,
+SRQ4 code-as-action experiments).
+
+Example:
+    from PATHS import THESIS_MODELLING_TRAINING_DIR
+    script = THESIS_MODELLING_TRAINING_DIR / "srq1_benchmark.py"
+"""
+
+THESIS_MODELLING_SERVING_DIR: Path = THESIS_MODELLING_DIR / "model_serving"
+"""
+Directory containing model-serving code: making trained models available to
+downstream consumers (a dedicated forecast service, or a conversational LLM).
+
+Example:
+    from PATHS import THESIS_MODELLING_SERVING_DIR
+    print(THESIS_MODELLING_SERVING_DIR.resolve())
+"""
+
+THESIS_MODELLING_SERVING_SYSTEM_A_DIR: Path = THESIS_MODELLING_SERVING_DIR / "system_a_forecast"
+"""
+Directory containing System A: the dedicated ML forecast service ("Oracle").
+
+Example:
+    from PATHS import THESIS_MODELLING_SERVING_SYSTEM_A_DIR
+    service = THESIS_MODELLING_SERVING_SYSTEM_A_DIR / "forecast_service.py"
+"""
+
+THESIS_MODELLING_SERVING_SYSTEM_B_DIR: Path = THESIS_MODELLING_SERVING_DIR / "system_b_conversational"
+"""
+Directory containing System B: conversational LLM access to trained models
+(GPT fallback bridge, eventually Prometheus). Placeholder tier — may be empty.
+
+Example:
+    from PATHS import THESIS_MODELLING_SERVING_SYSTEM_B_DIR
+    print(THESIS_MODELLING_SERVING_SYSTEM_B_DIR.resolve())
+"""
+
 # ============================================================================
 # 1.2 DATA SUBDIRECTORY
 # ============================================================================
 
-THESIS_DATA_DIR: Path = THESIS_DIR / "data"
+THESIS_DATA_DIR: Path = ROOT_DIR / "02_thesis_data"
 """
 Directory containing all datasets, raw data sources, and preprocessing scripts.
 
@@ -108,7 +257,7 @@ thesis research.
 
 Example:
     from PATHS import THESIS_DATA_DIR
-    print(THESIS_DATA_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis\\data
+    print(THESIS_DATA_DIR.resolve())  # C:\\dev\\thesis-manifold\\02_thesis_data
 """
 
 THESIS_DATA_ASSESSMENT_DIR: Path = THESIS_DATA_DIR / "assessment"
@@ -143,11 +292,34 @@ Directory for final engineered feature matrices and model-ready outputs.
 
 This is Tier 4 of the 4-tier data hierarchy. Contains final outputs from feature
 engineering pipelines: feature matrices, split metadata, series indices.
-Organized by source (Nielsen, etc.) and category (CSD, Danskvand, etc.).
+Split by granularity into bymonth/ and bychain/ subfolders (see
+THESIS_DATA_ENGINEERED_BYMONTH_DIR / THESIS_DATA_ENGINEERED_BYCHAIN_DIR below).
 
 Example:
     from PATHS import THESIS_DATA_ENGINEERED_DIR
-    features = THESIS_DATA_ENGINEERED_DIR / "nielsen" / "CSD" / "csd_feature_matrix.parquet"
+    print(THESIS_DATA_ENGINEERED_DIR.resolve())
+"""
+
+THESIS_DATA_ENGINEERED_BYMONTH_DIR: Path = THESIS_DATA_ENGINEERED_DIR / "bymonth"
+"""
+Tier 4 engineered feature matrices at brand×month granularity (DVH EXCL. HD).
+
+Was: _03_engineered_dvhexclhd/ before the P0028 restructure.
+
+Example:
+    from PATHS import THESIS_DATA_ENGINEERED_BYMONTH_DIR
+    features = THESIS_DATA_ENGINEERED_BYMONTH_DIR / "CSD" / "csd_feature_matrix.parquet"
+"""
+
+THESIS_DATA_ENGINEERED_BYCHAIN_DIR: Path = THESIS_DATA_ENGINEERED_DIR / "bychain"
+"""
+Tier 4 engineered feature matrices at brand×chain granularity (DVH EXCL. HD).
+
+Was: _04_engineered_bychain/ before the P0028 restructure.
+
+Example:
+    from PATHS import THESIS_DATA_ENGINEERED_BYCHAIN_DIR
+    features = THESIS_DATA_ENGINEERED_BYCHAIN_DIR / "CSD" / "csd_feature_matrix.parquet"
 """
 
 # ============================================================================
@@ -163,7 +335,7 @@ it's the source of truth for all downstream processing.
 
 Example:
     from PATHS import THESIS_DATA_RAW_DIR
-    print(THESIS_DATA_RAW_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis\\data\\_00_raw
+    print(THESIS_DATA_RAW_DIR.resolve())  # C:\\dev\\thesis-manifold\\02_thesis_data\\_00_raw
 """
 
 THESIS_DATA_RAW_NIELSEN_DIR: Path = THESIS_DATA_RAW_DIR / "nielsen"
@@ -225,7 +397,7 @@ Stage 1 conversion pipelines. It serves as cache for Stage 2 preprocessing scrip
 
 Example:
     from PATHS import THESIS_DATA_CONVERTED_DIR
-    print(THESIS_DATA_CONVERTED_DIR.resolve())  # C:\\dev\\thesis-manifold\\thesis\\data\\_01_converted
+    print(THESIS_DATA_CONVERTED_DIR.resolve())  # C:\\dev\\thesis-manifold\\02_thesis_data\\_01_converted
 """
 
 THESIS_DATA_CONVERTED_NIELSEN_DIR: Path = THESIS_DATA_CONVERTED_DIR / "nielsen"
@@ -332,7 +504,7 @@ def get_category_parquet_dir(category: str) -> Path:
 
     Example:
         >>> csd_dir = get_category_parquet_dir("CSD")
-        >>> print(csd_dir)  # C:\\dev\\thesis-manifold\\thesis\\data\\converted\\nielsen\\parquet_nielsen\\CSD
+        >>> print(csd_dir)  # C:\\dev\\thesis-manifold\\02_thesis_data\\_01_converted\\nielsen\\parquet_nielsen\\CSD
     """
     return THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR / category
 
@@ -433,24 +605,59 @@ def get_category_metadata_dir(category: str) -> Path:
 
 def get_category_engineered_dir(category: str) -> Path:
     """
-    Get the engineered features directory for a Nielsen data category (Tier 4 output).
+    Deprecated: Use get_category_engineered_bymonth_dir() or
+    get_category_engineered_bychain_dir() instead.
 
-    Contains final outputs from the preprocessing pipeline: feature matrices, series indices,
-    split boundaries, and preprocessing reports. This is Tier 4 (engineered outputs),
-    separate from Tier 3 (preprocessing scripts) and Tier 2 (converted cache).
+    The "_03_engineered/nielsen/{category}/" path shape this function returned
+    no longer exists post-P0028-restructure — Tier 4 engineered output is now
+    split by granularity (bymonth/ vs bychain/), not by source (nielsen/).
+    Kept for backwards compatibility but repointed to the bymonth granularity
+    (the original, more common case) rather than left dangling at a dead path.
 
     Args:
         category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
 
     Returns:
-        Path to _03_engineered/nielsen/{category}/
+        Path to _03_engineered/bymonth/{category}/
+    """
+    return get_category_engineered_bymonth_dir(category)
+
+
+def get_category_engineered_bymonth_dir(category: str) -> Path:
+    """
+    Get the engineered features directory for a Nielsen data category at
+    brand×month granularity (Tier 4 output, DVH EXCL. HD).
+
+    Args:
+        category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
+
+    Returns:
+        Path to _03_engineered/bymonth/{category}/
 
     Example:
-        >>> eng_dir = get_category_engineered_dir("CSD")
+        >>> eng_dir = get_category_engineered_bymonth_dir("CSD")
         >>> features = pd.read_parquet(eng_dir / "csd_feature_matrix.parquet")
         >>> split_dates = json.load(open(eng_dir / "csd_split_dates.json"))
     """
-    return THESIS_DATA_ENGINEERED_DIR / "nielsen" / category
+    return THESIS_DATA_ENGINEERED_BYMONTH_DIR / category
+
+
+def get_category_engineered_bychain_dir(category: str) -> Path:
+    """
+    Get the engineered features directory for a Nielsen data category at
+    brand×chain granularity (Tier 4 output, DVH EXCL. HD).
+
+    Args:
+        category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
+
+    Returns:
+        Path to _03_engineered/bychain/{category}/
+
+    Example:
+        >>> eng_dir = get_category_engineered_bychain_dir("CSD")
+        >>> features = pd.read_parquet(eng_dir / "csd_feature_matrix.parquet")
+    """
+    return THESIS_DATA_ENGINEERED_BYCHAIN_DIR / category
 
 
 def get_category_preprocessing_scripts_dir(category: str) -> Path:
@@ -513,13 +720,24 @@ def print_all_paths(verbose: bool = True) -> None:
     if verbose:
         print("\n=== ALL PROJECT PATHS ===")
         print(f"ROOT_DIR: {ROOT_DIR.resolve()}")
-        print(f"THESIS_DIR: {THESIS_DIR.resolve()}")
+        print(f"THESIS_DIR (alias of ROOT_DIR): {THESIS_DIR.resolve()}")
+        print(f"THESIS_CONTEXT_DIR: {THESIS_CONTEXT_DIR.resolve()}")
+        print(f"THESIS_RESEARCH_DIR: {THESIS_RESEARCH_DIR.resolve()}")
+        print(f"THESIS_RESEARCH_QUESTIONS_DIR: {THESIS_RESEARCH_QUESTIONS_DIR.resolve()}")
+        print(f"THESIS_RESEARCH_LITERATURE_DIR: {THESIS_RESEARCH_LITERATURE_DIR.resolve()}")
         print(f"THESIS_MODELLING_DIR: {THESIS_MODELLING_DIR.resolve()}")
         print(f"THESIS_MODELLING_NOTEBOOKS_DIR: {THESIS_MODELLING_NOTEBOOKS_DIR.resolve()}")
         print(f"THESIS_MODELLING_PROMPTS_DIR: {THESIS_MODELLING_PROMPTS_DIR.resolve()}")
+        print(f"THESIS_MODELLING_TRAINING_DIR: {THESIS_MODELLING_TRAINING_DIR.resolve()}")
+        print(f"THESIS_MODELLING_SERVING_DIR: {THESIS_MODELLING_SERVING_DIR.resolve()}")
+        print(f"THESIS_MODELLING_SERVING_SYSTEM_A_DIR: {THESIS_MODELLING_SERVING_SYSTEM_A_DIR.resolve()}")
+        print(f"THESIS_MODELLING_SERVING_SYSTEM_B_DIR: {THESIS_MODELLING_SERVING_SYSTEM_B_DIR.resolve()}")
         print(f"THESIS_DATA_DIR: {THESIS_DATA_DIR.resolve()}")
         print(f"THESIS_DATA_ASSESSMENT_DIR: {THESIS_DATA_ASSESSMENT_DIR.resolve()}")
         print(f"THESIS_DATA_PREPROCESSING_DIR: {THESIS_DATA_PREPROCESSING_DIR.resolve()}")
+        print(f"THESIS_DATA_ENGINEERED_DIR: {THESIS_DATA_ENGINEERED_DIR.resolve()}")
+        print(f"THESIS_DATA_ENGINEERED_BYMONTH_DIR: {THESIS_DATA_ENGINEERED_BYMONTH_DIR.resolve()}")
+        print(f"THESIS_DATA_ENGINEERED_BYCHAIN_DIR: {THESIS_DATA_ENGINEERED_BYCHAIN_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_DIR: {THESIS_DATA_RAW_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_NIELSEN_DIR: {THESIS_DATA_RAW_NIELSEN_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_NIELSEN_JSONL_DIR: {THESIS_DATA_RAW_NIELSEN_JSONL_DIR.resolve()}")
@@ -528,7 +746,12 @@ def print_all_paths(verbose: bool = True) -> None:
         print(f"THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR: {THESIS_DATA_CONVERTED_NIELSEN_PARQUET_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_SPSS_DIR: {THESIS_DATA_RAW_SPSS_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_SPSS_CSV_DIR: {THESIS_DATA_RAW_SPSS_CSV_DIR.resolve()}")
-        print(f"THESIS_DATA_CONVERTED_SPSS_PARQUET_DIR: {THESIS_DATA_CONVERTED_SPSS_PARQUET_DIR.resolve()}\n")
+        print(f"THESIS_DATA_CONVERTED_SPSS_PARQUET_DIR: {THESIS_DATA_CONVERTED_SPSS_PARQUET_DIR.resolve()}")
+        print(f"THESIS_RESULTS_DIR: {THESIS_RESULTS_DIR.resolve()}")
+        print(f"THESIS_RESULTS_SRQ1_DIR: {THESIS_RESULTS_SRQ1_DIR.resolve()}")
+        print(f"THESIS_RESULTS_SRQ2_DIR: {THESIS_RESULTS_SRQ2_DIR.resolve()}")
+        print(f"THESIS_RESULTS_SRQ4_DIR: {THESIS_RESULTS_SRQ4_DIR.resolve()}")
+        print(f"THESIS_WRITING_DIR: {THESIS_WRITING_DIR.resolve()}\n")
     else:
         print("\n=== KEY PROJECT PATHS ===")
         print(f"ROOT_DIR: {ROOT_DIR.resolve()}")

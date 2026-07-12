@@ -1,0 +1,11 @@
+{
+  "id": "16",
+  "subject": "Phase 7: git commits (blocked on user reviewing pre-existing 232-path uncommitted state)",
+  "description": "Cannot start until the user reviews/handles the pre-existing 232-path uncommitted repo state (Brian's own earlier utility_scripts/user-docs raw-move pruning pass, confirmed unrelated to P0028 but sitting in the same working tree). Once cleared: stage and commit in 5 reviewed chunks per task_plan.md Phase 7 -- (1) PATHS.py additions, (2) script updates to use PATHS.py, (3) folder copies, (4) cross-reference fixes, (5) docs/rules. Never git add -A; stage explicit paths only per trigger-git-commit-workflow.md. Verify git status manually before each commit and py_compile every touched script.",
+  "activeForm": "Preparing Phase 7 git commits",
+  "status": "completed",
+  "phase": "integration",
+  "blocks": ["17"],
+  "blockedBy": ["15"],
+  "notes": "Blocker was stale: a merge (4324605, 'merge: thesis/csd-eda-rerun -> main') had already landed on main and swept in the previously-blocking 232-path unrelated uncommitted state before this session resumed. Working tree at resume time contained only this plan's own Phase 5/6 changes (11 modified + 1 untracked file) -- verified via git status --short before proceeding. Folder-copy and cross-reference-fix chunks (originally planned chunks 3-4) were already committed as part of that merge, so only 3 of the 5 planned chunks applied here. Created branch chore/p0028-phase5-6-docs off main (was on main directly, which violates branch-strategy Trust-tier rule; confirmed with user before branching) and committed: (1) c890b41 PATHS.py structure-lock docstring, (2) 1be23ea the 4 OUTPUT_DIR script fixes, (3) aa612c6 docs/rules (repo-tier-structure.md, CLAUDE.md reference, handover pointer-note). py_compile verified clean before each script commit."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "5",
+  "subject": "Resolve open item: utility_scripts/ml_retraining fate via grep",
+  "description": "Run grep -rn \"ml_retraining\" --include=\"*.py\" --include=\"*.ipynb\" across the whole repo (Z:/_dev-ssd/thesis-manifold). If zero live references exist outside the ml_retraining/ folder itself, record the decision in findings.md: archive to .archive/ alongside the other Enrico-legacy artifacts (same treatment as root results/ per Decision Log #7 in task_plan.md), to be executed as a copy operation in Phase 4 (not a destructive move -- leave the original utility_scripts/ml_retraining/ in place until other concurrent Claude sessions are confirmed finished, per the user's copy-then-delete-later instruction). If live references ARE found, record what references it and keep it in place, noting why in findings.md. Write the finding as a new row under the Open Items table in task_plan.md, updating the 'Resolve during' column to reflect resolution. No code changes in this task -- investigation and plan-doc update only.",
+  "activeForm": "Resolving ml_retraining open item via grep",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": []
+}

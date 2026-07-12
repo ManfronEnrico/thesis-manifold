@@ -1,0 +1,12 @@
+{
+  "id": "7",
+  "subject": "Check user-docs/literature/ for stray working-data files",
+  "description": "List contents of Z:/_dev-ssd/thesis-manifold/user-docs/literature/ (via Glob or ls). If it contains only prose/markdown (e.g. a how-to guide for the /cite workflow), it is fine where it is -- record that finding. If it contains any .bib, .json, or other data files, that repeats the exact Enrico mistake of working data living in a user-facing docs folder -- flag those specific files for move to 01_thesis_research/literature/ during Phase 4 (as a copy operation, not destructive move, per the updated execution strategy -- leave originals in place until other concurrent sessions finish). Record the decision as a new row under the Open Items table in task_plan.md and in findings.md. No code/file changes in this task -- investigation and plan-doc update only.",
+  "activeForm": "Checking user-docs/literature/ for stray working-data files",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "10"
+  ],
+  "blockedBy": []
+}

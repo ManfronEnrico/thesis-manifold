@@ -1,0 +1,14 @@
+{
+  "id": "3",
+  "subject": "Verify WARMUP_PERIODS=13 against actual max lag/window in feature engineering",
+  "description": "Read thesis/data/preprocessing/nielsen_dvh/build_feature_matrix.py in full, find every lag_k and rolling-window feature construction (grep for 'shift(' and window/rolling constants). Determine the true maximum lookback required (max lag value, max rolling window size) across all features actually built. Confirm this matches the claimed WARMUP_PERIODS=13 mentioned in the handover (i.e. that no feature requires more than 13 periods of history, and that 13 is not an overestimate or underestimate). If build_feature_matrix_bychain.py uses different lags/windows, check it too and note any discrepancy between the two scripts. Write result to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md, append-only.",
+  "activeForm": "Verifying WARMUP_PERIODS against actual feature lookback",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["verification", "feature-engineering"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T15:35:00.000Z", "started": null, "completed": null}
+}

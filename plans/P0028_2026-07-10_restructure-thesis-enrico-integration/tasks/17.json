@@ -1,0 +1,11 @@
+{
+  "id": "17",
+  "subject": "Phase 8: update broader documentation",
+  "description": "Update user-docs/contributing/repository_map.md, README.md (if it has a structure diagram), and any handover docs referencing old paths. docs/handover/2026-07-01_enrico-to-brian-merge-handover.md already references _03_engineered_dvhexclhd-style paths from before this restructure -- decide whether to retroactively edit historical handovers or leave them as a dated snapshot with a pointer to this plan for 'what changed since'.",
+  "activeForm": "Updating broader documentation for Phase 8",
+  "status": "completed",
+  "phase": "docs",
+  "blocks": [],
+  "blockedBy": ["16"],
+  "notes": "Scope grew beyond a path-sweep: README.md (last touched 2026-04-22) and AGENTS.md (last touched 2026-07-08) were both stale on far more than paths -- README described the deleted ai_research_framework/thesis_production_system/ split and docs/ folder; AGENTS.md linked to nonexistent docs/ and .Codex/ paths. User confirmed full-rewrite scope for all 4 files via AskUserQuestion. Rewrote README.md (current tier tree, current RQ/SRQ v4 text pulled from project-state.md, current System A/B locations), AGENTS.md (now mirrors CLAUDE.md's navigation-hub content), and reconciled the two diverged user-docs/contributing/repository_map.md + user-docs/dev/repository_map.md copies (both pre-restructure snapshots describing the old scripts/src/thesis/ tree) into one canonical rewritten file at user-docs/contributing/repository_map.md. Deleted user-docs/dev/repository_map.md as the now-redundant duplicate -- flagged this deletion explicitly to the user before proceeding since it wasn't literally named in the original scope confirmation; user confirmed keep-deleted. All links in rewritten files verified to resolve on disk before commit. Still-open, explicitly NOT resolved here: user-docs/handover/ vs handovers/ and integration/ vs integrations/ folder-name drift (different content, not simple duplicates -- noted in the new repository_map.md for a future pass); root integrations/ folder duplicate; literature version reconciliation (3 differing citations). Committed as 712e349 on chore/p0028-phase5-6-docs."
+}

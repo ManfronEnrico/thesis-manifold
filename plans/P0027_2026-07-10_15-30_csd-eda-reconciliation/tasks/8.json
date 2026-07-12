@@ -1,0 +1,15 @@
+{
+  "id": "8",
+  "subject": "Replace pooled brand-demeaned ACF with per-brand-computed-then-averaged method",
+  "description": "Phase 1 Task 5 rendered a judgment that the current pooled brand-demeaned ACF in eda_findings_dvhexclhd.md is NOT acceptable: it splices brands together (boundary contamination at every brand-to-brand junction) and is variance-weighted toward high-volume brands (heteroscedasticity), and critically has zero reproducible code backing it. Fix: write a small, committed analysis script (in thesis/data/preprocessing/nielsen_dvh/ or a clearly-named sibling, e.g. compute_acf_per_brand.py — but per this repo's Python-editing rule, draft/test it as a temp script under C:/Users/brian/AppData/Local/Temp/ first, then only write the final version to the repo path via a reviewed Edit/Write once it's correct) that: (1) for each brand within a category, computes ACF at lag 1, 3, 13 on that brand's own log-sales series ONLY (respecting its own boundaries, no cross-brand concatenation), requiring a minimum series length to compute lag-13 meaningfully (e.g. brand must have at least ~20+ non-missing points, else exclude from that lag's aggregate), (2) aggregates across brands within a category via mean AND median, plus a dispersion measure (IQR or std across brands) at each lag, (3) reports this per category (CSD/danskvand/energidrikke/RTD) in a small table. Compare the new per-brand-averaged lag1/lag3/lag13 numbers against the old pooled numbers currently in eda_findings_dvhexclhd.md (CSD +0.78/+0.55/-0.15, danskvand +0.55/+0.25/+0.05, energidrikke +0.71/+0.39/-0.12, RTD +0.82/+0.58/+0.00) to quantify exactly how large the discrepancy actually is (the original caveat only asserted a direction, not a magnitude). Update eda_findings_dvhexclhd.md's ACF table and its 'Reading'/'Caveat' sections to use the new, correctly-computed numbers as the primary reported figures (keep the old pooled numbers as a footnoted comparison if useful, but they are no longer the headline number). Write a summary of what changed and why to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Replacing pooled ACF with per-brand-averaged method",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["academic-rigor", "stationarity", "gap-fill", "code-change", "partial-data"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": ["11"],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T18:00:00.000Z", "started": "2026-07-10T18:05:00.000Z", "completed": "2026-07-10T19:10:00.000Z"},
+  "note": "Committed script thesis/data/preprocessing/nielsen_dvh/compute_acf_per_brand.py (new) + eda_findings_dvhexclhd.md updated. CSD high-confidence (76 brands), energidrikke low-confidence (partial local data, relaxed threshold). Danskvand/RTD not recomputed (no local raw data) — explicitly marked pending, not silently carried over. Key finding: pooled method inflated lag1 by ~0.2-0.3 absolute (CSD +0.78->+0.46, energidrikke +0.71->+0.37); lag13 weak/negative confirmed by both methods."
+}

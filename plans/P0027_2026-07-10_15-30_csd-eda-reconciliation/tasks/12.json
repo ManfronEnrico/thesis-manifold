@@ -1,0 +1,28 @@
+{
+  "id": "12",
+  "subject": "Run train/val/test distribution-shift check for CSD only",
+  "description": "Re-scoped from Task 9 per Brian's explicit instruction (2026-07-10): focus this session purely on making CSD bulletproof before touching the other 3 categories, even though Danskvand/Energidrikke/RTD now have converted parquet available. Using CSD's actual train/val/test split dates from csd_split_dates.json (produced by build_feature_matrix.py Step 7, forward-chaining split by date), compare distribution of the target (log_sales_units) and key features (sales level, promo_intensity where non-zero) between: (a) train vs val, (b) val vs test, (c) train vs test. Use scipy.stats.ks_2samp per comparison (3 tests) plus simple moment comparison (mean, std, skewness) as supplement. Report KS statistic + p-value for each of the 3 comparisons. Specifically address: does CSD show the val<test WMAPE anomaly pattern noted in Phase 1 Task 2, and if so does it correlate with a detected distribution shift between val and test windows, or does it look like small-sample noise (VAL_SIZE=6 months is short)? Per this repo's rule, draft as a temp Python script under C:/Users/brian/AppData/Local/Temp/, run via Bash, do not Edit/Write .py directly. Write results (full 3-test table + interpretation) to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Running CSD-only distribution-shift check",
+  "status": "completed",
+  "phase": "core",
+  "tags": [
+    "academic-rigor",
+    "distribution-shift",
+    "gap-fill",
+    "csd-only"
+  ],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-10T20:30:00.000Z",
+    "started": "2026-07-10T20:35:00.000Z",
+    "completed": "2026-07-10T13:55:00.000Z"
+  },
+  "note": "KS tests run on the actual pipeline output (thesis/data/_03_engineered/nielsen/CSD/csd_feature_matrix.parquet, brand x region x period grain, 25,124 rows, split column already present) since build_feature_matrix.py's own DVH EXCL. HD output parquet for CSD does not exist locally. Found a small but statistically significant shift across all split boundaries (KS stat 0.03-0.07), but val-vs-test showed the SMALLEST KS statistic of the three comparisons -- the opposite signature expected if distribution shift explained a WMAPE anomaly. CSD does not actually show a clean val<test WMAPE anomaly: bychain grain has val WMAPE HIGHER than test (+1.0 to +1.4pp), and brand grain shows only a small val<test gap (-1.3 to -2.1pp), much smaller than RTD's 4.6-4.7pp gap. Conclusion: no meaningful distribution shift found for CSD; the mild brand-grain gap is more consistent with small-sample/6-month-val-window noise than a shift-driven anomaly. Supersedes Task 9's CSD portion. Danskvand/Energidrikke/RTD portions of Task 9 remain open, deferred to Phase 5."
+}

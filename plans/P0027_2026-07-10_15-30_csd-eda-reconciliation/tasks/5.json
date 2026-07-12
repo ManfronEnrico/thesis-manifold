@@ -1,0 +1,14 @@
+{
+  "id": "5",
+  "subject": "Assess validity of pooled brand-demeaned ACF method vs per-brand-averaged ACF",
+  "description": "Read build_feature_matrix.py to find exactly how the ACF values in eda_findings_dvhexclhd.md (lag1/lag3/lag13 per category) were computed — confirm the 'pooled brand-demeaned log series' method (concatenating all brands after subtracting each brand's own mean, then computing one ACF across the pooled series). Reason about whether this method is statistically valid for cross-sectional panel data with heterogeneous brands (does demeaning per-brand before pooling correctly remove cross-sectional level differences while preserving genuine temporal autocorrelation, or does it introduce artifacts from pooling series of different lengths/variances?). If feasible, spot-check by computing per-brand ACF for 2-3 sample brands per category directly from the engineered feature matrices and compare lag1 magnitude against the pooled figure in eda_findings_dvhexclhd.md, to see how large the stated discrepancy actually is. Render a judgment: is the pooled method acceptable as a first-pass proxy (with the caveat already documented), or does it need to be replaced before Ch4 finalization? Write result to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md, append-only.",
+  "activeForm": "Assessing pooled vs per-brand ACF method validity",
+  "status": "completed",
+  "phase": "core",
+  "tags": ["verification", "academic-rigor", "stationarity"],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-10T15:35:00.000Z", "started": null, "completed": null}
+}

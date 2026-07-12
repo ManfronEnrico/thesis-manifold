@@ -1,0 +1,29 @@
+{
+  "id": "9",
+  "subject": "Add train/val/test distribution-shift check per category",
+  "description": "Flagged as a gap in the original P0023 critique and never closed, and newly motivated by Phase 1 Task 2's side-finding: several categories show validation-set WMAPE notably LOWER than test-set WMAPE (e.g. RTD brand-grain: val 28.8% vs test 31.0-33.4%), which is a classic symptom of the validation window not being representative of the test window. For each of the 4 categories, using the actual train/val/test split dates already assigned in {cat}_split_dates.json (produced by build_feature_matrix.py Step 7, forward-chaining split by date), compare the distribution of the target (log_sales_units) and key features (at minimum: sales level, promo_intensity where non-zero) between: (a) train vs val, (b) val vs test, (c) train vs test. Use a two-sample Kolmogorov-Smirnov test (scipy.stats.ks_2samp) per comparison, plus simple moment comparison (mean, std, skewness) as a supplement. Report KS statistic + p-value for each of the 3 comparisons x 4 categories (12 tests total). Specifically address: does the val<test WMAPE anomaly correlate with a detected distribution shift between val and test windows for the affected categories (danskvand/energidrikke/RTD per the bychain/brand tables), or does it look like small-sample noise instead (e.g. val window being unusually short at only 6 months per VAL_SIZE=6 in build_feature_matrix.py)? Per this repo's rule, draft the analysis as a temp Python script under C:/Users/brian/AppData/Local/Temp/, run via Bash, do not Edit/Write .py directly for execution. Write results (the full 12-test table plus your interpretation) to plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md under '## Phase 2 Gap-Fill' (append).",
+  "activeForm": "Adding train/val/test distribution-shift check per category",
+  "status": "blocked",
+  "phase": "core",
+  "tags": [
+    "academic-rigor",
+    "distribution-shift",
+    "gap-fill",
+    "data-unavailable"
+  ],
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-10T18:00:00.000Z",
+    "started": "2026-07-10T18:05:00.000Z",
+    "completed": null
+  },
+  "blockReason": "data/raw/ and all 4 categories' *_feature_matrix.parquet are absent from this checkout \u2014 no target/feature values available to run ks_2samp. Only structural metadata (split_dates.json) was available. Needs re-run once raw or engineered parquet data is present (e.g. regenerate via build_feature_matrix.py on a machine with data/raw/ populated).",
+  "note": "CSD portion superseded by Task 12 (completed \u2014 no meaningful distribution shift found for CSD; the anomaly is much weaker/absent in CSD vs RTD). Danskvand/energidrikke/RTD portions remain blocked-then-deferred: data is now converted (2026-07-10) but re-running this check for those 3 categories is explicitly deferred to Phase 5 per Brian's CSD-first sequencing decision."
+}

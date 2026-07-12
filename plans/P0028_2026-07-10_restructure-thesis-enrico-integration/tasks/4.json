@@ -1,0 +1,17 @@
+{
+  "id": "4",
+  "subject": "Update PATHS.py docstring examples and run final Phase 2 verification",
+  "description": "In Z:/_dev-ssd/thesis-manifold/PATHS.py, update every docstring Example: line that shows an old-style path containing the 'thesis\\\\' segment (e.g. 'C:\\\\dev\\\\thesis-manifold\\\\thesis\\\\modelling', 'C:\\\\dev\\\\thesis-manifold\\\\thesis\\\\data\\\\_00_raw') to match the flattened structure (drop the 'thesis\\\\' segment, e.g. 'C:\\\\dev\\\\thesis-manifold\\\\02_thesis_data\\\\_00_raw'). Update print_all_paths() to print the new constants added in tasks 1-3 (THESIS_CONTEXT_DIR, THESIS_RESEARCH_DIR, THESIS_RESULTS_DIR, THESIS_WRITING_DIR, THESIS_MODELLING_TRAINING_DIR, THESIS_MODELLING_SERVING_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR, THESIS_DATA_ENGINEERED_BYCHAIN_DIR) alongside the existing ones. Depends on tasks 1-3 all being complete. Final Phase 2 verification: run python3 -c \"from PATHS import ROOT_DIR, THESIS_CONTEXT_DIR, THESIS_RESEARCH_DIR, THESIS_RESEARCH_QUESTIONS_DIR, THESIS_RESEARCH_LITERATURE_DIR, THESIS_DATA_DIR, THESIS_MODELLING_DIR, THESIS_MODELLING_TRAINING_DIR, THESIS_MODELLING_SERVING_DIR, THESIS_MODELLING_SERVING_SYSTEM_A_DIR, THESIS_MODELLING_SERVING_SYSTEM_B_DIR, THESIS_RESULTS_DIR, THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ2_DIR, THESIS_RESULTS_SRQ4_DIR, THESIS_WRITING_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR, THESIS_DATA_ENGINEERED_BYCHAIN_DIR; print('Phase 2 OK')\" and confirm it prints without error (paths resolve as Path objects even though the target folders do not physically exist yet -- that is expected and fine at this stage since folder creation is deferred to Phase 4 and will use copy, not move, per the updated execution strategy). Use the safe temp-script edit pattern per project hook rule.",
+  "activeForm": "Updating PATHS.py docstrings and running Phase 2 verification",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "8",
+    "9"
+  ],
+  "blockedBy": [
+    "1",
+    "2",
+    "3"
+  ]
+}

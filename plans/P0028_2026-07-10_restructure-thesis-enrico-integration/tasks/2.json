@@ -1,0 +1,14 @@
+{
+  "id": "2",
+  "subject": "Add model_training/model_serving/results sub-constants to PATHS.py",
+  "description": "In Z:/_dev-ssd/thesis-manifold/PATHS.py, add: THESIS_MODELLING_TRAINING_DIR (THESIS_MODELLING_DIR / \"model_training\"), THESIS_MODELLING_SERVING_DIR (THESIS_MODELLING_DIR / \"model_serving\"), THESIS_MODELLING_SERVING_SYSTEM_A_DIR (THESIS_MODELLING_SERVING_DIR / \"system_a_forecast\"), THESIS_MODELLING_SERVING_SYSTEM_B_DIR (THESIS_MODELLING_SERVING_DIR / \"system_b_conversational\"), THESIS_RESULTS_SRQ1_DIR (THESIS_RESULTS_DIR / \"srq1\"), THESIS_RESULTS_SRQ2_DIR (THESIS_RESULTS_DIR / \"srq2\"), THESIS_RESULTS_SRQ4_DIR (THESIS_RESULTS_DIR / \"srq4\"). Depends on task 1 (THESIS_MODELLING_DIR and THESIS_RESULTS_DIR must already point at new locations). Verify: python3 -c \"from PATHS import THESIS_MODELLING_TRAINING_DIR, THESIS_MODELLING_SERVING_SYSTEM_A_DIR, THESIS_MODELLING_SERVING_SYSTEM_B_DIR, THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ2_DIR, THESIS_RESULTS_SRQ4_DIR; print('OK')\". Use the safe temp-script edit pattern, never Edit/Write directly on .py files per project hook rule.",
+  "activeForm": "Adding model_training/model_serving/results sub-constants to PATHS.py",
+  "status": "completed",
+  "phase": "core",
+  "blocks": [
+    "4"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}
