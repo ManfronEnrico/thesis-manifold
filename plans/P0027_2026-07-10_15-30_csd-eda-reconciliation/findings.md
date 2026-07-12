@@ -603,3 +603,70 @@ Brian's directive: region and chain should become two parallel branches off the 
 ### Session paused here
 
 No code changes were made this session (investigation/planning only, per the user's "document insights, continue tomorrow" instruction). Tomorrow's first task per the updated task_plan.md: Phase 4a's `group_keys` fix, applied to CSD only initially, then Phase 3's region-grain benchmark re-run to get a trustworthy WMAPE before touching Phase 4's dual-grain decision or Phase 4b's chain-branch work.
+
+## 2026-07-12 Session — Colleague Pipeline Comparison + Archive
+
+Brian asked for a direct comparison of `02_thesis_data/preprocessing/` (Enrico's
+standalone scripts) against `02_thesis_data/_02_preprocessing/nielsen/CSD/` (the
+orchestrator pipeline), to decide whether to integrate or delete the former.
+
+### Verdict: two independent implementations, not variants of shared code
+
+- Enrico's pipeline: 3 standalone scripts, no orchestrator, brand×month only
+  (`build_feature_matrix.py`) and brand×chain only (`build_feature_matrix_bychain.py`)
+  as two disconnected scripts with no rollup between them. Own re-implementation of
+  load/aggregate/filter/calendar/features/split per script — does not import the
+  shared `engineer_features.py` module CSD uses.
+- CSD orchestrator: 6 numbered steps + EDA + cache, brand×region×month grain (9 DVH
+  regions per P0026), delegates feature engineering to the shared module (which is
+  where Phase 4a's leakage bug lives).
+- Enrico's scripts reference pre-P0028 paths (`thesis/data/...`) and are **broken
+  as-is** — would write to a directory tree that no longer exists.
+- CSD orchestrator has real EDA rigor behind its parameters (`pre_csd_1.5_eda.py`:
+  per-brand not pooled ACF, empirically-derived LAGS/ROLLING_WINDOWS, per-brand ADF
+  majority vote). Enrico's pipeline has zero EDA — parameters are asserted, not derived.
+  (Side note: `pre_csd_1.5_eda.OURS.py` in the same folder is Brian's own **earlier,
+  now-superseded** draft — naive pooled-brand ACF, hardcoded lags — kept for reference
+  but the `.OURS` suffix is misleading since it reads as "canonical" when it's actually
+  the outdated one. Worth a rename if this causes confusion later.)
+
+### What's genuinely useful from Enrico's version (captured, not literally ported)
+
+1. **Chain-grain scoping** — `build_feature_matrix_bychain.py`'s `LEAF_CHAINS` list
+   (11 chains common to all 4 categories: BILKA, FØTEX, NETTO, KVICKLY, SUPERBRUGSEN,
+   BRUGSEN, MENY, SPAR, MIN KØBMAND, REMA 1000, NEMLIG.COM) — input to Phase 4b.
+2. **Global MIN_PERIODS=30-across-categories rationale** — useful reference point for
+   reconciling CSD's own Step 3 (24) vs Step 6 (40) discrepancy, still unresolved.
+3. **The double-counting bug pattern itself** (5.24x inflation from summing Nielsen's
+   hierarchical market levels) — already independently avoided in CSD's pipeline via
+   9-region scoping rather than Enrico's single-collapsed-market-row fix. Both should
+   be leakage-safe in principle *if* Nielsen's own `DVH EXCL. HD` row isn't itself a
+   server-side sum of children — this precondition has not been directly verified
+   against raw data and would be worth a 5-minute check before fully trusting either
+   pipeline's market scoping.
+
+### New finding: `_03_engineered/bymonth/` and `_03_engineered/bychain/` are currently EMPTY
+
+Resolves the open question from 2026-07-11's findings (which pipeline last populated
+these canonical dirs). Checked directly via file listing + timestamps:
+`02_thesis_data/_03_engineered/bymonth/CSD/` and `.../bychain/CSD/` have **no feature
+matrix parquet files at all** right now. The only fresh CSD feature matrix on disk is
+in the orchestrator's own local output at
+`02_thesis_data/_02_preprocessing/nielsen/CSD/engineered/csd_feature_matrix.parquet`
+(written 2026-07-11 19:06 — last night's Phase 3 run), which is NOT the path
+`srq1_benchmark.py` reads from (`PATHS.THESIS_DATA_ENGINEERED_BYMONTH_DIR` /
+`_BYCHAIN_DIR`). **`srq1_benchmark.py` cannot currently run successfully for CSD** —
+its expected input doesn't exist yet. This means Phase 6 (or any point where you'd
+actually run the benchmark end-to-end) needs a "copy/regenerate into `_03_engineered/`"
+step added, not just the leakage fix in Phase 4a. Flagging as a gap in Phase 4a's
+checklist — the fix needs to land AND the output needs to reach the canonical path
+before `srq1_benchmark.py` will work.
+
+### Action taken this session
+
+Archived `02_thesis_data/preprocessing/` → `.archive/enrico_legacy_preprocessing_2026-07/preprocessing/`
+(git mv, on branch `chore/archive-colleague-preprocessing`) with a README explaining
+what was kept as design input vs. superseded. Decision confirmed with Brian via
+AskUserQuestion (chose "archive now" over "keep until Phase 4b lands" or "just
+document"), since the useful ideas are now captured here and the scripts themselves
+don't run against the current tree anyway.

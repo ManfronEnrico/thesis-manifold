@@ -5,7 +5,7 @@ category: reference
 applies-to: [repo-structure, file-placement, cleanup]
 triggers: [where-does-this-go, is-this-bloat, new-srq-results, restructure-question]
 created: 2026_07_11-18_02
-updated: 2026_07_11-18_02
+updated: 2026_07_12-00_00
 ---
 
 # Repo Tier Structure (Locked, P0028)
@@ -67,19 +67,35 @@ instead.
 lives in the numbered `_0N_*` tier folders — don't confuse the two when
 looking for a script vs. looking for its output.
 
-### Do not delete `02_thesis_data/_03_engineered/nielsen/`
+### `02_thesis_data/_03_engineered/nielsen/` — deleted 2026-07-12, do not recreate as scaffolding
 
 `02_thesis_data/_03_engineered/` was expected to contain only `bymonth/` and
-`bychain/` per the original P0028 plan. It also contains a `nielsen/`
-subfolder with **real, non-empty feature matrices** — this came along
-wholesale when `_03_engineered/` was copied from the old `thesis/data/_03_engineered/`
-tree. It is off-plan (a third sibling next to the intended two), but it is
-real data, not bloat, and the user has explicitly decided to leave it in
-place rather than archive or delete it (see
-`plans/P0028_2026-07-10_restructure-thesis-enrico-integration/findings.md`,
-Session 6 finding #4). **Do not delete or "clean up" this folder** in a
-future session without checking that finding first — a future session
-scanning for bloat could easily mistake it for leftover scaffolding.
+`bychain/` per the original P0028 plan. It briefly also contained a `nielsen/`
+subfolder with real, non-empty CSD feature matrices — leftover from when
+`_03_engineered/` was copied wholesale from the old `thesis/data/_03_engineered/`
+tree. Between 2026-07-10 and 2026-07-12 the project explicitly decided to leave
+it in place (see P0028 findings.md, Session 6 finding #4) rather than archive it,
+on the reasoning that it was real data, not bloat.
+
+**That decision was superseded on 2026-07-12**: a same-session comparison
+(P0027 findings.md, "2026-07-12 Session") confirmed `_03_engineered/bymonth/CSD/`
+was a byte-identical-content, one-day-newer regeneration of `nielsen/CSD/`'s
+feature matrix — i.e. `nielsen/CSD/` was fully superseded, not a unique data
+source. The other 3 categories (Danskvand/Energidrikke/RTD) never had a real
+feature matrix in `nielsen/` at all (split-dates metadata only, matching
+`bymonth/`'s equally-empty state for those categories — Phase 5 of P0027 hasn't
+run for them yet). With no unique content remaining, the user deleted
+`02_thesis_data/_03_engineered/nielsen/` directly.
+
+**Implication for future sessions**: if you see a `nielsen/` subfolder reappear
+under `_03_engineered/` (e.g. from a script still writing to the deprecated
+`get_category_engineered_dir()` path, or from restoring an old branch/backup),
+do not assume it needs preserving by default the way this rule used to say —
+check whether its content is genuinely unique (i.e., not already superseded by
+`bymonth/`or `bychain/`) before deciding. The `get_category_engineered_dir()`
+function in `PATHS.py` is deprecated for exactly this reason; scripts should
+call `get_category_engineered_bymonth_dir()` / `_bychain_dir()` (or a future
+`_byregion_dir()`) explicitly instead of the ambiguous deprecated alias.
 
 ### `02_thesis_data/` also carries legacy leftovers alongside the new tiers
 
@@ -95,5 +111,6 @@ plan's decision log before removing anything here.
 
 - `PATHS.py` — top-of-file docstring mirrors this same structure map; all path constants resolve into these tiers
 - `plans/P0028_2026-07-10_restructure-thesis-enrico-integration/task_plan.md` — full restructure history, old→new path mapping, decision log
-- `plans/P0028_2026-07-10_restructure-thesis-enrico-integration/findings.md` — Session 6 finding #4 (the `_03_engineered/nielsen/` stray-but-real-data callout)
+- `plans/P0028_2026-07-10_restructure-thesis-enrico-integration/findings.md` — Session 6 finding #4 (original `_03_engineered/nielsen/` stray-but-real-data callout, since superseded)
+- `plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md` — 2026-07-12 session, confirms `nielsen/CSD/` was a superseded duplicate of `bymonth/CSD/`, documents the deletion
 - `.claude/rules/root-documentation-boundary.md` — root-level file placement rules (documentation, not data/code tiers)

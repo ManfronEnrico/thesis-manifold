@@ -34,9 +34,9 @@ else:
 	raise FileNotFoundError("Could not find project root")
 
 sys.path.insert(0, str(ROOT_DIR))
-sys.path.insert(0, str(ROOT_DIR / "02_thesis_data" / "_02_preprocessing" / "nielsen" / "shared"))
+sys.path.insert(0, str(ROOT_DIR / "02_thesis_data" / "_02_preprocessing" / "nielsen" / "_shared_modules"))
 
-from PATHS import get_category_pipeline_step_outputs_dir, get_category_engineered_dir
+from PATHS import get_category_pipeline_step_outputs_dir, get_category_engineered_bymonth_dir
 from utility_scripts.scripts.METADATA import get_dimension_info
 from engineer_features import build_series_index
 from terminal_utils import (
@@ -89,7 +89,7 @@ CSD_VAL_END = (2025, 4)       # From Cell 7: 6 months validation
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
 INPUT_SPLIT_APPLIED_PARQUET = STEP_OUTPUT_DIR / f"step_5_split_applied.parquet"
 
-OUTPUT_ENGINEERED_DIR = get_category_engineered_dir(CATEGORY)
+OUTPUT_ENGINEERED_DIR = get_category_engineered_bymonth_dir(CATEGORY)
 OUTPUT_FEATURE_MATRIX = OUTPUT_ENGINEERED_DIR / f"{CATEGORY.lower()}_feature_matrix.parquet"
 OUTPUT_SERIES_INDEX = OUTPUT_ENGINEERED_DIR / f"{CATEGORY.lower()}_series_index.csv"
 OUTPUT_SPLIT_DATES = OUTPUT_ENGINEERED_DIR / f"{CATEGORY.lower()}_split_dates.json"

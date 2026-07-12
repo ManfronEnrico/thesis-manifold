@@ -35,16 +35,16 @@ else:
 
 sys.path.insert(0, str(ROOT_DIR))
 
+sys.path.insert(0, str(ROOT_DIR / "02_thesis_data" / "_02_preprocessing" / "nielsen" / "_shared_modules"))
+
 from PATHS import THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outputs_dir
 from utility_scripts.scripts.METADATA import describe_column
-from thesis.thesis_agents.ai_research_framework.features.engineer_features import (
-	engineer_features as shared_engineer_features
-)
-from thesis.data._02_preprocessing.nielsen.shared.terminal_utils import (
+from engineer_features import engineer_features as shared_engineer_features
+from terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
 	print_step_summary, print_info
 )
-from thesis.data._02_preprocessing.nielsen.shared.timing_utils import log_step_timing
+from timing_utils import log_step_timing
 
 # ============================================================================
 # METADATA DEFINITIONS
@@ -115,8 +115,13 @@ def engineer_Danskvand_features(df: pd.DataFrame) -> pd.DataFrame:
 		format="%Y-%m"
 	)
 
-	# Call shared feature engineering (uses DEFAULT_ constants from codebase)
-	df = shared_engineer_features(df)
+	# Call shared feature engineering with Danskvand-specific parameters
+	df = shared_engineer_features(
+		df,
+		lags=Danskvand_LAG_WINDOWS,
+		rolling_windows=Danskvand_ROLLING_WINDOWS,
+		holiday_months=Danskvand_HOLIDAY_MONTHS
+	)
 
 	# Add log transformation
 	df["log_sales_units"] = df["sales_units"].apply(lambda x: float('nan') if pd.isna(x) else float(x)).apply(

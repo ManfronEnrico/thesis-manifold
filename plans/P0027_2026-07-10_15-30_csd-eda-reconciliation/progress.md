@@ -110,3 +110,12 @@
 - **No code changed this session** — investigation and planning only, per explicit user instruction to document and continue tomorrow.
 - Next (tomorrow): implement the `group_keys` parameter fix in `engineer_features.py`, apply to CSD's Step 4 and Step 6, re-run CSD's pipeline, re-verify Phase 3's WMAPE number before trusting it for any Phase 4 decision.
 
+## 2026-07-12 — Colleague pipeline comparison, archived, empty-output gap found
+
+- Brian asked for a direct comparison of `02_thesis_data/preprocessing/` (Enrico's standalone scripts) vs the CSD orchestrator, to decide integrate-vs-delete.
+- Confirmed: two independent implementations, not shared code. Enrico's scripts reference dead pre-P0028 paths and don't run as-is; CSD orchestrator has real EDA-driven parameter justification Enrico's lacks entirely.
+- New finding: `_03_engineered/bymonth/CSD/` and `_03_engineered/bychain/CSD/` (the canonical paths `srq1_benchmark.py` reads) are currently **empty** — confirmed via direct listing + timestamps. Only fresh feature matrix on disk is the orchestrator's local `engineered/csd_feature_matrix.parquet` (2026-07-11 19:06), which isn't the canonical path. Added a step to Phase 4a's checklist to regenerate into the canonical location, not just fix the leakage bug.
+- Action taken: created branch `chore/archive-colleague-preprocessing` (was on `main`, which also had unrelated pre-existing unstaged deletions from another session — left those untouched per user's explicit choice), then `git mv 02_thesis_data/preprocessing` → `.archive/enrico_legacy_preprocessing_2026-07/preprocessing/` with a README explaining what was kept as design input (chain-grain LEAF_CHAINS list, global MIN_PERIODS=30 rationale) vs. superseded.
+- Outcome: comparison fully documented in findings.md ("2026-07-12 Session — Colleague Pipeline Comparison + Archive"); task_plan.md frontmatter + Phase 4a checklist updated. Files archived but not yet committed — awaiting Brian's go-ahead on the commit.
+- Next: implement Phase 4a (group_keys fix + regenerate into canonical `_03_engineered/` path), re-verify Phase 3's WMAPE, then Phase 4b (chain-grain branch, informed by the archived colleague scripts' LEAF_CHAINS list).
+
