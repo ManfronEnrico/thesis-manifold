@@ -670,3 +670,156 @@ what was kept as design input vs. superseded. Decision confirmed with Brian via
 AskUserQuestion (chose "archive now" over "keep until Phase 4b lands" or "just
 document"), since the useful ideas are now captured here and the scripts themselves
 don't run against the current tree anyway.
+
+## 2026-07-12 Session (continued) — Path fixes, dead-import cleanup, EDA consolidation, grain/pooling strategy
+
+Continuation of the same session, addressing four follow-up requests plus one
+mid-session correction and one substantial unplanned bug discovery.
+
+### 1. Step 6 output path bug — root-caused and fixed, all 4 categories
+
+All 4 categories' `pre_{cat}_6_save_outputs.py` imported the **deprecated**
+`get_category_engineered_dir()` from `PATHS.py` instead of the correct
+`get_category_engineered_bymonth_dir()`. Per `PATHS.py`'s own docstring, the
+deprecated function already redirects to `bymonth/{category}/` — so this wasn't
+actually writing to the wrong *canonical* location, but it was silently relying
+on a function explicitly marked deprecated for exactly this ambiguity reason.
+Fixed all 4 (CSD, Danskvand, Energidrikke, RTD) to import and call
+`get_category_engineered_bymonth_dir()` explicitly.
+
+Separately, found and removed a **stray local `engineered/` output folder** at
+`02_thesis_data/_02_preprocessing/nielsen/{CSD,Danskvand,Energidrikke}/engineered/`
+— untracked, containing only stale split-dates/report metadata (no feature
+matrix), left over from an earlier version of Step 6 before the path was
+centralized through `PATHS.py`. Removed as part of the broader cleanup below.
+
+### 2. `_03_engineered/nielsen/` vs `_03_engineered/bymonth/` — CORRECTION to my initial answer, then user-driven resolution
+
+My first-pass answer (before checking `.claude/rules/repo-tier-structure.md`)
+incorrectly proposed moving/archiving `_03_engineered/nielsen/` as "superseded."
+The repo's own rule file explicitly documented this folder as a **known,
+deliberate exception** from the P0028 restructure (see
+`plans/P0028_.../findings.md`, Session 6 finding #4) — real, non-empty CSD
+feature-matrix data that the user had explicitly decided to leave in place, not
+archive. The permission classifier correctly blocked my `mv`/`rm` attempt on
+this basis before it executed.
+
+On re-verification (byte-identical file sizes, one-day-newer timestamps),
+confirmed `_03_engineered/bymonth/CSD/` IS a regeneration of the same content
+as `_03_engineered/nielsen/CSD/` — i.e. the original P0028 finding's caveat
+("verify this is still true before deleting") was satisfied: `nielsen/CSD/`
+had become fully superseded, and the other 3 categories' `nielsen/{cat}/` never
+had real feature matrices at all (split-dates metadata only, same as
+`bymonth/{cat}/`'s equally-empty state — Phase 5 hasn't run for them yet).
+
+**The user then deleted `_03_engineered/nielsen/` directly** (manual action,
+outside my tool calls), superseding the prior "leave in place" decision now
+that the verification showed no unique content remained. Updated
+`.claude/rules/repo-tier-structure.md` to reflect this: the "do not delete"
+language is now "deleted 2026-07-12, do not recreate as scaffolding," with the
+reasoning chain preserved so a future session understands why the guidance
+flipped rather than just seeing a contradiction with git history.
+
+### 3. EDA file consolidation — completed
+
+Confirmed via `git log --follow` that `pre_csd_1.5_eda.py` is canonical
+(continuous history through 2026-07-11, including the Cell 12 NaN-bug fix and
+the full H1-H5 empirical rigor pass), while `pre_csd_1.5_eda.OURS.py` was only
+ever touched once — a 2026-07-08 "commit working-tree state before merge"
+snapshot, never updated since, missing all of: per-brand (not pooled) ACF,
+empirically-derived LAGS/ROLLING_WINDOWS, per-brand ADF majority vote, the
+Cell 15b Chow-test structural break check, and Pearson+Spearman non-linearity
+flagging in the correlation heatmap.
+
+Deleted `pre_csd_1.5_eda.OURS.py` (`git rm`). Rebuilt
+`pre_csd_1.5_eda.ipynb` from the canonical `.py` via a custom cell-splitter
+that promotes `# ===...=== / # CELL N: TITLE / # ===...===` banner blocks to
+proper markdown headers (49 cells: 23 markdown, 26 code) rather than a naive
+`# %%`-only split (which produced only 1 markdown cell out of 26, misclassified
+a pip-install block as markdown, and left all `CELL N:` titles buried inside
+code-cell comments). The `.ipynb` is gitignored repo-wide, so it stays
+untracked but is now correctly populated on disk and ready to run with plot
+outputs saved inline.
+
+### 4. Unplanned discovery: manual folder renames broke every category's Step 0-6 imports
+
+Mid-session, found the user had manually renamed
+`02_thesis_data/_02_preprocessing/nielsen/shared/` → `_shared_modules/` and
+`.../nielsen/notes/` → `_notes/` **outside git** (i.e., a raw filesystem
+rename, not `git mv`) — git showed this as delete+untracked-add pairs rather
+than renames. Every category's step scripts still referenced the old `shared`
+path name and would have failed with `ImportError` on next run. Confirmed with
+the user (AskUserQuestion) before touching anything, given how large the blast
+radius turned out to be once traced.
+
+**Fixed, all 4 categories** (CSD, Danskvand, Energidrikke, RTD — 17 files
+total across Steps 0-6): updated every `sys.path.insert(0, ... / "shared")` to
+`.../ "_shared_modules"` and every `from thesis.data._02_preprocessing.nielsen.shared.X import ...`
+to a plain `from X import ...` (relying on the corrected `sys.path.insert`).
+Then `git add`-staged the rename properly so git tracks it as `R` (rename),
+not delete+add.
+
+**Second, independent bug surfaced during this fix**: Danskvand, Energidrikke,
+and RTD's Step 4/5/6 scripts were not just using the wrong `shared` path name —
+they were importing `engineer_features`/`apply_split`/`build_series_index`
+from `thesis.thesis_agents.ai_research_framework.features.engineer_features`,
+a **dead pre-P0028 module** (System A's LangGraph agent codebase, since frozen
+and archived to `.archive/thesis_agents_preintegration/` — see its own
+`.system_a_frozen.md`). This is architecturally distinct from CSD's approach,
+which correctly imports from the local `_shared_modules/engineer_features.py`.
+These 3 categories' Step 4/5/6 scripts have likely never successfully run
+against the current repo tree; the imports were broken independent of this
+session's rename discovery, just previously undiagnosed. Root cause: an
+earlier abandoned code-sharing attempt with the System A agent framework that
+these 3 categories' scripts were copy-pasted from and never updated when CSD's
+local `shared/` module was introduced as the real pattern.
+
+**Third bug found in the same pass**: Danskvand/Energidrikke/RTD's Step 4
+scripts each define category-specific `{Category}_LAG_WINDOWS`,
+`{Category}_ROLLING_WINDOWS`, `{Category}_HOLIDAY_MONTHS` constants (mirroring
+CSD's pattern) but then call `shared_engineer_features(df)` **without passing
+them** — unlike CSD's Step 4, which passes `lags=`, `rolling_windows=`,
+`holiday_months=` explicitly. The 3 categories' own EDA-derived parameters
+were dead code, silently overridden by the shared module's generic defaults
+(`DEFAULT_LAGS`, `DEFAULT_ROLLING_WINDOWS`, `DEFAULT_HOLIDAY_MONTHS =
+{1,4,6,10,12}`) every time Step 4 ran. Fixed all 3 to pass their own constants,
+matching CSD.
+
+**Not fixed, flagged as a real remaining gap**: Danskvand/Energidrikke/RTD's
+Step 5 (`apply_split`) has no category-specific `TRAIN_END`/`VAL_END`
+constants defined at all (unlike CSD's `CSD_TRAIN_END = (2024, 10)` /
+`CSD_VAL_END = (2025, 4)`, derived from CSD's own EDA Cell 7). Their Step 5
+still uses `DEFAULT_TRAIN_END`/`DEFAULT_VAL_END` — now correctly imported from
+the live `_shared_modules` (no longer the dead framework), but still generic,
+not category-tuned. This is a genuine data gap (no EDA-derived split dates
+exist yet for these 3 categories), not something to fabricate values for. Ties
+directly into Phase 5 (extend to 3 remaining categories) — their own EDA work
+needs to produce these constants, same as CSD's Cell 7 did.
+
+### 5. Grain (bymonth/bychain/byregion) × category-pooling discussion
+
+Brian's colleague raised a research question independent of the grain work:
+does a category-specific model outperform one general model pooled across all
+4 categories? There was a positive indication from the OLD pipeline, but that
+predates the Phase 4a leakage fix and is not trustworthy as-is.
+
+Recommended treating **grain** and **pooling** as two independent axes rather
+than a combinatorial 4 categories × 3 grains × 4 model types = 48-fit matrix:
+hold grain fixed (brand×month, the most mature/validated grain) while
+answering the pooling question (adds ~4-5 model fits: one `pooled` dataset ×
+4 model types, compared against the 4 existing per-category models), and hold
+pooling fixed (per-category) while answering the grain question (byregion
+stays CSD-only per Phase 4a/4b's existing scope, not multiplied across all 4
+categories preemptively). Formalized as new **Phase 4c** in task_plan.md,
+sequenced after Phase 4a (can't trust the old pooling result on leaky
+features) and independent of Phase 4b (chain-grain) and Phase 5 (extend EDA
+to 3 categories).
+
+### Session paused here (second time)
+
+All fixes from this continuation are staged in git (`git add`) but not yet
+committed — awaiting the user's go-ahead on the commit message/scope. No
+pipeline was actually re-run this session (Phase 4a's leakage fix itself is
+still pending); today's work was entirely plumbing/path/import correctness so
+that a future pipeline run has a chance of succeeding, plus planning for
+Phase 4c.

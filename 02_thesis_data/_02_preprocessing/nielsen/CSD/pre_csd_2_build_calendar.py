@@ -74,8 +74,11 @@ STEP_NAME = "Build Calendar"
 # Calendar bounds are derived from the data in main() — no hardcoded dates.
 
 # Input/Output paths
+# Reads Step 1b's brand x month rollup (not Step 1's brand x region output
+# directly) -- SRQ1 scope is locked to brand x month grain (2026-07-12,
+# plans/P0027 Phase 4b deferred). See pre_csd_1b_rollup_to_brand_month.py.
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
-INPUT_AGGREGATE_PARQUET = STEP_OUTPUT_DIR / f"step_1_aggregate.parquet"
+INPUT_AGGREGATE_PARQUET = STEP_OUTPUT_DIR / f"step_1b_brand_month.parquet"
 OUTPUT_CALENDAR_FILLED_PARQUET = STEP_OUTPUT_DIR / f"step_{STEP_NUM}_calendar_filled.parquet"
 LOG_FILE = STEP_OUTPUT_DIR / f"step_{STEP_NUM}_log.json"
 
@@ -87,17 +90,17 @@ def build_calendar_index(df: pd.DataFrame, start_date: tuple, end_date: tuple) -
 	"""
 	Fill calendar gaps in aggregated data.
 
-	Input: df with (brand, market_id, period_year, period_month, sales_units, ...)
+	Input: df with (brand, period_year, period_month, sales_units, ...)
 	Output: df with all months from start_date to end_date, NaN for missing months,
-	        for every brand × region combination observed in the data.
+	        for every brand observed in the data.
 
 	Args:
-		df: Aggregated data with brand, market_id, period_year, period_month columns
+		df: Aggregated data with brand, period_year, period_month columns
 		start_date: Tuple (year, month) for calendar start
 		end_date: Tuple (year, month) for calendar end
 
 	Returns:
-		DataFrame with all months filled, NaN for missing brand×region×month combinations
+		DataFrame with all months filled, NaN for missing brand×month combinations
 	"""
 	# Create full date range
 	months = pd.period_range(
@@ -106,11 +109,11 @@ def build_calendar_index(df: pd.DataFrame, start_date: tuple, end_date: tuple) -
 		freq="M"
 	)
 
-	# Create full index (brand × market_id × month)
-	brand_market_pairs = df[["brand", "market_id"]].drop_duplicates().apply(tuple, axis=1).tolist()
-	full_index = pd.MultiIndex.from_tuples(
-		[(b, m, p) for (b, m) in brand_market_pairs for p in months],
-		names=["brand", "market_id", "period"]
+	# Create full index (brand × month)
+	brands = df["brand"].drop_duplicates().tolist()
+	full_index = pd.MultiIndex.from_product(
+		[brands, months],
+		names=["brand", "period"]
 	)
 
 	# Convert period columns to period dtype for joining
@@ -120,13 +123,13 @@ def build_calendar_index(df: pd.DataFrame, start_date: tuple, end_date: tuple) -
 		freq="M"
 	)
 
-	# Set index to brand, market_id, period for reindexing
-	df_indexed = df.set_index(["brand", "market_id", "period"])
+	# Set index to brand, period for reindexing
+	df_indexed = df.set_index(["brand", "period"])
 
 	# Reindex to full calendar (NaN for missing periods)
 	df_reindexed = df_indexed.reindex(full_index)
 
-	# Reset index to get brand, market_id, period columns back
+	# Reset index to get brand, period columns back
 	df_filled = df_reindexed.reset_index()
 
 	# Add year/month columns from period
@@ -134,18 +137,11 @@ def build_calendar_index(df: pd.DataFrame, start_date: tuple, end_date: tuple) -
 	df_filled["period_month"] = df_filled["period"].dt.month
 
 	# Reorder columns: entity keys first, then measures
-	cols = ["brand", "market_id"] + [c for c in df_filled.columns
-		if c in ["market_description"]] + ["period_year", "period_month"] + [
+	cols = ["brand", "period_year", "period_month"] + [
 		c for c in df_filled.columns
-		if c not in ["brand", "market_id", "market_description", "period_year", "period_month", "period"]
+		if c not in ["brand", "period_year", "period_month", "period"]
 	]
 	df_filled = df_filled[[c for c in cols if c in df_filled.columns]]
-
-	# Forward-fill market_description (constant per market_id, NaN after reindex)
-	if "market_description" in df_filled.columns:
-		df_filled["market_description"] = df_filled.groupby("market_id")["market_description"].transform(
-			lambda x: x.ffill().bfill()
-		)
 
 	return df_filled
 
@@ -160,7 +156,7 @@ def main():
 			raise FileNotFoundError(f"Input missing: {INPUT_AGGREGATE_PARQUET}")
 
 		# Load
-		print("Loading aggregate data from step 1...")
+		print("Loading brand x month rollup from step 1b...")
 		load_start = time.perf_counter()
 		df = pd.read_parquet(INPUT_AGGREGATE_PARQUET)
 		load_elapsed = time.perf_counter() - load_start
@@ -178,11 +174,8 @@ def main():
 			print_info(f"Date range: {cal_start[0]}-{cal_start[1]:02d} to {cal_end[0]}-{cal_end[1]:02d}")
 		else:
 			print_info(f"Date range: (no data)")
-			raise ValueError("No data in step 1 output — cannot build calendar.")
+			raise ValueError("No data in step 1b output -- cannot build calendar.")
 		print_info(f"Unique brands: {df['brand'].nunique()}")
-		if "market_id" in df.columns:
-			print_info(f"Unique regions: {df['market_id'].nunique()}")
-			print_info(f"Series (brand×region): {df.groupby(['brand','market_id']).ngroups}")
 
 		# Process
 		print(f"\nBuilding calendar index ({cal_start[0]}-{cal_start[1]:02d} to {cal_end[0]}-{cal_end[1]:02d})...")

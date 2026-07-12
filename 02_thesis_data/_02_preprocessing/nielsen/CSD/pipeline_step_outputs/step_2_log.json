@@ -288,5 +288,15 @@
     "output_rows": 45716,
     "input_cols": 10,
     "output_cols": 10
+  },
+  {
+    "timestamp": "2026-07-12T19:33:49.268699",
+    "step_num": 2,
+    "step_name": "Build Calendar",
+    "category": "CSD",
+    "elapsed_sec": 0.16,
+    "output_rows": 6160,
+    "input_cols": 8,
+    "output_cols": 8
   }
 ]

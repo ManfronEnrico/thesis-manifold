@@ -187,11 +187,20 @@ def aggregate_brand_month_from_csvs(
     return grouped
 
 
-def make_calendar(df: pd.DataFrame) -> tuple[pd.DataFrame, list]:
+def make_calendar(
+    df: pd.DataFrame,
+    group_keys: list[str] = ["brand"],
+) -> tuple[pd.DataFrame, list]:
     """
-    Add a datetime 'date' column and ensure every brand has the full month
-    calendar (fill gaps with 0 for sales, ffill/bfill for distribution).
-    Clips negative sales (returns/corrections) to 0.
+    Add a datetime 'date' column and ensure every group (default: each brand)
+    has the full month calendar (fill gaps with 0 for sales, ffill/bfill for
+    distribution). Clips negative sales (returns/corrections) to 0.
+
+    group_keys: columns identifying a distinct series. Default ["brand"] matches
+    brand×month grain. Pass e.g. ["brand", "market_id"] for a region/chain grain
+    so the calendar cross-product and the weighted_dist ffill don't mix rows
+    across groups — ffill would otherwise leak a value from group A into the
+    first gap of group B.
 
     Returns: (filled_df, sorted list of unique dates).
     """
@@ -203,28 +212,32 @@ def make_calendar(df: pd.DataFrame) -> tuple[pd.DataFrame, list]:
         + "-01"
     )
     all_dates = sorted(df["date"].unique())
-    all_brands = df["brand"].unique()
+    group_values = df[group_keys].drop_duplicates()
 
-    idx = pd.MultiIndex.from_product(
-        [all_brands, all_dates], names=["brand", "date"]
-    )
-    full = pd.DataFrame(index=idx).reset_index()
-    full = full.merge(
+    idx_frames = []
+    for _, row in group_values.iterrows():
+        block = pd.DataFrame({"date": all_dates})
+        for key in group_keys:
+            block[key] = row[key]
+        idx_frames.append(block)
+    idx = pd.concat(idx_frames, ignore_index=True)
+
+    full = idx.merge(
         df.drop(columns=["period_year", "period_month"]),
-        on=["brand", "date"], how="left",
+        on=group_keys + ["date"], how="left",
     )
 
     sales_cols = ["sales_units", "sales_value", "sales_liters", "promo_units"]
     full[sales_cols] = full[sales_cols].fillna(0)
     full["weighted_dist"] = (
-        full.groupby("brand")["weighted_dist"]
+        full.groupby(group_keys)["weighted_dist"]
         .transform(lambda s: s.replace(0, np.nan).ffill().bfill().fillna(0))
     )
 
     for c in sales_cols:
         full[c] = full[c].clip(lower=0)
 
-    full = full.sort_values(["brand", "date"]).reset_index(drop=True)
+    full = full.sort_values(group_keys + ["date"]).reset_index(drop=True)
     return full, all_dates
 
 
@@ -232,11 +245,19 @@ def filter_series(
     df: pd.DataFrame,
     min_periods: int = DEFAULT_MIN_PERIODS,
     target_col: str = DEFAULT_TARGET_COL,
+    group_keys: list[str] = ["brand"],
 ) -> pd.DataFrame:
-    """Keep only brands with >= min_periods of non-zero target observations."""
-    nonzero = df.groupby("brand")[target_col].apply(lambda s: (s > 0).sum())
-    keep = nonzero[nonzero >= min_periods].index
-    return df[df["brand"].isin(keep)].copy()
+    """
+    Keep only groups (default: brands) with >= min_periods of non-zero target
+    observations.
+
+    group_keys: see make_calendar(). Filtering by ["brand"] alone when the grain
+    is actually brand×region would let a brand pass the threshold on periods
+    summed across all regions, even if no single region-series meets it.
+    """
+    nonzero = df.groupby(group_keys)[target_col].apply(lambda s: (s > 0).sum())
+    keep_df = nonzero[nonzero >= min_periods].index.to_frame(index=False)
+    return df.merge(keep_df, on=group_keys, how="inner").copy()
 
 
 def engineer_features(
@@ -245,22 +266,28 @@ def engineer_features(
     lags: Iterable[int] = DEFAULT_LAGS,
     rolling_windows: Iterable[int] = DEFAULT_ROLLING_WINDOWS,
     holiday_months: Iterable[int] = DEFAULT_HOLIDAY_MONTHS,
+    group_keys: list[str] = ["brand"],
 ) -> pd.DataFrame:
     """
-    Add time-series features per brand:
+    Add time-series features per group (default: per brand):
       - autoregressive lags
       - rolling mean/std (with shift(1) — no look-ahead)
       - calendar (month, quarter, holiday_month)
       - promo intensity
       - log target
 
+    group_keys: see make_calendar(). Lags/rolling stats use shift() within each
+    group — grouping by "brand" alone when the true grain is brand×region would
+    let lag_1 for brand X at region A silently pick up brand X's prior-month
+    value from region B, since rows would only be sorted by (brand, date).
+
     Leakage analysis: every transformation here is either deterministic
     (calendar, promo ratio, log) or uses only the past within each group
     (lags via shift, rolling via shift(1)). Therefore the function is safe
     to apply on the full frame before train/val/test split.
     """
-    df = df.sort_values(["brand", "date"]).copy()
-    g = df.groupby("brand")
+    df = df.sort_values(group_keys + ["date"]).copy()
+    g = df.groupby(group_keys)
 
     # Autoregressive lags
     for lag in lags:
@@ -316,10 +343,21 @@ def apply_split(
     return df
 
 
-def build_series_index(df: pd.DataFrame) -> pd.DataFrame:
-    """Per-brand summary: how many periods, splits, total sales."""
+def build_series_index(
+    df: pd.DataFrame,
+    group_keys: list[str] = ["brand"],
+) -> pd.DataFrame:
+    """
+    Per-group summary: how many periods, splits, total sales.
+
+    group_keys: see make_calendar(). Grouping by "brand" alone on a
+    brand×region grain silently collapses the region dimension in n_periods/
+    total_units — the underlying parquet still retains the extra key, but the
+    summary report becomes misleading (e.g. n_periods double-counts across
+    regions instead of reporting per-series depth).
+    """
     return (
-        df.groupby("brand")
+        df.groupby(group_keys)
         .agg(
             n_periods=("date", "count"),
             n_nonzero=("sales_units", lambda s: (s > 0).sum()),
@@ -360,6 +398,7 @@ class FeatureEngineer:
     min_periods: int = DEFAULT_MIN_PERIODS
     train_end: tuple[int, int] = DEFAULT_TRAIN_END
     val_end: tuple[int, int] = DEFAULT_VAL_END
+    group_keys: tuple[str, ...] = ("brand",)
 
     is_fitted: bool = field(default=False, init=False)
 
@@ -382,14 +421,16 @@ class FeatureEngineer:
         The series filter (min_periods of nonzero observations) is a data-quality
         gate, not a learned transformation, so it operates on the full frame.
         """
-        df, _ = make_calendar(brand_month_df)
-        df = filter_series(df, self.min_periods, self.target_col)
+        group_keys = list(self.group_keys)
+        df, _ = make_calendar(brand_month_df, group_keys=group_keys)
+        df = filter_series(df, self.min_periods, self.target_col, group_keys=group_keys)
         df = engineer_features(
             df,
             target_col=self.target_col,
             lags=self.lags,
             rolling_windows=self.rolling_windows,
             holiday_months=self.holiday_months,
+            group_keys=group_keys,
         )
         df = apply_split(df, self.train_end, self.val_end)
         return df

@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-07-12T19:33:42.444967",
+    "step_num": "1b",
+    "step_name": "Rollup to Brand x Month",
+    "category": "CSD",
+    "elapsed_sec": 0.15,
+    "output_rows": 3975,
+    "input_cols": 10,
+    "output_cols": 8
+  }
+]

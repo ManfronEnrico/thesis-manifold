@@ -254,5 +254,15 @@
     "output_rows": 25124,
     "input_cols": 25,
     "output_cols": 26
+  },
+  {
+    "timestamp": "2026-07-12T19:34:07.850743",
+    "step_num": 5,
+    "step_name": "Apply Split",
+    "category": "CSD",
+    "elapsed_sec": 0.12,
+    "output_rows": 2552,
+    "input_cols": 23,
+    "output_cols": 24
   }
 ]
