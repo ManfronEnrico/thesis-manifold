@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "project": "Manifold AI Thesis — CBS 2026",
+    "scope_decision": "READINESS ASSESSMENT, not live production. The artefact must demonstrably WORK; it is not wired live into production Prometheus. Locked by Enrico 2026-07-01.",
+    "single_source_of_truth": "harness/thesis_tasks.json — the dashboard renders THIS file. Change the plan here and the dashboard changes.",
+    "walls": {
+      "money": "Worker STOPS before any paid API call. Enrico unblocks.",
+      "enrico": "Needs Enrico: approve prose, approve spend, decide, or REVIEW ENGINEERING CODE.",
+      "brian": "Blocked on Brian (9.8M parquets, region WMAPE test, Ch4/EDAs)."
+    },
+    "phases": ["build", "review", "run", "write", "finalize"],
+    "updated": "2026-07-01"
+  },
+  "tasks": [
+    {"id": "D01", "track": "DONE", "phase": "build", "title": "Data market-scope fix (DVH dedup, 6.16x double-count killed)", "status": "done"},
+    {"id": "D02", "track": "DONE", "phase": "build", "title": "Feature matrices — brand×month (_03) + brand×chain (_04), 4 categories", "status": "done"},
+    {"id": "D03", "track": "DONE", "phase": "build", "title": "SRQ1 forecasting models — tuned XGBoost + ARIMA/Prophet + SHAP + calibration + profiling", "status": "done"},
+    {"id": "D04", "track": "DONE", "phase": "build", "title": "SRQ2 tool interface + synthesis engine + LLM synthesis + GPT-4o judge", "status": "done"},
+    {"id": "D05", "track": "DONE", "phase": "build", "title": "System B — code-as-action LLM (E2B sandbox) built", "status": "done"},
+    {"id": "D06", "track": "DONE", "phase": "build", "title": "System A — dedicated-tool agent + forecast_service built", "status": "done"},
+    {"id": "D07", "track": "DONE", "phase": "build", "title": "SRQ4 comparison harness + Tier 2 scaffolding (fair inputs, TAR@N, cost USD)", "status": "done"},
+    {"id": "D08", "track": "DONE", "phase": "build", "title": "Prometheus/Oracle readiness skeleton + architecture report", "status": "done"},
+    {"id": "D09", "track": "DONE", "phase": "write", "title": "Ch1/2/3 drafted + realigned to v4; Ch6/7 results drafted", "status": "done"},
+    {"id": "D10", "track": "DONE", "phase": "write", "title": "Peer-reviewed KPI anchors for all 4 SRQ4 KPIs (supervisor request)", "status": "done"},
+    {"id": "D11", "track": "DONE", "phase": "build", "title": "13-fix CSD EDA adopted + Cell 12 repaired (runs 100%)", "status": "done"},
+
+    {"id": "R1", "track": "ENG-REVIEW", "phase": "review", "title": "Review: forecast models (SRQ1)", "status": "review", "walls": ["enrico"],
+     "files": ["scripts/srq1_benchmark_tuned.py", "scripts/srq1_baselines_stat.py", "scripts/srq1_shap.py", "scripts/srq1_calibration.py", "scripts/srq1_profiling.py"],
+     "verify": "Enrico reads the model code + skims _05 results; confirms method + numbers"},
+    {"id": "R2", "track": "ENG-REVIEW", "phase": "review", "title": "Review: tool interface + synthesis (SRQ2)", "status": "review", "walls": ["enrico"],
+     "files": ["scripts/forecast_service.py", "scripts/srq2_synthesis.py", "scripts/srq2_agent.py"],
+     "verify": "Enrico reads the tool layer + synthesis + judge protocol"},
+    {"id": "R3", "track": "ENG-REVIEW", "phase": "review", "title": "Review: System B — code-as-action LLM", "status": "review", "walls": ["enrico"],
+     "files": ["scripts/srq4_experiment.py#run_system_b"],
+     "verify": "Enrico reads how B writes+runs code in E2B; confirms Prometheus fidelity"},
+    {"id": "R4", "track": "ENG-REVIEW", "phase": "review", "title": "Review: System A — dedicated-tool agent", "status": "review", "walls": ["enrico"],
+     "files": ["scripts/srq4_experiment.py#run_system_a", "scripts/srq4_experiment.py#_eval_forecast", "thesis/thesis_agents/system_a_oracle/forecast_demand_tool.py"],
+     "verify": "Enrico reads the tool-call flow + model backing"},
+    {"id": "R5", "track": "ENG-REVIEW", "phase": "review", "title": "Review: comparison harness + Tier 2", "status": "review", "walls": ["enrico"],
+     "files": ["scripts/srq4_experiment.py#run_full", "scripts/srq4_tier2.py"],
+     "verify": "Enrico reads metrics aggregation + ground-truth evaluators"},
+    {"id": "R6", "track": "ENG-REVIEW", "phase": "review", "title": "Review: Prometheus extension (readiness)", "status": "review", "walls": ["enrico"],
+     "files": ["thesis/thesis_agents/system_a_oracle/", "thesis/data/PROMETHEUS_ARCHITECTURE_REPORT.md"],
+     "verify": "Enrico reads Oracle skeleton + what integration would require (readiness, not live)"},
+
+    {"id": "T01", "track": "SRQ4", "phase": "run", "title": "Draft 25 Tier-2 prompts (5 families × 5) with computable ground truth", "status": "ready",
+     "verify": "doc exists; 25 prompts; every GT recomputes from parquet without error"},
+    {"id": "T02", "track": "SRQ4", "phase": "run", "title": "Approve the 25 prompts", "status": "enrico", "walls": ["enrico"], "depends": ["T01"]},
+    {"id": "T03", "track": "SRQ4", "phase": "run", "title": "Decide danskvand handling (top chain / chain-specific / exclude)", "status": "enrico", "walls": ["enrico"]},
+    {"id": "T04", "track": "SRQ4", "phase": "run", "title": "Smoke test — 1 run through A + B", "status": "blocked_money", "walls": ["money"], "cost": 0.2, "depends": ["T02", "T03"]},
+    {"id": "T05", "track": "SRQ4", "phase": "run", "title": "Tier 1 full — 3 complete categories (danskvand/energidrikke/RTD)", "status": "blocked_money", "walls": ["money"], "cost": 9, "depends": ["T04"],
+     "verify": "runs.csv complete; summary 8 metrics; failures ≤10%"},
+    {"id": "T05b", "track": "SRQ4", "phase": "run", "title": "Tier 1 — CSD subset (held for full data)", "status": "blocked_brian", "walls": ["brian", "money"], "cost": 3, "depends": ["T05", "B01"]},
+    {"id": "T06", "track": "SRQ4", "phase": "run", "title": "Build Tier 2 runner + GPT-4o judge (faithfulness only)", "status": "pending", "depends": ["T02"]},
+    {"id": "T07", "track": "SRQ4", "phase": "run", "title": "Tier 2 run — 25 × 2 systems × 5 repeats", "status": "blocked_money", "walls": ["money"], "cost": 25, "depends": ["T05", "T06"]},
+    {"id": "T08", "track": "SRQ4", "phase": "run", "title": "Aggregate Tier 1 + Tier 2 tables (reconciled with runs.csv)", "status": "pending", "depends": ["T07"]},
+
+    {"id": "T09", "track": "WRITE", "phase": "write", "title": "Ch8 bullets — Tier 1 results", "status": "pending", "depends": ["T05"], "verify": "every number = _08 CSV; zero placeholders"},
+    {"id": "T10", "track": "WRITE", "phase": "write", "title": "Ch8 bullets — Tier 2 results", "status": "pending", "depends": ["T08"]},
+    {"id": "T11", "track": "WRITE", "phase": "write", "title": "Ch8 approve bullets → prose → docx", "status": "enrico", "walls": ["enrico"], "depends": ["T09", "T10"]},
+    {"id": "T12", "track": "WRITE", "phase": "write", "title": "Ch3 tweak '~50' → '25 pilot' (diff)", "status": "enrico", "walls": ["enrico"], "depends": ["T02"]},
+    {"id": "T13", "track": "WRITE", "phase": "write", "title": "Ch5 gap analysis (what's missing vs outline)", "status": "ready", "verify": "list of missing sections produced"},
+    {"id": "T14", "track": "WRITE", "phase": "write", "title": "Ch5 bullets — missing sections", "status": "pending", "depends": ["T13"]},
+    {"id": "T15", "track": "WRITE", "phase": "write", "title": "Ch5 approve → prose → docx", "status": "enrico", "walls": ["enrico"], "depends": ["T14"]},
+    {"id": "T16", "track": "WRITE", "phase": "write", "title": "Ch9 bullets — discussion (all SRQ results + limitations)", "status": "pending", "depends": ["T08"]},
+    {"id": "T17", "track": "WRITE", "phase": "write", "title": "Ch10 bullets — conclusion updated", "status": "pending", "depends": ["T16"]},
+    {"id": "T18", "track": "WRITE", "phase": "write", "title": "Ch9+Ch10 approve → prose → docx", "status": "enrico", "walls": ["enrico"], "depends": ["T16", "T17"]},
+
+    {"id": "C19", "track": "CROSS", "phase": "finalize", "title": "/verify-citations across all chapters", "status": "ready"},
+    {"id": "C20", "track": "CROSS", "phase": "finalize", "title": "CBS page count (chars/2275 per chapter vs limit)", "status": "ready", "walls": ["enrico"], "verify": "per-chapter report; Enrico only for cut decisions"},
+    {"id": "C21", "track": "CROSS", "phase": "finalize", "title": "Housekeeping — EXECUTION_PROGRESS + journal in sync", "status": "ready"},
+
+    {"id": "B01", "track": "BRIAN", "phase": "run", "title": "Receive 9.8M CSD parquets (drive) OR refetch via RU secret", "status": "blocked_brian", "walls": ["brian"]},
+    {"id": "B02", "track": "BRIAN", "phase": "run", "title": "Region-vs-month WMAPE test → grain decision", "status": "blocked_brian", "walls": ["brian", "enrico"]},
+    {"id": "B03", "track": "BRIAN", "phase": "write", "title": "EDAs danskvand/energidrikke/RTD + finish Ch4", "status": "blocked_brian", "walls": ["brian"]},
+    {"id": "B04", "track": "BRIAN", "phase": "finalize", "title": "Reconcile post-Brian + decide SRQ1-CSD re-run", "status": "blocked_brian", "walls": ["brian", "enrico"], "depends": ["B01"]},
+
+    {"id": "F01", "track": "FINAL", "phase": "finalize", "title": "Assemble full thesis docx (all chapters)", "status": "pending", "depends": ["T11", "T15", "T18", "B03"]},
+    {"id": "F02", "track": "FINAL", "phase": "finalize", "title": "Full human review pass Ch1–Ch10", "status": "enrico", "walls": ["enrico"], "depends": ["F01"]},
+    {"id": "F03", "track": "FINAL", "phase": "finalize", "title": "Compliance page-count decisions (solo vs group limit)", "status": "enrico", "walls": ["enrico"], "depends": ["C20"]},
+    {"id": "F04", "track": "FINAL", "phase": "finalize", "title": "Submission", "status": "enrico", "walls": ["enrico"], "depends": ["F02", "F03"]}
+  ]
+}

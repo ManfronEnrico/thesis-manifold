@@ -1,0 +1,257 @@
+<style>
+  :root{
+    --bg:#eceef1; --panel:#ffffff; --panel2:#f6f7f9; --ink:#14171c; --muted:#59636f;
+    --line:#dde1e6; --accent:#4f46e5;
+    --s-done:#0e9f6e; --s-ready:#2563eb; --s-review:#7c3aed; --s-enrico:#d97706;
+    --s-pending:#8b95a1; --s-money:#b45309; --s-brian:#5b6b7f;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#0f1216;--panel:#171b21;--panel2:#1c2129;--ink:#e7eaef;--muted:#96a0ad;
+      --line:#272d36;--accent:#7c74f0;
+      --s-done:#25c08a;--s-ready:#5b8def;--s-review:#a78bfa;--s-enrico:#eab24d;
+      --s-pending:#8b95a1;--s-money:#d98b3f;--s-brian:#7d8da0;}
+  }
+  *{box-sizing:border-box}
+  .wrap{font-family:var(--font);background:var(--bg);color:var(--ink);
+    padding:28px 22px 48px;max-width:1080px;margin:0 auto;line-height:1.5;
+    font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+  h1{font-size:23px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+  .scope{margin-top:14px;padding:10px 13px;background:var(--panel);border:1px solid var(--line);
+    border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:12.5px;color:var(--muted)}
+  .scope b{color:var(--ink);font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .grid-top{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:18px}
+  @media(max-width:720px){.grid-top{grid-template-columns:1fr}}
+  .big{font-size:40px;font-weight:600;letter-spacing:-.02em;line-height:1}
+  .big small{font-size:15px;color:var(--muted);font-weight:500;letter-spacing:0}
+  .bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:12px}
+  .bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .phaserow{display:flex;align-items:center;gap:10px;margin-top:9px;font-size:12.5px}
+  .phaserow .pl{width:74px;color:var(--muted);text-transform:capitalize}
+  .phaserow .pb{flex:1;height:6px;background:var(--panel2);border-radius:99px;overflow:hidden}
+  .phaserow .pb>i{display:block;height:100%;border-radius:99px}
+  .phaserow .pn{width:44px;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .kpis{display:flex;gap:22px;flex-wrap:wrap;margin-top:4px}
+  .kpi .n{font-size:22px;font-weight:600}
+  .kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--muted);margin:30px 0 12px}
+  .sec-note{font-size:12.5px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px}
+  .tasklist{display:flex;flex-direction:column;gap:8px}
+  .task{display:flex;gap:11px;align-items:flex-start;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .task .dot{width:9px;height:9px;border-radius:99px;margin-top:5px;flex:none}
+  .task .body{flex:1;min-width:0}
+  .task .tt{font-size:13.5px;font-weight:500}
+  .task .id{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:7px}
+  .task .meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .files{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;
+    background:var(--panel2);border-radius:6px;padding:6px 8px;overflow-x:auto;white-space:nowrap}
+  .tags{display:flex;gap:5px;flex:none;flex-wrap:wrap;justify-content:flex-end;max-width:190px}
+  .tag{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+    padding:2px 7px;border-radius:99px;white-space:nowrap}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.cols{grid-template-columns:1fr}}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:99px;display:inline-block}
+  .frontier{border:1px solid var(--s-ready);background:color-mix(in srgb,var(--s-ready) 7%,var(--panel))}
+</style>
+
+<div class="wrap">
+  <h1>Thesis harness — stato di avanzamento</h1>
+  <p class="sub" id="subline"></p>
+  <div class="scope" id="scope"></div>
+
+  <div class="grid-top">
+    <div class="card">
+      <div class="big"><span id="pct">0</span>%<small> del progetto completo</small></div>
+      <div class="bar"><i id="pbar" style="width:0"></i></div>
+      <div id="phases" style="margin-top:16px"></div>
+    </div>
+    <div class="card">
+      <div class="kpis" id="kpis"></div>
+      <div style="margin-top:16px" id="costwrap">
+        <div class="kpi"><div class="l">Costo API</div>
+          <div class="n"><span id="spent">$0</span> <small style="font-size:13px;color:var(--muted)">/ <span id="planned">$0</span> pianificati</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Il tuo tavolo, Enrico <span class="sec-note">le stazioni dove entri tu — review codice, approvazioni, decisioni</span></h2>
+  <div class="cols">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--s-review);margin-bottom:8px">Review ingegneristica</div>
+      <div class="tasklist" id="reviews"></div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--s-enrico);margin-bottom:8px">Approvazioni & decisioni</div>
+      <div class="tasklist" id="approvals"></div>
+    </div>
+  </div>
+
+  <h2>Frontiera libera <span class="sec-note">eseguibile ora, nessun muro, nessuna spesa</span></h2>
+  <div class="tasklist" id="frontier"></div>
+
+  <h2>Bloccato <span class="sec-note">muro soldi (serve tuo ok) · muro Brian (parquet / WMAPE / Ch4)</span></h2>
+  <div class="tasklist" id="blocked"></div>
+
+  <h2>Tutti i binari</h2>
+  <div id="tracks"></div>
+
+  <div class="legend" id="legend"></div>
+</div>
+
+<script>
+const DATA = {
+  meta: {
+    scope_decision: "READINESS ASSESSMENT, non produzione live. L'artefatto deve dimostrabilmente FUNZIONARE; non è cablato live in Prometheus. Locked 2026-07-01.",
+    updated: "2026-07-01"
+  },
+  tasks: [
+    {id:"D01",track:"DONE",phase:"build",title:"Fix market-scope dati (dedup DVH, double-count 6.16x eliminato)",status:"done"},
+    {id:"D02",track:"DONE",phase:"build",title:"Feature matrices brand×mese (_03) + brand×catena (_04), 4 categorie",status:"done"},
+    {id:"D03",track:"DONE",phase:"build",title:"Modelli SRQ1 — XGBoost tunato + ARIMA/Prophet + SHAP + calibrazione + profiling",status:"done"},
+    {id:"D04",track:"DONE",phase:"build",title:"SRQ2 interfaccia-tool + sintesi + sintesi LLM + judge GPT-4o",status:"done"},
+    {id:"D05",track:"DONE",phase:"build",title:"System B — code-as-action LLM (sandbox E2B) costruito",status:"done"},
+    {id:"D06",track:"DONE",phase:"build",title:"System A — agente a tool dedicato + forecast_service costruito",status:"done"},
+    {id:"D07",track:"DONE",phase:"build",title:"Harness confronto SRQ4 + scaffolding Tier 2 (input equi, TAR@N, costo USD)",status:"done"},
+    {id:"D08",track:"DONE",phase:"build",title:"Scheletro readiness Prometheus/Oracle + report architettura",status:"done"},
+    {id:"D09",track:"DONE",phase:"write",title:"Ch1/2/3 scritti + riallineati v4; Ch6/7 risultati scritti",status:"done"},
+    {id:"D10",track:"DONE",phase:"write",title:"Anchor KPI peer-reviewed per tutti e 4 i KPI SRQ4",status:"done"},
+    {id:"D11",track:"DONE",phase:"build",title:"EDA CSD 13-fix adottata + Cell 12 riparata (gira 100%)",status:"done"},
+
+    {id:"R1",track:"REVIEW ING.",phase:"review",title:"Review: modelli di forecast (SRQ1)",status:"review",walls:["enrico"],files:["scripts/srq1_benchmark_tuned.py","srq1_baselines_stat.py","srq1_shap.py","srq1_calibration.py"]},
+    {id:"R2",track:"REVIEW ING.",phase:"review",title:"Review: interfaccia-tool + sintesi (SRQ2)",status:"review",walls:["enrico"],files:["scripts/forecast_service.py","srq2_synthesis.py","srq2_agent.py"]},
+    {id:"R3",track:"REVIEW ING.",phase:"review",title:"Review: System B — code-as-action LLM",status:"review",walls:["enrico"],files:["scripts/srq4_experiment.py → run_system_b"]},
+    {id:"R4",track:"REVIEW ING.",phase:"review",title:"Review: System A — agente a tool dedicato",status:"review",walls:["enrico"],files:["srq4_experiment.py → run_system_a, _eval_forecast","system_a_oracle/forecast_demand_tool.py"]},
+    {id:"R5",track:"REVIEW ING.",phase:"review",title:"Review: harness di confronto + Tier 2",status:"review",walls:["enrico"],files:["srq4_experiment.py → run_full","scripts/srq4_tier2.py"]},
+    {id:"R6",track:"REVIEW ING.",phase:"review",title:"Review: estensione Prometheus (readiness)",status:"review",walls:["enrico"],files:["thesis_agents/system_a_oracle/","PROMETHEUS_ARCHITECTURE_REPORT.md"]},
+
+    {id:"T01",track:"SRQ4",phase:"run",title:"Bozza 25 prompt Tier-2 (5 famiglie × 5) con ground truth calcolabile",status:"ready"},
+    {id:"T02",track:"SRQ4",phase:"run",title:"Approva i 25 prompt",status:"enrico",walls:["enrico"],depends:["T01"]},
+    {id:"T03",track:"SRQ4",phase:"run",title:"Decidi il caso danskvand (catena top / chain-specific / escludi)",status:"enrico",walls:["enrico"]},
+    {id:"T04",track:"SRQ4",phase:"run",title:"Smoke test — 1 run A + B",status:"blocked_money",walls:["money"],cost:0.2,depends:["T02","T03"]},
+    {id:"T05",track:"SRQ4",phase:"run",title:"Tier 1 completo — 3 categorie complete (danskvand/energidrikke/RTD)",status:"blocked_money",walls:["money"],cost:9,depends:["T04"]},
+    {id:"T05b",track:"SRQ4",phase:"run",title:"Tier 1 — sottoinsieme CSD (in attesa del dato pieno)",status:"blocked_brian",walls:["brian","money"],cost:3,depends:["T05","B01"]},
+    {id:"T06",track:"SRQ4",phase:"run",title:"Build runner Tier 2 + judge GPT-4o (solo fedeltà)",status:"pending",depends:["T02"]},
+    {id:"T07",track:"SRQ4",phase:"run",title:"Run Tier 2 — 25 × 2 sistemi × 5 ripetizioni",status:"blocked_money",walls:["money"],cost:25,depends:["T05","T06"]},
+    {id:"T08",track:"SRQ4",phase:"run",title:"Tabelle aggregate Tier 1 + Tier 2 (riconciliate con runs.csv)",status:"pending",depends:["T07"]},
+
+    {id:"T09",track:"CAPITOLI",phase:"write",title:"Ch8 bullets — risultati Tier 1",status:"pending",depends:["T05"]},
+    {id:"T10",track:"CAPITOLI",phase:"write",title:"Ch8 bullets — risultati Tier 2",status:"pending",depends:["T08"]},
+    {id:"T11",track:"CAPITOLI",phase:"write",title:"Ch8 approva bullets → prosa → docx",status:"enrico",walls:["enrico"],depends:["T09","T10"]},
+    {id:"T12",track:"CAPITOLI",phase:"write",title:"Ch3 ritocco '~50' → '25 pilot' (diff)",status:"enrico",walls:["enrico"],depends:["T02"]},
+    {id:"T13",track:"CAPITOLI",phase:"write",title:"Ch5 gap analysis (cosa manca vs outline)",status:"ready"},
+    {id:"T14",track:"CAPITOLI",phase:"write",title:"Ch5 bullets — sezioni mancanti",status:"pending",depends:["T13"]},
+    {id:"T15",track:"CAPITOLI",phase:"write",title:"Ch5 approva → prosa → docx",status:"enrico",walls:["enrico"],depends:["T14"]},
+    {id:"T16",track:"CAPITOLI",phase:"write",title:"Ch9 bullets — discussione (tutti i risultati SRQ + limitazioni)",status:"pending",depends:["T08"]},
+    {id:"T17",track:"CAPITOLI",phase:"write",title:"Ch10 bullets — conclusione aggiornata",status:"pending",depends:["T16"]},
+    {id:"T18",track:"CAPITOLI",phase:"write",title:"Ch9+Ch10 approva → prosa → docx",status:"enrico",walls:["enrico"],depends:["T16","T17"]},
+
+    {id:"C19",track:"TRASVERSALI",phase:"finalize",title:"/verify-citations su tutti i capitoli",status:"ready"},
+    {id:"C20",track:"TRASVERSALI",phase:"finalize",title:"Conteggio pagine CBS (caratteri/2275 per capitolo)",status:"ready",walls:["enrico"]},
+    {id:"C21",track:"TRASVERSALI",phase:"finalize",title:"Housekeeping — EXECUTION_PROGRESS + journal allineati",status:"ready"},
+
+    {id:"B01",track:"BRIAN",phase:"run",title:"Ricevere parquet 9.8M CSD (drive) O refetch con RU secret",status:"blocked_brian",walls:["brian"]},
+    {id:"B02",track:"BRIAN",phase:"run",title:"Test WMAPE regione-vs-mese → decisione grana",status:"blocked_brian",walls:["brian","enrico"]},
+    {id:"B03",track:"BRIAN",phase:"write",title:"EDA danskvand/energidrikke/RTD + finire Ch4",status:"blocked_brian",walls:["brian"]},
+    {id:"B04",track:"BRIAN",phase:"finalize",title:"Riconciliazione post-Brian + decidere re-run SRQ1-CSD",status:"blocked_brian",walls:["brian","enrico"],depends:["B01"]},
+
+    {id:"F01",track:"FINALE",phase:"finalize",title:"Assemblaggio docx completo (tutti i capitoli)",status:"pending",depends:["T11","T15","T18","B03"]},
+    {id:"F02",track:"FINALE",phase:"finalize",title:"Pass di review umana Ch1–Ch10",status:"enrico",walls:["enrico"],depends:["F01"]},
+    {id:"F03",track:"FINALE",phase:"finalize",title:"Decisioni compliance pagine (limite solo vs gruppo)",status:"enrico",walls:["enrico"],depends:["C20"]},
+    {id:"F04",track:"FINALE",phase:"finalize",title:"Submission",status:"enrico",walls:["enrico"],depends:["F02","F03"]}
+  ]
+};
+
+const SM = {
+  done:{l:"Fatto",v:"--s-done"}, ready:{l:"Pronto ora",v:"--s-ready"},
+  review:{l:"Review Enrico",v:"--s-review"}, enrico:{l:"Serve Enrico",v:"--s-enrico"},
+  pending:{l:"In attesa dip.",v:"--s-pending"},
+  blocked_money:{l:"Muro soldi",v:"--s-money"}, blocked_brian:{l:"Muro Brian",v:"--s-brian"}
+};
+const WALL = {money:{t:"Soldi",v:"--s-money"}, enrico:{t:"Enrico",v:"--s-enrico"}, brian:{t:"Brian",v:"--s-brian"}};
+const T = DATA.tasks;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+document.getElementById("subline").textContent =
+  T.length + " task · aggiornato " + DATA.meta.updated + " · fonte: harness/thesis_tasks.json";
+document.getElementById("scope").innerHTML =
+  "<b>Scope:</b> " + DATA.meta.scope_decision;
+
+// overall
+const done = T.filter(t=>t.status==="done").length;
+const pct = Math.round(done/T.length*100);
+document.getElementById("pct").textContent = pct;
+document.getElementById("pbar").style.width = pct+"%";
+
+// phases
+const PH=["build","review","run","write","finalize"];
+const phEl=document.getElementById("phases");
+PH.forEach(p=>{
+  const set=T.filter(t=>t.phase===p);
+  const d=set.filter(t=>t.status==="done").length;
+  const w=set.length? Math.round(d/set.length*100):0;
+  const row=document.createElement("div"); row.className="phaserow";
+  row.innerHTML=`<span class="pl">${p}</span><span class="pb"><i style="width:${w}%;background:var(--accent)"></i></span><span class="pn">${d}/${set.length}</span>`;
+  phEl.appendChild(row);
+});
+
+// kpis
+const cnt=s=>T.filter(t=>t.status===s).length;
+const kpiEl=document.getElementById("kpis");
+[["Fatti",done],["Review codice",cnt("review")],["Serve Enrico",cnt("enrico")],
+ ["Pronti ora",cnt("ready")],["Bloccati",cnt("blocked_money")+cnt("blocked_brian")]
+].forEach(([l,n])=>{
+  const d=document.createElement("div"); d.className="kpi";
+  d.innerHTML=`<div class="n">${n}</div><div class="l">${l}</div>`; kpiEl.appendChild(d);
+});
+const planned=T.reduce((a,t)=>a+(t.cost||0),0);
+document.getElementById("planned").textContent="$"+planned.toFixed(0);
+
+function chip(t,opts={}){
+  const sm=SM[t.status];
+  const el=document.createElement("div");
+  el.className="task"+(opts.frontier?" frontier":"");
+  const tags=(t.walls||[]).map(w=>`<span class="tag" style="color:var(${WALL[w].v});background:color-mix(in srgb,var(${WALL[w].v}) 15%,transparent)">${WALL[w].t}</span>`).join("");
+  const cost=t.cost?`<span class="tag" style="color:var(--s-money);background:color-mix(in srgb,var(--s-money) 13%,transparent)">$${t.cost}</span>`:"";
+  const dep=(t.depends&&!opts.frontier)?` · dopo ${t.depends.join(", ")}`:"";
+  const files=(opts.files&&t.files)?`<div class="files">${t.files.join("  ·  ")}</div>`:"";
+  el.innerHTML=`<span class="dot" style="background:var(${sm.v})"></span>
+    <div class="body"><div class="tt"><span class="id">${t.id}</span>${t.title}</div>
+    <div class="meta">${sm.l}${dep}</div>${files}</div>
+    <div class="tags">${cost}${tags}</div>`;
+  return el;
+}
+function fill(id,arr,opts){const c=document.getElementById(id);arr.forEach(t=>c.appendChild(chip(t,opts)));
+  if(!arr.length){c.innerHTML='<div class="meta" style="color:var(--muted);padding:4px 2px">—</div>';}}
+
+fill("reviews", T.filter(t=>t.status==="review"), {files:true});
+fill("approvals", T.filter(t=>t.status==="enrico"));
+fill("frontier", T.filter(t=>t.status==="ready"), {frontier:true});
+fill("blocked", T.filter(t=>t.status==="blocked_money"||t.status==="blocked_brian"));
+
+// tracks
+const order=["REVIEW ING.","SRQ4","CAPITOLI","BRIAN","TRASVERSALI","FINALE","DONE"];
+const trkEl=document.getElementById("tracks");
+order.forEach(tr=>{
+  const set=T.filter(t=>t.track===tr); if(!set.length)return;
+  const d=set.filter(t=>t.status==="done").length;
+  const h=document.createElement("div");
+  h.style.cssText="font-size:12.5px;font-weight:600;margin:16px 0 8px;color:var(--ink)";
+  h.innerHTML=`${tr} <span style="color:var(--muted);font-weight:400">· ${d}/${set.length}</span>`;
+  trkEl.appendChild(h);
+  const list=document.createElement("div"); list.className="tasklist";
+  set.forEach(t=>list.appendChild(chip(t))); trkEl.appendChild(list);
+});
+
+// legend
+const leg=document.getElementById("legend");
+Object.values(SM).forEach(s=>{const e=document.createElement("span");
+  e.innerHTML=`<i style="background:var(${s.v})"></i>${s.l}`;leg.appendChild(e);});
+</script>
