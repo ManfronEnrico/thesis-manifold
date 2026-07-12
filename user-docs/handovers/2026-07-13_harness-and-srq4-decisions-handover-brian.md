@@ -12,7 +12,8 @@ updated: 2026_07_13-00_30
 
 > **Read this first.** It tells you (1) what the harness is and how to open it, (2) what we
 > decided in the last two days — including adopting your brand×month proposal, (3) what is
-> still open, and (4) what I need from you. Background detail lives in
+> still open, (4) **what you can move forward on right now without waiting for Enrico**, and
+> (5) the questions the project still needs answered. Background detail lives in
 > `harness/reviews/2026-07-12_prometheus-warehouse-srq4-handoff.md`.
 
 ---
@@ -83,22 +84,53 @@ updated: 2026_07_13-00_30
 | **T04/T05/T07** | spend approvals (~$0.2 / ~$9 / ~$25, to re-estimate on gpt-5.5 pricing) | Money wall. |
 | **F03** | solo vs group CBS page limit (80 vs 120 standard pages) | Must be confirmed before any cut decisions. |
 
-## 4. Ready-to-run queue (free, no API)
+## 4. What can move forward WITHOUT Enrico — start here
 
-`S01` (retrain + fixes) · `SPIKE1` (Prometheus reuse inventory) · `T19` (chapter alignment
-diffs, approval-gated) · `T01` (draft the 25 prompts) · `C19`/`C21` (citations check,
-housekeeping) · OPEN-CSD STEP 1 (slice analysis).
+The key point of this handover: **none of the open decisions in §3 blocks the work below.**
+They only gate the paid SRQ4 runs (T04 onwards) and the landing of prose into chapters.
+Everything here is free (no API), fully specified, and can be done end-to-end right now —
+by you, or by a Claude session you drive:
 
-## 5. What I need from you, Brian
+- **S01 — SRQ1 retrain from scratch.** The spec is fully fixed by DEC-GRAIN (brand×month,
+  4 categories + pooled, model set as implemented) and it folds the three code-review fixes,
+  including the `promo_intensity` target-leakage bug. No open decision touches it. Biggest
+  single item on the critical path — the retrained models are also what arm A serves in SRQ4.
+- **B03 — EDAs danskvand/energidrikke/RTD + finish Ch4.** Yours, unchanged, independent of
+  everything above.
+- **OPEN-CSD STEP 1 — the slice analysis.** The *decision* is Enrico's, but the analysis that
+  informs it is not: compare the April CSD snapshot vs the warehouse (or vs expected
+  dimensions) and establish WHAT the missing 74% is (periods? markets? chain detail?).
+  With DEC-GRAIN, the operative check is narrow: is brand×month DVH EXCL. HD complete?
+- **T01 — draft the 25 Tier-2 prompts** with computable ground truth. Drafting is free;
+  Enrico's approval (T02) only gates *running* them.
+- **SPIKE1 — Prometheus reuse inventory.** How much of the real graph-engine Prometheus
+  (E2B template, persona, coder prompts) can be reused in the SRQ4 harness. Free as a
+  dry-run; stops at the money wall before any paid call.
+- **T13 — Ch5 gap analysis** (missing sections vs outline) · **T19 — chapter alignment
+  diffs** (prepare only; landing is approval-gated) · **C19/C21** (citations check,
+  housekeeping).
 
-1. **Read §3** and tell me if you disagree with anything — especially DEC-GRAIN consequences
-   (B02 dropped, the retrain folding the leakage fix) since they touch your pipeline work.
-2. **Tell me what decisions are missing.** The harness only tracks what we've thought of. From
-   your side (preprocessing, EDAs, Ch4, data quality, warehouse): is there any pending choice
-   that should be an OPEN-* entry? If yes, name it and I'll add it.
-3. **B03 is still with you**: EDAs for danskvand/energidrikke/RTD + finishing Ch4.
-4. FYI **B01 is unblocked** — we don't need your 9.8M parquets anymore unless OPEN-CSD decides
-   for the full fetch (and then we can pull it ourselves via the RU secret).
+If you pick something up, set its status in `thesis_tasks.json` so we don't collide.
+
+## 5. Open questions for the project (not homework for me)
+
+These are the things the project still doesn't know — anyone who can answer or challenge
+them should. You have the best view on the data side, so you'll likely spot gaps we missed:
+
+1. **Is the decision list complete?** The harness only tracks what we've thought of. Are
+   there pending choices on the preprocessing/EDA/Ch4/data-quality side that should exist
+   as OPEN-* entries and currently don't? (Examples of the kind of thing we mean: outlier
+   policy per category, how Ch4 treats the partial CSD, whether any feature besides
+   `promo_intensity` is contemporaneous with the target.)
+2. **Does the leakage fix interact with anything in your pipeline plans?** The retrain will
+   shift CSD + energidrikke numbers; if any EDA/Ch4 statement hard-codes the old numbers,
+   it needs to be flagged now, not after the retrain.
+3. **Is 4 categories the right final scope?** Ch3/Ch4 prose still says five (beer included).
+   Dropping beer from the prose is currently treated as a text-alignment fix (T19) — if
+   there's a data reason to keep or re-add it, now is the moment to say so.
+4. **Is the baseline construct airtight from the data side?** Arm B writes its own SQL/code
+   against the frozen snapshot via DuckDB (leaning). If you see a reason the snapshot-behind-
+   SQL setup misrepresents what Prometheus sees in production, raise it before we build.
 
 ## Key files
 
