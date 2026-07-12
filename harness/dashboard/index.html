@@ -108,67 +108,669 @@
 
 <script>
 const DATA = {
-  meta: {
-    scope_decision: "READINESS ASSESSMENT, not live production. The artefact must demonstrably WORK; it is not wired live into Prometheus. Locked 2026-07-01.",
-    updated: "2026-07-01"
+  "meta": {
+    "project": "Manifold AI Thesis — CBS 2026",
+    "scope_decision": "READINESS ASSESSMENT, not live production. The artefact must demonstrably WORK; it is not wired live into production Prometheus. Locked by Enrico 2026-07-01.",
+    "single_source_of_truth": "harness/thesis_tasks.json — the dashboard renders THIS file. Change the plan here and the dashboard changes.",
+    "walls": {
+      "money": "Worker STOPS before any paid API call. Enrico unblocks.",
+      "enrico": "Needs Enrico: approve prose, approve spend, decide, or REVIEW ENGINEERING CODE.",
+      "brian": "Blocked on Brian (9.8M parquets, region WMAPE test, Ch4/EDAs)."
+    },
+    "phases": [
+      "build",
+      "review",
+      "run",
+      "write",
+      "finalize"
+    ],
+    "updated": "2026-07-13"
   },
-  tasks: [
-    {id:"D01",track:"DONE",phase:"build",title:"Data market-scope fix (DVH dedup, 6.16x double-count killed)",status:"done"},
-    {id:"D02",track:"DONE",phase:"build",title:"Feature matrices brand×month (_03) + brand×chain (_04), 4 categories",status:"done"},
-    {id:"D03",track:"DONE",phase:"build",title:"SRQ1 forecasting models — tuned XGBoost + ARIMA/Prophet + SHAP + calibration + profiling",status:"done"},
-    {id:"D04",track:"DONE",phase:"build",title:"SRQ2 tool interface + synthesis + LLM synthesis + GPT-4o judge",status:"done"},
-    {id:"D05",track:"DONE",phase:"build",title:"System B — code-as-action LLM (E2B sandbox) built",status:"done"},
-    {id:"D06",track:"DONE",phase:"build",title:"System A — dedicated-tool agent + forecast_service built",status:"done"},
-    {id:"D07",track:"DONE",phase:"build",title:"SRQ4 comparison harness + Tier 2 scaffolding (fair inputs, TAR@N, cost USD)",status:"done"},
-    {id:"D08",track:"DONE",phase:"build",title:"Prometheus/Oracle readiness skeleton + architecture report",status:"done"},
-    {id:"D09",track:"DONE",phase:"write",title:"Ch1/2/3 drafted + realigned to v4; Ch6/7 results drafted",status:"done"},
-    {id:"D10",track:"DONE",phase:"write",title:"Peer-reviewed KPI anchors for all 4 SRQ4 KPIs",status:"done"},
-    {id:"D11",track:"DONE",phase:"build",title:"13-fix CSD EDA adopted + Cell 12 repaired (runs 100%)",status:"done"},
-
-    {id:"R1",track:"ENG-REVIEW",phase:"review",title:"Review: forecast models (SRQ1)",status:"review",walls:["enrico"],files:["scripts/srq1_benchmark_tuned.py","srq1_baselines_stat.py","srq1_shap.py","srq1_calibration.py"]},
-    {id:"R2",track:"ENG-REVIEW",phase:"review",title:"Review: tool interface + synthesis (SRQ2)",status:"review",walls:["enrico"],files:["scripts/forecast_service.py","srq2_synthesis.py","srq2_agent.py"]},
-    {id:"R3",track:"ENG-REVIEW",phase:"review",title:"Review: System B — code-as-action LLM",status:"review",walls:["enrico"],files:["scripts/srq4_experiment.py → run_system_b"]},
-    {id:"R4",track:"ENG-REVIEW",phase:"review",title:"Review: System A — dedicated-tool agent",status:"review",walls:["enrico"],files:["srq4_experiment.py → run_system_a, _eval_forecast","system_a_oracle/forecast_demand_tool.py"]},
-    {id:"R5",track:"ENG-REVIEW",phase:"review",title:"Review: comparison harness + Tier 2",status:"review",walls:["enrico"],files:["srq4_experiment.py → run_full","scripts/srq4_tier2.py"]},
-    {id:"R6",track:"ENG-REVIEW",phase:"review",title:"Review: Prometheus extension (readiness)",status:"review",walls:["enrico"],files:["thesis_agents/system_a_oracle/","PROMETHEUS_ARCHITECTURE_REPORT.md"]},
-
-    {id:"T01",track:"SRQ4",phase:"run",title:"Draft 25 Tier-2 prompts (5 families × 5) with computable ground truth",status:"ready"},
-    {id:"T02",track:"SRQ4",phase:"run",title:"Approve the 25 prompts",status:"enrico",walls:["enrico"],depends:["T01"]},
-    {id:"T03",track:"SRQ4",phase:"run",title:"Decide danskvand handling (top chain / chain-specific / exclude)",status:"enrico",walls:["enrico"]},
-    {id:"T04",track:"SRQ4",phase:"run",title:"Smoke test — 1 run through A + B",status:"blocked_money",walls:["money"],cost:0.2,depends:["T02","T03"]},
-    {id:"T05",track:"SRQ4",phase:"run",title:"Tier 1 full — 3 complete categories (danskvand/energidrikke/RTD)",status:"blocked_money",walls:["money"],cost:9,depends:["T04"]},
-    {id:"T05b",track:"SRQ4",phase:"run",title:"Tier 1 — CSD subset (held for full data)",status:"blocked_brian",walls:["brian","money"],cost:3,depends:["T05","B01"]},
-    {id:"T06",track:"SRQ4",phase:"run",title:"Build Tier 2 runner + GPT-4o judge (faithfulness only)",status:"pending",depends:["T02"]},
-    {id:"T07",track:"SRQ4",phase:"run",title:"Tier 2 run — 25 × 2 systems × 5 repeats",status:"blocked_money",walls:["money"],cost:25,depends:["T05","T06"]},
-    {id:"T08",track:"SRQ4",phase:"run",title:"Aggregate Tier 1 + Tier 2 tables (reconciled with runs.csv)",status:"pending",depends:["T07"]},
-
-    {id:"T09",track:"CHAPTERS",phase:"write",title:"Ch8 bullets — Tier 1 results",status:"pending",depends:["T05"]},
-    {id:"T10",track:"CHAPTERS",phase:"write",title:"Ch8 bullets — Tier 2 results",status:"pending",depends:["T08"]},
-    {id:"T11",track:"CHAPTERS",phase:"write",title:"Ch8 approve bullets → prose → docx",status:"enrico",walls:["enrico"],depends:["T09","T10"]},
-    {id:"T12",track:"CHAPTERS",phase:"write",title:"Ch3 tweak '~50' → '25 pilot' (diff)",status:"enrico",walls:["enrico"],depends:["T02"]},
-    {id:"T13",track:"CHAPTERS",phase:"write",title:"Ch5 gap analysis (what's missing vs outline)",status:"ready"},
-    {id:"T14",track:"CHAPTERS",phase:"write",title:"Ch5 bullets — missing sections",status:"pending",depends:["T13"]},
-    {id:"T15",track:"CHAPTERS",phase:"write",title:"Ch5 approve → prose → docx",status:"enrico",walls:["enrico"],depends:["T14"]},
-    {id:"T16",track:"CHAPTERS",phase:"write",title:"Ch9 bullets — discussion (all SRQ results + limitations)",status:"pending",depends:["T08"]},
-    {id:"T17",track:"CHAPTERS",phase:"write",title:"Ch10 bullets — conclusion updated",status:"pending",depends:["T16"]},
-    {id:"T18",track:"CHAPTERS",phase:"write",title:"Ch9+Ch10 approve → prose → docx",status:"enrico",walls:["enrico"],depends:["T16","T17"]},
-
-    {id:"C19",track:"CROSS-CUTTING",phase:"finalize",title:"/verify-citations across all chapters",status:"ready"},
-    {id:"C20",track:"CROSS-CUTTING",phase:"finalize",title:"CBS page count (chars/2275 per chapter)",status:"ready",walls:["enrico"]},
-    {id:"C21",track:"CROSS-CUTTING",phase:"finalize",title:"Housekeeping — EXECUTION_PROGRESS + journal in sync",status:"ready"},
-
-    {id:"V1",track:"ENG-REVIEW",phase:"run",title:"R1 finding: re-aggregate danskvand bychain forecasts to brand-national, re-score WMAPE vs 23.8% brand (grain-matched)",status:"ready"},
-    {id:"V2",track:"ENG-REVIEW",phase:"build",title:"R1 finding: suppress/flag degenerate mean-MAPE in SRQ1 outputs (billions %)",status:"ready"},
-
-    {id:"B01",track:"BRIAN",phase:"run",title:"Receive 9.8M CSD parquets (drive) OR refetch via RU secret",status:"blocked_brian",walls:["brian"]},
-    {id:"B02",track:"BRIAN",phase:"run",title:"Region-vs-month WMAPE test → grain decision",status:"blocked_brian",walls:["brian","enrico"]},
-    {id:"B03",track:"BRIAN",phase:"write",title:"EDAs danskvand/energidrikke/RTD + finish Ch4",status:"blocked_brian",walls:["brian"]},
-    {id:"B04",track:"BRIAN",phase:"finalize",title:"Reconcile post-Brian + decide SRQ1-CSD re-run",status:"blocked_brian",walls:["brian","enrico"],depends:["B01"]},
-
-    {id:"F01",track:"FINAL",phase:"finalize",title:"Assemble full thesis docx (all chapters)",status:"pending",depends:["T11","T15","T18","B03"]},
-    {id:"F02",track:"FINAL",phase:"finalize",title:"Full human review pass Ch1–Ch10",status:"enrico",walls:["enrico"],depends:["F01"]},
-    {id:"F03",track:"FINAL",phase:"finalize",title:"Compliance page-count decisions (solo vs group limit)",status:"enrico",walls:["enrico"],depends:["C20"]},
-    {id:"F04",track:"FINAL",phase:"finalize",title:"Submission",status:"enrico",walls:["enrico"],depends:["F02","F03"]}
+  "tasks": [
+    {
+      "id": "D01",
+      "track": "DONE",
+      "phase": "build",
+      "title": "Data market-scope fix (DVH dedup, 6.16x double-count killed)",
+      "status": "done"
+    },
+    {
+      "id": "D02",
+      "track": "DONE",
+      "phase": "build",
+      "title": "Feature matrices — brand×month (_03) + brand×chain (_04), 4 categories",
+      "status": "done"
+    },
+    {
+      "id": "D03",
+      "track": "DONE",
+      "phase": "build",
+      "title": "SRQ1 forecasting models — tuned XGBoost + ARIMA/Prophet + SHAP + calibration + profiling",
+      "status": "done"
+    },
+    {
+      "id": "D04",
+      "track": "DONE",
+      "phase": "build",
+      "title": "SRQ2 tool interface + synthesis engine + LLM synthesis + GPT-4o judge",
+      "status": "done"
+    },
+    {
+      "id": "D05",
+      "track": "DONE",
+      "phase": "build",
+      "title": "System B — code-as-action LLM (E2B sandbox) built",
+      "status": "done"
+    },
+    {
+      "id": "D06",
+      "track": "DONE",
+      "phase": "build",
+      "title": "System A — dedicated-tool agent + forecast_service built",
+      "status": "done"
+    },
+    {
+      "id": "D07",
+      "track": "DONE",
+      "phase": "build",
+      "title": "SRQ4 comparison harness + Tier 2 scaffolding (fair inputs, TAR@N, cost USD)",
+      "status": "done"
+    },
+    {
+      "id": "D08",
+      "track": "DONE",
+      "phase": "build",
+      "title": "Prometheus/Oracle readiness skeleton + architecture report",
+      "status": "done"
+    },
+    {
+      "id": "D09",
+      "track": "DONE",
+      "phase": "write",
+      "title": "Ch1/2/3 drafted + realigned to v4; Ch6/7 results drafted",
+      "status": "done"
+    },
+    {
+      "id": "D10",
+      "track": "DONE",
+      "phase": "write",
+      "title": "Peer-reviewed KPI anchors for all 4 SRQ4 KPIs (supervisor request)",
+      "status": "done"
+    },
+    {
+      "id": "D11",
+      "track": "DONE",
+      "phase": "build",
+      "title": "13-fix CSD EDA adopted + Cell 12 repaired (runs 100%)",
+      "status": "done"
+    },
+    {
+      "id": "R1",
+      "track": "ENG-REVIEW",
+      "phase": "review",
+      "title": "Review: forecast models (SRQ1)",
+      "status": "review",
+      "walls": [
+        "enrico"
+      ],
+      "files": [
+        "scripts/srq1_benchmark_tuned.py",
+        "scripts/srq1_baselines_stat.py",
+        "scripts/srq1_shap.py",
+        "scripts/srq1_calibration.py",
+        "scripts/srq1_profiling.py"
+      ],
+      "verify": "Enrico reads the model code + skims _05 results; confirms method + numbers"
+    },
+    {
+      "id": "R2",
+      "track": "ENG-REVIEW",
+      "phase": "review",
+      "title": "Review: tool interface + synthesis (SRQ2)",
+      "status": "review",
+      "walls": [
+        "enrico"
+      ],
+      "files": [
+        "scripts/forecast_service.py",
+        "scripts/srq2_synthesis.py",
+        "scripts/srq2_agent.py"
+      ],
+      "verify": "Enrico reads the tool layer + synthesis + judge protocol"
+    },
+    {
+      "id": "R3",
+      "track": "ENG-REVIEW",
+      "phase": "review",
+      "title": "Review: System B — code-as-action LLM",
+      "status": "review",
+      "walls": [
+        "enrico"
+      ],
+      "files": [
+        "scripts/srq4_experiment.py#run_system_b"
+      ],
+      "verify": "Enrico reads how B writes+runs code in E2B; confirms Prometheus fidelity"
+    },
+    {
+      "id": "R4",
+      "track": "ENG-REVIEW",
+      "phase": "review",
+      "title": "Review: System A — dedicated-tool agent",
+      "status": "review",
+      "walls": [
+        "enrico"
+      ],
+      "files": [
+        "scripts/srq4_experiment.py#run_system_a",
+        "scripts/srq4_experiment.py#_eval_forecast",
+        "thesis/thesis_agents/system_a_oracle/forecast_demand_tool.py"
+      ],
+      "verify": "Enrico reads the tool-call flow + model backing"
+    },
+    {
+      "id": "R5",
+      "track": "ENG-REVIEW",
+      "phase": "review",
+      "title": "Review: comparison harness + Tier 2",
+      "status": "review",
+      "walls": [
+        "enrico"
+      ],
+      "files": [
+        "scripts/srq4_experiment.py#run_full",
+        "scripts/srq4_tier2.py"
+      ],
+      "verify": "Enrico reads metrics aggregation + ground-truth evaluators"
+    },
+    {
+      "id": "R6",
+      "track": "ENG-REVIEW",
+      "phase": "review",
+      "title": "Review: Prometheus extension (readiness)",
+      "status": "review",
+      "walls": [
+        "enrico"
+      ],
+      "files": [
+        "thesis/thesis_agents/system_a_oracle/",
+        "thesis/data/PROMETHEUS_ARCHITECTURE_REPORT.md"
+      ],
+      "verify": "Enrico reads Oracle skeleton + what integration would require (readiness, not live)"
+    },
+    {
+      "id": "T01",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Draft 25 Tier-2 prompts (5 families × 5) with computable ground truth",
+      "status": "ready",
+      "verify": "doc exists; 25 prompts; every GT recomputes from parquet without error"
+    },
+    {
+      "id": "T02",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Approve the 25 prompts",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "T01"
+      ]
+    },
+    {
+      "id": "T03",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "RESOLVED (2026-07-12, via DEC-GRAIN): danskvand stays brand×month like every category (tuned XGB WMAPE 22.0% stands); no chain-specific handling, no exclusion",
+      "status": "done"
+    },
+    {
+      "id": "T04",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Smoke test — 1 run through A + B",
+      "status": "blocked_money",
+      "walls": [
+        "money"
+      ],
+      "cost": 0.2,
+      "depends": [
+        "T02",
+        "T03"
+      ]
+    },
+    {
+      "id": "T05",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Tier 1 full — 3 complete categories (danskvand/energidrikke/RTD)",
+      "status": "blocked_money",
+      "walls": [
+        "money"
+      ],
+      "cost": 9,
+      "depends": [
+        "T04"
+      ],
+      "verify": "runs.csv complete; summary 8 metrics; failures ≤10%"
+    },
+    {
+      "id": "T05b",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Tier 1 — CSD subset (held for full data)",
+      "status": "blocked_brian",
+      "walls": [
+        "brian",
+        "money"
+      ],
+      "cost": 3,
+      "depends": [
+        "T05",
+        "B01"
+      ]
+    },
+    {
+      "id": "T06",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Build Tier 2 runner + GPT-4o judge (faithfulness only)",
+      "status": "pending",
+      "depends": [
+        "T02"
+      ]
+    },
+    {
+      "id": "T07",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Tier 2 run — 25 × 2 systems × 5 repeats",
+      "status": "blocked_money",
+      "walls": [
+        "money"
+      ],
+      "cost": 25,
+      "depends": [
+        "T05",
+        "T06"
+      ]
+    },
+    {
+      "id": "T08",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Aggregate Tier 1 + Tier 2 tables (reconciled with runs.csv)",
+      "status": "pending",
+      "depends": [
+        "T07"
+      ]
+    },
+    {
+      "id": "T09",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch8 bullets — Tier 1 results",
+      "status": "pending",
+      "depends": [
+        "T05"
+      ],
+      "verify": "every number = _08 CSV; zero placeholders"
+    },
+    {
+      "id": "T10",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch8 bullets — Tier 2 results",
+      "status": "pending",
+      "depends": [
+        "T08"
+      ]
+    },
+    {
+      "id": "T11",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch8 approve bullets → prose → docx",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "T09",
+        "T10"
+      ]
+    },
+    {
+      "id": "T12",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch3 tweak '~50' → '25 pilot' (diff)",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "T02"
+      ]
+    },
+    {
+      "id": "T13",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch5 gap analysis (what's missing vs outline)",
+      "status": "ready",
+      "verify": "list of missing sections produced"
+    },
+    {
+      "id": "T14",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch5 bullets — missing sections",
+      "status": "pending",
+      "depends": [
+        "T13"
+      ]
+    },
+    {
+      "id": "T15",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch5 approve → prose → docx",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "T14"
+      ]
+    },
+    {
+      "id": "T16",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch9 bullets — discussion (all SRQ results + limitations)",
+      "status": "pending",
+      "depends": [
+        "T08"
+      ]
+    },
+    {
+      "id": "T17",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch10 bullets — conclusion updated",
+      "status": "pending",
+      "depends": [
+        "T16"
+      ]
+    },
+    {
+      "id": "T18",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Ch9+Ch10 approve → prose → docx",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "T16",
+        "T17"
+      ]
+    },
+    {
+      "id": "T19",
+      "track": "WRITE",
+      "phase": "write",
+      "title": "Alignment diffs from 2026-07-12 decisions — Ch3/Ch4: categories 5→4 (drop beer from prose); Ch3 §3.3/§3.7 + Ch10: brand×month-only grain, chain/region + dataset extent as limitation/future work; Ch3 §3.5 + Ch5 §5.7 + Ch8 §8.3.3: 3-arm SRQ4 (arm C floor, gpt-5.5 both/all arms, baseline wording per DEC-ARMS); Ch8 §8.5/§8.6 stale rows (human/descriptive baseline)",
+      "status": "ready",
+      "walls": [
+        "enrico"
+      ],
+      "note": "Produce as diffs/bullets for approval — no prose lands without Enrico (house rule). Model list in Ch3 §3.5 verified correct as-is (all 5 exist in the pipeline; SeasonalNaive is the extra naive floor)."
+    },
+    {
+      "id": "C19",
+      "track": "CROSS",
+      "phase": "finalize",
+      "title": "/verify-citations across all chapters",
+      "status": "ready"
+    },
+    {
+      "id": "C20",
+      "track": "CROSS",
+      "phase": "finalize",
+      "title": "CBS page count (chars/2275 per chapter vs limit)",
+      "status": "ready",
+      "walls": [
+        "enrico"
+      ],
+      "verify": "per-chapter report; Enrico only for cut decisions"
+    },
+    {
+      "id": "C21",
+      "track": "CROSS",
+      "phase": "finalize",
+      "title": "Housekeeping — EXECUTION_PROGRESS + journal in sync",
+      "status": "ready"
+    },
+    {
+      "id": "V1",
+      "track": "ENG-REVIEW",
+      "phase": "run",
+      "title": "DROPPED (2026-07-12, DEC-GRAIN): danskvand bychain re-aggregation — it only existed to justify a possible chain-grain pick for danskvand, which no longer exists (brand×month only)",
+      "status": "done"
+    },
+    {
+      "id": "S01",
+      "track": "SRQ1",
+      "phase": "build",
+      "title": "SRQ1 retrain FROM SCRATCH on the corrected pipeline — brand×month only (DEC-GRAIN), 4 categories + pooled, model set as implemented (SeasonalNaive/Ridge/LGB/XGB untuned ladder + Optuna-tuned LGB/XGB + ARIMA/Prophet), folding fixes V2 (mean-MAPE suppress), V3 (promo_intensity leakage shift/drop), V4 (market_id assert); re-verify pooled vs specialized",
+      "status": "ready",
+      "note": "Adopted from Brian's proposal 2026-07-12. Free, local compute, no API. Refreshes Ch6 + Ch8 §8.2.5 numbers from _05 results; feeds the models Arm A serves in SRQ4."
+    },
+    {
+      "id": "V2",
+      "track": "ENG-REVIEW",
+      "phase": "build",
+      "title": "R1 finding: suppress/flag degenerate mean-MAPE in SRQ1 outputs (billions %)",
+      "status": "ready"
+    },
+    {
+      "id": "V3",
+      "track": "ENG-REVIEW",
+      "phase": "build",
+      "title": "R-featbuild (stage-4 review) finding: promo_intensity is target leakage — denominator is sales_units_t, i.e. the target; consumed at current-t in srq1_benchmark_tuned FEATURES. Shift(1) or drop, then re-score CSD + energidrikke (danskvand/RTD are promo-zero → unaffected)",
+      "status": "ready",
+      "note": "CONFIRMED: build_feature_matrix.py:237 + build_feature_matrix_bychain.py:179 compute promo_units_t/sales_units_t; scripts/srq1_benchmark_tuned.py:38 uses promo_intensity as a current-t feature vs log_sales_units target (line 90). weighted_distribution (also current-t, line 38) is a softer contemporaneous-covariate concern — decide separately. Free, no API."
+    },
+    {
+      "id": "V4",
+      "track": "ENG-REVIEW",
+      "phase": "build",
+      "title": "R-featbuild (stage-4 review) finding: assert exactly one market_id for DVH EXCL. HD — build_feature_matrix.py:133 guards len==0 but not >1; if Nielsen ever ships two ids under that label the 6.16x double-count silently returns. Add assert len(scope_ids)==1 to both builders",
+      "status": "ready",
+      "note": "correctness keystone is unguarded. bychain builder filters via LEAF_CHAINS isin (multi-id by design) so lower risk there, but same class of check. Free, no API."
+    },
+    {
+      "id": "B01",
+      "track": "BRIAN",
+      "phase": "run",
+      "title": "Receive 9.8M CSD parquets (drive) OR refetch via RU secret",
+      "status": "ready",
+      "walls": [],
+      "note": "UNBLOCKED 2026-07-12: refetch via RU secret PROVEN (see WH1) — warehouse reachable by us, csd_clean_facts_v = 9,824,601 rows. No longer needs Brian. Execute only if OPEN-CSD decides to complete CSD."
+    },
+    {
+      "id": "B02",
+      "track": "BRIAN",
+      "phase": "run",
+      "title": "DROPPED (2026-07-12, DEC-GRAIN): region-vs-month WMAPE test — grain fixed to brand×month; region/chain grains become a documented limitation + future work, no test needed",
+      "status": "done"
+    },
+    {
+      "id": "B03",
+      "track": "BRIAN",
+      "phase": "write",
+      "title": "EDAs danskvand/energidrikke/RTD + finish Ch4",
+      "status": "blocked_brian",
+      "walls": [
+        "brian"
+      ]
+    },
+    {
+      "id": "B04",
+      "track": "BRIAN",
+      "phase": "finalize",
+      "title": "Reconcile post-Brian + decide SRQ1-CSD re-run",
+      "status": "blocked_brian",
+      "walls": [
+        "brian",
+        "enrico"
+      ],
+      "depends": [
+        "B01"
+      ]
+    },
+    {
+      "id": "WH1",
+      "track": "DATA",
+      "phase": "run",
+      "title": "Nielsen warehouse reachable DIRECTLY — RU service principal + pyodbc, read-only VERIFIED (csd_clean_facts_v = 9,824,601 rows). Token minted from RU_CLIENT_ID/SECRET/TENANT via token_swap flow; same live source Prometheus uses.",
+      "status": "done",
+      "note": "Corrects earlier 'need Nika' assumption (that was from the April planning docs). Live source available for exploration + the code-as-action baseline. .venv has pyodbc 5.3.0; ODBC Driver 18 installed."
+    },
+    {
+      "id": "DEC-DATA",
+      "track": "DECISION",
+      "phase": "run",
+      "title": "DECISION (Enrico 2026-07-12): use frozen APRIL snapshots for the reproducible SRQ4/benchmark comparison — NOT the live warehouse. Rationale: reproducible numbers + independence from RU creds/uptime.",
+      "status": "done",
+      "note": "Consequence 1: the code-as-action arm must also read the snapshot (not live SQL) for a fair same-data comparison → feeds the sandbox/baseline decision. Consequence 2: the CSD April snapshot is PARTIAL (a slice of the 9.8M) → see OPEN-CSD."
+    },
+    {
+      "id": "OPEN-CSD",
+      "track": "DECISION",
+      "phase": "run",
+      "title": "OPEN — CSD data (Enrico has NOT decided yet). STEP 1 (understand the slice, FIRST): local April CSD snapshot = 2,535,464 rows = ONLY 25.8% of the warehouse's 9,824,601 (~74% of CSD data MISSING). Understand WHAT dimension is truncated (periods? markets? products?) before deciding. STEP 2 (decide): keep partial snapshot (CSD SRQ1 on ~26% of data) vs one-time full fetch of 9.8M + freeze (complete + reproducible; fetch proven in WH1).",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "note": "Enrico has NOT chosen either option. The decision is blocked on first understanding what the partial slice actually excludes (a 74% gap is large enough to matter for CSD result validity). NARROWED 2026-07-12 (DEC-GRAIN): the operative question is now whether brand×month DVH EXCL. HD coverage is complete in the April snapshot — the missing 74% may well be chain/region/market detail no longer in scope. Slice analysis (STEP 1) decides; Enrico wants this LAST."
+    },
+    {
+      "id": "DEC-LLM",
+      "track": "DECISION",
+      "phase": "run",
+      "title": "DECISION (Enrico 2026-07-12): base LLM for BOTH SRQ4 arms = gpt-5.5 (Prometheus's production model), identical decoding settings (temp 0), per the Ch5 §5.7 same-LLM validity control.",
+      "status": "done",
+      "note": "Consequences: srq4_experiment.py stand-in (currently Claude) must move to gpt-5.5; re-check T04/T05/T07 cost estimates on OpenAI pricing; Ch3 §3.6 / Ch5 §5.5 same-base-LLM wording stays valid."
+    },
+    {
+      "id": "DEC-ARMS",
+      "track": "DECISION",
+      "phase": "run",
+      "title": "DECISION (Enrico 2026-07-12): SRQ4 = 3 arms, all gpt-5.5 temp 0 — Arm A: Prometheus + dedicated tuned-model tool (the artefact); Arm B: code-as-action (writes/runs/self-corrects its own code on the April snapshot in the sandbox = Prometheus as-is behaviour); Arm C floor: plain LLM, no tools, no code execution.",
+      "status": "done",
+      "note": "Arm C implemented as plain gpt-5.5 (NOT literal ChatGPT product) to preserve the same-LLM control (DEC-LLM). Closes SRQ4-protocol open decision #7. Matches Brian's 'with and without the trained models, vs a regular LLM' framing."
+    },
+    {
+      "id": "DEC-GRAIN",
+      "track": "DECISION",
+      "phase": "build",
+      "title": "DECISION (Enrico + Brian 2026-07-12): SRQ1 scope fixed to brand×month grain ONLY — (4 categories + 1 pooled) × the model set as implemented; chain/region grains dropped from active results and documented as limitation (insufficient historical depth per region/chain) + future work, alongside the need for more extensive datasets.",
+      "status": "done",
+      "note": "Consequences: B02 dropped, T03 resolved (danskvand stays brand×month), V1 dropped, S01 retrain created. Pooled-vs-specialized re-verified FROM SCRATCH on the corrected pipeline, not carried over from the April results. Matches the Ch3 §3.3 locked granularity (brand aggregated across retailers, monthly)."
+    },
+    {
+      "id": "SPIKE1",
+      "track": "SRQ4",
+      "phase": "run",
+      "title": "Feasibility spike: get graph-engine Prometheus + its E2B template running locally against the April snapshot (no live SQL) — report what runs, what breaks, effort estimate",
+      "status": "ready",
+      "note": "Informs OPEN-BASELINE (real Prometheus vs faithful re-implementation). Structural dry-run (imports, graph assembly, sandbox boot, snapshot access) should be free; flag BEFORE any paid gpt-5.5 or E2B spend (money wall)."
+    },
+    {
+      "id": "OPEN-BASELINE",
+      "track": "DECISION",
+      "phase": "run",
+      "title": "OPEN (narrowed 2026-07-12): (a) real Prometheus (graph-engine) vs faithful re-implementation for arms A/B — deferred until SPIKE1 reports; (b) snapshot access in the sandbox: parquet direct (simpler) vs local SQL layer e.g. DuckDB (T-SQL fidelity).",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "SPIKE1"
+      ],
+      "note": "Arms structure + base LLM already decided (DEC-ARMS, DEC-LLM). Enrico decides with the spike data in hand. Supersedes the srq4_experiment.py stand-in either way."
+    },
+    {
+      "id": "OPEN-PARAMS",
+      "track": "DECISION",
+      "phase": "run",
+      "title": "OPEN — SRQ4 protocol parameters (spec §8, close in one batch before the T04 smoke test): (1) K repetitions per prompt, 3 or 5 (T07 cost scales ~linearly with K); (2) numeric correctness tolerance, exact vs ±x%; (3) judge model + which qualitative dimensions to keep — NOTE: base LLM is now gpt-5.5 (DEC-LLM), so GPT-4o is NO LONGER a valid independent judge (same OpenAI family, self-evaluation bias) → pick a different family (e.g. Claude or Gemini); (4) confirm dropping the old static-template baseline (spec itself recommends drop).",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "note": "All four are quick calls with no code prerequisite. The judge-family point also touches Ch8 §8.3.1 wording (GPT-4o named there for SRQ2 — that one stays valid because the SRQ2 synthesis model was Claude, but the SRQ4 judge must differ from gpt-5.5)."
+    },
+    {
+      "id": "F01",
+      "track": "FINAL",
+      "phase": "finalize",
+      "title": "Assemble full thesis docx (all chapters)",
+      "status": "pending",
+      "depends": [
+        "T11",
+        "T15",
+        "T18",
+        "B03"
+      ]
+    },
+    {
+      "id": "F02",
+      "track": "FINAL",
+      "phase": "finalize",
+      "title": "Full human review pass Ch1–Ch10",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "F01"
+      ]
+    },
+    {
+      "id": "F03",
+      "track": "FINAL",
+      "phase": "finalize",
+      "title": "Compliance page-count decisions (solo vs group limit)",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "C20"
+      ]
+    },
+    {
+      "id": "F04",
+      "track": "FINAL",
+      "phase": "finalize",
+      "title": "Submission",
+      "status": "enrico",
+      "walls": [
+        "enrico"
+      ],
+      "depends": [
+        "F02",
+        "F03"
+      ]
+    }
   ]
 };
 
