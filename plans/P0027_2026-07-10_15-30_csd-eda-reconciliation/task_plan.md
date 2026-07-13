@@ -1,9 +1,10 @@
 ---
 pid: P0027
 created: 2026-07-10 15:30:00
-updated: 2026-07-12 02:00:00
-status: in_progress
-focus_detail: "SCOPE LOCKED (2026-07-12): SRQ1 is brand×month grain only (default and only actively-implemented grain), across 4 categories + 1 pooled variant (Phase 4c) x 4 model types = 20 model fits. Phase 4b (bychain/byregion) deferred to 'if time allows after finishing all other thesis parts', else reported as limitation/future work. group_keys fix shipped in _shared_modules/engineer_features.py (Phase 4a, done). An interim rollup-based regeneration of _03_engineered/bymonth/CSD/ was run this session but is SUPERSEDED, not final -- it reused a stale MIN_PERIODS=40 without re-deriving it from current data, which Brian explicitly flagged as blind hardcoding. RESUME HERE TOMORROW with Phase 4a-ii: rewrite the CSD orchestrator (Steps 1-6) to be grain-aware via --grain/--grains CLI flags + per-category GRAIN_CONFIG dicts (bymonth implemented, bychain/byregion stubbed with NotImplementedError), re-derive MIN_PERIODS from CSD's actual EDA stability-analysis method (not copied from old comments), delete the interim pre_csd_1b_rollup_to_brand_month.py once Step 1 aggregates to bymonth natively, build a pre_csd_run_all.py orchestrator, then apply the same --grain pattern to srq1_benchmark.py (Phase 4d -- also found stale: hardcoded bychain+bymonth dataset loop crashes on missing bychain matrix, plus a weighted_distribution/weighted_dist column name mismatch). Full spec for both in Phase 4a-ii/4d below -- nothing further to decide, just build."
+updated: 2026-07-13 14:00:00
+status: paused
+paused_reason: "Brian is reflecting on an external ChatGPT-run analysis of the current EDA process (done outside this session/tool) before deciding how the EDA methodology should change. That reflection is happening in a separate new session, not here. Nothing in this plan should be executed until Brian revisits with the outcome of that reflection."
+focus_detail: "Phase 4a-ii and Phase 4d COMPLETE (2026-07-13): CSD's Steps 1-6 are grain-aware (--grain/--grains CLI, GRAIN_CONFIG dict in pipeline_step_scripts/pre_csd_1_load_and_aggregate.py, bymonth fully implemented, bychain/byregion raise NotImplementedError), MIN_PERIODS=40 re-derived from the correct brand x month grain, orchestrator consolidated to the single existing preprocessing_csd.py (now grain-aware) rather than a second new orchestrator -- pre_csd_run_all.py was deleted after Brian flagged the duplication. CSD scripts regrouped by Brian into pipeline_step_scripts/ subfolder (2026-07-13); PATHS.py's get_category_preprocessing_scripts_dir() updated to be layout-aware (CSD regrouped, Danskvand/Energidrikke/RTD still flat) plus new get_category_preprocessing_dir() for the orchestrator/report level. Full pipeline re-verified end-to-end post-move: 58 brands, 2,552 rows, identical output. srq1_benchmark.py fixed (weighted_dist column bug, --grain/--grains CLI, graceful skip of missing categories): first real CSD brand x month benchmark, LightGBM WMAPE=21.2%. Stale root-level csd_preprocessing_report.md (pre-P0028 leftover, 62 brands) deleted by Brian. PAUSED HERE (2026-07-13) at Brian's request: before continuing to Phase 5 (extend grain-aware pipeline to Danskvand/Energidrikke/RTD) or Phase 4c (pooled comparison), Brian wants to critically reflect on and potentially revise the EDA methodology itself, informed by an external ChatGPT analysis run outside this session. That reflection happens in a new session. RESUME HERE once Brian revisits this plan post-reflection -- do not start Phase 5/4c proactively before that. Work is on branch data/csd-grain-aware-pipeline, not yet committed."
 ---
 
 # P0027 — CSD EDA Reconciliation + Academic Rigor Pass
@@ -149,8 +150,8 @@ Same root issue affects Step 6's `build_series_index()` (also `groupby("brand")`
 - [ ] Since region-grain is deferred, Phase 3's 21.2% region-grain WMAPE does NOT need re-running — it's not being relied on for any thesis result, only cited as a limitations-section capability finding
 - [x] **Interim step, SUPERSEDED by Phase 4a-ii below (2026-07-12)**: regenerated CSD's brand×month feature matrix via a quick rollup script (`pre_csd_1b_rollup_to_brand_month.py`, since deleted/to-be-deleted) that ran Step 1's region-grain aggregation then collapsed to brand×month, plus edited Steps 2/3 to drop `market_id`. Output landed correctly in `_03_engineered/bymonth/CSD/` (58 brands, 2,552 rows, 44 months) using `MIN_PERIODS=40` — **but that 40 was reused from a stale docstring number, not re-derived from the current (leakage-fixed) brand×month data**. Brian flagged this as blind hardcoding without statistical justification. This run should NOT be treated as final/citable — see Phase 4a-ii for the proper redo.
 
-### Phase 4a-ii — Grain-Aware Orchestrator Rewrite + Data-Driven MIN_PERIODS (agreed 2026-07-12, build deferred to next session)
-**Status**: pending — fully specified, not started; explicitly deferred to "tomorrow" per Brian
+### Phase 4a-ii — Grain-Aware Orchestrator Rewrite + Data-Driven MIN_PERIODS (agreed 2026-07-12, built 2026-07-13)
+**Status**: complete
 
 **Origin**: While regenerating CSD's canonical bymonth output (Phase 4a), two problems surfaced that the quick rollup-script fix papered over rather than solved:
 1. CSD's Step 1 (`pre_csd_1_load_and_aggregate.py`) is hardcoded to aggregate to brand×region grain only (P0026 decision, 2026-06-30) — there is no native brand×month aggregation anywhere in the orchestrator. The interim fix (Phase 4a) bolted on a rollup step (Step 1b) after the fact, which works but is wasteful (computes and discards the region intermediate every run) and doesn't match the intended long-term structure now that grain is meant to be a first-class, selectable dimension.
@@ -172,15 +173,15 @@ Same root issue affects Step 6's `build_series_index()` (also `groupby("brand")`
   Only the active `--grain`'s config is used per run; grains without implemented Step 1 aggregation logic raise a clear `NotImplementedError`, not a silent fallback.
 - `min_periods` (and any other grain-specific cutoff) must be filled in from an actual data-driven derivation (e.g. a brand-coverage/stability distribution check against the *current* post-fix data), matching whatever method CSD's `pre_csd_1.5_eda.py` used to justify its original thresholds — not copied from old comments or invented.
 
-**Scope for the actual build** (next session):
-- [ ] Re-derive `MIN_PERIODS` for brand×month directly from the current (leakage-fixed) CSD data — pull the actual stability-analysis method from `pre_csd_1.5_eda.py` (likely its brand-retention-vs-threshold analysis) and re-run it against `step_1b`/rewritten Step 1's brand×month output, not reuse the old "40"
-- [ ] Rewrite `pre_csd_1_load_and_aggregate.py` to aggregate directly to the requested grain via `--grain`, with `bymonth` fully implemented (no more Step 1b rollup — direct groupby) and `bychain`/`byregion` raising `NotImplementedError` with a clear message pointing to Phase 4b
-- [ ] Update Steps 2–6 to accept `--grain`, use `GRAIN_CONFIG[grain]["group_keys"]` where relevant (Steps 2/3/4/6), and route output to `_03_engineered/{grain}/CSD/`
-- [ ] Delete `pre_csd_1b_rollup_to_brand_month.py` once Step 1 aggregates to bymonth natively (its only purpose was bridging the gap this phase properly fixes)
-- [ ] Build `pre_csd_run_all.py` orchestrator accepting `--grain`/`--grains`, default `bymonth`
-- [ ] Re-run the full pipeline once MIN_PERIODS is properly derived; regenerate `_03_engineered/bymonth/CSD/` for real (superseding today's interim rollup-based run)
-- [ ] Apply the same `--grain` flag pattern to the benchmark script (`srq1_benchmark.py`) — default to `bymonth` only, structured so `bychain`/`byregion` can be added later without a rewrite (see Phase 4d below)
-- [ ] Once regenerated, proceed to Phase 4c (pooled vs. per-category) — brand×month grain is now the sole active production/thesis-results grain, no further Phase 4 dual-grain decision needed
+**Scope for the actual build** (completed 2026-07-13):
+- [x] Re-derived `MIN_PERIODS` for brand×month directly from the current (leakage-fixed) CSD data. Root-caused the original EDA cell (`pre_csd_1.5_eda.py` Cell 5): it loads `step_1_aggregate.parquet` (brand×region grain) and does `groupby('brand')` alone, silently pooling all 9 regions per brand before counting non-zero periods — a different quantity than true brand×month non-zero-months. Re-ran the identical threshold-tier method against the actual brand×month rollup (140 brands, 44 months): threshold=40 lands at the entry to the "High" quality tier (>35 non-zero months), retaining 58 brands (41.4%) — same value as before, but now for a data-driven reason instead of a grain-mismatched coincidence. Documented in `GRAIN_CONFIG["bymonth"]["min_periods_rationale"]` in `pre_csd_1_load_and_aggregate.py`.
+- [x] Rewrote `pre_csd_1_load_and_aggregate.py` to aggregate directly to the requested grain via `--grain`/`--grains`, with `bymonth` fully implemented (no more Step 1b rollup — direct `groupby(["brand","period_year","period_month"])`) and `bychain`/`byregion` raising `NotImplementedError` pointing to Phase 4b. `GRAIN_CONFIG` dict lives here as the single source of truth, imported by Steps 2-6.
+- [x] Updated Steps 2–6 to accept `--grain`/`--grains`, use `GRAIN_CONFIG[grain]["group_keys"]` (Steps 2/3/4/6), and route output to grain-suffixed intermediate files (`step_N_..._{grain}.parquet`) and `_03_engineered/{grain}/CSD/` (Step 6, via `get_category_engineered_bymonth_dir`/`_bychain_dir`).
+- [x] Deleted `pre_csd_1b_rollup_to_brand_month.py` — Step 1 now aggregates to bymonth natively. Also cleaned up the stale non-grain-suffixed intermediate parquet/log files left over from the interim rollup run.
+- [x] Built `pre_csd_run_all.py` orchestrator accepting `--grain`/`--grains` (default `bymonth`), running Steps 0–6 as subprocesses in sequence, failing fast on unimplemented grains before running anything.
+- [x] Re-ran the full pipeline via the orchestrator (`python pre_csd_run_all.py --grain bymonth`) — regenerated `_03_engineered/bymonth/CSD/csd_feature_matrix.parquet` for real: 58 brands, 2,552 rows, 44 months, train=1450/val=348/test=754 (identical shape to the interim run, now backed by a properly-derived MIN_PERIODS and a native aggregation path). Verified `weighted_dist` column name (not `weighted_distribution`) and no lag_1 leakage (NaN at every brand's first observation).
+- [x] Applied the same `--grain`/`--grains` flag pattern to `srq1_benchmark.py` (Phase 4d, see below) — done in the same session.
+- [ ] Phase 4c (pooled vs. per-category) is next — brand×month grain is now the sole active production/thesis-results grain, backed by a real (non-interim) feature matrix.
 
 ### Phase 4b — Add Chain Branch to CSD Orchestrator — DEFERRED (re-scoped 2026-07-12)
 **Status**: deferred — descoped from active plan, kept as documented future work / limitation
@@ -214,23 +215,25 @@ Brian's directive (2026-07-11 session): region and chain should be two parallel 
 
 **Explicitly NOT in scope for Phase 4c**: byregion or bychain grain variants of the pooled comparison. If pooling turns out to matter, a future decision can consider whether it's worth re-testing at another grain — but don't pre-build that combination speculatively.
 
-### Phase 4d — Grain-Aware Benchmark Script (agreed 2026-07-12, build deferred to next session)
-**Status**: pending — fully specified, not started
+### Phase 4d — Grain-Aware Benchmark Script (agreed 2026-07-12, built 2026-07-13)
+**Status**: complete
 
 **Found while investigating regeneration (2026-07-12)**: `03_thesis_modelling/model_training/srq1_benchmark.py` is stale relative to the brand×month-only rescoping. It currently hardcodes `DATASETS = {"bychain": THESIS_DATA_ENGINEERED_BYCHAIN_DIR, "brand": THESIS_DATA_ENGINEERED_BYMONTH_DIR}` and loops over both unconditionally — running it today throws `FileNotFoundError` on the (deferred, not-yet-existing) bychain matrix before it ever gets to the bymonth one. It also references a `weighted_distribution` feature column; the actual shared-module output column is named `weighted_dist` (confirmed via direct read of the regenerated `_03_engineered/bymonth/CSD/csd_feature_matrix.parquet` — column list has `weighted_dist`, no `weighted_distribution`), so even the brand/bymonth path would likely `KeyError` or silently zero-fill via `.fillna(0.0)` on a missing column today.
 
 **Decision**: mirror the same `--grain`/`--grains` CLI pattern from Phase 4a-ii here too, rather than hardcoding a dataset dict — same reasoning (default bymonth-only now, extensible later without a rewrite).
 
-**Scope for the actual build** (next session, after Phase 4a-ii's pipeline rewrite lands):
-- [ ] Fix the `weighted_distribution` → `weighted_dist` column name mismatch in `FEATURES`
-- [ ] Replace the hardcoded `DATASETS` dict with a `--grain`/`--grains` CLI flag (default `bymonth`), mapping grain name → `PATHS` constant (`THESIS_DATA_ENGINEERED_BYMONTH_DIR` today; `_BYCHAIN_DIR`/a future `_BYREGION_DIR` wired in but only reachable once Phase 4a-ii/4b implement those grains)
-- [ ] Run for CSD only until Phase 5 regenerates Danskvand/Energidrikke/RTD's matrices — script should skip missing categories with a visible message, not crash
-- [ ] Re-run once Phase 4a-ii's properly-derived-MIN_PERIODS CSD matrix lands, to get a first real (not interim-rollup-based) CSD brand×month benchmark number
+**Scope for the actual build** (completed 2026-07-13, same session as Phase 4a-ii):
+- [x] Fixed the `weighted_distribution` → `weighted_dist` column name mismatch in `FEATURES`
+- [x] Replaced the hardcoded `DATASETS` dict iteration with a `--grain`/`--grains` CLI flag (default `bymonth`); `DATASETS` now maps grain name → `PATHS` constant (`bymonth`→`THESIS_DATA_ENGINEERED_BYMONTH_DIR`, `bychain`→`THESIS_DATA_ENGINEERED_BYCHAIN_DIR`, reachable once Phase 4b lands)
+- [x] Categories without a feature matrix at the requested grain now skip with a visible "skipped — no feature matrix at grain=X yet" message instead of crashing (`_load()` returns `None` on missing file, `run_category()` handles it)
+- [x] Re-ran against Phase 4a-ii's regenerated CSD bymonth matrix: **first real (non-interim) CSD brand×month benchmark — LightGBM WMAPE=21.2%, beats SeasonalNaive baseline (35.1%)**. Danskvand/Energidrikke/RTD skipped as expected (Phase 5 not yet run). Output written to `04_thesis_results/srq1/{metrics.csv,summary.md}`.
 
 ### Phase 5 — Extend to 3 Remaining Categories
-**Status**: pending
+**Status**: pending — agreed as the next phase after Phase 4a-ii/4d, but gated on Brian's EDA methodology reflection (see plan-level `paused_reason`, 2026-07-13)
 
-Only start once Phase 2 gap-fill is validated on CSD and Phase 4a's group_keys fix lands (Phase 4b is deferred — brand×month only, see above).
+Only start once Phase 2 gap-fill is validated on CSD and Phase 4a's group_keys fix lands (Phase 4b is deferred — brand×month only, see above) — both conditions are met as of 2026-07-13.
+
+**Gating note (2026-07-13)**: Brian had an external ChatGPT-run analysis of the current EDA process done outside this session, and wants to critically reflect on it (in a separate new session) before extending the now-working grain-aware pipeline pattern to the other 3 categories — the reflection may change the EDA methodology being copied, so extending first would risk propagating something about to be revised. Do not start this phase until Brian revisits this plan with the outcome of that reflection.
 
 - [ ] Copy CSD's finished Step 1-6 pattern (brand×month grain only) to Danskvand, Energidrikke, RTD — only category-specific constants change (MIN_PERIODS, holiday months, split dates — each already hand-tuned per category from its own EDA in the existing `pre_{cat}_*.py` scripts)
 - [ ] Derive category-specific `TRAIN_END`/`VAL_END` split dates for Danskvand/Energidrikke/RTD (currently missing — flagged gap from 2026-07-12 session; needs each category's own EDA work mirroring CSD's Cell 7)

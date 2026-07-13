@@ -1,0 +1,30 @@
+{
+  "id": "3",
+  "subject": "Transfer Step 2 (build calendar) into combined notebook",
+  "description": "Add a new markdown section '## Step 2: Build Calendar' after the (now in-memory) Step 1 output, transferring build_calendar_index() from pre_csd_2_build_calendar.py (02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_csd_2_build_calendar.py, lines 100-159) -- this reindexes each series (per GRAIN_CONFIG's group_keys) onto a complete monthly calendar between start_date/end_date, filling gaps. Strip input_parquet_for_grain()/output_parquet_for_grain() path helpers (lines 89-98, no longer needed for in-notebook flow), run_step()'s file I/O wrapper (lines 160-230), and main()/argparse (lines 231+). Pass the in-memory `df` from Task 2 directly into build_calendar_index() instead of reading step_1_aggregate_{grain}.parquet from disk. Store the result as a new variable (e.g. `df_calendar`) and print/display before/after row counts (raw rows vs. reindexed rows) so Brian can see how many calendar gaps were filled -- this is exactly the kind of 'missing periods vs missing values' audit flagged as a gap in the P0029 ChatGPT analysis reconciliation, so make sure the gap count is visibly printed, not just computed silently. Verify by comparing df_calendar's shape and gap-fill count against a fresh `python pre_csd_2_build_calendar.py --grain bymonth` run's step_2 output parquet.",
+  "activeForm": "Transferring Step 2 (build calendar) into combined notebook",
+  "status": "completed",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [
+    "2"
+  ],
+  "blocks": [
+    "4"
+  ],
+  "tags": [
+    "notebook-migration",
+    "step-2",
+    "csd"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T14:08:00.000Z",
+    "started": "2026-07-13T16:30:00.000Z",
+    "completed": "2026-07-13T17:00:00.000Z"
+  }
+}

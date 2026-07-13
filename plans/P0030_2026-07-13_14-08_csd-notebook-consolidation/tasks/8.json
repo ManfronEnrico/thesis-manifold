@@ -1,0 +1,28 @@
+{
+  "id": "8",
+  "subject": "End-to-end validation of combined notebook against original 7-script pipeline",
+  "description": "Run pre_processing_notebook_csd.py.ipynb top-to-bottom (Steps 0-6 + EDA cells, all in one execution) via Jupyter (not nbconvert, so Brian can watch/verify) and compare every intermediate in-memory dataframe shape/columns/key-stat against the equivalent original .py script's output parquet at each stage: Step 1 (df vs step_1_aggregate_bymonth.parquet), Step 2 (df_calendar vs step_2 output), Step 3 (df_filtered vs step_3 output, expect 58 brands), Step 4 (df_features vs step_4 output, confirm no lag_1 leakage), Step 5 (df_split vs step_5 output, split sizes), Step 6 (final written csd_feature_matrix.parquet vs the canonical orchestrator-produced one, expect 58 brands / 2,552 rows). Document any discrepancy immediately in progress.md rather than silently reconciling it. This is an integration-level test spanning the whole notebook, not a per-step unit check (those already happened in Tasks 1-7) -- the goal here is confirming the full combined flow produces identical final output to the current production orchestrator (`python preprocessing_csd.py --grain bymonth`) before treating the notebook as a viable replacement/supplement.",
+  "activeForm": "Validating combined notebook end-to-end against original pipeline",
+  "status": "completed",
+  "phase": "testing",
+  "complexity": 0,
+  "blockedBy": [
+    "7"
+  ],
+  "blocks": [],
+  "tags": [
+    "notebook-migration",
+    "validation",
+    "csd"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T14:08:00.000Z",
+    "started": "2026-07-13T17:00:00.000Z",
+    "completed": "2026-07-13T17:45:00.000Z"
+  }
+}

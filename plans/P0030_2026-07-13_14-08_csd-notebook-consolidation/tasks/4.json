@@ -1,0 +1,30 @@
+{
+  "id": "4",
+  "subject": "Transfer Step 3 (filter series) into combined notebook",
+  "description": "Add a new markdown section '## Step 3: Filter Series' after Step 2's cells, transferring the core filtering logic from pre_csd_3_filter_series.py's run_step() (02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_csd_3_filter_series.py, lines 99-172) -- this applies MIN_PERIODS-based series retention (per GRAIN_CONFIG) to drop low-history brands. Strip input_parquet_for_grain()/output_parquet_for_grain() (lines 88-98) and main()/argparse (lines 173+); separate the actual filter logic from run_step()'s file I/O wrapper so only the filtering computation is transferred. Pass the in-memory `df_calendar` from Task 3 directly in, producing `df_filtered`. Display a before/after brand-count table (brands retained vs. dropped, matching the style of the EDA's existing Cell 5 'Brand Stability Analysis' table) so the MIN_PERIODS=40 threshold's effect is visible inline, directly next to the EDA cell that originally derived it -- this is one of the main benefits of combining EDA + pipeline steps into one notebook, since the threshold's derivation and its application are now adjacent instead of split across files. Verify by comparing df_filtered's brand count (expect 58 brands for MIN_PERIODS=40 per prior EDA findings) against a fresh `python pre_csd_3_filter_series.py --grain bymonth` run's step_3 output parquet.",
+  "activeForm": "Transferring Step 3 (filter series) into combined notebook",
+  "status": "completed",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [
+    "3"
+  ],
+  "blocks": [
+    "5"
+  ],
+  "tags": [
+    "notebook-migration",
+    "step-3",
+    "csd"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T14:08:00.000Z",
+    "started": "2026-07-13T16:30:00.000Z",
+    "completed": "2026-07-13T17:00:00.000Z"
+  }
+}

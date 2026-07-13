@@ -1,0 +1,33 @@
+{
+  "id": "6",
+  "subject": "End-to-end re-verification after all P0031 EDA fixes applied",
+  "description": "After Tasks 1-5 are complete, run 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb top-to-bottom (Jupyter preferred so Brian can review inline, standalone-script proxy acceptable for a first automated pass) and confirm: (a) no errors/warnings, (b) csd_eda_findings.json contains the new PROMO_SIGNAL_PRESENT, heterogeneity-verdict, and sales_value/sales_liters-decision keys from Tasks 2-4, (c) LAGS reflects whichever ACF/PACF wiring policy Task 1 chose, (d) csd_feature_matrix.parquet's column count/shape matches what Task 4's decision implies, (e) no 'CELL N' print headers remain in the EDA section (Task 5). Document final row/column/brand counts in this plan's progress.md, matching the verification discipline used throughout P0030.",
+  "activeForm": "Re-verifying end-to-end after all P0031 EDA fixes",
+  "status": "pending",
+  "phase": "testing",
+  "complexity": 0,
+  "blockedBy": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "blocks": [],
+  "tags": [
+    "eda",
+    "csd",
+    "notebook",
+    "validation"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T18:29:00.000Z",
+    "started": null,
+    "completed": null
+  }
+}

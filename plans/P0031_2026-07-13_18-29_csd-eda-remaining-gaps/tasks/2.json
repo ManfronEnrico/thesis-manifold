@@ -1,0 +1,28 @@
+{
+  "id": "2",
+  "subject": "Flag CSD's zero promo signal in findings output",
+  "description": "In 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb, Step 3.11 (Cross-Brand Heterogeneity) and Step 3.16 (Promo Intensity Distribution) both report 'No promo activity recorded for this category at the region grain' / 'Mean/Median promo intensity: 0.000' for CSD -- an honest finding, not a bug, but it means promo_intensity/promo_units-derived engineered features in Step 4.3 are constant-zero for this category. Add a 'PROMO_SIGNAL_PRESENT' boolean (or similar) to the findings dict built in Step 3.19 (Summary & Save Findings cell), computed from whether df['promo_units'].sum() > 0, with a short rationale string explaining why it's False for CSD. This does not require changing Step 4.3's feature engineering itself (promo_intensity should still be computed and simply be constant 0 for this category) -- it only documents the finding so a downstream modeling notebook or the next category (Danskvand/Energidrikke/RTD, which may have real promo data) isn't surprised by it. Verify by re-running the notebook and checking csd_eda_findings.json contains the new PROMO_SIGNAL_PRESENT key with value False (and its rationale) for CSD.",
+  "activeForm": "Flagging CSD's zero promo signal in findings output",
+  "status": "pending",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "tags": [
+    "eda",
+    "csd",
+    "notebook",
+    "promo",
+    "findings"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T18:29:00.000Z",
+    "started": null,
+    "completed": null
+  }
+}

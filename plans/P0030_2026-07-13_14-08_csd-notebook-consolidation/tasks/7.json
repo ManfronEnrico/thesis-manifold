@@ -1,0 +1,30 @@
+{
+  "id": "7",
+  "subject": "Transfer Step 6 (save outputs) into combined notebook",
+  "description": "Add a final markdown section '## Step 6: Save Outputs' after Step 5's cells, transferring the output-writing logic from pre_csd_6_save_outputs.py's run_step() (02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_csd_6_save_outputs.py, lines 118-380) -- this writes the final feature matrix parquet + series index + split-dates metadata to the canonical _03_engineered/{grain}/CSD/ location (via PATHS.get_category_engineered_bymonth_dir() or equivalent). Strip input_parquet_for_grain() (lines 111-117) and main()/argparse (lines 381+). Pass in-memory `df_split` from Task 6 directly in as the final feature matrix to write -- this IS the one step in the whole notebook that legitimately needs to write real output to disk (csd_feature_matrix.parquet, csd_split_dates.json, etc.), since downstream consumers (srq1_benchmark.py) read from that canonical path, not from the notebook. Display the final output paths and a summary table (brands, rows, date range, split counts) matching Step 6's existing console summary. Verify by running the full notebook top-to-bottom (Steps 0-6 in sequence) and confirming the written csd_feature_matrix.parquet is byte-identical or shape-identical to the last confirmed orchestrator run (`python preprocessing_csd.py --grain bymonth`: 58 brands, 2,552 rows). This task is also the natural point to decide (with Brian) whether the notebook now fully replaces preprocessing_csd.py's Steps 1-6 subprocess chain, or coexists with it -- flag this decision explicitly rather than deciding unilaterally, since the orchestrator's --run-step/--grain CLI mechanics were explicitly out of scope for this migration.",
+  "activeForm": "Transferring Step 6 (save outputs) into combined notebook",
+  "status": "completed",
+  "phase": "integration",
+  "complexity": 0,
+  "blockedBy": [
+    "6"
+  ],
+  "blocks": [
+    "8"
+  ],
+  "tags": [
+    "notebook-migration",
+    "step-6",
+    "csd"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T14:08:00.000Z",
+    "started": "2026-07-13T16:30:00.000Z",
+    "completed": "2026-07-13T17:00:00.000Z"
+  }
+}

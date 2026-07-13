@@ -1,0 +1,27 @@
+{
+  "id": "1",
+  "subject": "Decide and wire ACF/PACF lag-consensus into LAGS",
+  "description": "In 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb, Step 3.14 (ACF/PACF Analysis, currently cell index ~42) computes a second, independent lag-significance check per top-5 brand (ACF values outside the +/-1.96/sqrt(n) confidence band, consensus across brands) and prints 'Consider ADDING lags: [...]' / 'Consider REMOVING lags: [...]' by comparing against the LAGS variable already set in Step 3.13's cross-brand correlation cell. Right now this second opinion is purely printed and never changes LAGS, which is what actually flows into Step 4.3's shared_engineer_features(lags=list(LAGS), ...) call. Decide (ask Brian if ambiguous) whether ACF/PACF consensus should (a) override LAGS outright, (b) merge as a union with the existing correlation-based LAGS, or (c) stay purely diagnostic/confirmatory with no wiring. Implement whichever is chosen, and in case (c) add an explicit code comment in the ACF/PACF cell stating LAGS is NOT affected by this cell's findings, so a future reader doesn't assume it's wired in. Verify by re-running the full notebook end-to-end (standalone-script proxy or Jupyter) and confirming LAGS' final value and Step 4.3's lag_* column set match whichever policy was chosen.",
+  "activeForm": "Deciding and wiring ACF/PACF lag-consensus into LAGS",
+  "status": "pending",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "tags": [
+    "eda",
+    "csd",
+    "notebook",
+    "lags"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T18:29:00.000Z",
+    "started": null,
+    "completed": null
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "5",
+  "subject": "Fix stale internal CELL-N print headers to match current Step numbering",
+  "description": "In 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb, several code cells' internal print(\"CELL N: ...\") header strings are stale/mismatched against the markdown Step-numbering fixed in this session (e.g. the cell now under markdown header 'Step 3.14 - ACF/PACF Analysis' prints 'CELL 11: ACF/PACF Analysis...', colliding with Step 3.12's own 'CELL 11: Cross-Brand Heterogeneity Analysis' print). This is cosmetic only (doesn't affect execution or data), but confusing when reading notebook output top-to-bottom. Walk every code cell under the 'Step 3: Exploratory Data Analysis (EDA)' section, find its print(\"CELL N...\") or print(\"CELL N ...\") header line, and renumber/rename it to match that cell's own markdown header exactly (e.g. Step 3.14's cell should print something like 'STEP 3.14: ACF/PACF Analysis (Autocorrelation Structure)', matching the pattern used by Step 4.1-4.5's print(\"STEP 4.X: ...\") headers, not the old ad-hoc 'CELL N' scheme carried over from before the EDA/pipeline merge). Verify by grepping the notebook JSON for 'print(\"CELL' after the fix (should return zero matches in the EDA section) and re-running the full notebook to confirm no print statements broke.",
+  "activeForm": "Fixing stale internal CELL-N print headers",
+  "status": "pending",
+  "phase": "cleanup",
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "tags": [
+    "eda",
+    "csd",
+    "notebook",
+    "cleanup",
+    "cosmetic"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T18:29:00.000Z",
+    "started": null,
+    "completed": null
+  }
+}

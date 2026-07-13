@@ -1,0 +1,28 @@
+{
+  "id": "3",
+  "subject": "Forward heterogeneity verdict (CV, peak-month concentration) into findings JSON",
+  "description": "In 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb, Step 3.12 (Cross-Brand Heterogeneity Analysis) computes and prints per-brand coefficient of variation (CV) and peak-month concentration, concluding 'High CV + varied peak months -> consider brand fixed effects or per-brand models' -- a modeling-stage decision that currently only exists as printed text in this notebook's output, lost once the cell output is cleared/re-run. Add the key summary numbers (high_cv_brand_count, total_brands_with_cv, peak_month_concentration, and the verdict string) to the findings dict built in Step 3.19, so this observation survives into csd_eda_findings.json and is available to whatever modeling notebook consumes it next, without needing to re-read this notebook's cell output. Verify by re-running the notebook and confirming these keys appear in csd_eda_findings.json with values matching what Step 3.12 printed (45 high-CV brands / 136 total, concentration ~0.38 at time of writing -- exact numbers may shift slightly on re-run, that's fine, structure is what matters).",
+  "activeForm": "Forwarding heterogeneity verdict into findings JSON",
+  "status": "pending",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "tags": [
+    "eda",
+    "csd",
+    "notebook",
+    "heterogeneity",
+    "findings"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T18:29:00.000Z",
+    "started": null,
+    "completed": null
+  }
+}

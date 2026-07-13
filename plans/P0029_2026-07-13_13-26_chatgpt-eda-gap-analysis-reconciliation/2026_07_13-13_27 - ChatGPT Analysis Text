@@ -1,0 +1,1383 @@
+````markdown
+# Critical EDA Review for Time-Series Sales Prediction
+
+## Overall Assessment
+
+The notebook is **not yet ready for feature engineering or predictive modelling**.
+
+It contains useful descriptive analysis and correctly recognizes important topics such as:
+
+- temporal leakage
+- brand heterogeneity
+- zero sales
+- lag features
+- rolling features
+- stationarity
+- seasonality
+- temporal train-validation-test splitting
+
+However, several analyses are currently performed at the wrong time-series grain. This affects the validity of:
+
+- lag analysis
+- autocorrelation analysis
+- rolling-window analysis
+- stationarity testing
+- minimum-history thresholds
+- seasonal analysis
+- train-row calculations
+- feature-selection decisions
+
+The most important issue is that the dataset appears to contain multiple markets for each brand and month, while several analyses treat all rows belonging to a brand as one sequential time series.
+
+---
+
+# 1. Define the Correct Forecasting Grain
+
+## Current Problem
+
+The dataset contains approximately:
+
+- 44 calendar months
+- 140 brands
+- multiple markets per brand-month
+- up to 396 observations per brand
+
+The value 396 appears consistent with:
+
+```text
+44 months × 9 markets = 396 observations
+```
+
+However, several notebook operations sort only by:
+
+```python
+['brand', 'period_year', 'period_month']
+```
+
+This can create sequences such as:
+
+```text
+Brand A, October 2022, Market 1
+Brand A, October 2022, Market 2
+Brand A, October 2022, Market 3
+...
+Brand A, November 2022, Market 1
+```
+
+A lag of one row therefore often represents:
+
+```text
+another market in the same month
+```
+
+rather than:
+
+```text
+the same market in the previous month
+```
+
+## Consequences
+
+This potentially invalidates:
+
+- ADF stationarity tests
+- ACF and PACF plots
+- lag correlations
+- rolling means
+- rolling standard deviations
+- series-length calculations
+- warm-up calculations
+- train-row availability calculations
+- minimum-history thresholds
+
+## Required Decision
+
+The forecasting unit must be explicitly defined before any time-series analysis.
+
+### Option A: National Brand-Level Forecasting
+
+```text
+series_id = brand
+time = month
+target = sum of sales_units across markets
+```
+
+This is appropriate when the goal is predicting total national sales for each brand.
+
+### Option B: Brand-Market Forecasting
+
+```text
+series_id = brand × market_id
+time = month
+target = sales_units
+```
+
+This is appropriate when the goal is predicting regional or market-level sales.
+
+For regional forecasting, Option B is generally the more defensible analytical grain because it preserves geographic heterogeneity.
+
+Every time-series transformation should then group by:
+
+```python
+series_id
+```
+
+rather than only:
+
+```python
+brand
+```
+
+## Required Validation
+
+After defining the forecasting grain, verify:
+
+```python
+df.groupby(['series_id', 'date']).size().value_counts()
+```
+
+The expected result should be exactly one observation per:
+
+```text
+series_id × month
+```
+
+Any duplicates must be investigated and aggregated only using a documented business rule.
+
+---
+
+# 2. Missing Values Are Not the Same as Missing Periods
+
+## Current Problem
+
+The notebook checks whether stored columns contain null values.
+
+However, a time series can contain no explicit null values while still having missing months.
+
+Example:
+
+```text
+January
+February
+April
+```
+
+March is absent, but no existing row contains a null value.
+
+## Required Missing-Period Audit
+
+For every `series_id`, create a complete monthly date index and assess:
+
+- expected number of months
+- observed number of months
+- missing month count
+- internal gaps
+- consecutive gaps
+- first active month
+- last active month
+- left censoring
+- right censoring
+- launch periods
+- discontinuation periods
+- genuine zero-sales periods
+
+## Important Semantic Distinction
+
+A missing observation can mean different things:
+
+| Situation | Interpretation |
+|---|---|
+| Product not yet launched | Structurally unavailable |
+| Product discontinued | Structurally unavailable after exit |
+| Product available but no sales | Genuine zero demand |
+| Retailer or market not reporting | Missing data |
+| Temporary distribution loss | Commercial state change |
+| Unknown reason | Unresolved missingness |
+
+These cases must not be handled identically.
+
+## Recommended Handling
+
+| Situation | Defensible treatment |
+|---|---|
+| Pre-launch period | Do not impute sales |
+| Post-discontinuation period | Do not automatically impute |
+| Confirmed zero sales | Preserve zero |
+| Temporary reporting failure | Consider imputation using training-only information |
+| Unknown reason | Retain as missing until investigated |
+| Imputed observation | Add a missingness indicator |
+
+## Problem with Forward Filling
+
+Forward-filling sales assumes that demand remains constant during the missing period.
+
+For a sales target, this can:
+
+- artificially smooth demand
+- suppress volatility
+- distort lag relationships
+- bias autocorrelation
+- create unrealistic observations
+- make model performance appear stronger
+
+Therefore, a rule such as:
+
+```text
+forward-fill up to two periods
+```
+
+must not be selected without empirical evidence.
+
+Candidate methods should instead be compared through rolling-origin validation.
+
+---
+
+# 3. Separate Descriptive EDA from Model-Selection EDA
+
+## Current Problem
+
+The notebook uses the complete dataset to determine:
+
+- selected lags
+- selected rolling windows
+- seasonal months
+- transformation strategy
+- minimum-history thresholds
+- stable-brand inclusion
+- feature relevance
+
+This means validation and test outcomes indirectly influence modelling decisions.
+
+## Why This Is Leakage
+
+Even when individual lag features only use past observations, selecting those features because they correlate strongly with future validation or test outcomes constitutes model-selection leakage.
+
+The following decisions must be based only on training data:
+
+- imputation parameters
+- scaling parameters
+- transformation selection
+- lag selection
+- rolling-window selection
+- outlier thresholds
+- feature pruning
+- category encoding
+- brand selection rules
+- hyperparameter tuning
+
+## Recommended Separation
+
+### Full-Dataset Descriptive EDA
+
+The full dataset may be used to understand:
+
+- schema
+- date coverage
+- variable definitions
+- number of brands and markets
+- missingness structure
+- potential anomalies
+- general target distribution
+- data-quality concerns
+
+### Training-Only Model EDA
+
+Training data should determine:
+
+- transformation choice
+- useful lags
+- useful rolling windows
+- feature selection
+- imputation methods
+- feature scaling
+- encoding rules
+- outlier treatment
+
+For rolling validation, these decisions should ideally be re-estimated within each fold.
+
+---
+
+# 4. Lag Selection Is Not Sufficiently Justified
+
+## Current Method
+
+The notebook appears to retain lags when:
+
+```python
+abs(correlation) > 0.1
+```
+
+for at least 50% of brands.
+
+## Problems
+
+The threshold:
+
+```text
+|r| > 0.1
+```
+
+is arbitrary.
+
+It does not account for:
+
+- serial dependence
+- sample size
+- multiple testing
+- series heterogeneity
+- incremental predictive value
+- collinearity between lags
+- future-data leakage
+- incorrect brand-level ordering
+
+Highly persistent time series naturally produce correlations for many lags, even when those lags do not improve out-of-sample forecasts.
+
+## Better Approach
+
+Use theoretically and operationally plausible lag candidates.
+
+For monthly sales, a reasonable starting set is:
+
+```text
+lag 1
+lag 2
+lag 3
+lag 6
+lag 12
+```
+
+These represent:
+
+- immediate persistence
+- short-term momentum
+- quarterly memory
+- half-year effects
+- annual seasonality
+
+Then compare feature groups using rolling-origin validation.
+
+Example candidate sets:
+
+```text
+Recent:
+lag 1
+```
+
+```text
+Short-term:
+lag 1, lag 2, lag 3
+```
+
+```text
+Seasonal:
+lag 1, lag 3, lag 12
+```
+
+```text
+Extended:
+lag 1, lag 2, lag 3, lag 6, lag 12
+```
+
+A lag set should be retained only when it produces consistent out-of-sample improvement over simpler alternatives.
+
+Pairwise in-sample correlation alone is not sufficient justification.
+
+---
+
+# 5. Rolling-Window Selection Requires Redesign
+
+## Current Problem
+
+Rolling windows appear to be ranked using their correlation with future sales across high-volume brands.
+
+The highest-performing windows are then selected, and collinearity is assessed using one reference brand.
+
+## Problems
+
+This approach:
+
+- uses future validation and test outcomes
+- overrepresents high-volume brands
+- ignores low-volume series
+- evaluates collinearity using one brand
+- treats marginal correlation as predictive importance
+- risks overfitting window selection
+- creates inconsistent warm-up features
+
+## Partial-Window Problem
+
+The notebook uses logic similar to:
+
+```python
+series[max(0, i - window):i].mean()
+```
+
+This means a 13-month rolling mean may be calculated from:
+
+- one observation
+- two observations
+- three observations
+- eventually thirteen observations
+
+The feature therefore has a different meaning across rows.
+
+## Recommended Implementation
+
+Rolling features should use only prior observations:
+
+```python
+df['rolling_mean_3'] = (
+    df.groupby('series_id')['sales_units']
+      .transform(lambda x: x.shift(1).rolling(3, min_periods=3).mean())
+)
+```
+
+For a 12-month window:
+
+```python
+df['rolling_mean_12'] = (
+    df.groupby('series_id')['sales_units']
+      .transform(lambda x: x.shift(1).rolling(12, min_periods=12).mean())
+)
+```
+
+This ensures:
+
+- no contemporaneous target leakage
+- consistent feature interpretation
+- complete-history windows
+- correct grouping by forecasting series
+
+Warm-up rows should be removed or explicitly marked unavailable.
+
+## Recommended Candidate Windows
+
+Use a compact, theoretically motivated set:
+
+```text
+3 months
+6 months
+12 months
+```
+
+Optional robust alternatives:
+
+```text
+3-month median
+6-month median
+12-month standard deviation
+```
+
+Final inclusion should be determined through temporal cross-validation.
+
+---
+
+# 6. Stationarity Analysis Is Currently Invalid
+
+## Current Problem
+
+The notebook reports approximately:
+
+```text
+n = 396
+```
+
+for major brand-level ADF tests, although only approximately 44 calendar months exist.
+
+This strongly suggests that market observations were concatenated into a brand-level sequence.
+
+ADF results based on this sequence are not valid time-series stationarity evidence.
+
+## Additional Conceptual Problem
+
+The conclusion:
+
+```text
+70% stationary in raw form, therefore log transformation is optional
+```
+
+is not methodologically sufficient.
+
+The ADF test evaluates evidence against a unit-root null hypothesis.
+
+It does not determine:
+
+- whether variance stabilization is useful
+- whether residual variance changes with sales level
+- whether log transformation improves predictions
+- whether a transformation benefits all series
+- whether structural breaks exist
+- whether seasonal unit roots exist
+- whether the selected model requires stationarity
+
+## Recommended Tests
+
+After correcting the time-series grain, use complementary diagnostics:
+
+- ADF test
+- KPSS test
+- visual trend inspection
+- rolling mean and variance
+- seasonal strength
+- structural-break inspection
+
+ADF and KPSS are useful together because they use different null hypotheses.
+
+## Transformation Decision
+
+Possible target transformations include:
+
+```text
+no transformation
+log1p transformation
+Box-Cox transformation
+Yeo-Johnson transformation
+```
+
+The choice should be justified using:
+
+- skewness
+- variance-level relationship
+- residual diagnostics
+- model family
+- interpretability
+- out-of-sample forecast performance
+- back-transformation bias
+
+For sales containing zeros, `log1p` is generally easier to apply than a standard logarithm.
+
+The transformation should be framed as a modelling hypothesis and tested through validation.
+
+---
+
+# 7. Seasonal Analysis Is Confounded
+
+## Current Problem
+
+The notebook identifies high-sales or holiday months using total sales grouped by calendar month across the full dataset.
+
+This analysis is confounded by:
+
+- unequal numbers of observations per month
+- unequal year coverage
+- changing brand composition
+- changing market coverage
+- brand launches
+- brand discontinuations
+- long-term sales growth or decline
+- distribution changes
+- portfolio changes
+
+A high total in December may reflect genuine seasonality, but it may also reflect differences in coverage or composition.
+
+## Incorrect Holiday Interpretation
+
+Months with high sales should not automatically be labelled as holiday months.
+
+For example:
+
+```text
+March
+May
+December
+```
+
+cannot be interpreted as holiday effects solely because their average sales are high.
+
+Use neutral terminology such as:
+
+```text
+high-sales months
+seasonal peak months
+```
+
+until an actual calendar mechanism has been established.
+
+## Contradictory Seasonal Results
+
+If one analysis identifies:
+
+```text
+March, May, December
+```
+
+while decomposition identifies:
+
+```text
+June, September, December
+```
+
+the findings do not validate one another.
+
+The disagreement should be investigated rather than described as confirmation.
+
+## Better Seasonal Analysis
+
+Estimate seasonality within each forecasting series.
+
+One possible seasonal index is:
+
+```text
+sales in month m / series-specific annual average
+```
+
+Alternatively, remove trend first and estimate average residual patterns by month.
+
+Then summarize seasonal indices across:
+
+- brands
+- markets
+- volume groups
+- years
+
+## Calendar Features
+
+Features known before the forecast date may include:
+
+- month number
+- sine and cosine month encoding
+- number of selling days
+- public-holiday count
+- Easter timing
+- Christmas indicator
+- New Year indicator
+- school-holiday indicators
+- known campaign periods
+
+These should be based on external calendar knowledge rather than inferred solely from high historical sales.
+
+---
+
+# 8. Decomposition Model Selection Is Invalid
+
+## Current Problem
+
+The notebook compares residual variance from:
+
+- additive decomposition
+- multiplicative decomposition
+
+and selects the model with the smaller numeric variance.
+
+## Why This Is Invalid
+
+Additive residuals are measured in sales units.
+
+Multiplicative residuals are typically ratios or proportional deviations.
+
+The two residual variances therefore exist on different scales and cannot be directly compared.
+
+A multiplicative decomposition will often have numerically smaller residual variance simply because the residuals are dimensionless.
+
+## Better Comparison
+
+Compare:
+
+```text
+additive decomposition on raw sales
+```
+
+with:
+
+```text
+additive decomposition on log-transformed sales
+```
+
+Alternatively, compare resulting forecasting performance on the same target scale.
+
+The decision should consider whether seasonal amplitude increases with series level.
+
+If high-volume series exhibit larger seasonal swings, a multiplicative structure or log transformation may be appropriate.
+
+## Aggregation Concern
+
+Decomposition of aggregate sales may hide different patterns across brands and markets.
+
+Aggregate decomposition should therefore be descriptive and should not directly determine panel-level feature engineering.
+
+---
+
+# 9. Minimum-History Threshold Is Misinterpreted
+
+## Current Problem
+
+The notebook uses:
+
+```python
+MIN_PERIODS = 40
+```
+
+and interprets this as approximately 40 months of usable history.
+
+However, if each brand contains multiple markets per month, 40 rows do not represent 40 monthly periods.
+
+A brand with nine markets could exceed 40 observations after fewer than five months.
+
+## Required Replacement
+
+After defining `series_id`, calculate:
+
+- unique monthly periods
+- contiguous history length
+- expected months
+- observed months
+- coverage ratio
+- usable training months
+- warm-up loss
+- validation availability
+- test availability
+
+Example:
+
+```python
+series_summary = (
+    df.groupby('series_id')
+      .agg(
+          first_date=('date', 'min'),
+          last_date=('date', 'max'),
+          observed_months=('date', 'nunique')
+      )
+)
+```
+
+Expected months can then be calculated from the first and last dates.
+
+## Academic Justification
+
+Minimum-history requirements should depend on:
+
+- forecast horizon
+- seasonal cycle length
+- maximum lag
+- maximum rolling window
+- number of validation folds
+- model complexity
+
+For monthly seasonality, at least two complete annual cycles are a practical minimum for estimating recurring seasonal structure.
+
+Three or more cycles are preferable when available.
+
+A threshold should therefore be justified using time-series requirements rather than an arbitrary row count.
+
+---
+
+# 10. Train-Validation-Test Split Requires Stronger Justification
+
+## Current Split
+
+The notebook appears to use:
+
+```text
+24 months training
+6 months validation
+14 months testing
+```
+
+with a maximum rolling warm-up of approximately 13 periods.
+
+## Problem
+
+With 24 training months and a 13-month warm-up, only approximately 11 fully usable training observations remain for a complete series.
+
+Late-entry series may have considerably fewer.
+
+At the same time, 14 months are reserved for testing, which is a large proportion of a 44-month dataset.
+
+A single six-month validation period also makes model selection highly dependent on one specific seasonal segment.
+
+## Recommended Evaluation Strategy
+
+Use:
+
+- one final untouched test period
+- multiple rolling-origin validation folds before the test period
+
+Example:
+
+```text
+Fold 1:
+Train through month 24
+Validate months 25–27
+
+Fold 2:
+Train through month 27
+Validate months 28–30
+
+Fold 3:
+Train through month 30
+Validate months 31–33
+
+Final test:
+Last 6–12 months
+```
+
+The exact design should depend on the operational forecast horizon.
+
+## Horizon Alignment
+
+If the business predicts one month ahead:
+
+```text
+evaluate repeated one-step-ahead forecasts
+```
+
+If the business predicts three months ahead:
+
+```text
+evaluate horizon 1, horizon 2, and horizon 3 separately
+```
+
+Validation must reproduce how forecasts will be generated in production.
+
+## Expanding vs Fixed Training Window
+
+Two possible approaches are:
+
+### Expanding Window
+
+All prior observations are retained.
+
+Advantages:
+
+- more training data
+- suitable when older relationships remain relevant
+
+### Fixed-Length Window
+
+Only the most recent observations are retained.
+
+Advantages:
+
+- better adaptation to structural change
+- reduced influence of outdated patterns
+
+The choice should be evaluated empirically.
+
+---
+
+# 11. Promotion Analysis Should Be Removed or Reframed
+
+## Current Problem
+
+The `promo_units` column appears to contain zero for every observation.
+
+This produces:
+
+```text
+mean promotion intensity = 0
+correlation = NaN
+```
+
+A `NaN` correlation cannot support a conclusion that promotions increase or decrease sales.
+
+## Required Handling
+
+Check whether the column has any variance:
+
+```python
+if df['promo_units'].nunique(dropna=True) <= 1:
+    print(
+        'promo_units contains no usable variation and should be excluded '
+        'from modelling at the current data grain.'
+    )
+```
+
+The notebook should state:
+
+```text
+Promotion effects cannot be evaluated because the available promotion
+variable contains no variation at the analysed grain.
+```
+
+The following should be excluded unless another data source provides variation:
+
+```text
+promo_units
+promo_intensity
+has_promo
+```
+
+---
+
+# 12. Distribution May Cause Contemporaneous Leakage
+
+## Current Finding
+
+`weighted_dist` appears strongly associated with sales.
+
+This may be useful, but only if the feature is available when the forecast is made.
+
+## Availability Question
+
+When predicting sales for month `t+1`, is weighted distribution for month `t+1` already known?
+
+If not, using contemporaneous future distribution creates leakage.
+
+## Defensible Alternatives
+
+Use:
+
+```text
+lagged weighted distribution
+```
+
+or:
+
+```text
+planned future distribution
+```
+
+if it is genuinely known before the forecast date.
+
+Other possibilities:
+
+- separately forecast distribution
+- use distribution scenarios
+- use distribution contracts or plans
+- use previous-month distribution
+- use rolling distribution trends
+
+Every predictor should receive a feature-availability classification:
+
+| Feature | Known at forecast time? | Allowed form |
+|---|---:|---|
+| Previous sales | Yes | Lagged |
+| Month | Yes | Current/future |
+| Holiday calendar | Yes | Current/future |
+| Planned distribution | Possibly | Current/future if confirmed |
+| Actual future distribution | No | Exclude |
+| Actual future promotion | No unless planned | Exclude or use plan |
+| Brand identity | Yes | Static |
+| Market identity | Yes | Static |
+
+---
+
+# 13. Correlation Should Not Be Interpreted Causally
+
+## Current Risk
+
+Statements such as:
+
+```text
+distribution matters
+promotions work
+promotions harm sales
+```
+
+cannot be established using pairwise correlation.
+
+Observed correlations may be affected by:
+
+- reverse causality
+- confounding
+- brand size
+- market size
+- seasonality
+- planned commercial actions
+- distribution allocation
+- product lifecycle
+
+For example, high-selling brands may receive broader distribution.
+
+This does not mean distribution has no predictive value, but the interpretation must remain predictive rather than causal.
+
+## Recommended Language
+
+Use:
+
+```text
+The variables are associated at the observed data grain.
+Their incremental predictive value and availability at forecast time
+must be evaluated through temporal validation.
+```
+
+---
+
+# 14. Cross-Sectional Dependence Should Be Considered
+
+Brand-market sales series may share common shocks such as:
+
+- category-wide demand changes
+- macroeconomic changes
+- holidays
+- weather
+- retailer actions
+- national campaigns
+- supply disruptions
+
+A pooled panel model may benefit from:
+
+- brand identifiers
+- market identifiers
+- brand-market interactions
+- calendar effects
+- aggregate category trends
+- national brand trends
+- market-level category trends
+
+## Hierarchical Structure
+
+The dataset may have a hierarchy such as:
+
+```text
+Total category
+    └── Brand
+          └── Market
+```
+
+If forecasts are required at multiple levels, forecasts should ideally be reconciled so that:
+
+```text
+sum of market forecasts = national brand forecast
+```
+
+This is a hierarchical forecasting problem.
+
+---
+
+# 15. Intermittent Demand Requires Explicit Analysis
+
+## Current Problem
+
+The notebook reports few or no zero sales values in stored rows.
+
+However, after creating a complete brand-market-month panel, missing combinations may reveal intermittent availability or demand.
+
+## Recommended Diagnostics
+
+For each `series_id`, calculate:
+
+- proportion of zero-demand months
+- average demand interval
+- mean positive demand
+- variance of positive demand
+- squared coefficient of variation
+- longest zero-sales sequence
+
+This can distinguish:
+
+- smooth demand
+- erratic demand
+- intermittent demand
+- lumpy demand
+
+If intermittent demand is present, compare conventional lag-based models with intermittent-demand methods or suitable baselines.
+
+## Metric Implication
+
+Percentage metrics such as MAPE can be undefined or unstable when actual sales are zero or close to zero.
+
+Prefer metrics such as:
+
+```text
+MAE
+RMSE
+MASE
+RMSSE
+WAPE, with caution
+```
+
+MASE is particularly useful for comparing differently scaled series.
+
+---
+
+# 16. Outlier Handling Must Be Temporally and Commercially Justified
+
+Outliers in sales data may represent:
+
+- data-entry errors
+- promotion spikes
+- distribution changes
+- stock-outs
+- product launches
+- seasonal peaks
+- one-off customer orders
+- supply constraints
+
+They should not automatically be removed or winsorized.
+
+## Recommended Process
+
+For every extreme observation:
+
+1. Determine whether it is a data error.
+2. Check neighbouring periods.
+3. Check distribution and promotion variables.
+4. Check whether the event is repeated annually.
+5. Compare against market and category totals.
+6. Retain legitimate commercial events.
+7. Correct only confirmed errors.
+8. Fit outlier thresholds using training data only.
+
+If extreme events are retained, consider adding event indicators where the cause is known and forecastable.
+
+---
+
+# 17. Recommended Revised EDA Workflow
+
+## Phase 1: Define the Analytical Panel
+
+1. Create a proper monthly date variable.
+2. Define the forecast target.
+3. Define the forecast horizon.
+4. Define the forecasting grain.
+5. Create `series_id`.
+6. Validate one row per `series_id × date`.
+7. Resolve duplicates using documented aggregation rules.
+8. Reindex every series to a complete monthly calendar.
+9. Identify missing periods.
+10. Classify launch, exit, zero sales, and reporting gaps.
+
+## Phase 2: Freeze the Evaluation Design
+
+1. Define the final untouched test period.
+2. Define rolling-origin validation folds.
+3. Match folds to the operational forecast horizon.
+4. Decide between expanding and fixed training windows.
+5. Define the feature-availability cutoff.
+6. Ensure all preprocessing is fitted using training data only.
+
+## Phase 3: Conduct Training-Only Time-Series EDA
+
+For each valid series and relevant aggregation level, evaluate:
+
+- time-series level
+- trend
+- variance
+- seasonality
+- autocorrelation
+- partial autocorrelation
+- stationarity
+- structural breaks
+- outliers
+- missingness
+- intermittency
+- lifecycle stage
+- cross-series dependence
+
+## Phase 4: Define Feature Hypotheses
+
+Candidate features may include:
+
+```text
+lag 1
+lag 2
+lag 3
+lag 6
+lag 12
+```
+
+```text
+3-month rolling mean
+6-month rolling mean
+12-month rolling mean
+3-month rolling median
+6-month rolling standard deviation
+12-month rolling standard deviation
+```
+
+```text
+month sine
+month cosine
+number of selling days
+holiday indicators
+series age
+months since launch
+lagged weighted distribution
+brand identifier
+market identifier
+category trend
+```
+
+Each feature must be:
+
+- available at forecast time
+- generated without target leakage
+- fitted within training data
+- evaluated through rolling validation
+
+## Phase 5: Establish Baselines
+
+At minimum, compare against:
+
+### Naive Forecast
+
+```text
+forecast = previous month sales
+```
+
+### Seasonal Naive Forecast
+
+```text
+forecast = sales from the same month last year
+```
+
+### Historical Mean
+
+```text
+forecast = average prior sales
+```
+
+### Seasonal Historical Mean
+
+```text
+forecast = average prior sales for the same calendar month
+```
+
+### Statistical Baseline
+
+Possible models:
+
+```text
+simple exponential smoothing
+Holt trend
+ETS
+Theta
+```
+
+The machine-learning model should outperform meaningful baselines consistently.
+
+---
+
+# 18. Recommended Evaluation Metrics
+
+No single metric is sufficient.
+
+Report:
+
+```text
+MAE
+RMSE
+MASE
+bias
+```
+
+Optional metrics:
+
+```text
+RMSSE
+WAPE
+sMAPE
+```
+
+## Metric Interpretation
+
+### MAE
+
+Measures average absolute error in sales units.
+
+Useful for direct business interpretation.
+
+### RMSE
+
+Penalizes large errors more strongly.
+
+Useful when large misses are especially costly.
+
+### MASE
+
+Scales errors relative to a naive benchmark.
+
+Useful for comparing brands and markets with different sales levels.
+
+### Bias
+
+Measures systematic overprediction or underprediction.
+
+## Required Breakdowns
+
+Evaluate performance by:
+
+- forecast horizon
+- brand
+- market
+- sales-volume group
+- lifecycle stage
+- seasonal period
+- intermittent versus regular demand
+- validation fold
+- test period
+
+Aggregate accuracy alone may hide serious weaknesses in smaller series.
+
+---
+
+# 19. Decision Documentation Requirement
+
+Every preprocessing and EDA decision should be recorded in a decision table.
+
+Recommended structure:
+
+| Decision | Diagnostic evidence | Alternatives considered | Selected approach | Leakage control | Validation evidence |
+|---|---|---|---|---|---|
+| Forecast grain | Multiple markets per brand-month | Brand total vs brand-market | Pending | N/A | N/A |
+| Missing periods | Panel coverage analysis | Zero, missing, imputation | Pending | Training-only imputation | Rolling validation |
+| Target transform | Skewness and variance-level plots | None, log1p, Box-Cox | Pending | Fit on training | Fold performance |
+| Lag selection | ACF and domain cycles | 1, 1–3, 1/3/12 | Pending | Training folds only | MASE comparison |
+| Rolling windows | Demand-memory hypothesis | 3, 6, 12 months | Pending | Shift and training folds | MASE comparison |
+| Outlier treatment | Error and event audit | Retain, correct, cap | Pending | Training thresholds | Sensitivity analysis |
+| Minimum history | Usable months after warm-up | 18, 24, 36 months | Pending | Defined before test | Coverage-performance trade-off |
+
+This provides an auditable academic justification for each decision.
+
+---
+
+# Priority Order
+
+## P0 — Must Be Fixed Before Continuing
+
+1. Correct the forecasting grain.
+2. Create a unique `series_id`.
+3. Verify one row per `series_id × month`.
+4. Audit missing periods rather than only null values.
+5. Recalculate lag, rolling, ACF, PACF, and ADF analysis.
+6. Remove validation and test periods from feature-selection decisions.
+
+## P1 — Major Methodological Corrections
+
+7. Replace the single validation period with rolling-origin validation.
+8. Redesign seasonal analysis.
+9. Correct decomposition comparison.
+10. Audit predictor availability.
+11. Remove unsupported promotion conclusions.
+12. Recalculate minimum-history requirements.
+
+## P2 — Thesis-Quality Improvements
+
+13. Add naive and statistical baselines.
+14. Add MASE and bias metrics.
+15. Analyse intermittent demand.
+16. Evaluate cross-sectional dependence.
+17. Consider hierarchical forecasting.
+18. Maintain a preprocessing decision table.
+19. Document every transformation with diagnostic and validation evidence.
+
+---
+
+# Final Conclusion
+
+The existing notebook should not yet be used to justify the current values of:
+
+```python
+LAGS
+ROLLING_WINDOWS
+MIN_PERIODS
+LOG_TRANSFORM_TARGET
+TRAIN_END
+VALIDATION_END
+TEST_END
+```
+
+These parameters must be reconsidered after:
+
+1. defining the correct forecasting series;
+2. constructing one observation per series and month;
+3. auditing missing calendar periods;
+4. separating training data from validation and test data;
+5. applying rolling-origin validation;
+6. evaluating transformations and features out of sample.
+
+The highest-priority correction is the time-series grain.
+
+Until each brand-market or aggregated brand series is represented as one correctly ordered monthly sequence, the notebook's lag, stationarity, rolling-window, and seasonal findings cannot be considered methodologically reliable.
+````

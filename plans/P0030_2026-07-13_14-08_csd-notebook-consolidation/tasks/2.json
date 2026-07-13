@@ -1,0 +1,14 @@
+{
+  "id": "2",
+  "subject": "Replace EDA's Step-1-output read with real Step 1 (load/aggregate) logic",
+  "description": "The notebook's current Cell 1 loads Step 1's *output parquet* (step_1_aggregate_{grain}.parquet, fixed in the prior session). Replace this with the actual aggregation logic from pre_csd_1_load_and_aggregate.py (02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_csd_1_load_and_aggregate.py): _load_merged() (lines 197-220, merges the 4 Nielsen view parquets + filters to DVH_REGION_IDS + positive sales) and load_and_aggregate() (lines 223-271, groups to the requested grain). Keep the GRAIN_CONFIG dict (lines 154-176) and DVH_REGION_IDS set (lines 123-133) as notebook-level config cells (markdown-documented, not stripped -- these carry real EDA-derived rationale, e.g. the MIN_PERIODS comment block). Strip the argparse/main()/subprocess-CLI wrapper (lines 274+) and the standalone step-timing/log-file writing (keep only if Brian wants per-step timing displayed inline -- ask before dropping vs. keeping as a simple print). Wire the result into an in-memory `df` variable consumed directly by the cells that already exist in the notebook (the former Cell 1 data-overview print, Cell 3 date-range analysis, etc.) -- no intermediate parquet read for this step within the notebook. Verify by comparing df.shape, df['brand'].nunique(), and a few sample rows against the last confirmed pre_csd_1_load_and_aggregate.py --grain bymonth run (3,975 rows, 140 brands, columns brand/period_year/period_month/sales_units/sales_value/sales_liters/promo_units/weighted_dist).",
+  "activeForm": "Replacing EDA's Step-1-output read with real Step 1 logic",
+  "status": "completed",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": ["1"],
+  "blocks": ["3"],
+  "tags": ["notebook-migration", "step-1", "csd"],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-13T14:08:00.000Z", "started": "2026-07-13T15:30:00.000Z", "completed": "2026-07-13T15:55:00.000Z"}
+}

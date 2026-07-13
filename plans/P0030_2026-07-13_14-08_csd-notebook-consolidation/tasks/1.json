@@ -1,0 +1,14 @@
+{
+  "id": "1",
+  "subject": "Transfer Step 0 (cache validation) into combined notebook",
+  "description": "Add a new markdown section '## Step 0: Cache Validation' followed by code cells to pre_processing_notebook_csd.py.ipynb, transferring the functional logic of pre_csd_0_cache.py's validate_parquet_cache() (currently at 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_csd_0_cache.py, lines 111-181). Strip the __main__/argparse CLI wrapper (main(), lines 182+) and redundant module docstring/boilerplate imports already present earlier in the notebook (sys, Path, root-finding block) -- reuse the notebook's existing PROJECT INITIALIZATION cell instead of duplicating it. Keep only the validation logic: checking whether the 4 Nielsen CSD view parquet files exist in the expected cache directory, and printing/returning their status. Insert immediately after the notebook's existing imports/config cells and before the current Cell 1 (Step 1's load, which itself will be replaced in Task 2). Display the validation result (e.g. a small status table or print block) directly in the notebook's output cell so Brian can see cache state before proceeding. Verify by running the new cells top-to-bottom in Jupyter and confirming the printed cache status matches what `python pre_csd_0_cache.py` currently reports for CSD.",
+  "activeForm": "Transferring Step 0 (cache validation) into combined notebook",
+  "status": "completed",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": ["2"],
+  "tags": ["notebook-migration", "step-0", "csd"],
+  "qualityGate": {"lint": null, "typecheck": null, "tests": null},
+  "timestamps": {"created": "2026-07-13T14:08:00.000Z", "started": "2026-07-13T15:00:00.000Z", "completed": "2026-07-13T15:20:00.000Z"}
+}

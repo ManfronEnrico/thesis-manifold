@@ -1,0 +1,28 @@
+{
+  "id": "4",
+  "subject": "Resolve sales_value/sales_liters redundancy with sales_units target",
+  "description": "In 02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb, Step 3.17/3.18 (Correlation Heatmap) shows sales_value and sales_liters both have large Pearson/Spearman gaps (~0.4+) against sales_units, same non-linear pattern that motivated adding log_weighted_dist in Step 4.3 -- but sales_value/sales_liters were left unaddressed. Since sales_units is the actual modeling target (TARGET_COL / TARGET_FOR_MODEL), these two are very likely near-redundant with it (same underlying sales volume, different units -- currency vs liters vs units), which risks multicollinearity if fed into the model as separate features. Investigate: compute the raw Pearson correlation between sales_units and each of sales_value/sales_liters directly (not just via the heatmap's rounded display) to confirm the redundancy hypothesis, then decide (ask Brian if the correlation is ambiguous, e.g. 0.7-0.9 range rather than clearly >0.95 or clearly <0.5) whether to: (a) drop sales_value/sales_liters entirely from the Step 4.3 feature set, (b) keep them but document why they're intentionally redundant (e.g. useful for a price-per-unit derived feature later), or (c) log-transform them like log_weighted_dist and let a later feature-selection step handle collinearity. Implement whichever is chosen in Step 4.3, and record the correlation values + decision rationale in the findings dict (Step 3.19). Verify via re-running the full pipeline and confirming Step 4.3's output column count and csd_feature_matrix.parquet reflect the decision.",
+  "activeForm": "Resolving sales_value/sales_liters redundancy with sales_units target",
+  "status": "pending",
+  "phase": "core",
+  "complexity": 0,
+  "blockedBy": [],
+  "blocks": [],
+  "tags": [
+    "eda",
+    "csd",
+    "notebook",
+    "multicollinearity",
+    "feature-engineering"
+  ],
+  "qualityGate": {
+    "lint": null,
+    "typecheck": null,
+    "tests": null
+  },
+  "timestamps": {
+    "created": "2026-07-13T18:29:00.000Z",
+    "started": null,
+    "completed": null
+  }
+}
