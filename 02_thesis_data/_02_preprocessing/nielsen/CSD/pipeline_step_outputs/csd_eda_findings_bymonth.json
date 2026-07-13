@@ -1,6 +1,9 @@
 {
   "category": "CSD",
-  "analysis_date": "2026-07-13T18:14:56.605579",
+  "analysis_date": "2026-07-13T13:47:50.696715",
+  "approach": "THESIS QUALITY FOCUS (high-quality data for proof-of-concept validation)",
+  "visualizations_generated": true,
+  "total_visualizations": 8,
   "data_overview": {
     "total_rows": 3975,
     "unique_brands": 140,

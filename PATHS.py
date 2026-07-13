@@ -662,10 +662,47 @@ def get_category_engineered_bychain_dir(category: str) -> Path:
 
 def get_category_preprocessing_scripts_dir(category: str) -> Path:
     """
-    Get the directory containing preprocessing scripts for a Nielsen category.
+    Get the directory containing per-step preprocessing scripts (pre_{category}_0.py
+    through pre_{category}_6.py, plus the EDA notebook/script) for a Nielsen category.
 
-    Preprocessing scripts (pre_{category}_0.py through pre_{category}_6.py) and
-    the orchestrator (preprocessing_{category}.py) live in this directory.
+    The orchestrator (preprocessing_{category}.py) and the generated
+    {category}_preprocessing_report.md stay one level up, at
+    THESIS_DATA_PREPROCESSING_DIR / "nielsen" / {category}/ — this function returns
+    the step-scripts subfolder they call into, not the orchestrator's own location.
+
+    CSD was regrouped (2026-07-13) into a "pipeline_step_scripts/" subfolder one
+    level below the orchestrator, so its step scripts are one level deeper than
+    the other categories. Danskvand/Energidrikke/RTD have not been regrouped yet
+    and still keep their step scripts flat alongside their orchestrator — this
+    function returns the correct directory for both layouts without callers
+    needing to know which one a given category uses.
+
+    Args:
+        category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
+
+    Returns:
+        Path to thesis/data/preprocessing/nielsen/{category}/ (flat layout), or
+        thesis/data/preprocessing/nielsen/{category}/pipeline_step_scripts/ (CSD, regrouped)
+
+    Example:
+        >>> scripts_dir = get_category_preprocessing_scripts_dir("CSD")
+        >>> step_script = scripts_dir / "pre_csd_1_load_and_aggregate.py"
+        >>> orchestrator = get_category_preprocessing_dir("CSD") / "preprocessing_csd.py"
+    """
+    base_dir = THESIS_DATA_PREPROCESSING_DIR / "nielsen" / category
+    regrouped_dir = base_dir / "pipeline_step_scripts"
+    if regrouped_dir.is_dir():
+        return regrouped_dir
+    return base_dir
+
+
+def get_category_preprocessing_dir(category: str) -> Path:
+    """
+    Get the top-level preprocessing directory for a Nielsen category — where the
+    orchestrator (preprocessing_{category}.py) and the generated
+    {category}_preprocessing_report.md live, regardless of whether that
+    category's step scripts have been regrouped into a "pipeline_step_scripts/"
+    subfolder (see get_category_preprocessing_scripts_dir()).
 
     Args:
         category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
@@ -674,9 +711,9 @@ def get_category_preprocessing_scripts_dir(category: str) -> Path:
         Path to thesis/data/preprocessing/nielsen/{category}/
 
     Example:
-        >>> scripts_dir = get_category_preprocessing_scripts_dir("CSD")
-        >>> orchestrator = scripts_dir / "preprocessing_csd.py"
-        >>> step_script = scripts_dir / "pre_csd_1_load_and_aggregate.py"
+        >>> cat_dir = get_category_preprocessing_dir("CSD")
+        >>> orchestrator = cat_dir / "preprocessing_csd.py"
+        >>> report = cat_dir / "csd_preprocessing_report.md"
     """
     return THESIS_DATA_PREPROCESSING_DIR / "nielsen" / category
 
@@ -696,7 +733,7 @@ def get_category_pipeline_step_outputs_dir(category: str) -> Path:
 
     Example:
         >>> outputs_dir = get_category_pipeline_step_outputs_dir("CSD")
-        >>> step1_output = pd.read_parquet(outputs_dir / "step_1_aggregate.parquet")
+        >>> step1_output = pd.read_parquet(outputs_dir / "step_1_aggregate_bymonth.parquet")
         >>> step_timing = json.load(open(outputs_dir / "step_1_log.json"))
     """
     return THESIS_DATA_PREPROCESSING_DIR / "nielsen" / category / "pipeline_step_outputs"

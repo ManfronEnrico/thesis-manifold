@@ -38,5 +38,13 @@
     "category": "CSD",
     "elapsed_sec": 0.0,
     "output_rows": 0
+  },
+  {
+    "timestamp": "2026-07-13T14:45:52.440678",
+    "step_num": 0,
+    "step_name": "Verify Parquet Cache",
+    "category": "CSD",
+    "elapsed_sec": 0.0,
+    "output_rows": 0
   }
 ]

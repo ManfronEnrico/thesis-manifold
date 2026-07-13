@@ -106,11 +106,18 @@ except ImportError:
 # ============================================================================
 
 CATEGORY = "CSD"
+GRAIN = "bymonth"  # must match one of pre_csd_1_load_and_aggregate.py's GRAIN_CONFIG keys
 STEP_OUTPUT_DIR = get_category_pipeline_step_outputs_dir(CATEGORY)
-INPUT_AGGREGATE = STEP_OUTPUT_DIR / "step_1_aggregate.parquet"
-OUTPUT_FINDINGS = STEP_OUTPUT_DIR / "csd_eda_findings.json"
-OUTPUT_PLOTS_DIR = STEP_OUTPUT_DIR / "csd_eda_plots"
+INPUT_AGGREGATE = STEP_OUTPUT_DIR / f"step_1_aggregate_{GRAIN}.parquet"
+OUTPUT_FINDINGS = STEP_OUTPUT_DIR / f"csd_eda_findings_{GRAIN}.json"
+OUTPUT_PLOTS_DIR = STEP_OUTPUT_DIR / f"csd_eda_plots_{GRAIN}"
 OUTPUT_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+
+if not INPUT_AGGREGATE.exists():
+	raise FileNotFoundError(
+		f"Step 1 output not found at {INPUT_AGGREGATE}. "
+		f"Run pre_csd_1_load_and_aggregate.py --grain {GRAIN} first."
+	)
 
 # Visualization configuration (Rossmann + GeeksforGeeks style)
 if HAS_MATPLOTLIB:
