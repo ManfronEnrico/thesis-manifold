@@ -329,5 +329,23 @@
     "elapsed_sec": 9.6,
     "output_rows": 27086,
     "output_cols": 10
+  },
+  {
+    "timestamp": "2026-07-13T12:54:00.175720",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 12.13,
+    "output_rows": 3975,
+    "output_cols": 8
+  },
+  {
+    "timestamp": "2026-07-13T13:03:18.153190",
+    "step_num": 1,
+    "step_name": "Load and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 5.11,
+    "output_rows": 3975,
+    "output_cols": 8
   }
 ]

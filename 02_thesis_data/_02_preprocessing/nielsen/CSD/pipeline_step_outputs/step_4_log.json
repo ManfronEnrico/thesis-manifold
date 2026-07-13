@@ -264,5 +264,25 @@
     "output_rows": 2552,
     "input_cols": 8,
     "output_cols": 23
+  },
+  {
+    "timestamp": "2026-07-13T12:54:06.203234",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.15,
+    "output_rows": 2552,
+    "input_cols": 8,
+    "output_cols": 23
+  },
+  {
+    "timestamp": "2026-07-13T13:03:22.851793",
+    "step_num": 4,
+    "step_name": "Engineer Features",
+    "category": "CSD",
+    "elapsed_sec": 0.13,
+    "output_rows": 2552,
+    "input_cols": 8,
+    "output_cols": 23
   }
 ]

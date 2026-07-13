@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SRQ1 forecasting benchmark — corrected DVH EXCL. HD matrices.
+SRQ1 forecasting benchmark — grain-aware, corrected DVH EXCL. HD matrices.
 
 Trains, per category, on the regenerated feature matrices and reports test-set
 accuracy for a baseline ladder:
@@ -8,14 +8,21 @@ accuracy for a baseline ladder:
 Metrics: median per-series MAPE, mean MAPE, and WMAPE (volume-weighted — the
 business metric). Forward-chaining split is already encoded in the `split` column.
 
-Runs on BOTH granularities:
-    _04 brand×chain (primary)  and  _03 brand×month (robustness comparison).
+Grain-aware (--grain/--grains, default bymonth only): SRQ1 scope is locked to
+brand x month grain (2026-07-12, plans/P0027 Phase 4a-ii/4d). bychain/byregion
+are wired up (PATHS constants exist for bychain) but skip gracefully with a
+visible message if their feature matrices don't exist yet, rather than
+crashing before reaching the default grain.
+
 Self-contained: reads only local parquet matrices. No Prometheus/Nika dependency.
 
 Usage:  .venv/bin/python scripts/srq1_benchmark.py
+        .venv/bin/python scripts/srq1_benchmark.py --grain bymonth
+        .venv/bin/python scripts/srq1_benchmark.py --grains bymonth,bychain
 Output: 04_thesis_results/srq1/{metrics.csv, summary.md}
 """
 
+import argparse
 import json
 import sys
 import warnings
@@ -36,22 +43,25 @@ CATS = {"CSD": "csd", "danskvand": "danskvand",
         "energidrikke": "energidrikke", "RTD": "rtd"}
 
 DATASETS = {
+    "bymonth": THESIS_DATA_ENGINEERED_BYMONTH_DIR,
     "bychain": THESIS_DATA_ENGINEERED_BYCHAIN_DIR,
-    "brand":   THESIS_DATA_ENGINEERED_BYMONTH_DIR,
 }
+DEFAULT_GRAINS = ["bymonth"]
 
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "holiday_month",
-            "promo_intensity", "weighted_distribution"]
+            "promo_intensity", "weighted_dist"]
 
 # series key per dataset
-KEYS = {"bychain": ["brand", "chain"], "brand": ["brand"]}
+KEYS = {"bychain": ["brand", "chain"], "bymonth": ["brand"]}
 
 
-def _load(ds: str, cat: str, slug: str) -> pd.DataFrame:
+def _load(ds: str, cat: str, slug: str) -> pd.DataFrame | None:
     sub = "CSD" if (cat == "CSD") else cat
     p = DATASETS[ds] / sub / f"{slug}_feature_matrix.parquet"
+    if not p.exists():
+        return None
     return pd.read_parquet(p)
 
 
@@ -90,6 +100,10 @@ def _fit_predict(model_name, Xtr, ytr_log, Xte):
 
 def run_category(ds: str, cat: str, slug: str) -> list[dict]:
     fm = _load(ds, cat, slug)
+    if fm is None:
+        print(f"  {cat:13s} skipped — no feature matrix at grain='{ds}' yet")
+        return []
+
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     tr = d[d.split == "train"]
     te = d[d.split == "test"]
@@ -124,9 +138,25 @@ def run_category(ds: str, cat: str, slug: str) -> list[dict]:
 
 
 def main():
+    parser = argparse.ArgumentParser(description="SRQ1 forecasting benchmark")
+    parser.add_argument("--grain", type=str, default=None, help="Single grain (default: bymonth)")
+    parser.add_argument("--grains", type=str, default=None, help="Comma-separated list of grains")
+    args = parser.parse_args()
+
+    if args.grains:
+        grains = [g.strip() for g in args.grains.split(",") if g.strip()]
+    elif args.grain:
+        grains = [args.grain]
+    else:
+        grains = DEFAULT_GRAINS
+
+    unknown = [g for g in grains if g not in DATASETS]
+    if unknown:
+        raise ValueError(f"Unknown grain(s) {unknown}. Valid grains: {list(DATASETS)}")
+
     OUT.mkdir(parents=True, exist_ok=True)
     all_rows = []
-    for ds in DATASETS:
+    for ds in grains:
         print(f"\n########## DATASET = {ds} ##########")
         for cat, slug in CATS.items():
             r = run_category(ds, cat, slug)
@@ -138,6 +168,10 @@ def main():
                 print(f"  {cat:13s} best={best['model']:9s} WMAPE={best['wmape']:5.1f}% "
                       f"(naive {naive['wmape']:5.1f}%)  medMAPE={best['mape_median']:5.1f}%")
 
+    if not all_rows:
+        print("\nNo rows produced — no feature matrices found for the requested grain(s).")
+        return
+
     df = pd.DataFrame(all_rows)
     df.to_csv(OUT / "metrics.csv", index=False)
 
@@ -145,11 +179,13 @@ def main():
     lines = ["# SRQ1 benchmark — corrected DVH EXCL. HD matrices", "",
              "Test-set accuracy. WMAPE = volume-weighted (business metric); "
              "medMAPE = median per-row APE. Models trained in log space, seed=42.", ""]
-    for ds in DATASETS:
+    for ds in grains:
+        sub = df[df.dataset == ds]
+        if sub.empty:
+            continue
         lines += [f"## Dataset: {ds}", "",
                   "| Category | Model | WMAPE | mean MAPE | median MAPE | n_train | n_test | n_series |",
                   "|---|---|---|---|---|---|---|---|"]
-        sub = df[df.dataset == ds]
         for cat in CATS:
             for _, x in sub[sub.category == cat].iterrows():
                 wm = f"{x['wmape']:.1f}%" if pd.notna(x.get("wmape")) else "ERR"

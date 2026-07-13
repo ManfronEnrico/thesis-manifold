@@ -1,9 +1,10 @@
-# Nielsen CSD Preprocessing Report
+# Nielsen CSD Preprocessing Report (bymonth)
 
-**Generated:** 2026-07-12 19:34:19
+**Generated:** 2026-07-13 13:03:25
 **Category:** CSD
+**Grain:** bymonth (group keys: brand)
 **Market Scope:** All Market Types (aggregated across all 28 outlet channels)
-**Min Periods Filter:** 40 (Thesis Quality Focus - 62 brands)
+**Min Periods Filter:** 40
 
 ---
 
@@ -11,11 +12,11 @@
 
 | Metric | Value |
 |---|---|
-| Brands in feature matrix | 58 |
+| Series in feature matrix | 58 |
 | Total rows | 2,552 |
-| Rows per brand (avg) | 44 |
+| Rows per series (avg) | 44 |
 | Features engineered | 18 |
-| Total pipeline time | 10.5s |
+| Total pipeline time | 6.2s |
 
 ---
 
@@ -23,8 +24,8 @@
 
 | Artifact | File | Description |
 |---|---|---|
-| Feature Matrix | `csd_feature_matrix.parquet` | Final feature matrix for modeling (brand × period × features × split) |
-| Series Index | `csd_series_index.csv` | Brand-level metadata with sales units |
+| Feature Matrix | `csd_feature_matrix.parquet` | Final feature matrix for modeling |
+| Series Index | `csd_series_index.csv` | Series-level metadata with sales units |
 | Split Dates | `csd_split_dates.json` | Train/val/test split date boundaries (JSON) |
 | Report | `csd_preprocessing_report.md` | This preprocessing summary report |
 
@@ -32,73 +33,17 @@
 
 ---
 
-## Pipeline Execution Details
-
-### Step 1: Load and Aggregate
-- **Input:** Nielsen view files (Facts, Product, Period, Market dimensions)
-- **Output:** Brand × period aggregation
-- **Processing:** Loaded 4,040 rows, aggregated by brand and period
-- **Output file:** `step_1_aggregate.parquet`
-
-| Step | Input Cols | Output Cols | Elapsed (s) | Output Rows |
-|---|---|---|---|---|
-| Step 1 | — | 10 | 9.60s | 27,086 |
-
-### Step 2: Build Calendar
-- **Input:** Aggregated data (step 1)
-- **Output:** Complete brand × month index with NaN for missing periods
-- **Date Range:** 2022-10 to 2026-03 (42 monthly periods)
-- **Processing:** Created complete calendar grid for all brands
-- **Output file:** `step_2_calendar_filled.parquet`
-- **Columns:** 8 → 8 | **Elapsed:** 0.16s | **Output rows:** 6,160
-
-### Step 3: Filter Series
-- **Input:** Calendar-filled data (step 2)
-- **Output:** Filtered to brands with ≥40 non-zero periods
-- **Processing:** Removed sparse series (insufficient historical observations)
-- **Output file:** `step_3_filtered_series.parquet`
-- **Columns:** 8 → 8 | **Elapsed:** 0.08s | **Output rows:** 2,552
-
-### Step 4: Engineer Features
-- **Input:** Filtered series (step 3)
-- **Output:** Features + lag/rolling/calendar features + log transformation
-- **Features added:** 10 new columns
-- **Processing:**
-  - Lags: 1, 2, 3, 4, 8, 13 months
-  - Rolling: mean (4, 13-month windows), std (4-month window)
-  - Calendar: month, quarter, holiday_month (Jan/Apr/Jun/Oct/Dec)
-  - Transformation: log(sales_units) with NaN preservation
-- **Output file:** `step_4_engineered_features.parquet`
-- **Columns:** 8 → 23 | **Elapsed:** 0.12s | **Output rows:** 2,552
-
-### Step 5: Apply Split
-- **Input:** Engineered features (step 4)
-- **Output:** Added train/val/test split labels
-- **Split method:** Locked date-based (time-series integrity)
-- **Processing:** Assigned split based on period_year-period_month
-- **Output file:** `step_5_split_applied.parquet`
-- **Columns:** 23 → 24 | **Elapsed:** 0.12s | **Output rows:** 2,552
-
-### Step 6: Save Outputs
-- **Input:** Split-applied data (step 5)
-- **Output:** Feature matrix, series index, split dates, report
-- **Processing:** Generated final outputs and documentation
-- **Output files:** `csd_feature_matrix.parquet`, `csd_series_index.csv`, `csd_split_dates.json`
-- **Columns:** 26 → 26 | **Elapsed:** 0.38s | **Output rows:** 25,124
-
----
-
 ## Split Boundaries
 
-| Split | Start | End | Period Range | Rows | Avg rows/brand |
-|---|---|---|---|---|---|
-| Train | 2022-10 | 2024-10-01 | ≤2025-02 | 1,450 | 25 |
-| Val | 2024-11-01 | 2025-04-01 | 2025-03 to 2025-08 | 348 | 6 |
-| Test | 2025-05-01 | 2026-05 | ≥2025-09 | 754 | 13 |
+| Split | Start | End | Rows |
+|---|---|---|---|
+| Train | 2022-10 | 2024-10-01 | 1,450 |
+| Val | 2024-11-01 | 2025-04-01 | 348 |
+| Test | 2025-05-01 | 2026-05 | 754 |
 
 ---
 
-## Top 20 Brands by Total Sales Units
+## Top 20 Series by Total Sales Units
 
 | brand             |   n_periods |   n_nonzero | total_units   |   train_periods |   val_periods |   test_periods |
 |:------------------|------------:|------------:|:--------------|----------------:|--------------:|---------------:|
@@ -126,17 +71,6 @@
 ---
 
 ## Feature Engineering Summary
-
-### Column Evolution
-
-| Stage | Count | Columns |
-|---|---|---|
-| Step 1 (Aggregation) | 8 | brand, period_year, period_month, sales_units, sales_value, sales_liters, promo_units, weighted_dist |
-| Step 2-3 (Calendar & Filter) | 8 | _(same as Step 1)_ |
-| Step 4 (Feature Engineering) | 23 | _(+15 new features: lags, rolling, calendar, log_sales_units)_ |
-| Step 5 (Split) | 24 | _(+1 split column)_ |
-
-### Engineered Features
 
 **Lag Features (6):** `lag_1`, `lag_2`, `lag_3`, `lag_4`, `lag_8`, `lag_13`
 
@@ -172,21 +106,16 @@
 
 ### Null Handling
 - **sales_units:** NaN in calendar-filled step indicates zero or missing observation. Preserved for downstream time-series modeling (NOT imputed).
-- **weighted_distribution:** ~16.7% NULL in source data. Averaged during aggregation; NaN for missing brand-months.
+- **weighted_distribution:** ~16.7% NULL in source data. Averaged during aggregation; NaN for missing series-months.
 - **Engineered features:** NaN propagates where source is NaN. Lag/rolling operations do NOT forward-fill gaps.
 - **log_sales_units:** NaN for non-positive or missing values (log-safe transformation).
 
 ### Filtering Criteria
-- Only brands with ≥40 non-zero observations retained
-- All brands have complete calendar coverage (2022-10 to 2026-03)
+- Only series with >=40 non-zero observations retained
 - NaN pattern from earlier steps preserved through final matrix
 
 ### Train/Val/Test Notes
 - Split based on **date, not random sampling** (time-series integrity required)
-- Locked boundaries per research design:
-  - Train: period ≤ 2025-02
-  - Val: 2025-03 ≤ period ≤ 2025-08
-  - Test: period ≥ 2025-09
 
 ---
 
@@ -194,22 +123,21 @@
 
 | Parameter | Value |
 |---|---|
+| Grain | bymonth |
+| Group Keys | brand |
 | Market Scope | All Market Types (aggregated across 28 retail outlet channels) |
-| Min Periods Filter | 40 non-zero observations per brand (thesis quality focus) |
-| Calendar Range | 2022-10 to 2026-04 (43 monthly periods) |
+| Min Periods Filter | 40 |
 | Lag Windows | 1, 2, 3, 4, 8, 13 months (autocorrelation-based) |
 | Rolling Windows | 4-month, 13-month (Nielsen calendar + quarterly) |
-| Holiday Months | 3 (Mar), 6 (Jun), 12 (Dec) — **Empirical CSD peaks** (not default (1, 4, 6, 10, 12)) |
+| Holiday Months | 3 (Mar), 6 (Jun), 12 (Dec) — **Empirical CSD peaks** (not default {1,4,6,10,12}) |
 | Split Method | Locked date-based (time-series) |
-| Train End | 2025-02 |
-| Val End | 2025-08 |
 
 ---
 
 ## Processing Summary
 
-- **Total brands processed:** 58
+- **Total series processed:** 58
 - **Total rows in final matrix:** 2,552
 - **Features engineered:** 18
-- **Pipeline execution time:** 10.5s
-- **Generated:** 2026-07-12 19:34:20
+- **Pipeline execution time:** 6.2s
+- **Generated:** 2026-07-13 13:03:25
