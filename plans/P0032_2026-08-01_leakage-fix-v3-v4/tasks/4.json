@@ -1,0 +1,11 @@
+{
+  "id": "4",
+  "subject": "Apply V3 fix in _shared_modules/engineer_features.py",
+  "description": "Implement the decision from task 3 at engineer_features.py:317-321. Per project rule, do not Edit the .py directly if it is treated as a protected Python file -- use the temp-script pattern. Ensure the fix is consistent with the surrounding lag/rolling features, which are already shift(1)-ed. Do NOT touch the archived builders under .archive/ -- they are dead code.",
+  "activeForm": "Applying V3 leakage fix",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

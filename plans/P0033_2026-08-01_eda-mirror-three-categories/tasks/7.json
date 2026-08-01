@@ -1,0 +1,11 @@
+{
+  "id": "7",
+  "subject": "Parity-check outputs against CSD",
+  "description": "Verify each category produces the same artefact set and schema as CSD (feature matrix parquet, split_dates json, preprocessing report). Any structural divergence is either a bug or a delta that must be documented in findings.md as intentional.",
+  "activeForm": "Parity-checking outputs",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "6"
+  ]
+}

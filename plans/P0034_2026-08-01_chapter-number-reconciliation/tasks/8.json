@@ -1,0 +1,9 @@
+{
+  "id": "8",
+  "subject": "Verify the <=15% industry target is real, or cut it",
+  "description": "Brian flagged this as possible AI slop. Findings: Ch6:92 asserts 'Target MAPE: <=15% (industry benchmark for retail demand forecasting -- cite ML-Based FMCG 2024)', and the claim is then repeated in Ch6:137, Ch8:46, Ch9:18, Ch10:21. The cited source is Kaya & Turkyilmaz style INFUS 2024 / Springer LNCS 'Machine Learning-Based Demand Forecasting for an FMCG Retailer' (references.md:46-47). VERIFY the paper actually states a <=15% MAPE benchmark. If it does not, this is an unsourced number propagated across four chapters and must be cut or replaced with a defensible sourced threshold. Do not let it survive on the strength of repetition alone.",
+  "activeForm": "Verifying the 15% target claim",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

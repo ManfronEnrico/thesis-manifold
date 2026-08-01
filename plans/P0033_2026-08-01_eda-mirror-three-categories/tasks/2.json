@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Inventory per-category deltas vs CSD",
+  "description": "For Danskvand, Energidrikke, RTD: read the existing pre_{cat}_0..6.py step scripts and note every place their parameters legitimately differ from CSD (MIN_PERIODS feasibility, period counts, brand counts, promo-zero handling, market scope). This prevents blind copying that silently breaks a category.",
+  "activeForm": "Inventorying per-category deltas",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

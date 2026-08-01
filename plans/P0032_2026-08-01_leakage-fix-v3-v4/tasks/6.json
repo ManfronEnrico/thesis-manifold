@@ -1,0 +1,12 @@
+{
+  "id": "6",
+  "subject": "Re-run CSD preprocessing end-to-end",
+  "description": "Regenerate the CSD feature matrix through the notebook pipeline with the fixes in place. Confirm the matrix schema is unchanged apart from the intended promo_intensity semantics, and that the assert passes.",
+  "activeForm": "Re-running CSD preprocessing",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "4",
+    "5"
+  ]
+}

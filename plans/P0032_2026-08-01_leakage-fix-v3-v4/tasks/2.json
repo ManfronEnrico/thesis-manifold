@@ -1,0 +1,9 @@
+{
+  "id": "2",
+  "subject": "Verify no consumer recomputes promo_intensity independently",
+  "description": "~15 live scripts list promo_intensity in FEATURES. Confirm they READ the column from the feature matrix rather than recomputing it from promo_units/sales_units. If any recomputes it, that script needs the fix too. Grep 03_thesis_modelling/ and utility_scripts/.",
+  "activeForm": "Verifying promo_intensity consumers",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,11 @@
+{
+  "id": "4",
+  "subject": "Build the Energidrikke notebook",
+  "description": "Create pre_processing_notebook_energidrikke.ipynb mirroring the CSD template. NOTE: this is the one order-sensitive category -- it is promo-affected, so its final production run should follow P0032. Building the notebook now is safe; only the final run is gated.",
+  "activeForm": "Building Energidrikke notebook",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "2"
+  ]
+}

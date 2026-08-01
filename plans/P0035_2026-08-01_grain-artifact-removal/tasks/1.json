@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Inventory every live chain/region-grain reference",
+  "description": "Produce the authoritative list of live files referencing bychain/region grain, excluding .archive/, plans/.archive/ and harness docs (those are the audit trail and stay). Classify each as: PATH CONSTANT, OBSOLETE SCRIPT, CONSUMER (FEATURES list / call site), RESULTS ARTIFACT, or DOC.",
+  "activeForm": "Inventorying grain references",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

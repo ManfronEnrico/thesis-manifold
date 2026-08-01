@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Confirm Ch4 inputs complete for all four categories",
+  "description": "Verify Ch4 (data assessment) now has comparable EDA output across CSD, Danskvand, Energidrikke and RTD. This closes harness task B03 and unblocks the writing phase. List anything Ch4 still lacks.",
+  "activeForm": "Confirming Ch4 inputs",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "7"
+  ]
+}

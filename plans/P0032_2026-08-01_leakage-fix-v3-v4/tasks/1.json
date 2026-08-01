@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Capture baseline CSD metrics before any edit",
+  "description": "Run the existing CSD benchmark and record current WMAPE / median per-series MAPE per model, so the leakage fix's effect is measurable rather than asserted. Save raw output into the plan folder. Do NOT edit any source yet.",
+  "activeForm": "Capturing baseline CSD metrics",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

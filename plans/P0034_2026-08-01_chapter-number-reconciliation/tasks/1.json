@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Complete and verify the hard-coded metric inventory",
+  "description": "The task_plan table lists 13 locations from an initial grep. Verify each file:line is accurate, and sweep for anything missed: figure captions, appendix tables, abstract.md, outline.md, meeting-brief and walkthrough files. Produce the authoritative list.",
+  "activeForm": "Completing metric inventory",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

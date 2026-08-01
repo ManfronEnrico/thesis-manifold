@@ -1,0 +1,12 @@
+{
+  "id": "6",
+  "subject": "Swap in the corrected post-retrain numbers",
+  "description": "Using P0032's output, replace every WILL-CHANGE figure and recompute every derived quantity (deltas, ranges). Re-evaluate whether energidrikke still meets the <=15% target -- if not, the qualitative sentence in Ch6/Ch8/Ch10 inverts and must be rewritten, not just renumbered.",
+  "activeForm": "Swapping in corrected numbers",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "2",
+    "5"
+  ]
+}

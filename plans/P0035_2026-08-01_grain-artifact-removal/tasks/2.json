@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Determine whether utility_scripts/scripts/ or 03_thesis_modelling/ is canonical",
+  "description": "Both trees hold near-identical srq1_benchmark*.py, srq1_figures.py, srq1_profiling.py, srq2_synthesis.py, srq4_experiment.py, forecast_service.py. Per repo-tier-structure.md, utility_scripts/ is tooling-only and must not hold pipeline logic, so the copies there are likely P0028 leftovers. Confirm via git history and imports which tree is live. Fixing the wrong copy leaves the bug in place. Decide: clean both, or archive the stale tree outright.",
+  "activeForm": "Determining canonical script tree",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

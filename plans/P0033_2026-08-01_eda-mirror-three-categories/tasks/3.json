@@ -1,0 +1,11 @@
+{
+  "id": "3",
+  "subject": "Build the Danskvand notebook",
+  "description": "Create pre_processing_notebook_danskvand.ipynb mirroring the CSD template, applying only the deltas from task 2. All paths via PATHS.py -- no hardcoded paths. Promo-zero category, so unaffected by the P0032 leakage fix.",
+  "activeForm": "Building Danskvand notebook",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "2"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Hand the corrected numbers to P0034",
+  "description": "Write the new figures into P0034's findings.md so the chapter reconciliation can proceed against real values. Explicitly note whether energidrikke still meets the <=15% industry target, since that qualitative claim appears in Ch6, Ch8 and Ch10.",
+  "activeForm": "Handing off corrected numbers",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "7"
+  ]
+}

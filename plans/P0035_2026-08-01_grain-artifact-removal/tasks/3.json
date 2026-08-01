@@ -1,0 +1,11 @@
+{
+  "id": "3",
+  "subject": "Remove chain-grain path constants from PATHS.py",
+  "description": "Remove THESIS_DATA_ENGINEERED_BYCHAIN_DIR and get_category_engineered_bychain_dir(). Also resolve the deprecated get_category_engineered_dir() alias, which currently redirects to bymonth. Update the PATHS.py top-of-file docstring so the tier map no longer implies a bychain/ split. Confirm no live caller breaks.",
+  "activeForm": "Removing chain-grain path constants",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

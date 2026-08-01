@@ -1,0 +1,9 @@
+{
+  "id": "9",
+  "subject": "Hold all prose and bullets until the data is streamlined",
+  "description": "GATE TASK. Brian, 2026-08-01: wait for prose and bulletpoints either way until the data is streamlined. No chapter prose is finalised until P0032 (leakage), P0033 (all four categories) and P0035 (grain removal) have landed and the numbers are stable. Tasks 1-5 and 8 (inventory, triage, Totalbeer draft, structural rewrite, citation check) are preparation and may proceed now. Tasks 6-7 (number swap, approval package) are blocked behind this gate.",
+  "activeForm": "Holding prose until data settles",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

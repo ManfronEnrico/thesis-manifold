@@ -1,0 +1,11 @@
+{
+  "id": "3",
+  "subject": "Decide V3 fix shape and weighted_distribution treatment",
+  "description": "Two decisions, both must be recorded in findings.md with rationale (they land in Ch3/Ch6 prose later): (a) promo_intensity -> shift(1) vs drop entirely; default shift(1). (b) weighted_distribution -> keep contemporaneous as known/planned exogenous, or shift(1). Distribution coverage is arguably knowable in advance; a promo ratio computed from realised sales is not.",
+  "activeForm": "Deciding V3 fix shape",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "2"
+  ]
+}

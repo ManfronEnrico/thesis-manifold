@@ -1,0 +1,13 @@
+{
+  "id": "6",
+  "subject": "Run all three notebooks to completion",
+  "description": "Execute end-to-end, writing to _03_engineered/bymonth/{Category}/. Run danskvand and RTD any time; run energidrikke after P0032 lands so it does not bake in the leaky promo_intensity. Record runtimes and any failures in progress.md.",
+  "activeForm": "Running the three notebooks",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "3",
+    "4",
+    "5"
+  ]
+}

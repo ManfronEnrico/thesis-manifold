@@ -1,0 +1,15 @@
+{
+  "id": "8",
+  "subject": "Verify the CSD pipeline still runs end-to-end",
+  "description": "After all removals, run the CSD notebook pipeline start to finish. Confirm no import error, no dangling path resolution, and that the bymonth feature matrix regenerates identically (modulo any P0032 leakage fix, if that landed first). This is the regression gate for the whole plan.",
+  "activeForm": "Verifying CSD pipeline",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "3",
+    "4",
+    "5",
+    "6",
+    "7"
+  ]
+}

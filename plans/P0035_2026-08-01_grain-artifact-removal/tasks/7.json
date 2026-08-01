@@ -1,0 +1,11 @@
+{
+  "id": "7",
+  "subject": "Update repo docs to describe a brand-month-only pipeline",
+  "description": "Update .claude/rules/repo-tier-structure.md and user-docs/contributing/repository_map.md so they no longer describe a bychain/ tier. Note in repo-tier-structure.md that _03_engineered/ now holds bymonth/ only, and why -- mirroring how that file already documents the deleted nielsen/ subfolder.",
+  "activeForm": "Updating repo docs",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

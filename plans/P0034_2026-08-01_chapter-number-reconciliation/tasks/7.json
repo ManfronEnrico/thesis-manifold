@@ -1,0 +1,13 @@
+{
+  "id": "7",
+  "subject": "Package everything for Enrico approval",
+  "description": "Assemble tasks 3-6 into a single approval-ready diff/bullet document. House rule: no prose lands without Enrico. Lead with the two items needing a judgement call rather than a rubber stamp: the danskvand regression from chain-grain removal, and any inversion of the <=15% claim.",
+  "activeForm": "Packaging for approval",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "4",
+    "5",
+    "6"
+  ]
+}
