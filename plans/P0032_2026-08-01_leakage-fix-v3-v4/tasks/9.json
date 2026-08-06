@@ -3,7 +3,8 @@
   "subject": "Confirm the P0027 groupby leakage bug is fixed before editing the module",
   "description": "CONTEXT / VERIFY-ONLY. P0027 (2026-07-11) found that _shared_modules/engineer_features.py grouped by 'brand' only, so region-grain lag/rolling features conflated across regions. A 2026-08-01 check indicates this is ALREADY FIXED: group_keys is threaded through make_calendar (:192), filter_series (:248), engineer_features (:269), apply_split (:348) and the pipeline class (:401), defaulting to ['brand']. Re-confirm this holds before task 4 edits the same file, so the V3 fix is not built on a stale assumption. If it is genuinely fixed, record that and move on -- do not re-fix.",
   "activeForm": "Confirming P0027 bug status",
-  "status": "pending",
+  "status": "completed",
+  "outcome": "P0027 groupby fix confirmed still in place -- do not re-fix. One correction to findings F4: it cited apply_split(:348) as taking group_keys; it does not and does not need to. Correct call sites: make_calendar(:190), filter_series(:244), engineer_features(:263), build_series_index(:346), FeatureEngineer dataclass(:401).",
   "blocks": [],
   "blockedBy": []
 }

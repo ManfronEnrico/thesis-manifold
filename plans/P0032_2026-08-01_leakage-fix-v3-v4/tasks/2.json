@@ -3,7 +3,8 @@
   "subject": "Verify no consumer recomputes promo_intensity independently",
   "description": "~15 live scripts list promo_intensity in FEATURES. Confirm they READ the column from the feature matrix rather than recomputing it from promo_units/sales_units. If any recomputes it, that script needs the fix too. Grep 03_thesis_modelling/ and utility_scripts/.",
   "activeForm": "Verifying promo_intensity consumers",
-  "status": "pending",
+  "status": "completed",
+  "outcome": "Confirmed: all consumers read promo_intensity from the feature matrix; none recompute it. Fixing the producer is sufficient. Noted separately: duplicate divergent SRQ scripts under utility_scripts/scripts/ use the name weighted_distribution where live 03_thesis_modelling/ copies use weighted_dist.",
   "blocks": [],
   "blockedBy": []
 }

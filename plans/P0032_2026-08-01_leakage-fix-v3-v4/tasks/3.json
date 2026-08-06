@@ -3,7 +3,8 @@
   "subject": "Decide V3 fix shape and weighted_distribution treatment",
   "description": "Two decisions, both must be recorded in findings.md with rationale (they land in Ch3/Ch6 prose later): (a) promo_intensity -> shift(1) vs drop entirely; default shift(1). (b) weighted_distribution -> keep contemporaneous as known/planned exogenous, or shift(1). Distribution coverage is arguably knowable in advance; a promo ratio computed from realised sales is not.",
   "activeForm": "Deciding V3 fix shape",
-  "status": "pending",
+  "status": "completed",
+  "outcome": "Decided: .shift(1), not drop. Preserves a lagged promo signal without leaking sales_units_t, consistent with every neighbouring lag/rolling feature. weighted_distribution kept contemporaneous but flagged as weakest link (target corr 0.756 vs lag_1 0.585); Ch6 sensitivity check recommended. See findings.md F8.",
   "blocks": [],
   "blockedBy": [
     "2"

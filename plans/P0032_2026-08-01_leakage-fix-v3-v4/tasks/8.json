@@ -3,7 +3,8 @@
   "subject": "Hand the corrected numbers to P0034",
   "description": "Write the new figures into P0034's findings.md so the chapter reconciliation can proceed against real values. Explicitly note whether energidrikke still meets the <=15% industry target, since that qualitative claim appears in Ch6, Ch8 and Ch10.",
   "activeForm": "Handing off corrected numbers",
-  "status": "pending",
+  "status": "blocked",
+  "blocked_reason": "Blocked by task 7. Additionally, per user instruction 2026-08-06 P0034 is paused and being worked in a separate session -- no P0034 files were touched here.",
   "blocks": [],
   "blockedBy": [
     "7"

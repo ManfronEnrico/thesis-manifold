@@ -1,9 +1,10 @@
 ---
 pid: P0032
 created: 2026-08-01 00:00:00
-updated: 2026-08-01 00:00:00
-status: in_progress
-focus_detail: "Fix V3 (promo_intensity target leakage) and V4 (market_id assert) in _shared_modules/engineer_features.py, then re-run CSD to quantify the metric shift."
+updated: 2026-08-06 00:00:00
+status: blocked
+blocked_reason: "V3 + V4 fixes are applied and verified in worktree p0032-leakage-fix-v3-v4 (uncommitted). Phases 3-4 cannot proceed: (a) promo_intensity is identically zero across all 2552 CSD rows, so the before/after metric shift the plan was built to measure does not exist (F10); (b) the SRQ1 baseline in 04_thesis_results/srq1/metrics.csv is stale and raises KeyError under the current benchmark script (F11). Unblocking requires a grain decision — see F10.5."
+focus_detail: "Phase 2 done (tasks 2,3,4,5,9). Tasks 1,6,7,8 blocked. Next action is the F10.5 decision on whether to switch the CSD grain to national rollup market 1256338."
 ---
 
 # P0032 — Leakage Fix (V3) + Market-Scope Assert (V4)

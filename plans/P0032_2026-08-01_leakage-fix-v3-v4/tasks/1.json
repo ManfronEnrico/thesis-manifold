@@ -3,7 +3,8 @@
   "subject": "Capture baseline CSD metrics before any edit",
   "description": "Run the existing CSD benchmark and record current WMAPE / median per-series MAPE per model, so the leakage fix's effect is measurable rather than asserted. Save raw output into the plan folder. Do NOT edit any source yet.",
   "activeForm": "Capturing baseline CSD metrics",
-  "status": "pending",
+  "status": "blocked",
+  "blocked_reason": "Baseline in 04_thesis_results/srq1/metrics.csv is stale and unreproducible: split sizes 692/752 vs actual matrix 1450/348/754, and srq1_benchmark.py requests rolling_mean_4/rolling_std_4/rolling_mean_13 which the matrix does not have (KeyError confirmed by execution). See findings.md F11.",
   "blocks": [],
   "blockedBy": []
 }

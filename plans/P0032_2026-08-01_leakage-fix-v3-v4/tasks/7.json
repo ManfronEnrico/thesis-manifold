@@ -3,7 +3,8 @@
   "subject": "Quantify and record the before/after metric shift",
   "description": "Re-run the benchmark and diff against task 1's baseline. Record per-category, per-model WMAPE deltas in findings.md. Expected: CSD and energidrikke degrade (the honest number); danskvand and RTD unchanged (promo-zero). If danskvand/RTD move at all, investigate -- that would indicate an unintended change.",
   "activeForm": "Quantifying metric shift",
-  "status": "pending",
+  "status": "blocked",
+  "blocked_reason": "Blocked by tasks 1 and 6. Also: only CSD has a feature matrix, so the per-category comparison the task describes cannot be run for danskvand/energidrikke/RTD.",
   "blocks": [],
   "blockedBy": [
     "1",

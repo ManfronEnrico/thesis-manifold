@@ -3,7 +3,8 @@
   "subject": "Apply V4 market-scope assert",
   "description": "Add an explicit assert that exactly one market_id resolves for DVH EXCL. HD. Current code guards len==0 but not len>1, so a duplicate id would silently reintroduce the 6.16x double-count. Failure must be loud and early.",
   "activeForm": "Applying V4 market-scope assert",
-  "status": "pending",
+  "status": "completed",
+  "outcome": "V4a at :183-193 (CSV path raises on len>1). V4b at :77-101 (DB path pre-flight id count) added beyond literal scope and kept -- that SQL filters a joined dim_market, so a duplicate description fans out the JOIN and every SUM() double-counts.",
   "blocks": [],
   "blockedBy": []
 }

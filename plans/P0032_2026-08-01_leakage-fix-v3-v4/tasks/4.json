@@ -3,7 +3,8 @@
   "subject": "Apply V3 fix in _shared_modules/engineer_features.py",
   "description": "Implement the decision from task 3 at engineer_features.py:317-321. Per project rule, do not Edit the .py directly if it is treated as a protected Python file -- use the temp-script pattern. Ensure the fix is consistent with the surrounding lag/rolling features, which are already shift(1)-ed. Do NOT touch the archived builders under .archive/ -- they are dead code.",
   "activeForm": "Applying V3 leakage fix",
-  "status": "pending",
+  "status": "completed",
+  "outcome": "Applied at engineer_features.py:353-380 in worktree p0032-leakage-fix-v3-v4 (uncommitted). Execution-verified: correct one-period shift, first obs per series NaN, no cross-series bleed, [0,1] preserved, multi-key grain honoured.",
   "blocks": [],
   "blockedBy": [
     "3"

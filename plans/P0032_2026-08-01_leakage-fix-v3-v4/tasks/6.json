@@ -3,7 +3,8 @@
   "subject": "Re-run CSD preprocessing end-to-end",
   "description": "Regenerate the CSD feature matrix through the notebook pipeline with the fixes in place. Confirm the matrix schema is unchanged apart from the intended promo_intensity semantics, and that the assert passes.",
   "activeForm": "Re-running CSD preprocessing",
-  "status": "pending",
+  "status": "blocked",
+  "blocked_reason": "promo_intensity is identically zero across all 2552 CSD rows (promo_units nonzero=0, max=0.0), so re-running produces no measurable shift. Root cause: the 9 hard-coded DVH_REGION_IDS carry 0 promo rows; all 22 promo-bearing markets are rollups/chains. Gated on the F10.5 grain decision.",
   "blocks": [],
   "blockedBy": [
     "4",
