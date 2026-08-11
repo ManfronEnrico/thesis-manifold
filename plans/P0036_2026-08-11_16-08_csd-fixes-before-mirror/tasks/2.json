@@ -1,0 +1,14 @@
+{
+  "id": "2",
+  "subject": "Switch CSD market filter to parent 1256338",
+  "description": "pre_processing_notebook_csd.ipynb:426 (DVH_REGION_IDS), :457 (isin filter), :725 (findings artifact). Keep SCD market-dim dedup before merge. Guard len==1 after filter, not just len>0.",
+  "activeForm": "Switching market filter to parent",
+  "status": "pending",
+  "blocks": [
+    "3",
+    "6",
+    "7",
+    "8"
+  ],
+  "blockedBy": []
+}

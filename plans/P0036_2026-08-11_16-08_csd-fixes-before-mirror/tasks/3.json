@@ -1,0 +1,13 @@
+{
+  "id": "3",
+  "subject": "Verify promo populates; assert on all-zero columns",
+  "description": "Confirm promo_units/promo_intensity/has_promo non-degenerate after task 2. Add EDA assertion that fails loudly on ANY all-zero feature - the silent pass-through is why this survived weeks of review (F9).",
+  "activeForm": "Verifying promo and adding assertions",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}

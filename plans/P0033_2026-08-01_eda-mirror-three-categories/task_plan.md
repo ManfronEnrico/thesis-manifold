@@ -1,9 +1,10 @@
 ---
 pid: P0033
 created: 2026-08-01 00:00:00
-updated: 2026-08-01 00:00:00
-status: in_progress
-focus_detail: "Mirror the CSD notebook-based preprocessing/EDA to Danskvand, Energidrikke, RTD — one notebook per category, matching CSD exactly. Highest priority: unblocks Ch4 and the writing phase."
+updated: 2026-08-11 16:08:00
+status: blocked
+blocked_by: P0036
+focus_detail: "BLOCKED by P0036 (2026-08-11). Still the top priority once unblocked, but mirroring the CSD notebook in its current state would propagate a market-filter defect — it filters to 9 region children of DVH EXCL. HD instead of parent 1256338, yielding all-zero promo columns — to all four categories. Fix CSD first (P0036), then mirror."
 ---
 
 # P0033 — Mirror CSD EDA to Danskvand / Energidrikke / RTD

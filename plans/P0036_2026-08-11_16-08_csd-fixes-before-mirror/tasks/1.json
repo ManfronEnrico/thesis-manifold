@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "subject": "Commit P0032 V3/V4 fixes from locked worktree",
+  "description": "V3 promo_intensity leakage fix + V4 market_id assert are applied but UNCOMMITTED in locked worktree worktrees/p0032-leakage-fix-v3-v4. At risk of loss. Both remain correct; under DEC-SCOPE the V3 fix becomes measurable (119,010 nonzero promo rows).",
+  "activeForm": "Committing V3/V4 fixes",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": []
+}

@@ -184,3 +184,81 @@ regenerated.
 This also blocks P0034 (which consumes these numbers). Per user instruction
 2026-08-06, **P0034 is paused and is being handled in a separate session** — no
 P0034 files were touched here.
+
+---
+
+## 2026-08-11 session — F10 corrected
+
+### F12 — F10's premise was wrong: promo is present at DVH EXCL. HD, absent only at the region children
+
+F10 concluded "promo is structurally absent" and F10.5 framed adopting the national
+rollup as a **thesis-level grain decision**. Both were overstated. Measured directly
+against `_01_converted/nielsen/parquet_nielsen/CSD/views/csd_clean_facts_v.parquet`
+(9,080,538 fact rows; promo column `sales_value_any_promo`):
+
+| Scope | Rows | Non-null promo | Nonzero promo |
+|-------|------|----------------|---------------|
+| **Parent `1256338`** (DVH EXCL. HD) | 196,657 | 182,467 | **119,010** |
+| **9 region children** (live notebook filter) | 453,685 | **0** | **0** |
+
+Parent covers 44 periods; max promo value 308,302,433.53.
+
+**Promo-zero is an artifact of the market filter, not a property of the data.**
+Switching to the parent recovers a well-populated feature.
+
+### F12.1 — consequence for P0032's own conclusion
+
+P0032 stalled because the V3 leakage fix could produce no measurable before/after
+delta on an all-zero column. That reasoning holds *only at region scope*. At parent
+scope `promo_intensity` carries real signal, so the V3 fix becomes measurable and
+material. **The V3/V4 fixes remain correct and should be committed** (currently
+uncommitted in worktree `p0032-leakage-fix-v3-v4`).
+
+Corollary: the earlier suggestion to drop `promo_units` / `promo_intensity` as
+"structurally dead columns" (F10.2) must **not** be actioned — it would discard a
+real feature to accommodate a filter bug.
+
+### F12.2 — this is a scope choice, not a grain choice
+
+DEC-GRAIN (brand×month) is untouched by this. Market scope and aggregation grain are
+independent axes; both parent-only and children-only yield brand×month. The parent is
+one pre-aggregated market row per brand×month; the children are nine geographic slices
+of the same universe. Summing them double-counts — hence one or the other, never both.
+
+### F12.3 — P0026 chose the children deliberately; this reverses that on supplier grounds
+
+Not pure drift. `P0026/task_plan.md:42` and `findings.md:20` explicitly exclude the
+"national DVH EXCL. HD total" as a double-count risk, selecting the 9 regions to
+maximize rows (2.3k → 25.1k). That reasoning is valid for *summing* markets but does
+not follow for *choosing* one.
+
+Reversed 2026-08-11 (Brian) on the supplier's own metadata:
+`02_thesis_data/_00_raw/nielsen/description/nielsen-prometheus_data_model.md:69` —
+*"Unless the user specifies a particular market, always use **DVH EXCL. HD**
+(Dagligvarehandel excluding hard discount) as the default."*
+Enrico's archived builder already used it (`build_feature_matrix.py:92`,
+`MARKET_SCOPE = "DVH EXCL. HD"`), as does P0024 (complete, "fix DVH EXCL. HD market
+filter across all 5 pipelines").
+
+Note on series length: regions do **not** lengthen any series — same ~44 periods either
+way. They multiply rows by decomposing a brand-month into nine geographic parts, a
+decomposition DEC-GRAIN already declines to model.
+
+### F12.4 — "HD" means hard discount (a retail channel), not discounting/promotions
+
+Settled — it had been a plausible explanation for the zeros. Confirmed by
+`nielsen-prometheus_data_model.md:69`, `build_feature_matrix.py:24`
+("excluding **hard discount**"), and the market list itself, which contains sibling
+channel definitions `DVH EXCL. LIDL`, `DVH EXCL. DISCOUNT/HD`, and a `DISCOUNT` market
+that carries promo. Excluding hard-discount *stores* never implied excluding
+promotional *selling* in the stores that remain.
+
+### F12.5 — live location of the defect
+
+`02_thesis_data/_02_preprocessing/nielsen/CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb`
+- `:426` — `DVH_REGION_IDS = { ... }` (9 region ids)
+- `:457` — `merged = merged[merged["market_id"].isin(DVH_REGION_IDS)].copy()`
+- `:725` — `"region_ids": DVH_REGION_IDS` (carried into the findings artifact)
+
+Must be fixed **before** P0033 mirrors the notebook, or all four categories inherit
+the all-zero promo columns.
