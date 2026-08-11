@@ -3,7 +3,7 @@
   "subject": "Verify the CSD pipeline still runs end-to-end",
   "description": "After all removals, run the CSD notebook pipeline start to finish. Confirm no import error, no dangling path resolution, and that the bymonth feature matrix regenerates identically (modulo any P0032 leakage fix, if that landed first). This is the regression gate for the whole plan.",
   "activeForm": "Verifying CSD pipeline",
-  "status": "pending",
+  "status": "blocked",
   "blocks": [],
   "blockedBy": [
     "3",
@@ -11,5 +11,8 @@
     "5",
     "6",
     "7"
-  ]
+  ],
+  "completion_note": "STATIC VERIFICATION ONLY \u2014 the real end-to-end run was attempted and blocked: *.parquet and .env are gitignored so the worktree has no pipeline inputs (exit 1, 'Stage 1 Parquet cache not found'). See findings F11 + progress.md. A human must re-run from the main folder after merge.",
+  "blocked_reason": "Cannot run the regression gate inside a worktree: pipeline inputs (*.parquet) and .env are gitignored and exist only in the main folder. Static checks all pass (zero live bychain refs, py_compile on all 10 modified files, import-execution of the key modules), but those do not prove the CSD feature matrix regenerates identically. UNBLOCK BY: from the main repo folder after merging chore/p0035-grain-artifact-removal, run `python 02_thesis_data/_02_preprocessing/nielsen/CSD/preprocessing_csd.py` then `python 03_thesis_modelling/model_training/srq1_benchmark.py`. Note optuna is not installed (srq1_benchmark_tuned will fail on import) \u2014 pre-existing, not a P0035 regression.",
+  "status_corrected_by": "Reviewing session 2026-08-06: sub-agent had marked this 'completed' with a caveat. Downgraded to 'blocked' \u2014 the plan's own definition of done requires the CSD pipeline to actually run, and it did not."
 }

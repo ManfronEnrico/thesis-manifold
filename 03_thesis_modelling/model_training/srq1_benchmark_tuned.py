@@ -23,7 +23,7 @@ import pandas as pd
 import optuna
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYCHAIN_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
+from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -32,8 +32,12 @@ OUT = THESIS_RESULTS_SRQ1_DIR
 SEED = 42
 
 CATS = {"CSD": "csd", "danskvand": "danskvand", "energidrikke": "energidrikke", "RTD": "rtd"}
+# Grain: brand x month only, per DEC-GRAIN (2026-07-12). The "bychain" entry was
+# removed by P0035 (2026-08-01) along with its deleted data directory.
+# NOTE: the tag is "brand" (not "bymonth") because the existing
+# 04_thesis_results/srq1/tuned_params.json keys are prefixed "brand/". Renaming
+# it here would orphan those recorded results.
 DATASETS = {
-    "bychain": THESIS_DATA_ENGINEERED_BYCHAIN_DIR,
     "brand":   THESIS_DATA_ENGINEERED_BYMONTH_DIR,
 }
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",

@@ -4,7 +4,7 @@ SRQ1 operational profiling — peak RAM + train/predict latency per model.
 
 Supports the thesis's ≤8 GB operational constraint claim (Ch6 §6.4) and SRQ4.
 Measures, per model, tracemalloc peak memory and wall-clock for fit and predict
-on a representative dataset (CSD brand×chain — the largest matrix). Tabular models
+on a representative dataset (CSD brand×month). Tabular models
 use the tuned configs; ARIMA is profiled on a single representative brand series.
 
 Self-contained, reproducible (seed=42). No Prometheus/Nika dependency.
@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bychain_dir
+from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir
 
 warnings.filterwarnings("ignore")
 RES = THESIS_RESULTS_SRQ1_DIR
@@ -35,7 +35,9 @@ def _profile(fn):
 
 
 def main():
-    fm = pd.read_parquet(get_category_engineered_bychain_dir("CSD") / "csd_feature_matrix.parquet")
+    # P0035: was get_category_engineered_bychain_dir; the chain grain and its data
+    # directory are gone (DEC-GRAIN 2026-07-12). Profiling now runs on brand x month.
+    fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     trval = d[d.split.isin(["train", "val"])]
     te = d[d.split == "test"]
@@ -60,10 +62,10 @@ def main():
 
     from lightgbm import LGBMRegressor
     add("LightGBM", lambda: LGBMRegressor(random_state=SEED, verbose=-1,
-                                          **params.get("bychain/CSD/LightGBM", {})))
+                                          **params.get("brand/CSD/LightGBM", {})))
     from xgboost import XGBRegressor
     add("XGBoost", lambda: XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1,
-                                        **params.get("bychain/CSD/XGBoost", {})))
+                                        **params.get("brand/CSD/XGBoost", {})))
 
     # ARIMA on a single representative brand series (univariate; per-series cost)
     from statsmodels.tsa.statespace.sarimax import SARIMAX

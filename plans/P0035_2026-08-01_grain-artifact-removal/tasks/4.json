@@ -3,7 +3,7 @@
   "subject": "Archive phase3_region_grain_test.py",
   "description": "This script exists solely to test the region grain against the 16.5% brand x month baseline -- the exact question DEC-GRAIN closed, and the reason harness task B02 was dropped. Archive rather than delete: it is the evidence behind the grain decision. Record where it went and why.",
   "activeForm": "Archiving region grain test",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "1"

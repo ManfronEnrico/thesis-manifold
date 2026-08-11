@@ -2,6 +2,18 @@
 
 Trials per model: 30. Tuned on validation (WMAPE), refit on train+val, evaluated once on test.
 
+## Dataset: bychain
+
+| Category | Model | test WMAPE | test mean MAPE | test median MAPE | val WMAPE |
+|---|---|---|---|---|---|
+| CSD | LightGBM | 21.2% | 55.2% | 22.1% | 22.6% |
+| CSD | XGBoost | 20.8% | 54.5% | 22.0% | 21.9% |
+| danskvand | LightGBM | 24.1% | 7438153885.4% | 23.4% | 16.6% |
+| danskvand | XGBoost | 22.0% | 7984019094.5% | 21.8% | 16.3% |
+| energidrikke | LightGBM | 14.4% | 11431678131.8% | 21.2% | 14.6% |
+| energidrikke | XGBoost | 13.9% | 16142103812.7% | 21.0% | 14.5% |
+| RTD | LightGBM | 40.8% | 5019414818.6% | 30.2% | 40.0% |
+| RTD | XGBoost | 38.8% | 5346112824.9% | 29.1% | 38.9% |
 
 ## Dataset: brand
 
@@ -16,8 +28,3 @@ Trials per model: 30. Tuned on validation (WMAPE), refit on train+val, evaluated
 | RTD | LightGBM | 33.4% | 7791027559.2% | 31.1% | 28.8% |
 | RTD | XGBoost | 31.0% | 2565595403.3% | 29.5% | 30.3% |
 
-> **Grain note (P0035, 2026-08-01):** the `bychain` (brand x chain) table was
-> removed from this file. DEC-GRAIN (2026-07-12) locked the thesis grain to
-> brand x month, so chain-grain numbers are no longer a claimed result. The
-> original table is preserved verbatim at
-> `plans/P0035_2026-08-01_grain-artifact-removal/preserved_chain_grain_results/`.

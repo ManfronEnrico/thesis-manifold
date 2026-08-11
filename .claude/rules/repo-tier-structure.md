@@ -88,14 +88,47 @@ run for them yet). With no unique content remaining, the user deleted
 `02_thesis_data/_03_engineered/nielsen/` directly.
 
 **Implication for future sessions**: if you see a `nielsen/` subfolder reappear
-under `_03_engineered/` (e.g. from a script still writing to the deprecated
-`get_category_engineered_dir()` path, or from restoring an old branch/backup),
-do not assume it needs preserving by default the way this rule used to say —
-check whether its content is genuinely unique (i.e., not already superseded by
-`bymonth/`or `bychain/`) before deciding. The `get_category_engineered_dir()`
-function in `PATHS.py` is deprecated for exactly this reason; scripts should
-call `get_category_engineered_bymonth_dir()` / `_bychain_dir()` (or a future
-`_byregion_dir()`) explicitly instead of the ambiguous deprecated alias.
+under `_03_engineered/` (e.g. from restoring an old branch/backup), do not assume
+it needs preserving by default the way this rule used to say — check whether its
+content is genuinely unique (i.e., not already superseded by `bymonth/`) before
+deciding.
+
+> **Superseded by P0035 (2026-08-01):** the `get_category_engineered_dir()`
+> deprecated alias no longer exists — it was removed along with
+> `get_category_engineered_bychain_dir()`. Call
+> `get_category_engineered_bymonth_dir()` explicitly. See the next section.
+
+### `_03_engineered/` holds `bymonth/` only — brand × month is the locked grain
+
+**DEC-GRAIN** (Enrico, 2026-07-12) fixed the modelling grain to **brand × month**.
+The chain and region grains became a documented limitation + future work rather
+than an active result, and `_03_engineered/bychain/` was deleted from disk.
+
+P0035 (2026-08-01) then removed the code half of that state, which had been left
+resolving to a directory that no longer existed:
+
+- `PATHS.py`: `THESIS_DATA_ENGINEERED_BYCHAIN_DIR`,
+  `get_category_engineered_bychain_dir()` and the deprecated
+  `get_category_engineered_dir()` alias were all removed. Explanatory comments
+  were left at their former locations.
+- Model training/serving scripts no longer register a `bychain` dataset; the
+  `danskvand` category, previously pinned to the chain grain, now reads
+  brand × month like every other category.
+- `04_thesis_results/srq1/` no longer carries chain-grain entries. The originals
+  are preserved at
+  `plans/P0035_2026-08-01_grain-artifact-removal/preserved_chain_grain_results/`.
+- `phase3_region_grain_test.py` and the stale `utility_scripts/scripts/` shadow
+  copies were archived to `.archive/grain_artifacts_p0035_2026-08/` (with a
+  README explaining why) rather than deleted — they are the evidence behind the
+  grain decision.
+
+**What was deliberately NOT removed**: the `group_keys` parameter in
+`_02_preprocessing/nielsen/_shared_modules/engineer_features.py`. It is
+grain-*capable*, not grain-*committed* — its default is already `["brand"]`, and
+the chain grain was invoked by *passing* `["brand", "market_id"]`, not by a
+separate code path. Likewise the `--grain/--grains` CLI switches survive so a
+future grain can be registered. **If you reintroduce a grain, add it to
+`DATASETS`/`GRAIN_CONFIG` — do not resurrect the deleted PATHS helpers.**
 
 ### `02_thesis_data/` also carries legacy leftovers alongside the new tiers
 
@@ -113,4 +146,6 @@ plan's decision log before removing anything here.
 - `plans/P0028_2026-07-10_restructure-thesis-enrico-integration/task_plan.md` — full restructure history, old→new path mapping, decision log
 - `plans/P0028_2026-07-10_restructure-thesis-enrico-integration/findings.md` — Session 6 finding #4 (original `_03_engineered/nielsen/` stray-but-real-data callout, since superseded)
 - `plans/P0027_2026-07-10_15-30_csd-eda-reconciliation/findings.md` — 2026-07-12 session, confirms `nielsen/CSD/` was a superseded duplicate of `bymonth/CSD/`, documents the deletion
+- `plans/P0035_2026-08-01_grain-artifact-removal/` — removed the chain/region grain from live code, paths, results and docs per DEC-GRAIN; `findings.md` F6 records why `03_thesis_modelling/` (not `utility_scripts/scripts/`) is the canonical script tree
+- `.archive/grain_artifacts_p0035_2026-08/` — archived region-grain test + stale shadow scripts, with a README explaining the grain decision
 - `.claude/rules/root-documentation-boundary.md` — root-level file placement rules (documentation, not data/code tiers)
