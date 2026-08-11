@@ -3,7 +3,7 @@
   "subject": "Write the Totalbeer exclusion justification",
   "description": "Draft the methodological justification: excluded on compute constraints, dataset significantly larger than any other category (~10M rows). Place primarily in Ch3 (scope), with a pointer from Ch4 and a limitations line in Ch10. Frame as a deliberate scoping decision, not an omission.",
   "activeForm": "Writing Totalbeer justification",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "3"

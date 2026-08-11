@@ -3,7 +3,7 @@
   "subject": "Triage each figure by severity",
   "description": "Classify every inventoried number: WILL CHANGE (CSD/energidrikke, leakage-affected), MUST RE-VERIFY (danskvand/RTD, promo-zero but retrained from scratch), STRUCTURAL (chain-grain columns removed by DEC-GRAIN), or STABLE (model size, latency). Include derived quantities: the +7.7/+4.3/+17.2 pp deltas, the 11.4-31.0% range, and the '<=15% target' qualitative claim.",
   "activeForm": "Triaging figures by severity",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "1"

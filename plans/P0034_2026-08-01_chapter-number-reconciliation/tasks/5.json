@@ -3,7 +3,7 @@
   "subject": "Draft the Ch6 structural rewrite for chain-grain removal",
   "description": "DEC-GRAIN drops brand x chain from active results. Ch6 tables at lines 119-122 and 201-206 are built around a month-vs-chain comparison and lose columns. Critically: danskvand's headline moves from 22.0% (chain) to 23.8% (month) -- a WORSE reported result caused by the grain decision alone, independent of leakage. Draft the rewrite and flag this prominently for Enrico.",
   "activeForm": "Drafting Ch6 structural rewrite",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "2"

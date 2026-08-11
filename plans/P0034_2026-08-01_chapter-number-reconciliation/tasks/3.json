@@ -3,7 +3,7 @@
   "subject": "Draft the Totalbeer removal diff",
   "description": "Produce bullets/diffs removing beer from the five-category framing in Ch3 and Ch4. Do not silently delete -- every removal point needs the replacement wording from task 4.",
   "activeForm": "Drafting Totalbeer removal",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": []
 }

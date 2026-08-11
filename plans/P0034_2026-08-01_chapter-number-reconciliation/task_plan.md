@@ -1,9 +1,10 @@
 ---
 pid: P0034
 created: 2026-08-01 00:00:00
-updated: 2026-08-01 00:00:00
-status: in_progress
-focus_detail: "Inventory every hard-coded metric in the chapter drafts that the S01 retrain will invalidate; drop Totalbeer from prose with a documented compute-constraint justification. Prepare-only — no prose lands without Enrico approval."
+updated: 2026-08-01 17:00:00
+status: blocked
+blocked_reason: "Preparation complete (tasks 1-5, 8). Tasks 6-7 held by task 9's gate pending P0032 (leakage fix), P0033 (all four categories), P0035 (grain removal). Also awaiting Brian's answers to Q1-Q7 in 2026-08-01_DOC-prep-output.md."
+focus_detail: "All prep drafted and verified, nothing applied to any chapter. Verdicts: the <=15% industry target is unsourced AND metric-mismatched -> cut (F10); DEC-GRAIN contradicts Ch3:39's pre-registration claim -> needs an openly reported protocol deviation (F11); Ch4:11's beer-exclusion reason is factually wrong -> correct to measured size, 20.31 GB (F7). Next: answer Q1-Q7, then wait on P0032/P0033/P0035."
 ---
 
 # P0034 — Chapter Number Reconciliation + Totalbeer Removal
