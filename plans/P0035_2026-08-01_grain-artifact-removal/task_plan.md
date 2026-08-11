@@ -1,10 +1,17 @@
 ---
 pid: P0035
 created: 2026-08-01 00:00:00
-updated: 2026-08-01 00:00:00
-status: in_progress
-focus_detail: "Remove every chain/region-grain artifact from live code, paths and results so the pipeline targets brand×month only, per DEC-GRAIN. Data is already gone from disk; the code references are not."
+updated: 2026-08-06 00:00:00
+status: blocked
+blocked_reason: "Task 8 (regression gate) cannot run from a worktree — pipeline inputs (*.parquet) and .env are gitignored and exist only in the main folder. Unblocks by merging `chore/p0035-grain-artifact-removal`, then running the CSD pipeline + srq1_benchmark from the main repo folder. Tasks 1–7 are done but UNCOMMITTED."
+focus_detail: "All 8 tasks executed in worktree p0035-grain-artifact-removal (branch chore/p0035-grain-artifact-removal), changes UNCOMMITTED pending review. Task 8's regression gate is STATIC ONLY — the real pipeline run was blocked by gitignored data absent from the worktree (findings F11). Remaining before this can be marked complete: (1) human re-runs the CSD pipeline + srq1_benchmark from the main folder, (2) decide F13 (the brand-vs-bymonth tag-name split, a silent-fallback trap)."
 ---
+
+> **Execution status (2026-08-01):** tasks 1–8 done, changes left in the working
+> tree for review. Task 8 was **not** truly executed — see `progress.md` and
+> findings **F11**. Deliberately out of scope and still open: Ch6/Ch8 prose
+> (P0034), the stale `fig2_granularity.png` still cited by Ch6, and four
+> non-grain shadow scripts in `utility_scripts/scripts/`.
 
 # P0035 — Remove Grain Artifacts (brand×month only)
 

@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from PATHS import THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir, get_category_engineered_bychain_dir
+from PATHS import THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir
 
 _spec = importlib.util.spec_from_file_location("srq4", Path(__file__).resolve().parent / "srq4_experiment.py")
 srq4 = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(srq4)
@@ -39,7 +39,7 @@ PROMPTS_FILE = THESIS_RESULTS_SRQ4_DIR / "tier2_prompts.json"
 # ---------------------------------------------------------------------------
 def _matrix(category):
     slug, tag, sub = srq4.CAT_FILE[category]
-    eng_dir = get_category_engineered_bychain_dir(sub) if tag == "bychain" else get_category_engineered_bymonth_dir(sub)
+    eng_dir = get_category_engineered_bymonth_dir(sub)
     return pd.read_parquet(eng_dir / f"{slug}_feature_matrix.parquet")
 
 

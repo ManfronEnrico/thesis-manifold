@@ -22,17 +22,16 @@ CACHING STRATEGY (Smart):
 
 GRAIN (--grain / --grains, default "bymonth"):
   Steps 1-6 are grain-aware (see pipeline_step_scripts/pre_csd_1_load_and_aggregate.py's
-  GRAIN_CONFIG). Only "bymonth" is implemented today; "bychain"/"byregion" raise
-  NotImplementedError (see plans/P0027 Phase 4b, deferred). Pass a comma-separated
-  list to --grains to run multiple grains in one invocation, once more than
-  "bymonth" is implemented.
+  GRAIN_CONFIG). "bymonth" is the only valid grain: DEC-GRAIN (2026-07-12) locked
+  the thesis to brand x month and the chain/region grains were dropped to a
+  documented limitation + future work (P0035, 2026-08-01). Any other grain raises
+  NotImplementedError. --grains remains for a future grain reintroduction.
 
 Use --run-step N to run only step N (must use --run-raw if step N is 0).
 
 Usage:
   python preprocessing_csd.py                        # Run steps 1-6, grain=bymonth (uses cached parquet if available)
   python preprocessing_csd.py --grain bymonth         # Explicit grain
-  python preprocessing_csd.py --grains bymonth,bychain  # Multiple grains (bychain not yet implemented)
   python preprocessing_csd.py --run-raw               # Force step 0 caching (re-cache existing)
   python preprocessing_csd.py --re-cache               # Clear cache, then re-generate and run steps 0-6
   python preprocessing_csd.py --run-step 4             # Re-run feature engineering only
@@ -134,7 +133,6 @@ def main():
 Examples:
   python preprocessing_csd.py                    # Run steps 1-6, grain=bymonth (requires Stage 1 cache)
   python preprocessing_csd.py --run-step 4       # Run only step 4
-  python preprocessing_csd.py --grains bymonth,bychain  # Multiple grains (bychain not yet implemented)
 		"""
 	)
 	parser.add_argument(

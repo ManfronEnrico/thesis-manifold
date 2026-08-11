@@ -8,17 +8,16 @@ accuracy for a baseline ladder:
 Metrics: median per-series MAPE, mean MAPE, and WMAPE (volume-weighted — the
 business metric). Forward-chaining split is already encoded in the `split` column.
 
-Grain-aware (--grain/--grains, default bymonth only): SRQ1 scope is locked to
-brand x month grain (2026-07-12, plans/P0027 Phase 4a-ii/4d). bychain/byregion
-are wired up (PATHS constants exist for bychain) but skip gracefully with a
-visible message if their feature matrices don't exist yet, rather than
-crashing before reaching the default grain.
+Grain: brand x month only. DEC-GRAIN (2026-07-12) locked the thesis grain to
+brand x month; the chain and region grains were dropped to a documented
+limitation + future work, and `_03_engineered/bychain/` was deleted from disk
+(P0035, 2026-08-01). The --grain/--grains switch is retained so a future grain
+can be registered in DATASETS, but `bymonth` is currently the only valid value.
 
 Self-contained: reads only local parquet matrices. No Prometheus/Nika dependency.
 
 Usage:  .venv/bin/python scripts/srq1_benchmark.py
         .venv/bin/python scripts/srq1_benchmark.py --grain bymonth
-        .venv/bin/python scripts/srq1_benchmark.py --grains bymonth,bychain
 Output: 04_thesis_results/srq1/{metrics.csv, summary.md}
 """
 
@@ -32,7 +31,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYCHAIN_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
+from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 
 warnings.filterwarnings("ignore")
 
@@ -44,7 +43,6 @@ CATS = {"CSD": "csd", "danskvand": "danskvand",
 
 DATASETS = {
     "bymonth": THESIS_DATA_ENGINEERED_BYMONTH_DIR,
-    "bychain": THESIS_DATA_ENGINEERED_BYCHAIN_DIR,
 }
 DEFAULT_GRAINS = ["bymonth"]
 
@@ -54,7 +52,7 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "promo_intensity", "weighted_dist"]
 
 # series key per dataset
-KEYS = {"bychain": ["brand", "chain"], "bymonth": ["brand"]}
+KEYS = {"bymonth": ["brand"]}
 
 
 def _load(ds: str, cat: str, slug: str) -> pd.DataFrame | None:

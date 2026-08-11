@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir, get_category_engineered_bychain_dir
+from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir
 
 warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,15 +39,19 @@ PRICE_IN_PER_M, PRICE_OUT_PER_M = 3.00, 15.00  # USD per 1M tokens, claude-sonne
 
 def _cost_usd(tok_in, tok_out):
     return round((tok_in or 0) * PRICE_IN_PER_M / 1e6 + (tok_out or 0) * PRICE_OUT_PER_M / 1e6, 4)
-# Tag values ("bymonth"/"bychain") select the PATHS.py helper, not a literal path segment.
+# GRAIN (P0035, 2026-08-01): DEC-GRAIN (2026-07-12) locked the thesis to
+# brand x month. danskvand was previously pinned to the 'bychain' grain here;
+# its data directory is deleted, so it now reads brand x month like every other
+# category. Tag kept in the tuple shape so a future grain can be reintroduced.
+# Tag value "bymonth" selects the PATHS.py helper, not a literal path segment.
 CAT_FILE = {"CSD": ("csd", "bymonth", "CSD"),
-            "danskvand": ("danskvand", "bychain", "danskvand"),
+            "danskvand": ("danskvand", "bymonth", "danskvand"),
             "energidrikke": ("energidrikke", "bymonth", "energidrikke"),
             "RTD": ("rtd", "bymonth", "RTD")}
 
 
 def _engineered_dir(tag, sub):
-    return get_category_engineered_bychain_dir(sub) if tag == "bychain" else get_category_engineered_bymonth_dir(sub)
+    return get_category_engineered_bymonth_dir(sub)
 
 
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
@@ -75,7 +79,7 @@ def _eval_forecast(category, brand):
     from xgboost import XGBRegressor
     slug, tag, sub = CAT_FILE[category]
     params = _json.loads((THESIS_RESULTS_SRQ1_DIR / "tuned_params.json").read_text())
-    pk = "bychain" if "chain" in tag else "brand"
+    pk = "brand"
     fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"])
     trval = d[d.split.isin(["train", "val"])]

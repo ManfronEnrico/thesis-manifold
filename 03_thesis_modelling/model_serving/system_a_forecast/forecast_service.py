@@ -23,7 +23,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from PATHS import (
     THESIS_RESULTS_SRQ1_DIR, THESIS_MODELLING_SERVING_SYSTEM_A_DIR,
-    get_category_engineered_bymonth_dir, get_category_engineered_bychain_dir,
+    get_category_engineered_bymonth_dir,
 )
 
 warnings.filterwarnings("ignore")
@@ -35,9 +35,13 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "holiday_month", "promo_intensity", "weighted_distribution"]
 # Ch6 §6.5.6 selected (model = tuned XGBoost; granularity per category)
-# Tag values ("bymonth"/"bychain") select the PATHS.py helper, not a literal path segment.
+# GRAIN (P0035, 2026-08-01): DEC-GRAIN (2026-07-12) locked the thesis to
+# brand x month. danskvand was previously pinned to the 'bychain' grain here;
+# its data directory is deleted, so it now reads brand x month like every other
+# category. Tag kept in the tuple shape so a future grain can be reintroduced.
+# Tag value "bymonth" selects the PATHS.py helper, not a literal path segment.
 SELECTED = {"CSD": ("csd", "bymonth", "CSD", ["brand"]),
-            "danskvand": ("danskvand", "bychain", "danskvand", ["brand", "chain"]),
+            "danskvand": ("danskvand", "bymonth", "danskvand", ["brand"]),
             "energidrikke": ("energidrikke", "bymonth", "energidrikke", ["brand"]),
             "RTD": ("rtd", "bymonth", "RTD", ["brand"])}
 
@@ -51,8 +55,8 @@ def build_service():
     params = json.loads((RES5 / "tuned_params.json").read_text())
     rows = []
     for cat, (slug, ds_tag, sub, keys) in SELECTED.items():
-        pk = "bychain" if "chain" in keys else "brand"
-        eng_dir = get_category_engineered_bychain_dir(sub) if ds_tag == "bychain" else get_category_engineered_bymonth_dir(sub)
+        pk = "brand"
+        eng_dir = get_category_engineered_bymonth_dir(sub)
         fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix.parquet")
         d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
         if len(d) < 30:

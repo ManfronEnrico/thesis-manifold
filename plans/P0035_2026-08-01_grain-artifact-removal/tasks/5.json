@@ -3,7 +3,7 @@
   "subject": "Clean chain-grain references from model training and serving scripts",
   "description": "For the canonical tree identified in task 2: remove bychain path resolution and any chain-grain branch from srq1_benchmark.py, srq1_benchmark_tuned.py, srq1_figures.py, srq1_profiling.py, srq2_synthesis.py, srq4_experiment.py, srq4_tier2.py and model_serving/system_a_forecast/forecast_service.py. Do NOT strip the group_keys parameter from _shared_modules -- see findings F1; confirm it defaults to ['brand'] instead.",
   "activeForm": "Cleaning grain refs from scripts",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "2",

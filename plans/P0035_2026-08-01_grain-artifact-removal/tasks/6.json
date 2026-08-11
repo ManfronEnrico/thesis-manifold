@@ -3,7 +3,7 @@
   "subject": "Purge chain-grain entries from SRQ1 results artifacts",
   "description": "04_thesis_results/srq1/tuned_params.json and tuned_summary.md contain chain-grain entries. These are stale results for a grain the thesis no longer claims. Remove them, but preserve a copy in the plan folder -- P0034 may need the old danskvand chain figure (22.0%) to explain the 22.0 -> 23.8 change to Enrico.",
   "activeForm": "Purging chain-grain results",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "1"
