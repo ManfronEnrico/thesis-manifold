@@ -42,9 +42,10 @@ thesis-manifold/
 │   ├── _02_preprocessing/             ← TIER 3 scripts: per-category pipelines (not data)
 │   │   └── nielsen/{CSD,Danskvand,Energidrikke,RTD,Totalbeer}/
 │   ├── _03_engineered/                ← TIER 4: feature matrices
-│   │   ├── bymonth/, bychain/         ← current split-by-granularity outputs
-│   │   └── nielsen/                   ← ⚠️ old pre-split shape, real data, left in place —
-│   │                                    see .claude/rules/repo-tier-structure.md before touching
+│   │   └── bymonth/                   ← the only grain: brand × month (DEC-GRAIN 2026-07-12).
+│   │                                    bychain/ deleted; its path constants removed by P0035.
+│   │                                    nielsen/ (old pre-split shape) also deleted 2026-07-12 —
+│   │                                    see .claude/rules/repo-tier-structure.md
 │   ├── preprocessing/                 ← top-level legacy preprocessing scripts (pre-dates tiers)
 │   ├── nielsen/, spss_indeksdanmark/  ← per-source connector scripts + schema docs
 │   ├── assessment/                    ← data access setup notes, migration logs

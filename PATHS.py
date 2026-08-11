@@ -292,8 +292,10 @@ Directory for final engineered feature matrices and model-ready outputs.
 
 This is Tier 4 of the 4-tier data hierarchy. Contains final outputs from feature
 engineering pipelines: feature matrices, split metadata, series indices.
-Split by granularity into bymonth/ and bychain/ subfolders (see
-THESIS_DATA_ENGINEERED_BYMONTH_DIR / THESIS_DATA_ENGINEERED_BYCHAIN_DIR below).
+Holds a single granularity subfolder, bymonth/ (see
+THESIS_DATA_ENGINEERED_BYMONTH_DIR below). Per DEC-GRAIN (2026-07-12) the
+project grain is locked to brand x month; the former bychain/ split was
+deleted from disk and its path constants removed in P0035.
 
 Example:
     from PATHS import THESIS_DATA_ENGINEERED_DIR
@@ -311,16 +313,11 @@ Example:
     features = THESIS_DATA_ENGINEERED_BYMONTH_DIR / "CSD" / "csd_feature_matrix.parquet"
 """
 
-THESIS_DATA_ENGINEERED_BYCHAIN_DIR: Path = THESIS_DATA_ENGINEERED_DIR / "bychain"
-"""
-Tier 4 engineered feature matrices at brand×chain granularity (DVH EXCL. HD).
-
-Was: _04_engineered_bychain/ before the P0028 restructure.
-
-Example:
-    from PATHS import THESIS_DATA_ENGINEERED_BYCHAIN_DIR
-    features = THESIS_DATA_ENGINEERED_BYCHAIN_DIR / "CSD" / "csd_feature_matrix.parquet"
-"""
+# NOTE (P0035, 2026-08-01): THESIS_DATA_ENGINEERED_BYCHAIN_DIR was removed here.
+# DEC-GRAIN (2026-07-12) locked the project grain to brand x month; the
+# _03_engineered/bychain/ directory was deleted from disk, leaving this constant
+# resolving to a non-existent path. Chain grain is now a documented limitation +
+# future work, not a live code path.
 
 # ============================================================================
 # 1.2.1 RAW DATA TIER
@@ -603,26 +600,6 @@ def get_category_metadata_dir(category: str) -> Path:
     return get_category_parquet_dir(category) / "metadata"
 
 
-def get_category_engineered_dir(category: str) -> Path:
-    """
-    Deprecated: Use get_category_engineered_bymonth_dir() or
-    get_category_engineered_bychain_dir() instead.
-
-    The "_03_engineered/nielsen/{category}/" path shape this function returned
-    no longer exists post-P0028-restructure — Tier 4 engineered output is now
-    split by granularity (bymonth/ vs bychain/), not by source (nielsen/).
-    Kept for backwards compatibility but repointed to the bymonth granularity
-    (the original, more common case) rather than left dangling at a dead path.
-
-    Args:
-        category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
-
-    Returns:
-        Path to _03_engineered/bymonth/{category}/
-    """
-    return get_category_engineered_bymonth_dir(category)
-
-
 def get_category_engineered_bymonth_dir(category: str) -> Path:
     """
     Get the engineered features directory for a Nielsen data category at
@@ -642,22 +619,10 @@ def get_category_engineered_bymonth_dir(category: str) -> Path:
     return THESIS_DATA_ENGINEERED_BYMONTH_DIR / category
 
 
-def get_category_engineered_bychain_dir(category: str) -> Path:
-    """
-    Get the engineered features directory for a Nielsen data category at
-    brand×chain granularity (Tier 4 output, DVH EXCL. HD).
-
-    Args:
-        category: Category name (e.g., "CSD", "Danskvand", "Energidrikke", "RTD", "Totalbeer")
-
-    Returns:
-        Path to _03_engineered/bychain/{category}/
-
-    Example:
-        >>> eng_dir = get_category_engineered_bychain_dir("CSD")
-        >>> features = pd.read_parquet(eng_dir / "csd_feature_matrix.parquet")
-    """
-    return THESIS_DATA_ENGINEERED_BYCHAIN_DIR / category
+# NOTE (P0035, 2026-08-01): get_category_engineered_bychain_dir() and the
+# deprecated get_category_engineered_dir() alias were removed here. See the
+# note at THESIS_DATA_ENGINEERED_BYCHAIN_DIR's former location above.
+# Call get_category_engineered_bymonth_dir() explicitly instead.
 
 
 def get_category_preprocessing_scripts_dir(category: str) -> Path:
@@ -774,7 +739,6 @@ def print_all_paths(verbose: bool = True) -> None:
         print(f"THESIS_DATA_PREPROCESSING_DIR: {THESIS_DATA_PREPROCESSING_DIR.resolve()}")
         print(f"THESIS_DATA_ENGINEERED_DIR: {THESIS_DATA_ENGINEERED_DIR.resolve()}")
         print(f"THESIS_DATA_ENGINEERED_BYMONTH_DIR: {THESIS_DATA_ENGINEERED_BYMONTH_DIR.resolve()}")
-        print(f"THESIS_DATA_ENGINEERED_BYCHAIN_DIR: {THESIS_DATA_ENGINEERED_BYCHAIN_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_DIR: {THESIS_DATA_RAW_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_NIELSEN_DIR: {THESIS_DATA_RAW_NIELSEN_DIR.resolve()}")
         print(f"THESIS_DATA_RAW_NIELSEN_JSONL_DIR: {THESIS_DATA_RAW_NIELSEN_JSONL_DIR.resolve()}")
