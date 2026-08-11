@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-11 20:15:00
+updated: 2026-08-11 21:05:00
 status: in_progress
-focus_detail: "Tasks 1-2 complete (V3/V4 cherry-picked to main; 4 worktrees preserved to branches + removed). Next: task 3, CSD market filter to parent 1256338 -- but merge chore/p0035-grain-artifact-removal FIRST, since it already deletes the byregion config that consumes DVH_REGION_IDS (see progress.md F14)."
+focus_detail: "Tasks 1-2 complete. P0035 merged (0f699a7) -- its prerequisite is DONE, do not re-merge. Next: task 3, CSD market filter to parent 1256338. Only 2 DVH_REGION_IDS sites remain (:423-426 set, :457 isin); :725 was deleted by the P0035 merge. Notebook is 57.8k tokens -- Grep, never Read whole. Full spec in tasks/3.json."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -48,11 +48,11 @@ Promo-zero was an artifact of the region filter, not a property of the data.
 
 | Phase | Goal | Tasks |
 |-------|------|-------|
-| 1 | Preserve at-risk work | 1 |
-| 2 | Market scope fix + verification | 2, 3 |
-| 3 | Shared-module correctness fixes | 4, 5 |
-| 4 | Open analyses feeding parameter choices | 6, 7 |
-| 5 | Re-run + parity check, hand off to P0033 | 8 |
+| 1 | Preserve at-risk work | 1, 2 |
+| 2 | Market scope fix + verification | 3, 4 |
+| 3 | Shared-module correctness fixes | 5 |
+| 4 | Re-run + parity check, hand off to P0033 | 6 |
+| 5 | Open analyses feeding parameter choices | 7, 8, 9 |
 
 ## Tasks
 
@@ -87,27 +87,32 @@ V3 = `promo_intensity` target leakage (`sales_units_t` in its own denominator),
 Both remain correct. P0032 stalled only because promo was all-zero *at region scope* —
 under DEC-SCOPE the fix becomes measurable and material (119,010 nonzero promo rows).
 
-### Task 2 — Switch CSD market filter to parent
-`pre_processing_notebook_csd.ipynb`:
-- `:426` — `DVH_REGION_IDS = { ... }` → single id `1256338`
+### Task 3 — Switch CSD market filter to parent
+`pre_processing_notebook_csd.ipynb` — **2 sites remain** (was 3):
+- `:423-426` — `DVH_REGION_IDS = { ... }` → single id `1256338`. Also rewrite the
+  comment above it, which justifies the region choice on double-count grounds.
 - `:457` — `merged[merged["market_id"].isin(DVH_REGION_IDS)]`
-- `:725` — `"region_ids": DVH_REGION_IDS` in the findings artifact
+- ~~`:725` — `"region_ids": DVH_REGION_IDS` in the `byregion` grain config~~ —
+  **already deleted** by the `chore/p0035-grain-artifact-removal` merge (`0f699a7`).
+  See progress.md F14. Do not go looking for this line; it no longer exists.
+
+The notebook is **57,814 tokens — too large for Read**. Use Grep to locate sites.
 
 Keep the SCD market-dim dedup on `market_id` before merging (P0027's double-count guard).
 Guard `len == 1` after filtering, not just `len > 0` (P0032 task_plan:48 flagged this).
 
-### Task 3 — Verify promo populates
-After task 2, confirm `promo_units` / `promo_intensity` / `has_promo` are non-degenerate.
+### Task 4 — Verify promo populates
+After task 3, confirm `promo_units` / `promo_intensity` / `has_promo` are non-degenerate.
 Add an EDA assertion that **fails loudly on all-zero columns** — the silent pass-through
 is the reason this went unnoticed for weeks (P0032 F10.2). Applies to any all-zero
 feature, not just promo.
 
-### Task 4 — Fix `make_calendar` bfill
+### Task 5 — Fix `make_calendar` bfill
 `_shared_modules/engineer_features.py:232-235` uses `bfill`, pulling future values
 backward across gap months. Found during P0032, deferred as out of scope. **Shared
 module — affects all four categories.** Real leakage, unlike V3's zero-signal case.
 
-### Task 5 — sales_value/sales_liters redundancy
+### Task 7 — sales_value/sales_liters redundancy
 P0031 task 4, imported here because CSD is about to become the template. Both correlate
 near-perfectly with `sales_units` (same quantity in different units) — multicollinearity
 entering the model silently.
@@ -116,7 +121,7 @@ Also re-examine `weighted_dist`: P0032 measured its target correlation at **0.75
 *above* `lag_1`'s 0.585 — suspicious for a supposedly exogenous variable. Recommend a
 fit-with/without sensitivity check.
 
-### Task 6 — Decide MIN_PERIODS
+### Task 8 — Decide MIN_PERIODS
 Current threshold culls 140 → 58 brands (59%). At parent scope:
 
 | MIN_PERIODS | Brands | Rows |
@@ -130,7 +135,7 @@ Current threshold culls 140 → 58 brands (59%). At parent scope:
 Brian 2026-08-11: *"the min_period decision is shaky at best either way."* Needs a
 defensible basis for Ch4, not just a number.
 
-### Task 7 — Single-brand vs pooled training cost
+### Task 9 — Single-brand vs pooled training cost
 **Brian's proposal (2026-08-11):** train exclusively on the brand with the most data,
 since the System B demo only needs one brand (e.g. Faxe Kondi) for simulated user
 questions. Framed as: *"If we can get more data and a better training result with that
@@ -162,7 +167,7 @@ Delivers the intended demo, keeps statistical power, and forecasts the chosen br
 **This task is the measurement, not the decision.** Fit both on Faxe Kondi (pooled-then-
 predict vs single-brand-only), compare WMAPE. Brian decides on the numbers.
 
-### Task 8 — Re-run + parity check
+### Task 6 — Re-run + parity check
 Full CSD notebook run under DEC-SCOPE. Record before/after: row count, brand count,
 promo populated, WMAPE delta from the V3 fix. Confirm `_03_engineered/bymonth/CSD/`
 regenerates. **This output becomes P0033's template.**
