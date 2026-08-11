@@ -1,11 +1,12 @@
 {
   "id": "1",
-  "subject": "Commit P0032 V3/V4 fixes from locked worktree",
-  "description": "V3 promo_intensity leakage fix + V4 market_id assert are applied but UNCOMMITTED in locked worktree worktrees/p0032-leakage-fix-v3-v4. At risk of loss. Both remain correct; under DEC-SCOPE the V3 fix becomes measurable (119,010 nonzero promo rows).",
-  "activeForm": "Committing V3/V4 fixes",
-  "status": "pending",
+  "subject": "Cherry-pick V3/V4 engineer_features.py from locked worktree",
+  "description": "Bring ONLY _shared_modules/engineer_features.py from worktree cc/20260801-1630/p0032-leakage-fix-v3-v4 onto a branch off main. Excluded all 12 plans/P0032_*/ files (P0032 superseded by P0036; edits describe stale plan status).\n\nVerified worktree base blob 10be658 == main's, so no reconciliation needed.\n\nV3 = promo_intensity shifted 1 period within group_keys. V4a = multi-market_id assert on DB path before the query. V4b = same assert on CSV path.\n\nDONE: branch fix/p0036-v3-v4-leakage-asserts, commit e7e5ccb (1 file, +65/-6, 3 hunks, ast.parse clean), merged to main as 74c20f1.",
+  "activeForm": "Cherry-picking V3/V4 engineer_features.py",
+  "status": "completed",
   "blocks": [
-    "8"
+    "2",
+    "5"
   ],
   "blockedBy": []
 }

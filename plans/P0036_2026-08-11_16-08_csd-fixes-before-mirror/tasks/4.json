@@ -1,11 +1,13 @@
 {
   "id": "4",
-  "subject": "Fix make_calendar bfill future-leakage",
-  "description": "_shared_modules/engineer_features.py:232-235 uses bfill, pulling future values backward across gap months. Shared module - affects all four categories. Real leakage.",
-  "activeForm": "Fixing bfill leakage",
+  "subject": "Assert promo columns are non-degenerate",
+  "description": "Confirm promo_units / promo_intensity / has_promo populate under parent scope -- expect ~119,010 nonzero promo fact rows vs 0 at region scope.\n\nAdd a reusable EDA assertion that fails loudly on any all-zero/constant numeric feature column, not just promo. Silent pass-through is why this went unnoticed for weeks (P0032 F10.2). Runs after feature engineering, before the artifact write.\n\nVerify: assertion fires on a deliberately zeroed column; passes on the real frame.",
+  "activeForm": "Asserting promo columns populate",
   "status": "pending",
   "blocks": [
-    "8"
+    "6"
   ],
-  "blockedBy": []
+  "blockedBy": [
+    "3"
+  ]
 }

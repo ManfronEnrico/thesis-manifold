@@ -1,13 +1,17 @@
 {
   "id": "6",
-  "subject": "Decide MIN_PERIODS threshold",
-  "description": "Current culls 140->58 brands (59%). At parent scope: >=12 gives 109 brands/3744 rows; >=24 gives 85/3392; >=30 gives 76/3152; >=36 gives 67/2865. 51 brands already at 44/44 months. Needs a defensible basis for Ch4.",
-  "activeForm": "Deciding MIN_PERIODS",
+  "subject": "Re-run CSD end-to-end and parity-check",
+  "description": "Full CSD notebook run under DEC-SCOPE.\n\nRecord before/after: fact rows, brand-month rows, distinct brands, brands surviving MIN_PERIODS, promo populated, WMAPE delta from the V3 fix.\n\nExpected at parent scope: 3,917 brand-month rows, 144 brands, 85 brands @ MIN_PERIODS>=24, 44-month panel depth.\n\nCRITICAL: confirm output lands in _03_engineered/bymonth/CSD/ via get_category_engineered_bymonth_dir(), NOT the deprecated get_category_engineered_dir(). Per repo-tier-structure, a nielsen/ subfolder reappearing under _03_engineered/ signals a script still writing to the deprecated path.\n\nThis output becomes P0033's mirror template.",
+  "activeForm": "Re-running CSD end-to-end",
   "status": "pending",
   "blocks": [
-    "8"
+    "7",
+    "8",
+    "9"
   ],
   "blockedBy": [
-    "2"
+    "3",
+    "4",
+    "5"
   ]
 }

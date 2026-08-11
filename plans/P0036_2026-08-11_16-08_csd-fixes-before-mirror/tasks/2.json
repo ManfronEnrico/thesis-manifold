@@ -1,14 +1,11 @@
 {
   "id": "2",
-  "subject": "Switch CSD market filter to parent 1256338",
-  "description": "pre_processing_notebook_csd.ipynb:426 (DVH_REGION_IDS), :457 (isin filter), :725 (findings artifact). Keep SCD market-dim dedup before merge. Guard len==1 after filter, not just len>0.",
-  "activeForm": "Switching market filter to parent",
-  "status": "pending",
-  "blocks": [
-    "3",
-    "6",
-    "7",
-    "8"
-  ],
-  "blockedBy": []
+  "subject": "Remove four stale worktrees",
+  "description": "Unlock and remove worktrees/p0032-leakage-fix-v3-v4, plus p0033-eda-mirror, p0034-chapter-numbers, p0035-grain-artifact-removal -- all three sit at 958787b with zero commits of their own.\n\nBranches are preserved (worktree removal does not delete branches).\n\nVerify: git worktree list shows only the main checkout.\n\nDONE 2026-08-11: scope expanded. Audit found p0033/p0034/p0035 held real uncommitted work, NOT empty scaffolding -- git worktree list shows committed HEAD only. Each committed to its own branch first (e0f3fbb, ba9ee48, f481df0+fb4ee64), then all 4 worktrees removed, all branches preserved. p0032's 13 files discarded only after verifying its code file byte-identical to main.",
+  "activeForm": "Removing stale worktrees",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
 }

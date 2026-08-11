@@ -1,0 +1,11 @@
+{
+  "id": "9",
+  "subject": "Measure single-brand vs pooled training cost",
+  "description": "P0036 task 7. Measurement, not decision -- Brian decides on the numbers.\n\nFit both on Faxe Kondi (pooled-then-predict vs single-brand-only), compare WMAPE.\n\nPrior measurement already shows the single-brand premise does not hold: pooled = 3,392 rows / 85 brands vs single = 44 rows. Selecting the highest-data brand yields NO additional data, since 51 brands already sit at the 44-month ceiling and MIN_PERIODS filters series LENGTH. 44 rows x ~30 features is unfittable for XGBoost/LightGBM.\n\nRecommended resolution to confirm: separate training scope (pooled) from evaluation scope (Faxe Kondi).\n\nVerify: WMAPE comparison table in findings.md; feeds Ch4 + Ch10 limitations.",
+  "activeForm": "Measuring single-brand vs pooled cost",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "6"
+  ]
+}

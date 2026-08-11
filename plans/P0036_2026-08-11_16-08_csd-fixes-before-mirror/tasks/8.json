@@ -1,17 +1,11 @@
 {
   "id": "8",
-  "subject": "Re-run CSD end-to-end + parity check",
-  "description": "Full run under DEC-SCOPE. Record before/after: rows, brands, promo populated, WMAPE delta from V3 fix. Confirm _03_engineered/bymonth/CSD/ regenerates. Output becomes P0033's template.",
-  "activeForm": "Re-running CSD and checking parity",
+  "subject": "Decide MIN_PERIODS threshold with stated basis",
+  "description": "P0036 task 6. Deliberately AFTER the mirror -- better decided once all four categories' brand counts are visible, not CSD's alone.\n\nAt parent scope: >=12 -> 109 brands/3,744 rows; >=24 -> 85/3,392; >=30 -> 76/3,152; >=36 -> 67/2,865. 51 brands already have all 44 months.\n\nBrian 2026-08-11: 'the min_period decision is shaky at best either way.' Needs a defensible basis for Ch4, not just a number. Trade-off: series quality vs pooled sample size.\n\nVerify: threshold + written justification in findings.md, ready to lift into Ch4.",
+  "activeForm": "Deciding MIN_PERIODS threshold",
   "status": "pending",
   "blocks": [],
   "blockedBy": [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7"
+    "6"
   ]
 }

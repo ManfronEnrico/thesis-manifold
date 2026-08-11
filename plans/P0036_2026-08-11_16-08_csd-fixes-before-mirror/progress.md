@@ -126,3 +126,88 @@ mirrors to `research-questions.md`. Brian deferred drafting (2026-08-11): no cha
 Task 1 — commit the V3/V4 fixes off the **locked** worktree
 `worktrees/p0032-leakage-fix-v3-v4` (only work at risk of loss). Then task 2, the market
 filter switch. Goal per Brian: get CSD running cleanly, then mirror to the other categories.
+
+---
+
+## 2026-08-11 — Session 2 (tasks 1–2: cherry-pick + worktree cleanup)
+
+First execution session. Sequential on `main` per Brian, with a push checkpoint
+after each task.
+
+### Task 1 — Cherry-pick V3/V4 ✅
+
+Copied **only** `_shared_modules/engineer_features.py` from the locked worktree.
+The 12 accompanying `plans/P0032_*/` edits were deliberately excluded: P0032 is
+superseded by P0036, so re-committing them would resurrect stale plan status.
+
+- Branch `fix/p0036-v3-v4-leakage-asserts`, commit `e7e5ccb` (1 file, +65/−6)
+- 3 hunks as expected; `ast.parse` clean
+- Merged to `main` as `74c20f1`
+
+**Correction to the plan's framing.** `task_plan.md` called this work "one power
+cycle from loss." Overstated — the lock reason was `"initializing"`, an artifact
+of worktree creation, not a deliberate hold. The worktree's base blob (`10be658`)
+was byte-identical to `main`'s, so this was a clean patch, not a reconciliation.
+
+### Task 2 — Worktree cleanup ✅ (scope expanded)
+
+**Near-miss worth recording.** Task 2 was written on the premise that
+p0033/p0034/p0035 were "empty scaffolding" — based on `git worktree list` showing
+all four at `958787b`. That reads the *committed* HEAD and says nothing about the
+working tree. An audit before removal found substantial uncommitted work:
+
+| Worktree | Found |
+|---|---|
+| p0032 | Plan files only — code already cherry-picked, safe |
+| **p0033** | **2 untracked notebooks** (Danskvand, Energidrikke) |
+| **p0034** | Untracked `DOC-prep-output.md` + 9 plan files |
+| **p0035** | **35 files** — 9 script archives, PATHS.py, preserved chain-grain results |
+
+`git worktree remove` refuses on a dirty tree, so nothing would have vanished
+silently — but the fix is `--force`, which **would** have permanently deleted the
+untracked notebooks and preserved results, with no reflog to recover them.
+
+**Lesson: `git worktree list` is not an emptiness check.** Audit
+`git status --untracked-files=all` in each tree before removal.
+
+Each worktree's work was committed to its own branch first:
+
+| Branch | Commit | Contents |
+|---|---|---|
+| `data/p0033-eda-mirror-three-categories` | `e0f3fbb` | 2 notebooks + plan files |
+| `thesis/p0034-chapter-numbers-totalbeer` | `ba9ee48` | plan files + prep doc |
+| `chore/p0035-grain-artifact-removal` | `f481df0`, `fb4ee64` | 39 files total |
+
+All four worktrees then removed; **all branches preserved**. p0032's 13 files were
+discarded only after verifying its code file was byte-identical to `main`.
+
+### Two findings that change downstream tasks
+
+**F13 — P0033 is partly done.** The Danskvand and Energidrikke notebooks already
+exist on `data/p0033-eda-mirror-three-categories`. They were mirrored from the CSD
+template *before* DEC-SCOPE, so they carry the same region-filter defect and
+all-zero promo columns. A real head start, but they need the scope fix applied —
+they are not ready to run. RTD has no notebook yet.
+
+**F14 — P0035 already deletes the `byregion` grain config.** Session 1 flagged
+`:722-725` as an open question for task 3 (the `byregion` config consumes
+`DVH_REGION_IDS`, which a single-parent-id switch makes incoherent). Inspecting
+P0035's uncommitted CSD notebook edit before touching the file showed it **already
+removes both the `bychain` and `byregion` config blocks** and does not touch the
+market filter at all.
+
+The two changes are therefore **complementary, not conflicting**. P0035 also
+removed the deprecated `get_category_engineered_dir()` alias from `PATHS.py` —
+the exact failure mode `.claude/rules/repo-tier-structure.md` warns about.
+
+**Implication for task 3:** merge `chore/p0035-grain-artifact-removal` into `main`
+*before* editing the notebook. That deletes the `byregion` consumer, leaving the
+market filter as the only remaining `DVH_REGION_IDS` site and reducing task 3 to a
+single focused change. Sequencing this the other way round would mean resolving a
+notebook merge conflict by hand.
+
+### State at session end
+
+- `main` at `74c20f1`, one merge ahead of `origin/main`
+- 4 worktrees removed, 0 remaining; every branch preserved
+- Tasks 1–2 complete; task 3 next, gated on the P0035 merge decision above

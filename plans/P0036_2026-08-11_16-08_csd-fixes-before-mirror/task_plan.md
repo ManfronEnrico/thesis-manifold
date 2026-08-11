@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-11 16:08:00
+updated: 2026-08-11 20:15:00
 status: in_progress
-focus_detail: "Fix every defect in the CSD notebook and its shared modules BEFORE P0033 mirrors it to Danskvand/Energidrikke/RTD. Market scope is the headline fix; four more ride along because they live in shared or soon-to-be-copied code."
+focus_detail: "Tasks 1-2 complete (V3/V4 cherry-picked to main; 4 worktrees preserved to branches + removed). Next: task 3, CSD market filter to parent 1256338 -- but merge chore/p0035-grain-artifact-removal FIRST, since it already deletes the byregion config that consumes DVH_REGION_IDS (see progress.md F14)."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -56,16 +56,24 @@ Promo-zero was an artifact of the region filter, not a property of the data.
 
 ## Tasks
 
+> **Renumbered 2026-08-11 (session 2)** to match the in-session task list. Worktree
+> cleanup was split out as its own task after it turned out to carry real risk.
+
 | ID | Title | Phase | Blocked By | Status |
 |----|-------|-------|------------|--------|
-| 1 | Commit P0032's V3/V4 fixes from the locked worktree | 1 | — | pending |
-| 2 | Switch CSD market filter to parent `1256338` | 2 | — | pending |
-| 3 | Verify promo columns populate; assert non-empty | 2 | 2 | pending |
-| 4 | Fix `make_calendar` bfill future-leakage | 3 | — | pending |
-| 5 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 3 | — | pending |
-| 6 | Decide MIN_PERIODS threshold | 4 | 2 | pending |
-| 7 | Measure single-brand vs pooled training cost | 4 | 2 | pending |
-| 8 | Re-run CSD end-to-end + parity check | 5 | 1-7 | pending |
+| 1 | Cherry-pick V3/V4 `engineer_features.py` from the locked worktree | 1 | — | ✅ complete |
+| 2 | Preserve + remove four stale worktrees | 1 | 1 | ✅ complete |
+| 3 | Switch CSD market filter to parent `1256338` | 2 | — | pending |
+| 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | pending |
+| 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | pending |
+| 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | pending |
+| 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | 6 | pending |
+| 8 | Decide MIN_PERIODS threshold | 4 | 6 | pending |
+| 9 | Measure single-brand vs pooled training cost | 4 | 6 | pending |
+
+**Task 6 is the gate that unblocks P0033.** Tasks 7–9 are modeling analyses that
+change no notebook structure, so they deliberately run *after* mirroring starts
+rather than holding the critical path.
 
 ## Task detail
 

@@ -1,13 +1,11 @@
 {
   "id": "7",
-  "subject": "Measure single-brand vs pooled training cost",
-  "description": "Brian proposed training only on the highest-data brand since the demo needs one brand. Measured: pooled 3392 rows vs single-brand 44 - a 77x reduction with NO data gain (51 brands already at the 44-month ceiling). ~30 features on 44 rows is unfittable; ~12 test points kills statistical power. Recommendation: train pooled, evaluate/demo on FAXE KONDI (44/44 months, 118M units). This task measures both on Faxe Kondi and compares WMAPE - Brian decides on the numbers.",
-  "activeForm": "Measuring single-brand vs pooled",
+  "subject": "Resolve feature redundancy and weighted_dist suspicion",
+  "description": "P0036 task 5 (from P0031 task 4). Not on the mirror critical path -- run after P0033 is unblocked.\n\nsales_value and sales_liters both correlate near-perfectly with sales_units (same quantity, different units) -- silent multicollinearity.\n\nSeparately, weighted_dist measured 0.756 target correlation, ABOVE lag_1's 0.585. Suspicious for a supposedly exogenous variable; possible contemporaneous-information leak. Run a fit-with/without sensitivity check.\n\nVerify: correlation matrix in findings.md; keep/drop decision with basis for Ch4.",
+  "activeForm": "Resolving feature redundancy",
   "status": "pending",
-  "blocks": [
-    "8"
-  ],
+  "blocks": [],
   "blockedBy": [
-    "2"
+    "6"
   ]
 }
