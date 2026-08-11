@@ -1,9 +1,9 @@
 ---
 pid: P0033
 created: 2026-08-01 00:00:00
-updated: 2026-08-01 00:00:00
+updated: 2026-08-06 00:00:00
 status: in_progress
-focus_detail: "Mirror the CSD notebook-based preprocessing/EDA to Danskvand, Energidrikke, RTD — one notebook per category, matching CSD exactly. Highest priority: unblocks Ch4 and the writing phase."
+focus_detail: "Phase 2 done: Danskvand + Energidrikke notebooks built and structurally verified (65 cells each, parity with CSD, 0 syntax errors), uncommitted on branch data/p0033-eda-mirror-three-categories in worktrees/p0033-eda-mirror/. RTD dropped from scope — its fact extract is empty at source (F14), needs an Enrico warehouse re-pull. NEXT: commit + merge, then run both notebooks END-TO-END FROM THE MAIN REPO (they cannot execute in the worktree — parquet cache is gitignored, F10), then parity-check (task 7) and Ch4 sign-off (task 8)."
 ---
 
 # P0033 — Mirror CSD EDA to Danskvand / Energidrikke / RTD
@@ -69,9 +69,25 @@ P0032 changes `_shared_modules/engineer_features.py`, which all four categories 
 | 3 | Run to completion + verify parity | 6, 7 |
 | 4 | Ch4 inputs ready | 8 |
 
+## Scope revision — 2026-08-01: three categories became two
+
+RTD's fact extract is **empty at source** (`rtd_clean_facts_v.jsonl` is 0 bytes,
+so `rtd_clean_facts_v.parquet` is 636 B / 0 rows — see `findings.md` F5/F14).
+Its dimension tables are fine, so this is not a corrupt conversion: the extract
+was never pulled from the warehouse. No RTD notebook was created — one would be
+unrunnable and would misrepresent the category as ready.
+
+**This plan delivers 2 notebooks (Danskvand, Energidrikke), not 3.** Task 5 is
+`blocked`, not `completed`. Unblocking requires Enrico re-pulling RTD from the
+warehouse; it is not resolvable inside this plan.
+
+Knock-on: **P0034 plans to report an RTD WMAPE of 31.0%** that no current data
+can reproduce. Flag before that number reaches the thesis.
+
 ## Definition of done
 
-- Three notebooks exist, one per category, structurally matching CSD.
+- ~~Three~~ **Two** notebooks exist (Danskvand, Energidrikke), structurally
+  matching CSD. RTD deferred to a follow-up plan once its data lands.
 - Each runs end-to-end and writes to `_03_engineered/bymonth/{Category}/`.
 - Outputs are parity-checked against CSD's output shape (same artefacts, same schema).
 - Per-category deltas (parameters that legitimately differ) are documented in `findings.md`.

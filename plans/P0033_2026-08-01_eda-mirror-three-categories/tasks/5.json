@@ -3,7 +3,7 @@
   "subject": "Build the RTD notebook",
   "description": "Create pre_processing_notebook_rtd.ipynb mirroring the CSD template. Promo-zero, so unaffected by P0032. RTD has the shortest/most volatile series -- verify MIN_PERIODS remains feasible and record the number of retained brands.",
   "activeForm": "Building RTD notebook",
-  "status": "pending",
+  "status": "blocked",
   "blocks": [],
   "blockedBy": [
     "2"

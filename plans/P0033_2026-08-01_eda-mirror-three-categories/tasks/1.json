@@ -3,7 +3,7 @@
   "subject": "Extract the CSD notebook structure as a reusable template",
   "description": "Read pre_processing_notebook_csd.ipynb end-to-end and document its cell sequence, parameters, shared-module calls and output artefacts. This inventory is the specification the other three notebooks must match. Record in findings.md.",
   "activeForm": "Extracting CSD notebook template",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": []
 }
