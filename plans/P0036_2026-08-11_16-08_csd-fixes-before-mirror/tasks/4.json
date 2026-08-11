@@ -1,0 +1,11 @@
+{
+  "id": "4",
+  "subject": "Fix make_calendar bfill future-leakage",
+  "description": "_shared_modules/engineer_features.py:232-235 uses bfill, pulling future values backward across gap months. Shared module - affects all four categories. Real leakage.",
+  "activeForm": "Fixing bfill leakage",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": []
+}

@@ -1,18 +1,13 @@
 ---
-name: Research Questions Evolution
-description: Main RQ + 4 SRQs (v4), source of truth for all thesis components — synced to ch1-introduction.md
-updated: 2026-06-17
+name: Research Questions
+description: Main RQ + 4 SRQs (v4) — source of truth for all thesis components, mirroring ch1-introduction.md §1.3
+updated: 2026-08-11
 ---
 
 # Research Questions (v4)
 
-> **Canonical version.** Synced 2026-06-17 to the approved wording in
-> `thesis/thesis-writing/sections-drafts/ch1-introduction.md` §1.3. This file and Ch1 must always match;
-> Ch1 is the editing surface, this file mirrors it. v4 adopts the Manifold-aligned reframe (17/06 meeting,
-> Enrico–Nika): SRQ4 baseline raised to a code-as-action LLM, Main RQ gains "cost-justified", evaluation
-> metrics set to correctness/consistency/replicability (primary) and cost/latency (secondary). Supersedes
-> v3 (non-agentic-template baseline) and v2 (multi-agent / contextual-info / vs-BI), retained only in
-> [rq_evolution.md](../../docs/literature/rq_evolution.md).
+> **Canonical.** Ch1 §1.3 is the editing surface; this file mirrors it and the two must always
+> match. Version history: [rq_evolution.md](../literature/rq_evolution.md).
 
 ## Main Research Question
 
@@ -25,18 +20,33 @@ updated: 2026-06-17
 - **SRQ3 — Integration Readiness**: What architectural and operational capabilities are required for a production-oriented agentic system to integrate forecast-informed decision-support?
 - **SRQ4 — ML Integration vs LLM-Coder**: To what extent does integrating dedicated lightweight forecasting models into an agentic decision-support system improve the correctness, consistency, and replicability of forecast-informed decision-support outputs, at justified cost and latency, compared with a general-purpose LLM that writes and self-corrects its own forecasting code (a code-as-action baseline)?
 
-## Notes
+## Scope decisions
 
-These RQs are the source of truth for:
+- **SRQ1** — comparison spans all four categories; relative model ranking on identical data,
+  with Diebold-Mariano significance testing.
+- **SRQ2** — the artefact is a typed tool call carrying point forecast, calibrated 90%
+  interval, confidence score, source attribution and traceability metadata. Feature
+  construction stays server-side; the LLM never handles feature vectors.
+- **SRQ3** — an integration-readiness **assessment**, not a completed integration. Target is
+  the Prometheus **Graph Engine**; access pending NDA + dev merge. Moves to active integration
+  only if access lands.
+- **SRQ4** — baseline is a **code-as-action LLM** (writes, executes and self-corrects its own
+  forecasting code), runnable locally in an E2B sandbox, so SRQ4 does not depend on Prometheus
+  access. Metrics: **correctness, consistency, replicability** (primary) + **cost, latency**
+  (secondary), per the CLEAR evaluation frame (Mehta, 2025). Prompt set ≈ 50. Ch8 reports a
+  **pilot**; the full run is stated as further work.
+
+## Per-SRQ scope files
+
+| SRQ | Scope file | Chapters |
+|---|---|---|
+| SRQ1 | [srq1-models-efficiency.md](srq1-models-efficiency.md) | Ch. 3, 4, 6 |
+| SRQ2 | [srq2-tool-interface.md](srq2-tool-interface.md) | Ch. 3, 5, 7 |
+| SRQ3 | [srq3-integration-readiness.md](srq3-integration-readiness.md) | Ch. 5, 7, 9 |
+| SRQ4 | [srq4-ml-vs-code-as-action.md](srq4-ml-vs-code-as-action.md) | Ch. 3, 8, 9 |
+
+## Source of truth for
+
 - Thesis chapter structure and writing
 - Literature curation and inclusion criteria
 - Research scope
-
-**v4 reframe (adopted 2026-06-17, Manifold-endorsed):**
-- SRQ4 baseline is a **code-as-action LLM** (writes + executes + self-corrects its own forecasting code), not a static non-agentic template. The core test is whether dedicated ML integration is warranted at all, or whether LLM + code execution is already sufficient (Nika's open question).
-- Evaluation metrics: **correctness, consistency, replicability** (primary) + **cost, latency** (secondary), mapping to the CLEAR multidimensional-evaluation frame (Mehta, 2025); target prompt set ≈ 50.
-- The code-as-action LLM baseline is runnable locally (E2B sandbox), so SRQ4 is feasible without Prometheus access.
-- **SRQ3** remains an integration-readiness *assessment* for now (Prometheus access pending: NDA + dev merge); the concrete integration target is the Prometheus **Graph Engine**. If access lands, SRQ3 may move to *active* integration.
-- code-as-action is therefore **no longer "future work"** but the central SRQ4 comparator (propagation to Ch2/Ch3/Ch10 in progress).
-
-v4 — Synced to Ch1 on 2026-06-17. Full history in [rq_evolution.md](../../docs/literature/rq_evolution.md).

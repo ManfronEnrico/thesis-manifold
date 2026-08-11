@@ -1,0 +1,11 @@
+{
+  "id": "5",
+  "subject": "Resolve sales_value/sales_liters redundancy",
+  "description": "P0031 task 4, imported because CSD becomes the template. Both near-perfectly correlate with sales_units. Also re-examine weighted_dist: target correlation 0.756 exceeds lag_1's 0.585 - fit with/without sensitivity check.",
+  "activeForm": "Resolving feature redundancy",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": []
+}

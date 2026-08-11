@@ -1,0 +1,13 @@
+{
+  "id": "7",
+  "subject": "Measure single-brand vs pooled training cost",
+  "description": "Brian proposed training only on the highest-data brand since the demo needs one brand. Measured: pooled 3392 rows vs single-brand 44 - a 77x reduction with NO data gain (51 brands already at the 44-month ceiling). ~30 features on 44 rows is unfittable; ~12 test points kills statistical power. Recommendation: train pooled, evaluate/demo on FAXE KONDI (44/44 months, 118M units). This task measures both on Faxe Kondi and compares WMAPE - Brian decides on the numbers.",
+  "activeForm": "Measuring single-brand vs pooled",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}
