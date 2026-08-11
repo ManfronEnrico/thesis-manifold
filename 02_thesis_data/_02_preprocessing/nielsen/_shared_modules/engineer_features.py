@@ -74,6 +74,32 @@ def aggregate_brand_month_from_db(
     Use this in preference to the CSV path for the 4 new categories — their
     exported dim_product CSVs are incomplete (60–100% orphan rates).
     """
+    # SCOPE ASSERT (P0032, 2026-08-01): the query below filters
+    # `WHERE m.market_description = '{target_market}'` on a JOINed dim_market.
+    # If two market_ids share that description the JOIN fans out and every
+    # SUM() silently double-counts -- the same 6.16x defect the CSV path's
+    # assert guards, reached through the JOIN rather than an isin() list.
+    # Checked up-front so the failure is loud and precedes the expensive query.
+    _mkt_cur = conn.cursor()
+    _mkt_cur.execute(
+        f"SELECT market_id FROM dbo.{category}_clean_dim_market_v "
+        "WHERE market_description = ?",
+        target_market,
+    )
+    _market_ids = [r[0] for r in _mkt_cur.fetchall()]
+    if len(_market_ids) == 0:
+        raise ValueError(
+            f"Target market {target_market!r} not found in "
+            f"dbo.{category}_clean_dim_market_v."
+        )
+    if len(_market_ids) > 1:
+        raise ValueError(
+            f"Target market {target_market!r} resolves to {len(_market_ids)} "
+            f"market_ids ({_market_ids}) in dbo.{category}_clean_dim_market_v, "
+            "expected exactly 1. The market_description JOIN below would fan "
+            "out and double-count every aggregate. Disambiguate first."
+        )
+
     available = _get_facts_columns(conn, category)
     promo_expr = (
         "SUM(COALESCE(f.sales_units_any_promo, 0))"
@@ -154,6 +180,17 @@ def aggregate_brand_month_from_csvs(
             f"Available: {available[:10]}{'...' if len(available) > 10 else ''}"
         )
     target_market_ids = market_match["market_id"].tolist()
+    # SCOPE ASSERT (P0032, 2026-08-01): fail loudly on a multi-id market.
+    # The empty case is handled above; the >1 case previously fell through
+    # silently and would sum the same brand-month across several market rows,
+    # reintroducing the 6.16x double-count this filter exists to prevent.
+    if len(target_market_ids) > 1:
+        raise ValueError(
+            f"Target market {target_market!r} resolves to "
+            f"{len(target_market_ids)} market_ids ({target_market_ids}), "
+            "expected exactly 1. Aggregating across them would double-count "
+            "every brand-month. Disambiguate the market before proceeding."
+        )
     facts = facts[facts["market_id"].isin(target_market_ids)]
 
     # Drop zero/null sales_units (matches WHERE f.sales_units > 0)
@@ -313,12 +350,34 @@ def engineer_features(
     df["quarter"] = df["date"].dt.quarter
     df["holiday_month"] = df["month"].isin(holiday_set).astype(int)
 
-    # Promo intensity (clip to [0, 1])
-    df["promo_intensity"] = np.where(
-        df["sales_units"] > 0,
-        df["promo_units"] / df["sales_units"].clip(lower=1),
-        0,
-    ).clip(0, 1)
+    # Promo intensity (clip to [0, 1]), lagged one period.
+    #
+    # LEAKAGE FIX (P0032, 2026-08-01): the ratio is computed from realised
+    # sales_units at t, which is the target's own denominator -- at forecast
+    # time for month t, sales_units_t is unknown, so the contemporaneous value
+    # is unconstructible. It is shifted by one period to match every other
+    # feature in this function (lags at shift(lag), rolling at shift(1)).
+    #
+    # The shift is applied WITHIN group_keys: a bare shift(1) on a frame sorted
+    # by (brand, date) would carry the last row of one series into the first row
+    # of the next -- cross-series leakage. The ratio is formed first and then
+    # shifted (rather than shifting promo_units/sales_units separately) so the
+    # result is unambiguously "last period's promo intensity" even when an
+    # intervening month has zero sales.
+    #
+    # The first observation of each series is NaN, exactly as for lag_1;
+    # downstream consumers already fillna(0.0) at feature-selection time.
+    _promo_intensity_t = pd.Series(
+        np.where(
+            df["sales_units"] > 0,
+            df["promo_units"] / df["sales_units"].clip(lower=1),
+            0,
+        ).clip(0, 1),
+        index=df.index,
+    )
+    df["promo_intensity"] = _promo_intensity_t.groupby(
+        [df[k] for k in group_keys]
+    ).shift(1)
 
     # Log-transformed target
     df["log_sales_units"] = np.log1p(df["sales_units"])
