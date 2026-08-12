@@ -275,3 +275,69 @@ reports the two separately (`"[RTD] 2 missing and 1 empty of 4 …"`).
 This is a genuine capability gain, not just a port — worth noting because the
 decomposition's stated goal is "no degradation", and this is the first place the
 split produced an actual improvement rather than parity.
+
+---
+
+## F37 — The fan-out guard does not catch the fan-out it was written for
+
+**Measured 2026-08-12 while porting step 1.** The `_n_markets != 1` guard —
+the fix for P0027's 6.16× double-count — tests
+`merged["market_id"].nunique()`. That counts distinct **ids**, but a fan-out is
+row **multiplication**. The two come apart:
+
+| Defect shape | Rows multiplied? | `nunique()` | Guard fires? |
+|---|---|---|---|
+| Two *distinct* market ids survive the filter | yes | 2 | **yes** |
+| `dim_market` holds the parent id on *two rows* | yes | **1** | **no** |
+
+Reproduced directly: one fact row joined against a `dim_market` carrying
+`market_id=1256338` twice (differing only in `market_description`, e.g.
+`"DVH EXCL. HD"` vs `"DVH EXCL HD"`) yields **2 merged rows**, `nunique()==1`,
+and the guard stays silent. Every downstream `SUM()` is then doubled — the exact
+P0027 failure the guard exists to prevent.
+
+**Not currently triggered.** All four categories' `dim_market` tables have 86
+rows and **0 duplicate ids** today, with exactly 1 row for the parent. So this
+is a latent gap, not a live defect — the current numbers are trustworthy.
+
+**Closed** by adding `validate="m:1"` to all three dimension merges, which makes
+pandas raise `MergeError` if any dimension table carries a duplicate join key.
+Verified: duplicate `dim_market` rows and duplicate `dim_product` rows both now
+raise; the clean path is unchanged.
+
+Both halves are needed. `validate="m:1"` catches same-id row duplication;
+`nunique() != 1` catches distinct ids surviving the filter. Neither alone is
+sufficient.
+
+**Re-run confirms zero behavioural change**: CSD 4,209 / Danskvand 1,225 /
+Energidrikke 1,702 / RTD 2,509 rows before and after.
+
+---
+
+## F38 — `min_periods` has two disagreeing values, and step 1 held the unused one
+
+Surfaced by the step-1 parity check. The notebook's `GRAIN_CONFIG` (cell 14)
+declares `min_periods: 40` with a detailed rationale string. But the actual
+consumer, `filter_series()` in `engineer_features.py`, takes
+`min_periods: int = DEFAULT_MIN_PERIODS` — and `DEFAULT_MIN_PERIODS = 30`.
+
+So there are two numbers:
+
+| Location | Value | Used? |
+|---|---|---|
+| notebook `GRAIN_CONFIG["bymonth"]["min_periods"]` | 40 | declared in step 1, never passed to step 4 |
+| `engineer_features.DEFAULT_MIN_PERIODS` | 30 | **the value that actually filters** |
+
+This compounds F28. F28 established that `MIN_PERIODS: 40` in the contract JSON
+is a hardcoded literal wearing a derived-sounding rationale. F38 adds that the
+literal is not even the number in force — the pipeline filters at 30 while the
+documentation, the contract, and the rationale all say 40.
+
+**Deliberately not fixed in step 1.** `min_periods` is a *filtering* parameter,
+so it belongs to the step-3 contract and step-4 filter, not to aggregation. It
+was dropped from step 1's config rather than carried, and task 4 must derive it
+honestly and pass it explicitly to `filter_series`.
+
+**Task 4 acceptance criterion**: after the port, exactly one value governs, it is
+derived from the brand-depth distribution, and it is passed explicitly rather
+than inherited from a default.

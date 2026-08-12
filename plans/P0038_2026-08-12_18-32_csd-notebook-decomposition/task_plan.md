@@ -133,7 +133,7 @@ gets produced.
 | ID | Title | Phase | Blocked By | Status |
 |----|-------|-------|------------|--------|
 | 1 | Build shared `step_0_validate_cache.py` + console/table capture utils | 1 | — | **complete** |
-| 2 | Build shared `step_1_load_and_aggregate.py` (carries DEC-SCOPE) | 1 | 1 | pending |
+| 2 | Build shared `step_1_load_and_aggregate.py` (carries DEC-SCOPE) | 1 | 1 | **complete** |
 | 3 | Build shared `step_2_eda_descriptive.py` (plots + tables) | 2 | 2 | pending |
 | 4 | Build shared `step_3_derive_params.py` + contract JSON schema | 2 | 2 | pending |
 | 5 | Build `step_4_engineer_csd.py` reading the contract | 3 | 4 | pending |
@@ -194,6 +194,48 @@ verbatim — they are the fix for P0027's 6.16× double-count defect.
 
 Category differences here are data-shaped, not logic-shaped (different column
 counts survive the same merge), so this stays genuinely shared.
+
+**COMPLETE 2026-08-12.** `_shared_modules/step_1_load_and_aggregate.py`.
+
+All ten critical invariants verified present verbatim (DEC-SCOPE id + full
+measurement rationale, the `!= 1` guard and its message, positive-sales filter,
+DEC-GRAIN/P0035 notes, promo NaN→0 semantics, brand×month keys).
+
+**Live results — all four categories, first time the other three have ever run
+this path:**
+
+| Category | Fact rows | Brand-month rows | Brands | Periods | Cols |
+|----------|-----------|------------------|--------|---------|------|
+| CSD | 37,999 → | 4,209 | 142 | 46 | 8 |
+| Danskvand | 11,085 → | 1,225 | 55 | 41 | 7 |
+| Energidrikke | 12,139 → | 1,702 | 68 | 43 | 8 |
+| RTD | 11,596 → | 2,509 | 101 | 41 | 7 |
+
+Period counts match F29's projections exactly (46/41/43/41).
+
+**Two changes beyond a literal port:**
+
+1. **`agg_dict` is built from columns actually present.** Measured: Danskvand
+   (15 fact cols) and RTD (31) have **no `sales_units_any_promo`**; the
+   notebook's fixed dict raises `KeyError` on both. Now degrades with a logged
+   warning to 7 columns, while `sales_units` absence is still a hard error.
+   Capability tiers are nominally a step-4 concern, but they surface here too —
+   you cannot aggregate a column that does not exist.
+
+2. **`validate="m:1"` on all three dimension merges** — closes F37, a real
+   blind spot in the fan-out guard (see below).
+
+**F37 — the fan-out guard did not catch the fan-out it was written for.**
+`nunique() != 1` counts distinct *ids*, but a fan-out multiplies *rows*.
+A `dim_market` carrying the parent id on two rows fans out every fact row while
+leaving `nunique()` at 1 — silent, and exactly the P0027 6.16× shape. Not live
+(all four dim tables have 0 duplicate ids today), now closed regardless. Re-run
+confirms identical row counts before and after.
+
+**F38 — `min_periods` disagrees with itself.** The notebook's `GRAIN_CONFIG`
+says 40; the actual consumer `filter_series()` defaults to 30. Dropped from
+step 1 deliberately (it is a filtering, not an aggregation, parameter) and
+handed to task 4, which must derive it and pass it explicitly.
 
 ### Task 3 — Shared step 2 (descriptive EDA)
 Port cells 17–39. 8 plots at DPI 150. Must degrade gracefully where a category

@@ -1,0 +1,54 @@
+
+===============================================================================
+=
+Nielsen RTD — Step 1: Load, Merge and Aggregate
+===============================================================================
+=
+
+================================================================================
+LOAD AND MERGE CACHED PARQUET VIEWS
+================================================================================
+  Loading view parquet files...
+  Facts shape:    (2409362, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+
+Merged row-level shape: (11596, 35)
+Unique brands:          101
+Elapsed:                1.16s
+================================================================================
+
+================================================================================
+AGGREGATE TO BYMONTH GRAIN
+================================================================================
+⚠ WARNING: Measure column(s) absent for this category, aggregating without 
+them: sales_units_any_promo
+
+Aggregated shape: (2509, 7)
+Unique brands:    101
+Date range:       2023-03 to 2026-07  (41 distinct periods)
+Elapsed:          0.01s
+================================================================================
+
+RTD -- brand x month panel (first 10 rows)
+------------------------------------------
+ brand  period_year  period_month  sales_units  sales_value  sales_liters  weighted_dist
+24 ICE         2026             7       2915.0     58054.00        437.25       0.091681
+ AERIS         2024            10         27.0      2160.50          2.70       0.002860
+ AERIS         2024            11         19.0      1456.40          1.90       0.001673
+ AERIS         2024            12        165.0     11710.57         16.50       0.001651
+ AERIS         2025             1          8.0       639.65          0.80       0.001121
+ AERIS         2025             2          6.0       479.70          0.60       0.000712
+ AERIS         2025             3         18.0      1111.52          1.80       0.001132
+ AERIS         2025             4          3.0       239.85          0.30       0.000598
+ AERIS         2025             5         15.0      1264.50          1.50       0.001263
+ AERIS         2025             6         10.0       913.80          1.00       0.000740
+
+ℹ INFO: Wrote step_1_aggregate_bymonth.parquet  (2,509 rows x 7 cols)
+ℹ INFO: Console log: 
+Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeli
+ne_step_outputs\step_1_console.log
+
+✓ Completed in 1.3s
+

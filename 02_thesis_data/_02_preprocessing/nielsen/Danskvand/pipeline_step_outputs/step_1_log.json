@@ -34,5 +34,21 @@
     "elapsed_sec": 0.72,
     "output_rows": 1251,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-08-12T19:03:12.730103",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "Danskvand",
+    "elapsed_sec": 1.12,
+    "output_rows": 1225
+  },
+  {
+    "timestamp": "2026-08-12T19:05:40.693632",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "Danskvand",
+    "elapsed_sec": 0.72,
+    "output_rows": 1225
   }
 ]

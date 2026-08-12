@@ -7,5 +7,21 @@
     "elapsed_sec": 1.31,
     "output_rows": 2352,
     "output_cols": 8
+  },
+  {
+    "timestamp": "2026-08-12T19:03:17.807103",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "RTD",
+    "elapsed_sec": 1.06,
+    "output_rows": 2509
+  },
+  {
+    "timestamp": "2026-08-12T19:05:46.670703",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "RTD",
+    "elapsed_sec": 1.25,
+    "output_rows": 2509
   }
 ]
