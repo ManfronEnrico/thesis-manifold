@@ -3,7 +3,7 @@
   "subject": "Switch CSD market filter to parent 1256338",
   "description": "DEC-SCOPE. In CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb:\n- :423-426 replace DVH_REGION_IDS 9-id set with single parent id 1256338; rewrite the comment above it, which justifies the region choice on double-count grounds.\n- :457 the isin() filter.\nRESOLVED 2026-08-11: the :722-725 byregion grain config that also consumed DVH_REGION_IDS was DELETED by the chore/p0035-grain-artifact-removal merge (0f699a7). Only 2 sites remain. Do not look for it.\n- Guard len == 1 after filtering, not len > 0 (P0032 task_plan:48).\n\nKeep the SCD market-dim dedup on market_id before merging (P0027 guard).\n\nVerify: exactly one distinct market_id == 1256338; ~196,657 fact rows, not ~453,685.\n\nSIMPLIFIED by F14: chore/p0035-grain-artifact-removal was MERGED to main as 0f699a7 (done) -- it already deletes the byregion config block at :722-725 that consumes DVH_REGION_IDS, and does not touch the market filter. That leaves the filter as the only remaining DVH_REGION_IDS site.",
   "activeForm": "Switching CSD market filter to parent",
-  "status": "pending",
+  "status": "completed",
   "blocks": [
     "4",
     "6"

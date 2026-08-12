@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-11 21:05:00
+updated: 2026-08-11 21:40:00
 status: in_progress
-focus_detail: "Tasks 1-2 complete. P0035 merged (0f699a7) -- its prerequisite is DONE, do not re-merge. Next: task 3, CSD market filter to parent 1256338. Only 2 DVH_REGION_IDS sites remain (:423-426 set, :457 isin); :725 was deleted by the P0035 merge. Notebook is 57.8k tokens -- Grep, never Read whole. Full spec in tasks/3.json."
+focus_detail: "Tasks 1-3 complete. CSD now filters to parent 1256338 (verified: 37,999 rows, 1 market, 140 brands, all 7 promo columns populated where they were 0). F15 records that the plan's supporting numbers were wrong -- parent scope COSTS 1.5% of brand-month rows and buys the promo family; it is not a free win. Next: task 5 (make_calendar bfill, independent) or task 4 (derived promo asserts). Notebook is 57.8k tokens -- Grep + JSON-patch script, Read and NotebookEdit both refuse it."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -33,16 +33,26 @@ children-only both avoid double-counting.
 
 Full measurements in `findings.md`; originals in P0032 F12–F12.5 and P0033 F5–F11.
 
-**Parent dominates children at brand×month — no trade-off:**
+> **Corrected 2026-08-11 (task 3, F15).** The figures below are the *measured*
+> values. The earlier table claimed parent scope gained rows (3,917 vs 3,641) and
+> 119,010 nonzero promo — both wrong. Parent scope **costs** 1.5% of brand-month
+> rows. The promo gain is real but per-column ~23,400, not 119,010.
+
+**Parent vs children at brand×month — a trade, not a free win:**
 
 | Metric | Parent `1256338` | Region children |
 |--------|------------------|-----------------|
-| Brand-month rows (>0) | **3,917** | 3,641 |
-| Distinct brands | **144** | 136 |
-| Brands @ MIN_PERIODS>=24 | **85** | 74 |
-| Nonzero promo | **119,010** | **0** |
+| Brand-month rows (>0) | 3,917 | **3,975** |
+| Distinct brands | 140 | 140 |
+| Brands @ MIN_PERIODS>=24 | **85** | 84 |
+| Fact rows | **37,999** | 243,691 |
+| Nonzero promo (per column) | **~23,400** | **0** |
 
-Promo-zero was an artifact of the region filter, not a property of the data.
+Promo-zero was an artifact of the region filter, not a property of the data — this
+is the entire case for DEC-SCOPE. Region scope repeats each brand-period across 9
+children (6.41× redundancy) without adding information at the modelling grain.
+
+**Net: costs 1.5% of brand-month rows, buys the entire promo feature family.**
 
 ## Phases
 
@@ -102,6 +112,11 @@ Keep the SCD market-dim dedup on `market_id` before merging (P0027's double-coun
 Guard `len == 1` after filtering, not just `len > 0` (P0032 task_plan:48 flagged this).
 
 ### Task 4 — Verify promo populates
+✅ **Partly pre-verified by task 3**: all 7 raw promo columns confirmed non-degenerate
+at parent scope (`sales_value_any_promo` 23,406 … `weighted_distribution_any_promo`
+23,407; all were 0 at region scope). What remains is the *derived* features and the
+reusable assertion.
+
 After task 3, confirm `promo_units` / `promo_intensity` / `has_promo` are non-degenerate.
 Add an EDA assertion that **fails loudly on all-zero columns** — the silent pass-through
 is the reason this went unnoticed for weeks (P0032 F10.2). Applies to any all-zero
@@ -171,6 +186,19 @@ predict vs single-brand-only), compare WMAPE. Brian decides on the numbers.
 Full CSD notebook run under DEC-SCOPE. Record before/after: row count, brand count,
 promo populated, WMAPE delta from the V3 fix. Confirm `_03_engineered/bymonth/CSD/`
 regenerates. **This output becomes P0033's template.**
+
+**Expected at parent scope (measured, F15)** — not the plan's original figures:
+
+| | Value |
+|---|---|
+| Fact rows (post-filter, sales>0) | **37,999** |
+| Brand-month rows (>0) | **3,917** |
+| Distinct brands | **140** |
+| Brands @ MIN_PERIODS>=24 | **85** |
+| Panel depth | **44 months** |
+
+Also rebuild Ch4's funnel narrative, which currently starts from the wrong 196,657
+figure (see `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md`).
 
 ## Definition of done
 

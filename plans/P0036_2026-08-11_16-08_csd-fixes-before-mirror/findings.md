@@ -226,3 +226,66 @@ is not incidental to the comparison, it *is* the comparison.
    sessions. Its internal links also still use pre-P0028 `thesis/…` paths.
 
 Neither blocks P0036. Recorded so they are not rediscovered later.
+
+---
+
+## F15 — DEC-SCOPE confirmed, but the plan's supporting numbers were wrong
+
+Measured against the real parquet views before editing (task 3, 2026-08-11). The
+decision holds; three of the figures used to justify it do not.
+
+| Metric | Plan claimed | **Measured** | Verdict |
+|---|---|---|---|
+| Fact rows, region scope | ~453,685 | **243,691** | wrong |
+| Fact rows, parent scope | ~196,657 | **37,999** | wrong |
+| Brand-month rows, region | 3,641 | **3,975** | wrong |
+| Brand-month rows, parent | 3,917 | **3,917** | correct |
+| Nonzero promo, parent | 119,010 | **~23,400** | wrong (per-column) |
+| Distinct brands, both scopes | 144 | **140** | wrong |
+| Panel depth | 44 months | **44** | correct |
+| Brands @ MIN_PERIODS>=24, parent | 85 | **85** | correct |
+
+### The argument changes shape
+
+`task_plan.md` framed DEC-SCOPE as a **free win**: more rows *and* the promo feature.
+That is false. Parent scope yields **3,917 brand-month rows vs region's 3,975** — it
+**costs 1.5%**, it does not gain.
+
+The correct justification, which survives scrutiny:
+
+- **Promo: 0 → ~23,400 nonzero per column.** All 7 promo columns are identically empty
+  at region scope. This is the whole case.
+- **No brand loss** — 140 distinct brands under both scopes.
+- **6.4× less redundancy** — region scope repeats each brand-period across 9 children
+  (243,691 / 37,999 = 6.41), inflating fact rows without adding information at the
+  brand × month modelling grain.
+
+**Net: costs 1.5% of brand-month rows, buys the entire promo feature family.**
+
+This matters beyond bookkeeping: the "more rows" claim would not have survived a
+defence question, since the aggregation arithmetic makes it implausible on its face.
+
+### Also corrected
+
+- **No `len > 0` guard existed to fix.** The plan said to change `len > 0` to `len == 1`;
+  `_load_merged()` had **no guard at all**. Added as new code.
+- **No SCD market-dim dedup existed to preserve.** The plan said to keep it. The
+  line-454 merge has no `.drop_duplicates()` — safe only because `market_id` is unique
+  in the dim (verified: 86 rows, 86 distinct). The new `== 1` guard now enforces this
+  rather than relying on it.
+
+### Verified post-patch
+
+`_load_merged()` returns 37,999 rows, exactly 1 market (`1256338` = `"DVH EXCL. HD"`),
+140 brands, all sales positive, all 7 promo columns populated. Cell parses via `ast.parse`.
+Guard confirmed to raise on a simulated 2-market frame.
+
+### Downstream implications
+
+- **Task 6's parity check** must expect 37,999 fact rows / 3,917 brand-month rows —
+  not the plan's figures.
+- **Ch4's funnel narrative** cites the 196k→2,552 path (see
+  `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md`). The 196,657
+  starting figure is wrong; rebuild the funnel from 37,999 once task 6 runs.
+- **FAXE KONDI** confirmed at full 44/44 month depth, 118,158,520 units — the System B
+  demo brand is intact under parent scope (feeds task 9).
