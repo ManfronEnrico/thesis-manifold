@@ -1,0 +1,11 @@
+{
+  "id": "10",
+  "subject": "Investigate 153,098 fact rows with no dim_product entry",
+  "description": "F19. dim_product covers only 2,103 of 8,229 product_ids appearing in the CSD facts (26%). The unmapped 6,306 products carry 26,142,834,849 sales units, and 144,400 of those rows have POSITIVE sales -- they are not malformed records.\n\nMapped and unmapped ID ranges fully overlap (unmapped 2..127,023, mapped 1..127,020), so this is not a clean category cut.\n\nHypotheses to test:\n1. dim_product exported with a narrower filter than the facts view.\n2. The facts view spans products outside CSD and the extra rows are correctly excluded.\n3. The dimension export is incomplete / truncated.\n\nCheck whether csd_clean_facts_v carries a category/type column separating mapped from unmapped. Compare dim_product coverage across all four categories -- ~26% everywhere means systematic; CSD-only means an export problem.\n\nWHY THIS MATTERS: Ch4 claims a sample size derived from the 9,080,538 -> 2,552 funnel. If these are in-scope CSD items, the study models a fraction of the available market and the funnel is materially misleading. Resolve or explicitly bound before Ch4 states any sample size.\n\nVerify: written determination of what the unmapped products are, with evidence, and either (a) confirmation they are correctly out of scope, or (b) a corrected funnel.",
+  "activeForm": "Investigating unmapped product_ids",
+  "status": "pending",
+  "blocks": [
+    "6"
+  ],
+  "blockedBy": []
+}

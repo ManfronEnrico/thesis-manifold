@@ -81,26 +81,52 @@ Conflating them is what makes the funnel look alarming. Only one is genuine loss
 | Step | Kind | Why it is defensible |
 |------|------|----------------------|
 | 9.08M → 196,657 | **Deduplication** | The 86 markets are overlapping *views* of one universe (channel totals, size tiers, 9 regions, EAST/WEST and national rollups). One carton sold in Copenhagen appears in the KBH row, the DVH parent, the EAST rollup, a size tier and the national total. Summing them is the 6.16× double-count P0027 found. Picking one lens is not loss |
-| 196,657 → 43,559 | **Referential integrity** | Fact rows whose `product_id`/`period_id` has no dimension entry. Unusable — no brand to attribute them to |
-| 43,559 → 37,999 | **Validity convention** | 5,525 NULL, 28 negative, 7 zero. See the caveat below — this is a *convention*, not a derivation |
-| 37,999 → 3,917 | **Definitional** | Unit of analysis changes from SKU to brand. Nothing is discarded; observations are *summed*. 1,923 SKUs → 140 brands |
+| 196,657 → 43,559 | ⚠️ **Unresolved — see below** | Fact rows whose `product_id` is absent from `dim_product`. **Not benign**: 153,098 rows, 6,306 products, 26.1bn units, 144,400 of them with real positive sales |
+| 43,559 → 37,999 | **Aggregation hygiene** | 5,525 NULL, 28 negative, 7 zero at SKU grain. Near-no-op for sums; materially changes the one *averaged* column. See below |
+| 37,999 → 3,917 | **Definitional** | Unit of analysis changes from SKU to brand. Nothing discarded; observations are *summed*. 1,923 SKUs → 140 brands |
 | 3,917 → 6,160 | **Completion (+57%)** | Adds explicit rows for real absences. The only step that goes *up* |
-| 6,160 → 2,552 | **Genuine exclusion** | Series too short to model. **The only true attrition** |
+| 6,160 → 2,552 | **Genuine exclusion** | Series too short to model. **The only step that is true attrition** |
 
-Say that last sentence in Ch4. A funnel that appears to discard 99.97% of the data
-reads very differently once the reader sees that four of the five steps are
-deduplication, integrity, regraining and completion.
+### ⚠️ Open issue: 153,098 fact rows have no product dimension entry
 
-### Why brand, not SKU — get the causality right
+`dim_product` covers **2,103 of the 8,229 `product_id`s appearing in the facts (26%)**.
+The unmapped 6,306 products carry **26.1 billion sales units**, and **144,400 of those
+rows have positive sales** — these are not malformed records.
 
-The rollup is driven by **the research question**, not by data quality. SRQ1 concerns
-FMCG *demand forecasting for decision support*; the System B user asks "how will Faxe
-Kondi sell next month," not about the 1.5L PET variant. Brand is the decision-relevant
-unit, and DEC-GRAIN fixes it.
+ID ranges of mapped and unmapped products fully overlap, so this is not a clean
+category cut. **Cause unknown.** Possibilities: `dim_product` was exported with a
+narrower filter than the facts; the facts span products outside the CSD category;
+or the dimension export is incomplete.
 
-Sparsity (51.5% populated at SKU grain, denser at brand) is a **consequence that
-happens to help**, not the reason. Stating it the other way round invites the obvious
-question: *"so you aggregated until the data looked good?"*
+**This must be resolved or explicitly bounded before Ch4 claims a sample size.** If
+these are in-scope CSD products, the study is currently modelling a fraction of the
+available market. An earlier draft of this note dismissed the step as "referential
+integrity — unusable, no brand to attribute them to." That is mechanically true and
+badly understates it.
+
+### Why brand, not SKU — two honest reasons, in order
+
+An earlier draft claimed the rollup was driven *purely* by the research question, and
+warned that citing sparsity invites *"so you aggregated until the data looked good?"*
+**Brian rejected that framing, correctly**: it is evasive, and the honest account is
+stronger.
+
+The real sequence was **bidirectional**, and should be written as such:
+
+1. **The data could not support SKU-level forecasting.** At SKU grain the panel is
+   51.5% populated and most SKUs have too few periods to fit. Brand-level aggregation
+   was a *precondition for training a model at all*.
+2. **The research question was then shaped to match.** SRQ1 was framed at brand-level
+   demand — broad enough to be answerable with the available data, and still
+   decision-relevant, since the System B user asks "how will Faxe Kondi sell next
+   month," not about the 1.5L PET variant.
+
+This is ordinary applied-research practice: scope follows feasibility. Stating it
+plainly is more defensible than implying the grain was chosen on purity grounds and
+the sparsity fit was a happy accident. It also sets up a **concrete further-work
+claim** for Ch10: *finer-grained questions (SKU, pack size, regional) require a
+broader and denser dataset than the one licensed here* — which is a limitation of the
+data, not of the method.
 
 ### Caveat: drop-then-refill, and the NULL/zero collapse (measured, F18)
 
@@ -108,36 +134,99 @@ The pipeline drops rows at SKU grain, then re-adds brand-months as explicit zero
 during calendar fill. That sounds circular; measured, it mostly is not — but where it
 is, it fabricates observations:
 
-| | Brand-months |
+| | Count |
 |---|---|
-| Present in raw data | 4,075 |
-| Survive the `> 0` filter | 3,917 |
-| **Lost, then re-added as explicit 0** | **158** |
-| Dropped SKU row coexisted with a selling sibling (no gap created) | 1,249 |
+| Brand-months present in raw data | 4,075 |
+| Brand-months surviving the `> 0` filter | 3,917 |
+| **Brand-months lost, then re-added as explicit 0** | **158** |
+| Dropped SKU rows | 5,560 |
+| ...where a **sibling SKU** of the same brand sold that month | **5,308 (95%)** |
+| ...where no sibling sold (→ the lost brand-months) | 252 |
 
-So ~89% of SKU-level drops are invisible at brand grain — a sibling variant sold, so
-the brand-month survives. The remaining **158 are a true round trip**.
+**"Sibling" = a different `product_id` under the same brand name, same month.** It is
+*not* a mapping error: both rows carry a valid brand. Concretely — `FAXE KONDI 1.5L
+PET` records 0 or NULL units in March while `FAXE KONDI 0.5L` sells 40,000 that same
+March. Dropping the first changes nothing, because the brand-month survives on the
+second and the sum is unaffected.
 
-**The problem is what those 158 were.** 157 of them were **NULL-only** (Nielsen
-recorded nothing) and **zero of them were zero-only**. NULL means *not measured*; 0
-means *measured, sold nothing*. After calendar fill both are `0.0`. So **157 unmeasured
-cells are asserted as confirmed zero sales** — an information loss nobody chose, an
-artifact of dropping first and filling later.
+95% of dropped SKU rows are that case: **invisible at brand grain**. Only the 252 rows
+where *no* variant sold remove a brand-month entirely, producing the 158 round trips.
 
-Small (2.5% of the modelled frame) but state it in Ch10: the pipeline cannot
-distinguish "not measured" from "sold nothing," and treats the former as the latter.
+Of those 158, **157 were NULL-only** and **none were zero-only**. After calendar fill
+they are written as `0.0`.
 
-**Zeros are not excluded from modelling.** A zero is a real observation and carries
-signal (seasonality, decline). The `> 0` filter operates on *raw SKU rows*; the model
-trains on the calendar-filled frame where brand-month zeros are present and explicit.
-`filter_series` counts non-zero periods only to decide series *length*, not to drop
-zeros from training.
+### What NULL means: unknown, and the metadata does not say
 
-**Negatives — checked, no seasonal pattern.** Returns/corrections could in principle
-carry signal (e.g. post-campaign returns clustering in one month). Measured: 28 rows
-spread across 9 distinct calendar months, no spike. Moot anyway — `make_calendar`
-applies `clip(lower=0)`, so a surviving negative would be zeroed there regardless.
-Worth one Ch10 sentence: returns dynamics are outside the modelled target.
+**Do not claim NULL means "not measured."** The supplier metadata
+(`02_thesis_data/_00_raw/nielsen/description/nielsen-prometheus_data_model.md`) was
+searched for `NULL` / `null` / `missing` / `zero` / `blank` / `negative`: **zero
+matches**. It documents `sales_units` only as *"Total number of units sold"* with
+example values `0.0, 22639.0`. **There is no documented null semantics.**
+
+So NULL could mean not-measured, not-stocked, a suppressed low-volume cell, or a
+data-entry artifact — and it could mean the same thing as `0`. **We cannot tell.**
+
+Write it as a stated assumption, not a fact:
+
+> Nielsen's data model does not document the semantics of missing values. Absent
+> supplier guidance, unmeasured and zero-valued cells are treated identically
+> (as zero units sold) for modelling. Whether NULL and 0 encode distinct real-world
+> states in the source system is unknown, and if they do, the pipeline does not
+> preserve that distinction.
+
+That is honest, checkable, and does not overclaim. **157 cells (2.5% of the modelled
+frame)** are affected — small, but the assumption should be visible rather than buried.
+
+### Negatives: clip to zero, and state it as an unjustified choice
+
+Returns/corrections could carry signal (e.g. post-campaign returns clustering). Two
+findings:
+
+- **No seasonal pattern here.** 28 negative rows spread across 9 distinct calendar
+  months, no spike. The hypothesis is sound in general; this data does not exhibit it.
+- **The metadata does not explain negatives either.** Same search, no matches.
+
+`make_calendar` applies `clip(lower=0)`, so negatives become 0 regardless of the
+filter. **Keep that**, because without supplier documentation there is no principled
+alternative — but record it as a choice made under uncertainty, not a derivation.
+
+Ch10 sentence: *negative sales values, presumed accounting corrections but not
+documented as such by the supplier, are clipped to zero; returns dynamics and
+zero-inflation are therefore outside the modelled target.*
+
+### Why filter SKU rows at all, if brands are summed?
+
+Brian's challenge: a `0` row contributes nothing to a `SUM`, so why filter? **Measured
+— he is right for the sums, and the real reason is elsewhere.**
+
+| Aggregate | Effect of the `> 0` filter |
+|---|---|
+| `sales_units` (sum) | max diff **883 units** across 3,917 brand-months, 28 rows differ |
+| `sales_value` (sum) | max diff 12,558, 33 rows differ |
+| `sales_liters` (sum) | max diff 1,521, 28 rows differ |
+| **`weighted_dist` (MEAN)** | **1,249 of 3,917 brand-months change, up to 0.19** |
+
+For sums the filter is effectively a **no-op** — as predicted. Its real effect is on
+`weighted_dist`, the one column aggregated with `.mean()`: including zero/NULL SKU rows
+**drags the average distribution down**, exactly the "averages would be wrongly
+poisoned" concern.
+
+So the correct justification is **aggregation hygiene for the averaged column**, not
+target validity:
+
+> SKU rows without positive sales are excluded before aggregation. For summed
+> measures this is immaterial. It matters for `weighted_distribution`, which is
+> averaged across SKUs: including non-selling variants would bias a brand's mean
+> distribution toward zero.
+
+The previous justification — "a convention inherited from the SQL view" — was
+correctly rejected by Brian as no justification at all. Provenance is not a reason.
+
+Its **second** effect is the 158 brand-months above: dropping every SKU row for a
+brand-month removes the brand-month entirely, which the calendar fill then re-creates
+as a zero. **Alternative worth considering:** filter only for the `weighted_dist` mean
+and retain all rows for the sums. This would preserve the NULL/0 distinction rather
+than laundering it through drop-and-refill.
 
 ---
 

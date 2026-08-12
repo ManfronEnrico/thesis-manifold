@@ -492,3 +492,99 @@ All four points written into
 kind-of-reduction table (deduplication / integrity / convention / definitional /
 completion / genuine exclusion) making explicit that **only the MIN_PERIODS step is
 true attrition**.
+
+---
+
+## F19 — 153,098 unmapped fact rows; NULL semantics undocumented; filter justified wrongly
+
+Brian challenged four claims from F18. All four were right to challenge; two of my
+statements were wrong, one was unfounded, and one uncovered a larger problem.
+
+### 1. ⚠️ The 196,657 → 43,559 step is NOT benign referential integrity
+
+Labelled "unusable — no brand to attribute them to." Measured:
+
+| | |
+|---|---|
+| Fact rows with `product_id` absent from `dim_product` | **153,098** |
+| Distinct unmapped products | **6,306** |
+| Their total sales_units | **26,142,834,849** |
+| Unmapped rows with **positive** sales | **144,400** |
+| `dim_product` coverage of facts' product_ids | **2,103 / 8,229 = 26%** |
+
+Mapped and unmapped ID ranges fully overlap (unmapped 2..127,023; mapped
+1..127,020), so this is not a clean category cut.
+
+**Cause unknown.** Candidates: `dim_product` exported with a narrower filter than the
+facts; facts spanning products outside CSD; incomplete dimension export.
+
+**This is now a blocking question for Ch4's sample-size claim.** If those products are
+in-scope CSD items, the study models a fraction of the available market and the
+"9,080,538 → 2,552" funnel is materially misleading. Raised as task 10.
+
+### 2. NULL semantics: unfounded assertion, retracted
+
+Stated "NULL = not measured, 0 = measured, sold nothing" as fact. **No grounding.**
+Searched `nielsen-prometheus_data_model.md` for NULL/null/missing/zero/blank/negative:
+**zero matches**. It documents `sales_units` only as *"Total number of units sold"*,
+examples `0.0, 22639.0`.
+
+Brian: *"this assertion needs to be grounded in the metadata verbatim ... NULL and 0
+could mean the same thing."* Correct. Notes now state it as an explicit assumption
+under documented uncertainty, not a fact.
+
+### 3. Negatives: clip to zero, framed as a choice under uncertainty
+
+Brian: *"as we dont have the proper dataset justification from the supplier for the
+logic of negative sales, we should clip it to zero and raise that limitation."*
+Adopted. The metadata is equally silent on negatives. 28 rows, 9 distinct calendar
+months, no seasonal spike. `clip(lower=0)` retained, documented as unjustified-by-
+supplier rather than derived.
+
+### 4. Why filter SKU rows at all — Brian right, and the real reason found
+
+Brian: *"a 0 entry would not affect [a sum] at all, and an average would be wrongly
+poisoned."* Exactly right on both halves:
+
+| Aggregate | Effect of `> 0` filter |
+|---|---|
+| `sales_units` / `sales_value` / `sales_liters` (SUM) | ≤883 units / ≤12,558 / ≤1,521; **28-33 of 3,917 brand-months differ. Effectively a no-op** |
+| **`weighted_dist` (MEAN)** | **1,249 of 3,917 brand-months change, max 0.19** |
+
+The filter's real justification is **aggregation hygiene for the one averaged column**
+— including non-selling variants biases a brand's mean distribution toward zero. Not
+target validity, and certainly not "inherited from the SQL view," which Brian rightly
+called no justification at all: *"provenance is not a reason."*
+
+**Open design option:** filter only for the `weighted_dist` mean, retain all rows for
+the sums. Would preserve the NULL/0 distinction instead of laundering it through
+drop-and-refill.
+
+### 5. "Selling sibling" clarified (Brian asked directly)
+
+Not a mapping error — both rows carry a valid brand. A sibling is a **different
+`product_id` under the same brand name in the same month**: `FAXE KONDI 1.5L PET`
+records 0/NULL in March while `FAXE KONDI 0.5L` sells 40,000 that March.
+
+**5,308 of 5,560 dropped SKU rows (95%)** have such a sibling → invisible at brand
+grain. Only the remaining 252 remove a brand-month entirely, producing the 158 round
+trips in F18.
+
+### 6. SKU → brand causality: F18 had it backwards, and evasively
+
+F18 claimed the rollup was driven purely by the research question, warning that citing
+sparsity invites *"so you aggregated until the data looked good?"*
+
+Brian rejected this: *"we actually aggregated until the data was sufficiently
+non-sparse to even allow for model training ... Our research question was shaped and
+changed to accommodate this sparse dataset."*
+
+He is right, and the honest account is the stronger one. The real sequence is
+**bidirectional**: the data could not support SKU-level fitting, so aggregation was a
+precondition for training at all; the RQ was then framed at brand level, broad enough
+to be answerable and still decision-relevant. Scope following feasibility is ordinary
+applied-research practice.
+
+It also yields a concrete Ch10 further-work claim: **finer-grained questions (SKU,
+pack size, regional) require a broader and denser dataset than the one licensed here**
+— a limitation of the data, not the method.
