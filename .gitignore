@@ -64,6 +64,12 @@ build/
 !docs/thesis/analysis/outputs/pipelines/feature_info.json
 !docs/thesis/analysis/outputs_agentic/*.csv
 !docs/thesis/analysis/outputs_agentic/*.json
+# Exception: preprocessing pipeline console logs (P0038).
+# The `*.log` rule above is scoped to LaTeX build artifacts, but it also caught
+# these. They are deliberate, versioned artifacts: they replace the console
+# output the CSD notebook used to retain on save, so a step's printed diagnostics
+# stay reviewable and diffable across runs rather than living only in a terminal.
+!02_thesis_data/_02_preprocessing/nielsen/*/pipeline_step_outputs/*.log
 .claude/settings.local.json
 .claude/logs/
 # External confidential code (Manifold/RU Graph Engine) — local working copy only

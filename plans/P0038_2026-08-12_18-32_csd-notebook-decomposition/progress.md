@@ -92,6 +92,77 @@ P0038 task 4.
 | MIN_PERIODS threshold value | Brian (P0036 task 8) | No — P0038 task 4 makes the value derived and surfaces the distribution; the choice can follow |
 | DEC-HORIZON (one-step vs recursive) | Brian (P0037) | No |
 
+---
+
+## Session 2 — 2026-08-12 (task 1: shared step 0 + capture utils)
+
+Brian, opening the session:
+
+> *"make sure that the content of the CSD version does not degrade in the
+> splitting process"*
+
+Treated as the acceptance criterion for every port in this plan, not just task 1.
+Implemented as an explicit parity check per step (see below), rather than
+eyeballing the diff.
+
+### What was built
+
+Three files in `_shared_modules/`:
+
+| File | Purpose |
+|------|---------|
+| `capture_utils.py` | `tee_console`, `save_table`, `print_and_save_table` |
+| `pipeline_config.py` | Category-keyed config shared by all steps (F35) |
+| `step_0_validate_cache.py` | The runnable step, `--category` |
+
+Two deviations from the plan, both recorded in `task_plan.md` task 1 detail:
+capture utils went to a new `capture_utils.py` rather than `terminal_utils.py`
+(persistence vs presentation), and `pipeline_config.py` was added because cells
+3–10 turned out to hold config for *every* step, not just step 0 (F35).
+
+### Verification performed
+
+| Check | Method | Result |
+|-------|--------|--------|
+| Capture utils behave | 8 assertions incl. exception-safety, overwrite-not-append, non-ASCII | all pass |
+| Step 0 unit behaviour | 9 assertions | all pass |
+| Real cache, all 4 categories | ran the CLI against live parquet | 4/4 OK, exit 0 |
+| Missing-file path | synthetic empty dir | detected, raises with remediation |
+| Zero-byte path | synthetic truncated parquet | detected (new capability, F36) |
+| Mixed missing+empty | synthetic | reported separately and precisely |
+| Unknown category | `--category Totalbeer` | `ValueError`, lists valid values |
+| **Notebook parity** | AST-extract every name from cells 3–10, check each is kept or deliberately dropped | **no content lost** |
+
+The parity check flagged one name, `required_view_files`, as "LOST". It is a
+rename, not a loss — it became the `view_filenames()` function. The checker
+matches literal identifiers and cannot see renames; verified manually.
+
+### Content-preservation ledger (task 1)
+
+Everything from cells 3–10 is accounted for:
+
+- **Kept**: all ML target constants, all plot styling constants, the validation
+  function and its message format, the cache-verification summary block, the
+  target-definition echo, the root-discovery walk
+- **Transformed**: `CATEGORY` → CLI arg; the 4 path constants → `get_paths()`;
+  `required_view_files` → `view_filenames()`; `warnings.filterwarnings` →
+  opt-in `suppress_warnings()` (import-time suppression would hide warnings from
+  every importer, including tests)
+- **Dropped deliberately**: the four `%pip install` cells — dependencies belong
+  in `requirements.txt`, not in a pipeline step
+- **Gained**: zero-byte detection (F36), per-category artifact isolation (F34),
+  console log persisted to `step_0_console.log`
+
+### Errors encountered
+
+None. The port ran clean on first execution for all four categories.
+
+### State at session end
+
+- Task 1 complete and verified
+- Task 2 (`step_1_load_and_aggregate.py`) unblocked and next
+- The pattern is now established: port → unit-test → run live → AST parity check
+
 ### Note on git state
 
 Unpushed commits on `main` from `31d2c65` through `af4cad9`. Commit `95723c3`

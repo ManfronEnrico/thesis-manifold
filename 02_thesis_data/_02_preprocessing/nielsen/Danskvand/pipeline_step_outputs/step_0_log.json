@@ -1,0 +1,10 @@
+[
+  {
+    "timestamp": "2026-08-12T18:47:27.679277",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "Danskvand",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
+  }
+]

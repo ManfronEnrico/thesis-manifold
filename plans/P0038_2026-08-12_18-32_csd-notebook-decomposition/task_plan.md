@@ -132,7 +132,7 @@ gets produced.
 
 | ID | Title | Phase | Blocked By | Status |
 |----|-------|-------|------------|--------|
-| 1 | Build shared `step_0_validate_cache.py` + console/table capture utils | 1 | — | pending |
+| 1 | Build shared `step_0_validate_cache.py` + console/table capture utils | 1 | — | **complete** |
 | 2 | Build shared `step_1_load_and_aggregate.py` (carries DEC-SCOPE) | 1 | 1 | pending |
 | 3 | Build shared `step_2_eda_descriptive.py` (plots + tables) | 2 | 2 | pending |
 | 4 | Build shared `step_3_derive_params.py` + contract JSON schema | 2 | 2 | pending |
@@ -147,12 +147,45 @@ what unblocks P0033.
 
 ## Task detail
 
-### Task 1 — Shared step 0 + capture utilities
-Port cells 3–10. Add to `terminal_utils.py`:
-- `tee_console(log_path)` context manager — stdout to terminal + file
-- `save_table(df, name)` — writes a printed DataFrame to `eda_tables/{name}.csv`
+### Task 1 — Shared step 0 + capture utilities ✅ COMPLETE (2026-08-12)
+Port cells 3–10. Both utilities are used by every later step, which is why this
+task came first.
 
-Both are used by every later step, which is why this task comes first.
+**Deviation from plan (2 items, both deliberate):**
+
+1. **Capture utils landed in a NEW `capture_utils.py`, not `terminal_utils.py`.**
+   `terminal_utils` is Rich-based *presentation*; these are disk *persistence*.
+   Keeping them apart lets a step import capture without pulling in Rich's
+   Console machinery, and keeps the Rich dependency off the test path.
+
+2. **A third file was created: `pipeline_config.py`.** Not in the original plan.
+   Cells 3–10 contain more than cache validation — they also hold the ML target
+   definition (`TARGET_COL`, `FORECAST_HORIZON`, `WARMUP_PERIODS`), the plot
+   styling constants, and the path derivations. In the notebook these lived in
+   the shared cell namespace, so every later cell saw them for free. Scripts do
+   not share a namespace, so leaving them inside `step_0` would have forced
+   steps 1–6 to re-declare them — **precisely the copy-paste mechanism that
+   caused the drift this plan exists to remove.**
+
+**Files created:**
+
+| File | Chars | Contents |
+|------|-------|----------|
+| `_shared_modules/capture_utils.py` | ~6.0k | `tee_console`, `save_table`, `print_and_save_table` |
+| `_shared_modules/pipeline_config.py` | ~6.9k | `CATEGORIES`, `normalise_category`, ML target consts, plot style, `get_paths`, `view_filenames`, `suppress_warnings` |
+| `_shared_modules/step_0_validate_cache.py` | ~6.4k | `validate_parquet_cache`, `report`, `run`, CLI |
+
+**Improvement over the notebook**: validation now also rejects **zero-byte**
+parquet files. The notebook tested `.exists()` only — a conversion interrupted
+mid-write leaves a 0-byte file that passes an existence test and then fails
+inside pandas at step 1 with an opaque error.
+
+**F34 fixed**: `findings_json` and `plots_dir` are now f-strings keyed on the
+category slug, verified non-colliding across all four categories.
+
+**Verification**: 9 unit checks + 8 capture-util checks pass; all four
+categories validate green against the real cache; unknown category raises;
+parity check against notebook cells 3–10 shows no lost content.
 
 ### Task 2 — Shared step 1
 Port cells 12–14. **Carries DEC-SCOPE** (market parent `1256338`) and the

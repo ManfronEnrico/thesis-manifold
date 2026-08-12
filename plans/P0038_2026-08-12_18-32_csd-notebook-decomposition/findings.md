@@ -224,3 +224,54 @@ export (the last one was removed during P0036 task 3).
 `"csd_eda_findings.json"` and `"csd_eda_plots"` (export lines 111–112). These
 must become f-strings, or the shared script will overwrite CSD's artifacts when
 run for another category.
+
+**RESOLVED 2026-08-12 (task 1).** Both are now f-strings on the category slug,
+produced by `pipeline_config.get_paths()`. A regression test asserts the four
+categories' `findings_json` / `plots_dir` names are pairwise distinct, so a
+future edit that reintroduces a literal fails the test rather than silently
+overwriting CSD's artifacts.
+
+---
+
+## F35 — Cells 3–10 are not one step; they are config + one step
+
+Discovered while porting. The notebook's "Step 0" cells contain four distinct
+concerns, only one of which is actually step 0's job:
+
+| Concern | Belongs to |
+|---------|-----------|
+| Cache validation | step 0 |
+| ML target definition (`TARGET_COL`, `WARMUP_PERIODS`, …) | **every** step |
+| Plot styling (`DPI`, `PALETTE`, `FIGSIZE_*`) | steps 2, 3 |
+| Path derivation | **every** step |
+
+In the notebook this distinction did not matter — one shared cell namespace made
+all four visible everywhere for free. In a script decomposition it matters a
+great deal: three of the four concerns have to reach steps 1–6 somehow.
+
+Left inside `step_0`, the only ways to share them are re-declaration per step or
+importing from a step script. **Re-declaration is the exact copy-paste mechanism
+that produced the P0027/P0029/P0030 drift this plan exists to remove.**
+
+Hence `pipeline_config.py`, holding everything category-keyed but step-agnostic.
+This was not in the plan; the plan assumed cells 3–10 mapped 1:1 onto step 0.
+
+**Generalises to the remaining ports**: before moving a cell block into a step,
+check whether the notebook's shared namespace was doing invisible work. The same
+question applies to the EDA cells feeding step 4.
+
+---
+
+## F36 — The notebook's cache validation cannot detect a truncated file
+
+`validate_parquet_cache` in the notebook (export lines 174–199) tests
+`.exists()` only. A parquet file written by an interrupted conversion run is
+present but 0 bytes: it passes validation, then fails inside `pd.read_parquet`
+at step 1 with an opaque Arrow error naming neither the cause nor the fix.
+
+The ported version checks `st_size == 0` as a distinct outcome from missing, and
+reports the two separately (`"[RTD] 2 missing and 1 empty of 4 …"`).
+
+This is a genuine capability gain, not just a port — worth noting because the
+decomposition's stated goal is "no degradation", and this is the first place the
+split produced an actual improvement rather than parity.
