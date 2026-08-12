@@ -2,26 +2,33 @@
   "stage": "1_jsonl_to_parquet",
   "categories": [
     {
+      "category": "CSD",
+      "views_converted": 4,
+      "metadata_converted": 5,
+      "elapsed": 225.89784409990534,
+      "error": null
+    },
+    {
       "category": "Danskvand",
       "views_converted": 4,
       "metadata_converted": 1,
-      "elapsed": 14.464516500000173,
+      "elapsed": 20.93520910013467,
       "error": null
     },
     {
       "category": "Energidrikke",
       "views_converted": 4,
       "metadata_converted": 1,
-      "elapsed": 68.09785679999914,
+      "elapsed": 87.24740070011467,
       "error": null
     },
     {
       "category": "RTD",
       "views_converted": 4,
       "metadata_converted": 1,
-      "elapsed": 0.4321428000002925,
+      "elapsed": 56.10386979999021,
       "error": null
     }
   ],
-  "total_elapsed_seconds": 82.9961461999992
+  "total_elapsed_seconds": 390.1865756998304
 }
