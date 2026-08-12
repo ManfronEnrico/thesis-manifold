@@ -948,3 +948,56 @@ same across CSD / Energidrikke / RTD / Danskvand.
 impossible for Danskvand and different for RTD.
 
 **Recorded, not acted on.** Brian will decide after the matrix exists.
+
+---
+
+## F25 — Hardcoded split dates have silently drifted; test set is 24-27%, not 15%
+
+Brian, 2026-08-12, on the F24 note that split cutoffs "cannot be shared constants":
+*"this should not even be a hardcoded date cutoff, it should follow dynamic sorted
+positional (percentage) cutoff following the best practice of train, val, test splits."*
+
+Correct, and the drift is already material.
+
+`_shared_modules/engineer_features.py:38-39` pins `DEFAULT_TRAIN_END=(2025,2)` and
+`DEFAULT_VAL_END=(2025,8)`. `apply_split()` labels rows against those fixed timestamps.
+
+### Measured on the fresh extract
+
+| Category | Periods | train/val/test | Ratio | Target |
+|---|---|---|---|---|
+| CSD | 46 | 29 / 6 / 11 | **63/13/24** | 70/15/15 |
+| Danskvand | 41 | 24 / 6 / 11 | **59/15/27** | 70/15/15 |
+| Energidrikke | 43 | 26 / 6 / 11 | **60/14/26** | 70/15/15 |
+| RTD | 41 | 24 / 6 / 11 | **59/15/27** | 70/15/15 |
+
+**Test is 24-27% — nearly double the intended ~15% — while training is starved at
+59-63%.** Fixed cutoffs mean every newly-arrived month falls into `test` by default; the
+2026-08-12 re-pull added 2-4 months straight to test and made it worse.
+
+### Three consequences
+
+1. **Silent drift.** Nothing errors. The ratio degrades on every refresh, and results
+   from two runs are not comparable without checking the split.
+2. **Cross-category incomparability.** SRQ1 claims to compare ranking *"on identical
+   data"*, but CSD trains on 63% of its panel and RTD on 59%, purely because their
+   panels start at different dates. Part of any observed ranking difference is a split
+   artifact, not model quality.
+3. **Training starved where depth is already binding.** ~30 features on 46 months is
+   tight before losing a quarter of it to test.
+
+### Fix (task 15)
+
+Compute cutoffs from **proportions against each category's own sorted period list** —
+`train_frac`/`val_frac` parameters, positional slicing of the sorted unique dates,
+cutoff dates derived from the slice boundaries. Chronological order preserved, no
+shuffling, no leakage. Self-corrects on every refresh.
+
+Keep the date-tuple form as an **override**, so a specific historical split can still be
+reproduced for a published result.
+
+**Blocks task 6** — re-running CSD under a 63/13/24 split would produce a parity baseline
+built on a broken split, and that output is meant to become P0033's template.
+
+**Ch4/Ch6 implication:** the split proportions and the concrete date boundaries must be
+reported per category, since they are now derived rather than fixed.
