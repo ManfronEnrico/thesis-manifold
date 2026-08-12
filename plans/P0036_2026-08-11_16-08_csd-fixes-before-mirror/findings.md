@@ -874,3 +874,77 @@ and is being removed — paths belong in `PATHS.py`).
 `--force` only overrides the mtime guard (skip when parquet is newer than JSONL). It is
 **not needed** for a normal refresh: fresh JSONL is newer, so conversion triggers on its
 own. Use it only after an interrupted or corrupt write.
+
+---
+
+## F24 — Open design question: how to split shared vs CSD-specific feature engineering
+
+Brian, 2026-08-12, after the "delete the shared module" instruction was deferred
+(task 14 — 9 live importers, deleting now breaks all four pipelines).
+
+### The question, in his words
+
+Two candidate designs:
+
+**Option A — two notebook cells per category.** Move the shared code into a notebook
+cell marked "shared", followed immediately by a "CSD specific" cell. Copy the shared
+cell verbatim into each new category notebook and adapt only the specific cell.
+
+**Option B — filter the CSD-specific parts OUT of the shared module.** Move only the
+CSD-specific logic into the CSD notebook, leaving a genuinely-shared module behind.
+Easier to adapt the shared engineering later if it needs to change.
+
+Brian's reservation, which is the crux: *"I think the shared was worked out with a focus
+on CSD anyways, so we must verify based on the list of shared variables that we can
+truly dynamically have as a shared module due to dynamic decision points (e.g. if blank
+= filter out, date fill for missing entries etc.)."*
+
+### Why this is not yet answerable — what must be verified first
+
+The module currently exposes: `aggregate_brand_month_from_db`,
+`aggregate_brand_month_from_csvs` (both **dead — no live callers**, F19),
+`make_calendar`, `filter_series`, `engineer_features`, `apply_split`,
+`build_series_index`.
+
+**Each function must be classified against the three capability tiers (F23)** before
+either option can be chosen:
+
+| Function | Question to answer |
+|---|---|
+| `make_calendar` | Grain/gap logic looks category-agnostic — but the ffill-vs-bfill decision (F16) and the NULL/zero policy (F18) are *dynamic decision points*. Are they the same choice for every category, or does Danskvand's total lack of promo change what "blank" means? |
+| `filter_series` | MIN_PERIODS is a *parameter*, but is the threshold decision itself category-specific? Panel depths now differ: 46 / 43 / 41 / 41 |
+| `engineer_features` | **Most likely CSD-biased.** Builds `promo_units`/`promo_intensity`/`has_promo`, which Danskvand cannot compute at all and RTD cannot compute the same way (no `sales_units_any_promo`) |
+| `apply_split` | Train/val/test cutoffs are dates — differing panel start dates mean the split points cannot be shared constants |
+| `build_series_index` | Probably genuinely shared; verify |
+
+### Assessment (not a decision — Brian's call)
+
+**Option B looks stronger**, for a reason Brian already identified in the risk noted on
+task 14: the V3 and bfill leakage fixes each had to be made **once** *because* the module
+was shared. Option A (copy-paste a "shared" cell four times) reinstates exactly the drift
+P0027/P0029/P0030 spent real effort untangling — a future leakage fix would need applying
+four times, with no mechanism to detect if one copy was missed.
+
+Option B keeps a single point of truth for the logic that genuinely is common, and
+isolates only what is provably category-specific.
+
+**But B is only valid if the "shared" remainder is truly category-agnostic**, which is
+precisely what Brian says must be verified rather than assumed. The suspicion that the
+module was written CSD-first is well-founded: it was authored when CSD was the only
+category with a working pipeline.
+
+### Concrete next step (feeds task 12 / task 14)
+
+Before choosing, produce a **function × category capability matrix**: for each of the 5
+live functions, list every *dynamic decision point* inside it (missing-value policy, gap
+fill, promo derivation, split dates, threshold) and mark whether that decision is the
+same across CSD / Energidrikke / RTD / Danskvand.
+
+- Decisions identical everywhere → genuinely shared, keep in the module.
+- Decisions that differ → either a parameter (if the *logic* is common) or category-
+  specific code (if the logic itself differs).
+
+`engineer_features` is the one already known to differ, since promo derivation is
+impossible for Danskvand and different for RTD.
+
+**Recorded, not acted on.** Brian will decide after the matrix exists.

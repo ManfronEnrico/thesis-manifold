@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-12 16:15:00
+updated: 2026-08-12 17:30:00
 status: in_progress
-focus_detail: "Tasks 1,2,3,5,10 complete. BLOCKED ON DATA REFRESH: the Nielsen warehouse is live and additive (F22) -- it reaches 2026-07 while our extract ended 2026-05, and RTD's local parquet was empty only because the pull FAILED (the DB has 2.4M rows). Brian re-ran save_all_datasets.py 2026-08-12. Task 13 (verify re-pull + re-convert to parquet) now gates tasks 4, 6 and 12, and every count in F15-F21 must be re-measured against the new extract. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. DECISION LOCKED: no shared feature-engineering module -- Danskvand has zero promo measures, so each category notebook adapts its own. Unblocked meanwhile: task 12 prep (capability matrix), P0037 DEC-HORIZON."
+focus_detail: "Tasks 1,2,3,5,10,13 complete. DATA REFRESHED AND VERIFIED: re-pull + parquet conversion both landed 2026-08-12; all four categories now run to 2026-07 (CSD 46 / Energidrikke 43 / Danskvand 41 / RTD 41 periods) and RTD is live at 2.4M facts rows after being an empty file. Every count in F15-F21 is SUPERSEDED and must be re-measured -- task 6 is the re-measurement. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. NEXT: task 4 (promo asserts, now unblocked), then task 6. OPEN DECISION for Brian (F24, task 14): where to put the seam between shared and category-specific feature engineering -- Option A (copy a shared notebook cell 4x) vs Option B (strip CSD-specific parts out of the module, keep a genuinely-shared remainder). B is assessed stronger (A reinstates the drift P0027/P0029/P0030 fought) but needs a function x category capability matrix first, since the module was likely written CSD-first. Also open: P0037 DEC-HORIZON."
 ---
 
 # P0036 — Fix CSD Before Mirroring
