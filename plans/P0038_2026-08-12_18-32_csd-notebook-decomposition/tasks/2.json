@@ -1,0 +1,15 @@
+{
+  "id": "2",
+  "session_id": "17",
+  "subject": "Build shared step_1_load_and_aggregate.py carrying DEC-SCOPE",
+  "description": "Port notebook cells 12-14 to _shared_modules/step_1_load_and_aggregate.py, taking --category.\n\nMUST SURVIVE THE PORT VERBATIM:\n  - DEC-SCOPE market filter: DVH_PARENT_MARKET_ID = 1256338 (the parent, not the 9 region children)\n  - The _n_markets != 1 fan-out guard -- assert == 1, not > 0. A market_description-based join resolving to >1 market_id fans out and silently multiplies every downstream SUM(). This is the fix for P0027's 6.16x double-count defect.\n  - The SCD market-dim dedup on market_id before merging\n\nCategory differences here are data-shaped (different column counts survive the same merge), not logic-shaped, so this stays shared.\n\nVerify: CSD row counts match the post-re-pull expectation; the guard raises if the market filter is loosened.",
+  "activeForm": "Building shared step 1 load and aggregate",
+  "status": "pending",
+  "blocks": [
+    "3",
+    "4"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

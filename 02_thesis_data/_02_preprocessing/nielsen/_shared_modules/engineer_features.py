@@ -35,8 +35,25 @@ DEFAULT_ROLLING_WINDOWS: tuple[int, ...] = (4, 13)
 DEFAULT_HOLIDAY_MONTHS: frozenset[int] = frozenset({1, 4, 6, 10, 12})
 DEFAULT_TARGET_MARKET: str = "DVH EXCL. HD"
 DEFAULT_MIN_PERIODS: int = 30
-DEFAULT_TRAIN_END: tuple[int, int] = (2025, 2)   # inclusive
-DEFAULT_VAL_END: tuple[int, int] = (2025, 8)     # inclusive
+
+# Split sizing is PROPORTIONAL, not calendar-fixed. Each category's panel
+# starts at a different month and grows every time the warehouse is refreshed,
+# so any fixed cutoff silently redistributes rows on every re-pull: newly
+# arrived months all land in whichever split is defined as "the remainder".
+# Measured on the 2026-07 extract, the two previous fixed schemes had drifted to
+#   fixed dates  (2025-02 / 2025-08): CSD 63/13/24, RTD 59/15/27
+#   fixed counts (train=24, val=6)  : CSD 52/13/35, RTD 59/15/27
+# against an intended 70/15/15. Proportions hold the ratio steady as the panel
+# grows and make categories comparable to each other, which SRQ1's cross-category
+# ranking depends on.
+DEFAULT_TRAIN_FRAC: float = 0.70
+DEFAULT_VAL_FRAC: float = 0.15
+# test takes the remainder (~0.15) so the three always sum to exactly 1.
+
+# Retained ONLY to reproduce splits published before 2026-08-12. Passing these
+# to apply_split() as train_end/val_end restores the old fixed-date behaviour.
+LEGACY_TRAIN_END: tuple[int, int] = (2025, 2)   # inclusive
+LEGACY_VAL_END: tuple[int, int] = (2025, 8)     # inclusive
 
 
 # ── Pure functions ────────────────────────────────────────────────────────────
@@ -404,15 +421,97 @@ def engineer_features(
     return df
 
 
+def resolve_split_cutoffs(
+    df: pd.DataFrame,
+    train_frac: float = DEFAULT_TRAIN_FRAC,
+    val_frac: float = DEFAULT_VAL_FRAC,
+) -> tuple[tuple[int, int], tuple[int, int]]:
+    """
+    Derive (train_end, val_end) as (year, month) from the frame's own periods.
+
+    Cutoffs are positional: the distinct periods present in `df` are sorted
+    ascending and cut at round(n * train_frac) and round(n * (train_frac +
+    val_frac)). Both returned cutoffs are INCLUSIVE ends, matching the tuple
+    form apply_split() accepts, so the result can be logged, persisted to
+    {category}_split_dates.json, or passed back in to reproduce the same split.
+
+    Cutting on distinct periods rather than rows is deliberate: brands enter
+    and exit the panel, so a row-wise quantile would place the boundary at a
+    different month depending on how many brands happened to be active. Every
+    series must be cut at the SAME date or the split stops being temporal.
+
+    Raises ValueError if fewer than 3 periods are present (cannot form three
+    non-empty splits) or if the fractions are not a valid proportion.
+    """
+    if not (0 < train_frac < 1 and 0 < val_frac < 1):
+        raise ValueError(
+            f"train_frac and val_frac must each lie in (0, 1); "
+            f"got train_frac={train_frac}, val_frac={val_frac}"
+        )
+    if train_frac + val_frac >= 1:
+        raise ValueError(
+            f"train_frac + val_frac must be < 1 to leave a non-empty test "
+            f"split; got {train_frac} + {val_frac} = {train_frac + val_frac}"
+        )
+
+    periods = sorted({(d.year, d.month) for d in pd.to_datetime(df["date"])})
+    n = len(periods)
+    if n < 3:
+        raise ValueError(
+            f"need at least 3 distinct periods to form train/val/test; got {n}"
+        )
+
+    n_train = int(round(n * train_frac))
+    n_val = int(round(n * val_frac))
+
+    # Clamp so all three splits are non-empty even on short panels, where
+    # rounding can otherwise starve val or test.
+    n_train = max(1, min(n_train, n - 2))
+    n_val = max(1, min(n_val, n - n_train - 1))
+
+    return periods[n_train - 1], periods[n_train + n_val - 1]
+
+
 def apply_split(
     df: pd.DataFrame,
-    train_end: tuple[int, int] = DEFAULT_TRAIN_END,
-    val_end: tuple[int, int] = DEFAULT_VAL_END,
+    train_end: tuple[int, int] | None = None,
+    val_end: tuple[int, int] | None = None,
+    train_frac: float = DEFAULT_TRAIN_FRAC,
+    val_frac: float = DEFAULT_VAL_FRAC,
 ) -> pd.DataFrame:
-    """Label rows with split = 'train' | 'val' | 'test' based on date cutoffs."""
+    """
+    Label rows with split = 'train' | 'val' | 'test'.
+
+    By default the cutoffs are derived PROPORTIONALLY from the periods present
+    in `df` (see resolve_split_cutoffs), so the train/val/test ratio stays
+    constant as the panel grows and is identical across categories whose panels
+    start at different dates.
+
+    Passing explicit `train_end` / `val_end` (year, month) tuples overrides the
+    proportional calculation -- use that only to reproduce a previously
+    published split (e.g. LEGACY_TRAIN_END / LEGACY_VAL_END). Both must be given
+    together; supplying one without the other is ambiguous and raises.
+
+    Cutoffs are inclusive: a row exactly at train_end is train, not val.
+    """
+    if (train_end is None) != (val_end is None):
+        raise ValueError(
+            "train_end and val_end must be supplied together (or both omitted "
+            "to derive them proportionally); got "
+            f"train_end={train_end}, val_end={val_end}"
+        )
+
+    if train_end is None:
+        train_end, val_end = resolve_split_cutoffs(df, train_frac, val_frac)
+
     df = df.copy()
     train_cutoff = pd.Timestamp(f"{train_end[0]}-{train_end[1]:02d}-01")
     val_cutoff = pd.Timestamp(f"{val_end[0]}-{val_end[1]:02d}-01")
+    if val_cutoff <= train_cutoff:
+        raise ValueError(
+            f"val_end ({val_end}) must be strictly after train_end "
+            f"({train_end}); an empty validation split is never intended"
+        )
     conditions = [
         df["date"] <= train_cutoff,
         (df["date"] > train_cutoff) & (df["date"] <= val_cutoff),
@@ -474,8 +573,12 @@ class FeatureEngineer:
     rolling_windows: tuple[int, ...] = DEFAULT_ROLLING_WINDOWS
     holiday_months: frozenset[int] = DEFAULT_HOLIDAY_MONTHS
     min_periods: int = DEFAULT_MIN_PERIODS
-    train_end: tuple[int, int] = DEFAULT_TRAIN_END
-    val_end: tuple[int, int] = DEFAULT_VAL_END
+    # None -> apply_split derives cutoffs proportionally from the data. Set both
+    # to (year, month) tuples only to reproduce a previously published split.
+    train_end: tuple[int, int] | None = None
+    val_end: tuple[int, int] | None = None
+    train_frac: float = DEFAULT_TRAIN_FRAC
+    val_frac: float = DEFAULT_VAL_FRAC
     group_keys: tuple[str, ...] = ("brand",)
 
     is_fitted: bool = field(default=False, init=False)
@@ -510,7 +613,13 @@ class FeatureEngineer:
             holiday_months=self.holiday_months,
             group_keys=group_keys,
         )
-        df = apply_split(df, self.train_end, self.val_end)
+        df = apply_split(
+            df,
+            train_end=self.train_end,
+            val_end=self.val_end,
+            train_frac=self.train_frac,
+            val_frac=self.val_frac,
+        )
         return df
 
     def fit_transform(self, brand_month_df: pd.DataFrame) -> pd.DataFrame:

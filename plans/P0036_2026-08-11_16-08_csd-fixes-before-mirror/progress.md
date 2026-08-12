@@ -211,3 +211,57 @@ notebook merge conflict by hand.
 - `main` at `74c20f1`, one merge ahead of `origin/main`
 - 4 worktrees removed, 0 remaining; every branch preserved
 - Tasks 1–2 complete; task 3 next, gated on the P0035 merge decision above
+
+---
+
+## Session 3 (cont.) — 2026-08-12 18:32 — Fork to P0038
+
+Brian raised reverting the CSD notebook to step scripts. That question turned
+out to reshape the remaining plan, so it was forked into **P0038**
+(`plans/P0038_2026-08-12_18-32_csd-notebook-decomposition/`).
+
+### Why the fork
+
+I initially argued against splitting, on the grounds that four sets of
+near-identical step scripts caused the P0027/P0029/P0030 drift. **Brian
+corrected the premise**: drift comes from *copying*, not from *splitting*.
+Shared scripts parameterised by `--category` remove the drift surface. Corrected
+target is 6 shared + 4 per-category = 11 files replacing 32.
+
+Two measurements then made the fork clearly correct:
+
+- **P0038 F30** — `CSD/preprocessing_csd.py` invokes step scripts that P0030
+  deleted. CSD's orchestrator is **broken today**. The decomposition repairs an
+  existing dead entry point rather than adding one.
+- **P0038 F31** — the three working orchestrators are 184 lines each and differ
+  *only* in the category name. Direct evidence for Brian's argument.
+
+### Correction to F25 (recorded as P0038 F29)
+
+F25 reported CSD splitting **63/13/24** from the fixed date constants. Wrong on
+both counts for CSD: the notebook runs a *different* pathway (absolute counts
+train=24/val=6), giving **52/13/35**. The notebook's own stored output confirms
+independently: `{'train': 1450, 'val': 348, 'test': 754}` = 57/14/29 (row-weighted
+rather than period-weighted).
+
+Both mechanisms are broken for the same underlying reason — any absolute cutoff,
+date or count, sends every newly arrived month to the remainder split. F25's
+conclusion stands; its number and mechanism were wrong for CSD.
+
+### Task 15 status at fork
+
+**Shared-module half: DONE, on disk, uncommitted.**
+- `engineer_features.py`: `apply_split()` proportional by default; new
+  `resolve_split_cutoffs()`; `LEGACY_TRAIN_END`/`LEGACY_VAL_END` kept for
+  reproducing published splits; `FeatureEngineer` fields updated
+- 6 step scripts patched (Danskvand/Energidrikke/RTD × `_5`, `_6`). `_6` now
+  reports the boundaries **actually applied**, read off the labelled frame,
+  instead of re-deriving them from constants — the old form could disagree with
+  the real labels.
+
+**Notebook half: deliberately skipped** (Brian approved). Superseded by P0038
+task 4; patching a file about to be dissolved is wasted work.
+
+### What remains in P0036
+
+Tasks 4, 7, 8, 9, 11. Tasks 6, 12, 14, 15 moved or answered — see the task table.

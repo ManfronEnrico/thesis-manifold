@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-12 17:30:00
+updated: 2026-08-12 18:32:00
 status: in_progress
-focus_detail: "Tasks 1,2,3,5,10,13 complete. DATA REFRESHED AND VERIFIED: re-pull + parquet conversion both landed 2026-08-12; all four categories now run to 2026-07 (CSD 46 / Energidrikke 43 / Danskvand 41 / RTD 41 periods) and RTD is live at 2.4M facts rows after being an empty file. Every count in F15-F21 is SUPERSEDED and must be re-measured -- task 6 is the re-measurement. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. NEXT: task 4 (promo asserts, now unblocked), then task 6. OPEN DECISION for Brian (F24, task 14): where to put the seam between shared and category-specific feature engineering -- Option A (copy a shared notebook cell 4x) vs Option B (strip CSD-specific parts out of the module, keep a genuinely-shared remainder). B is assessed stronger (A reinstates the drift P0027/P0029/P0030 fought) but needs a function x category capability matrix first, since the module was likely written CSD-first. Also open: P0037 DEC-HORIZON."
+focus_detail: "PARTLY SUPERSEDED BY P0038. Tasks 1,2,3,5,10,13 complete. Tasks 12, 14, 15 moved to P0038 (CSD notebook decomposition) -- 14's open seam question is ANSWERED there by DEC-SHARED-SEAM (6 shared step scripts + 1 per-category feature-engineering script; 32 files -> 11). Task 15's shared-module half is DONE and on disk (apply_split now proportional via new resolve_split_cutoffs(); 6 step scripts patched); its notebook half is deliberately skipped since the notebook is being dissolved. Task 6 (CSD re-run parity check) is now P0038 task 8 and runs after the decomposition. DATA REFRESHED AND VERIFIED 2026-08-12: all four categories reach 2026-07 (CSD 46 / Energidrikke 43 / Danskvand 41 / RTD 41 periods); RTD live at 2.4M facts rows after being an empty file. Every count in F15-F21 is SUPERSEDED. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. REMAINING HERE: 4 (promo asserts), 7, 8 (MIN_PERIODS decision -- P0038 task 4 makes the value derived, the threshold choice stays here), 9, 11. Also open: P0037 DEC-HORIZON."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -76,14 +76,24 @@ children (6.41× redundancy) without adding information at the modelling grain.
 | 3 | Switch CSD market filter to parent `1256338` | 2 | — | ✅ complete |
 | 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | pending |
 | 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | ✅ complete |
-| 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | pending |
-| 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | 6 | pending |
-| 8 | Decide MIN_PERIODS threshold | 4 | 6 | pending |
-| 9 | Measure single-brand vs pooled training cost | 4 | 6 | pending |
+| 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | → **moved to P0038 task 8** |
+| 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | P0038 t8 | pending |
+| 8 | Decide MIN_PERIODS threshold | 4 | P0038 t4 | pending |
+| 9 | Measure single-brand vs pooled training cost | 4 | P0038 t8 | pending |
+| 11 | Recover product-dimension features as brand-month signals | 4 | P0038 t8 | pending |
+| 12 | Per-notebook feature engineering for capability tiers | — | — | → **moved to P0038 task 5** |
+| 14 | Decide shared-vs-CSD-specific seam | — | — | → **answered by P0038 DEC-SHARED-SEAM** |
+| 15 | Dynamic proportional split cutoffs | — | — | shared module **done**; notebook half → **P0038 task 4** |
 
-**Task 6 is the gate that unblocks P0033.** Tasks 7–9 are modeling analyses that
-change no notebook structure, so they deliberately run *after* mirroring starts
-rather than holding the critical path.
+> **Handoff to P0038 (2026-08-12).** The parity check that gates P0033 is now
+> P0038 task 8, because it must run against the decomposed scripts rather than
+> the notebook being dissolved. Tasks 7, 9 and 11 still live here and depend on
+> that run. Task 8 (MIN_PERIODS) depends on P0038 task 4, which makes the value
+> genuinely derived and surfaces the brand-depth distribution — the *threshold
+> choice* remains Brian's and remains this plan's task.
+
+**Tasks 7–9 and 11 are modeling analyses that change no pipeline structure**, so
+they deliberately run after mirroring starts rather than holding the critical path.
 
 ## Task detail
 

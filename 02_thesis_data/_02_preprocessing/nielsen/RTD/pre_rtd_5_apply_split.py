@@ -36,8 +36,7 @@ from PATHS import THESIS_DATA_PREPROCESSING_DIR, get_category_pipeline_step_outp
 from utility_scripts.scripts.METADATA import describe_column
 from engineer_features import (
 	apply_split as shared_apply_split,
-	DEFAULT_TRAIN_END as TRAIN_END,
-	DEFAULT_VAL_END as VAL_END,
+	resolve_split_cutoffs,
 )
 from terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_data_preview,
@@ -104,12 +103,20 @@ def main():
 
 		# Process
 		print(f"\nApplying train/val/test split...")
-		print_info(f"Train end: {TRAIN_END[0]}-{TRAIN_END[1]:02d}")
-		print_info(f"Val end: {VAL_END[0]}-{VAL_END[1]:02d}")
+
+		# Cutoffs are derived from this category's own period list, not from
+		# fixed calendar dates. Panels start at different months and grow on
+		# every warehouse refresh, so a fixed cutoff silently sends each newly
+		# arrived month to test -- it had drifted to 24-27% test by 2026-07.
+		# Resolving here (rather than letting apply_split do it internally)
+		# keeps the chosen dates available to log and to persist in step 6.
+		TRAIN_END, VAL_END = resolve_split_cutoffs(df)
+		print_info(f"Train end: {TRAIN_END[0]}-{TRAIN_END[1]:02d}  (proportional)")
+		print_info(f"Val end: {VAL_END[0]}-{VAL_END[1]:02d}  (proportional)")
 
 		process_start = time.perf_counter()
 
-		df = shared_apply_split(df)
+		df = shared_apply_split(df, train_end=TRAIN_END, val_end=VAL_END)
 
 		process_elapsed = time.perf_counter() - process_start
 		print(f"  âœ“ Split applied in {process_elapsed:.2f}s")

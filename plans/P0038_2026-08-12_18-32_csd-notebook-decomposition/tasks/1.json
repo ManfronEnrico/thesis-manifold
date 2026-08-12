@@ -1,0 +1,12 @@
+{
+  "id": "1",
+  "session_id": "16",
+  "subject": "Build shared step_0_validate_cache.py + console/table capture utils",
+  "description": "Port notebook cells 3-10 to _shared_modules/step_0_validate_cache.py, taking --category. Source: the 2026-08-12 export (CSD/pipeline_step_scripts/pre_processing_notebook_csd.py, 2014 lines, cell markers at '# %%').\n\nAlso add to _shared_modules/terminal_utils.py:\n  - tee_console(log_path) context manager -- stdout to terminal AND file\n  - save_table(df, name) -- printed DataFrame to eda_tables/{name}.csv\n\nBoth are used by every later step, which is why this comes first.\n\nOutputs land in {Category}/pipeline_step_outputs/: eda_plots/, eda_tables/, logs/step_{N}_console.log.\n\nWATCH (F34): the notebook hardcodes lowercase 'csd_eda_findings.json' and 'csd_eda_plots' at export lines 111-112. Must become f-strings or the shared script overwrites CSD's artifacts when run for another category.\n\nVerify: runs for CSD and for Danskvand (different column set).",
+  "activeForm": "Building shared step 0 and capture utils",
+  "status": "pending",
+  "blocks": [
+    "2"
+  ],
+  "blockedBy": []
+}

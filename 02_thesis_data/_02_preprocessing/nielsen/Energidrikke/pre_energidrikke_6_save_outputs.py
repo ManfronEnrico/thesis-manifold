@@ -42,8 +42,7 @@ from engineer_features import (
 	build_series_index,
 	DEFAULT_TARGET_MARKET as TARGET_MARKET,
 	DEFAULT_MIN_PERIODS as MIN_PERIODS,
-	DEFAULT_TRAIN_END as TRAIN_END,
-	DEFAULT_VAL_END as VAL_END,
+	resolve_split_cutoffs,
 )
 from terminal_utils import (
 	step_execution, print_file_load, print_file_save, print_info, print_data_preview
@@ -141,6 +140,7 @@ def main():
 
 		# Split dates
 		train_df = df[df["split"]=="train"]
+		val_df = df[df["split"]=="val"]
 		test_df = df[df["split"]=="test"]
 
 		def get_date_str(df_subset, min_or_max="min"):
@@ -149,12 +149,15 @@ def main():
 			date_series = df_subset["period_year"].astype(str) + "-" + df_subset["period_month"].astype(str).str.zfill(2)
 			return getattr(date_series, min_or_max)()
 
+		# Report the boundaries that were ACTUALLY applied, read back off the
+		# labelled frame. Deriving them from constants (as this once did) can
+		# disagree with the real labels the moment the split rule changes.
 		split_dates = {
 			"train_start": get_date_str(train_df, "min"),
-			"train_end": f"{TRAIN_END[0]}-{TRAIN_END[1]:02d}-01",
-			"val_start": f"{TRAIN_END[0]}-{TRAIN_END[1]+1 if TRAIN_END[1]<12 else 1:02d}-01",
-			"val_end": f"{VAL_END[0]}-{VAL_END[1]:02d}-01",
-			"test_start": f"{VAL_END[0]}-{VAL_END[1]+1 if VAL_END[1]<12 else 1:02d}-01",
+			"train_end": get_date_str(train_df, "max"),
+			"val_start": get_date_str(val_df, "min"),
+			"val_end": get_date_str(val_df, "max"),
+			"test_start": get_date_str(test_df, "min"),
 			"test_end": get_date_str(test_df, "max"),
 		}
 		with open(OUTPUT_SPLIT_DATES, "w") as f:

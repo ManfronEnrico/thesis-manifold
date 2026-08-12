@@ -1,0 +1,14 @@
+{
+  "id": "6",
+  "session_id": "21",
+  "subject": "Generalise step_5_apply_split.py and step_6_save_outputs.py to --category",
+  "description": "Move the already-fixed per-category _5_apply_split.py and _6_save_outputs.py into _shared_modules/ as single scripts taking --category. Ports notebook cells 62 and 64.\n\nMOSTLY DONE ALREADY (P0036 task 15, uncommitted on disk):\n  - _5 resolves cutoffs from the data via resolve_split_cutoffs(), logs them, passes them to apply_split()\n  - _6 writes split_dates.json from the boundaries ACTUALLY APPLIED, read back off the labelled frame, rather than re-deriving from module constants (the old form could disagree with the real labels)\n  - val_df binding was added to _6 (it only had train_df/test_df)\n\nThis task collapses 3 copies of each into 1 shared copy each, and adds CSD which never had them.\n\nstep_6 outputs {category}_feature_matrix.parquet, {category}_series_index.csv, {category}_split_dates.json into _03_engineered/bymonth/{CATEGORY}/.\n\nVerify: split ratios land near 70/15/15 for all four (F29 projection: CSD 32/7/7, Danskvand 29/6/6, Energidrikke 30/6/7, RTD 29/6/6).",
+  "activeForm": "Generalising split and save-output steps",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "5"
+  ]
+}

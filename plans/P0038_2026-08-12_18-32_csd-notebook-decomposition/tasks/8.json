@@ -1,0 +1,14 @@
+{
+  "id": "8",
+  "session_id": "23",
+  "subject": "Run CSD end-to-end and parity-check vs last notebook run",
+  "description": "THE GATE -- this is what unblocks P0033. Same verification P0036 task 6 specified, moved here because it must run against the decomposed scripts.\n\nRun: python run_preprocessing.py --category CSD\n\nCompare against the last notebook run:\n  Split distribution  | notebook: train 1450 / val 348 / test 754 (57/14/29) | expect ~70/15/15\n  Fact rows post-filter | P0036 F15: 37,999 | re-measure\n  Brand-month rows (>0) | P0036 F15: 3,917  | re-measure\n  Distinct brands       | P0036 F15: 140    | re-measure\n  Brands @ MIN_PERIODS  | P0036 F15: 85 @ >=24 | re-measure\n\nEVERY COUNT IN P0036 F15-F21 IS SUPERSEDED by the 2026-08-12 re-pull (CSD now 46 periods to 2026-07, was 44 to 2026-05). Differences are EXPECTED. The check is that they are EXPLICABLE, not that they match.\n\nExplicable sources: +2 months of data; proportional split replacing absolute counts; bfill leakage fix; MIN_PERIODS now derived rather than literal 40.\n\nAlso confirm: promo columns non-degenerate (P0036 task 4 overlaps here); _03_engineered/bymonth/CSD/ regenerates; plots/tables/logs land in pipeline_step_outputs/.\n\nRecord the new numbers -- they replace the funnel figures in 05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md, which still carries an ALL COUNTS SUPERSEDED banner.",
+  "activeForm": "Running CSD end-to-end parity check",
+  "status": "pending",
+  "blocks": [
+    "9"
+  ],
+  "blockedBy": [
+    "7"
+  ]
+}
