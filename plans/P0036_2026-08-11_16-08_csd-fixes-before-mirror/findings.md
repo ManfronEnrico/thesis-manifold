@@ -789,3 +789,88 @@ genuine **6-step-ahead** forecast. The horizon problem is therefore a *modelling
 question (the model is one-step-ahead — P0037 DEC-HORIZON), **not** a data-staleness
 question. The recursive-error-compounding point stands; the "stale snapshot" framing
 does not.
+
+---
+
+## F23 — Re-pull verified; three capability tiers, not two; minimum-viable set is 15 columns
+
+Re-pull ran 2026-08-12 16:26–16:40 (Brian). Verified against the JSONL on disk, not
+the manifest — **`MANIFEST.json` was NOT rewritten** (still dated 2026-06-30, CSD-only),
+so it must not be used to judge a pull. File mtimes and content are the evidence.
+
+### Period coverage — every prediction from F22 held
+
+| Category | Periods | Oldest | Newest | Facts JSONL |
+|---|---|---|---|---|
+| CSD | **46** (was 44) | 2022-10 *unchanged* | **2026-07** | 10.17 GB |
+| Danskvand | **41** (was 37) | 2023-03 *unchanged* | **2026-07** | 0.65 GB |
+| Energidrikke | **43** (was 41) | 2023-01 *unchanged* | **2026-07** | 3.77 GB |
+| RTD | **41** (was 37) | 2023-03 *unchanged* | **2026-07** | **2.51 GB** |
+
+No oldest period moved and all sequences are contiguous — the additive/non-rolling
+finding is confirmed on real data. **RTD went from an empty file to 2.51 GB / 31
+columns**, closing F20's false "missing dataset" diagnosis. Totalbeer untouched
+(2026-07-10), as intended by the explicit `--only`.
+
+### Danskvand's promo gap is REAL, not a pull artifact
+
+Still **0 promo columns**, 17 missing vs CSD (all `baseline_*` and `*_any_promo`
+families). The fresh extract confirms the source genuinely lacks these measures.
+**This is what locks the no-shared-module decision.**
+
+### THREE capability tiers, not two
+
+| Category | Cols | Promo cols | Notes |
+|---|---|---|---|
+| CSD | 32 | **7** | reference schema |
+| Energidrikke | 32 | **7** | 2 columns renamed (`_disp_wo_feat` vs `_disp_w_o_feat`) |
+| **RTD** | **31** | **6** | has baselines but **lacks `sales_units_any_promo`** |
+| Danskvand | 15 | **0** | no promotional measures at all |
+
+RTD is *not* "CSD-like" — it is a third tier. `sales_units_any_promo` is precisely the
+column `promo_units` is derived from, so **RTD cannot compute `promo_units` the way CSD
+does** even though it has 6 other promo columns. Any per-category adaptation must check
+the specific column, not just "does this category have promo".
+
+### MINIMUM VIABLE COMPARISON — 15 columns shared by all four
+
+```
+market_id  period_id  product_id
+sales_units  sales_value  sales_in_liters
+weighted_distribution  weighted_distribution_reach
+numeric_distribution  numeric_distribution_reach
+total_weighted_distribution_points_tdp_reach
+number_of_items_reach  avg_number_of_stores_selling_reach
+avg_no_of_items_per_store_reach  universe_number_of_stores
+```
+
+The target (`sales_units`) and the core distribution signal survive. Lost: the entire
+promo and baseline families.
+
+This answers Brian's two-track design question directly:
+
+| Track | Feature basis | Cross-category comparable? | Poolable? |
+|---|---|---|---|
+| **Minimum viable** | the 15 shared columns | ✅ yes — genuinely "identical data" | ✅ yes, with the key fix below |
+| **Optimal available** | 32 / 32 / 31 / 15 per category | ❌ no | ❌ no — absent features would join as null/0 |
+
+The **delta between tracks measures what the promotional feature family is worth**,
+which is a real SRQ1 contribution rather than a workaround for a data gap.
+
+### Pooling requires a key fix (F21)
+
+`product_id` is not globally unique — id 10 is `FEVER TREE` in CSD and `EGEKILDE` in
+Danskvand. A pooled dataset must key on **`(category, product_id)`** or drop
+`product_id` entirely. Brand names must be checked for cross-category collisions before
+pooling on brand.
+
+### Conversion is a separate step — and its command was documented wrong
+
+JSONL → parquet does **not** happen on pull. The converter is
+`run_all_conversions.py`, which lives under the **`_01_converted/`** tier, not
+`_00_raw/` as the CSD notebook's Step 0 comment claimed (that hardcoded path is stale
+and is being removed — paths belong in `PATHS.py`).
+
+`--force` only overrides the mtime guard (skip when parquet is newer than JSONL). It is
+**not needed** for a normal refresh: fresh JSONL is newer, so conversion triggers on its
+own. Use it only after an interrupted or corrupt write.
