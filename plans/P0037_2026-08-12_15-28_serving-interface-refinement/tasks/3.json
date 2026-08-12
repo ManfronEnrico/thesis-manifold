@@ -1,0 +1,9 @@
+{
+  "id": "3",
+  "subject": "Build forecasts.csv and smoke-test forecast_demand()",
+  "description": "build_service() has never been run; forecasts.csv absent, so forecast_demand() raises FileNotFoundError. Run it, verify the lookup covers all 4 categories, and confirm the smoke demo at the bottom of forecast_service.py returns a valid dict. Note RTD's fact table is empty (rationale note section 8) so expect 3 categories, not 4 - confirm and record.",
+  "activeForm": "Building and smoke-testing the forecast lookup",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

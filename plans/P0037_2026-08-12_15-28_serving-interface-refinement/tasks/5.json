@@ -1,0 +1,12 @@
+{
+  "id": "5",
+  "subject": "Resolve horizon per DEC-HORIZON",
+  "description": "BLOCKED on Brian's decision. Model is one-step-ahead; thesis section 6 example uses h=4 and Brian's question uses h=6. Options A(restrict)/B(recursive)/C(direct)/D(recursive capped+declared) in task_plan.md. Recommendation D, fallback A. Whichever is chosen, the tool schema and rationale note section 6 must end up consistent.",
+  "activeForm": "Resolving the forecast horizon strategy",
+  "status": "pending",
+  "blocks": [
+    "4",
+    "6"
+  ],
+  "blockedBy": []
+}

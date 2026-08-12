@@ -1,0 +1,11 @@
+{
+  "id": "6",
+  "subject": "Unify duplicated FEATURES and category maps behind a fit_scope parameter",
+  "description": "The 14-element FEATURES list and the SELECTED/CAT_FILE category map are copy-pasted across forecast_service.py, srq4_experiment.py and srq2_synthesis.py. Deployment mode (train on all data, predict beyond) vs evaluation mode (train on train+val, predict test) is a legitimate distinction - implement it as one function with a fit_scope parameter rather than two copies.",
+  "activeForm": "Unifying duplicated feature and category definitions",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "7",
+  "subject": "Fix build_service conformal calibration to use val residuals",
+  "description": "build_service computes the 90% conformal half-width from TEST split residuals; _eval_forecast correctly uses VAL. Test-split calibration derives interval width from the same data accuracy is reported on, undercutting the leakage-discipline claim the thesis makes in rationale note section 7. Switch to val.",
+  "activeForm": "Fixing conformal calibration split",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "2",
+  "subject": "Move serving-side code into model_serving/",
+  "description": "Per repo-tier-structure train-vs-serve test: move the forecast_demand tool schema + run_system_a/run_system_b loops out of model_training/srq4_experiment.py into model_serving/. Relocate generate_systemB_diagram.py to figure tooling (it is not a service). Keep the SRQ4 experiment harness itself in model_training - it trains/evaluates.",
+  "activeForm": "Moving serving code into model_serving",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

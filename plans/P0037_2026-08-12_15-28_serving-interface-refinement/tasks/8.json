@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Write the serving-time feature taxonomy into the rationale note",
+  "description": "Add a table classifying all 14 features as known-in-advance / derived-from-past / unknown-future. CRITICAL CORRECTION vs the ChatGPT analysis: promo_intensity is shift(1)-lagged because contemporaneous promo was defect V3 (target leakage), so it is derived-from-past, NOT future-known. Also correct the feature count: 14, not 12.",
+  "activeForm": "Writing the serving-time feature taxonomy",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}

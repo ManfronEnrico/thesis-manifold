@@ -1,0 +1,11 @@
+{
+  "id": "4",
+  "subject": "Add traceability and data-cutoff fields to tool return",
+  "description": "SRQ2 names traceability as a required property; it has zero implementation. Add: absolute target period (not the relative string 'next month'), data_window/cutoff, model version or run id, and a call id for tool-call logging. Mirror the example return in rationale note section 6.",
+  "activeForm": "Adding traceability fields to the tool contract",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}

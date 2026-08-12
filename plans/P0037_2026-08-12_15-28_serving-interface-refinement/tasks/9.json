@@ -1,0 +1,12 @@
+{
+  "id": "9",
+  "subject": "Reconcile rationale note section 6 with the shipped contract",
+  "description": "Section 6's worked example shows {'tool':'forecast_demand','brand':'FAXE KONDI','horizon_months':4} and a return carrying data_window. Once tasks 4-5 land, update the example so the thesis never documents a call the artefact cannot execute. If DEC-HORIZON resolves to A, change the example to h=1.",
+  "activeForm": "Reconciling the thesis example with the shipped contract",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "4",
+    "5"
+  ]
+}

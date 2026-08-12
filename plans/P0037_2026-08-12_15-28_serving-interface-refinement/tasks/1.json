@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Fix broken forecast_service.py import in srq4_experiment.py",
+  "description": "srq4_experiment.py does an importlib exec_module on Path(__file__).parent/'forecast_service.py', but that file lives in model_serving/system_a_forecast/. Module fails at import time. Note the `fs` handle is also unused (run_system_a calls local _eval_forecast) - so either repoint to the real path or delete the import. Decide which after task 2.",
+  "activeForm": "Fixing broken forecast_service import",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}
