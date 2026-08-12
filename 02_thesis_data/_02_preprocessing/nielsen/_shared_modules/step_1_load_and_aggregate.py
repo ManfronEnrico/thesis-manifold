@@ -46,12 +46,13 @@ from capture_utils import print_and_save_table, tee_console
 from pipeline_config import (
 	CATEGORIES,
 	DVH_PARENT_MARKET_ID,
+	TARGET_COL,
 	get_paths,
 	normalise_category,
 	suppress_warnings,
 	view_filenames,
 )
-from terminal_utils import print_info, print_warning, step_execution
+from terminal_utils import print_info, step_execution
 from timing_utils import log_step_timing
 
 STEP_NUM = 1
@@ -71,60 +72,130 @@ GROUP_KEYS: dict[str, list[str]] = {"bymonth": ["brand"]}
 
 
 # ============================================================================
-# AGGREGATION SPEC
+# AGGREGATION SPEC -- open-world column discovery
 # ============================================================================
-# The measure columns, in output order, as (source_column, output_name, how).
+# Measures are DISCOVERED from the merged frame, not enumerated.
 #
-# Built against what the frame ACTUALLY has rather than as a fixed dict, because
-# the categories are not column-compatible: measured 2026-08-12, Danskvand has
-# 15 fact columns and RTD 31, and NEITHER carries sales_units_any_promo (CSD and
-# Energidrikke have 32 and do). The notebook's fixed agg_dict raises KeyError on
-# both. Capability tiers are a step-4 concern by design, but they surface here
-# too, because you cannot aggregate a column that does not exist.
+# The notebook hardcoded five columns (sales_units, sales_value,
+# sales_in_liters, sales_units_any_promo, weighted_distribution). Measured
+# 2026-08-12 across the four categories, the fact views actually carry 35
+# distinct measure columns -- the whole `baseline_*` family, the
+# `numeric_distribution` family, `universe_number_of_stores`,
+# `sales_units_any_tpr`, and more. A fixed list silently discards all of them,
+# not because anyone judged them uninformative but because the notebook listed
+# five and the list was inherited unexamined. That is the same defect class as
+# F28/F38: an inherited literal wearing the appearance of a decision.
+#
+# Column availability also differs BETWEEN categories in ways a fixed list
+# cannot express -- and not only by presence. The same measure is spelled
+# differently per category:
+#     weighted_distribution_disp_w_o_feat   (CSD)
+#     weighted_distribution_disp_wo_feat    (Energidrikke, RTD)
+#     weighted_distribution_disp_and_feat   (RTD)
+# Discovery handles all three without naming any of them.
+#
+# Related: P0036 task 11 ("recover discarded product-dimension features").
+# This removes the step-1 half of that problem -- measures are no longer
+# dropped on the way into the panel.
 
-MEASURE_SPEC: list[tuple[str, str, str]] = [
-	("sales_units", "sales_units", "sum"),
-	("sales_value", "sales_value", "sum"),
-	("sales_in_liters", "sales_liters", "sum"),
-	("sales_units_any_promo", "promo_units", "promo_sum"),
-	("weighted_distribution", "weighted_dist", "mean"),
-]
+# Join keys and identifiers: structural, never aggregated as measures.
+NON_MEASURE_COLS: frozenset[str] = frozenset({
+	"product_id", "period_id", "market_id", "market_description",
+	"brand", "period_year", "period_month",
+})
 
-# Columns without which the panel is meaningless -- absence is an error, not a
-# capability difference to degrade around.
-REQUIRED_MEASURES = {"sales_units"}
+# How to aggregate, decided by what the measure IS rather than by name lookup.
+#
+# Additive (sum): counts and volumes -- summing across the products in a brand
+#   is meaningful, because the brand's total IS the sum of its products.
+# Intensive (mean): rates, ratios, distributions, per-store averages -- these
+#   are already normalised, so summing them is meaningless (a "70% weighted
+#   distribution" plus another "70%" is not 140%).
+#
+# Matched on substrings so a newly-arrived Nielsen column is classified by its
+# semantics rather than needing to be added here.
+INTENSIVE_PATTERNS: tuple[str, ...] = (
+	"distribution",     # weighted_/numeric_distribution and all their variants
+	"avg_",             # avg_no_of_items_per_store_reach, avg_number_of_stores_
+	"universe_",        # universe_number_of_stores -- a market property
+	"_reach",           # number_of_items_reach, *_reach variants
+)
+
+# The forecast target. Not a "category capability" -- it is what the pipeline
+# predicts (Y = log1p(sales_units_{t+1}), see pipeline_config). Without it there
+# is nothing to forecast and every later step is meaningless, so its absence is
+# an error rather than something to degrade around. This is the ONLY column
+# named explicitly, and it is named because of its role, not its category.
+REQUIRED_MEASURES: frozenset[str] = frozenset({TARGET_COL})
+
+# Output names kept stable for the few columns downstream code refers to by
+# name. Everything else keeps its source name verbatim.
+RENAMES: dict[str, str] = {
+	"sales_in_liters": "sales_liters",
+	"sales_units_any_promo": "promo_units",
+	"weighted_distribution": "weighted_dist",
+}
 
 
-def _promo_sum(series: pd.Series) -> float:
+def classify_measure(column: str) -> str:
+	"""Return "mean" for intensive measures, "sum" for additive ones."""
+	lowered = column.lower()
+	if any(p in lowered for p in INTENSIVE_PATTERNS):
+		return "mean"
+	return "sum"
+
+
+def _sum_nan_as_zero(series: pd.Series) -> float:
 	"""Sum treating NaN as zero.
 
-	Nielsen leaves the promo column null (not 0) for a brand-period with no
-	promotion, so a plain "sum" would propagate NaN across the group and wipe
-	out an otherwise valid brand-month. Ported from the notebook's
-	`lambda x: sum(pd.Series(x).fillna(0))`.
+	Nielsen leaves a measure null (not 0) for a brand-period where the event did
+	not occur -- most visibly the promo family. A plain "sum" would propagate
+	NaN across the group and wipe out an otherwise valid brand-month.
+
+	Generalised from the notebook's promo-only
+	`lambda x: sum(pd.Series(x).fillna(0))`: the null-means-zero convention is a
+	property of how Nielsen encodes additive measures, not of the promo columns
+	specifically.
 	"""
 	return series.fillna(0).sum()
 
 
-def build_agg_dict(df: pd.DataFrame) -> tuple[dict, list[str], list[str]]:
-	"""Return (agg_dict, output_names, skipped) for the columns actually present."""
+def discover_measures(df: pd.DataFrame) -> list[str]:
+	"""Every numeric column that is a measure rather than a join key.
+
+	Open-world: a column the pipeline has never seen is included automatically,
+	classified by `classify_measure`. Nothing is dropped for not being on a list.
+	"""
+	missing = REQUIRED_MEASURES - set(df.columns)
+	if missing:
+		raise KeyError(
+			f"Forecast target column(s) {sorted(missing)} absent from the merged "
+			f"frame -- there is nothing to predict. This is not a category "
+			f"capability difference; check the Stage 1 conversion. "
+			f"Present columns: {sorted(df.columns)}"
+		)
+
+	numeric = df.select_dtypes(include="number").columns
+	return [c for c in numeric if c not in NON_MEASURE_COLS]
+
+
+def build_agg_dict(df: pd.DataFrame) -> tuple[dict, list[str]]:
+	"""Return (agg_dict, output_names) covering every discovered measure."""
 	agg_dict: dict[str, object] = {}
 	output_names: list[str] = []
-	skipped: list[str] = []
 
-	for source, output, how in MEASURE_SPEC:
-		if source not in df.columns:
-			if source in REQUIRED_MEASURES:
-				raise KeyError(
-					f"Required measure column {source!r} is absent from the merged "
-					f"frame. Present columns: {sorted(df.columns)}"
-				)
-			skipped.append(source)
-			continue
-		agg_dict[source] = _promo_sum if how == "promo_sum" else how
-		output_names.append(output)
+	for source in discover_measures(df):
+		how = classify_measure(source)
+		# NaN-as-zero for additive measures: Nielsen leaves a measure null (not
+		# 0) where the event did not occur -- notably the promo family -- and a
+		# plain sum would propagate NaN across the group, wiping out an
+		# otherwise valid brand-month. Intensive measures keep pandas' default
+		# NaN-skipping mean, since a missing rate is genuinely unknown rather
+		# than zero.
+		agg_dict[source] = "mean" if how == "mean" else _sum_nan_as_zero
+		output_names.append(RENAMES.get(source, source))
 
-	return agg_dict, output_names, skipped
+	return agg_dict, output_names
 
 
 # ============================================================================
@@ -222,13 +293,13 @@ def load_and_aggregate(df_merged: pd.DataFrame, grain: str = GRAIN) -> pd.DataFr
 			f"helpers removed by P0035."
 		)
 
-	agg_dict, output_names, skipped = build_agg_dict(df_merged)
+	agg_dict, output_names = build_agg_dict(df_merged)
 
-	if skipped:
-		print_warning(
-			f"Measure column(s) absent for this category, aggregating without "
-			f"them: {', '.join(skipped)}"
-		)
+	n_mean = sum(1 for v in agg_dict.values() if v == "mean")
+	print(
+		f"  Discovered {len(agg_dict)} measure columns "
+		f"({len(agg_dict) - n_mean} additive, {n_mean} intensive)"
+	)
 
 	keys = GROUP_KEYS[grain] + ["period_year", "period_month"]
 	aggregated = df_merged.groupby(keys).agg(agg_dict).reset_index()

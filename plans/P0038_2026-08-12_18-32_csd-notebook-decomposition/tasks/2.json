@@ -12,5 +12,5 @@
   "blockedBy": [
     "1"
   ],
-  "outcome": "Complete 2026-08-12. step_1_load_and_aggregate.py: all 10 critical invariants verbatim (DEC-SCOPE + rationale, !=1 guard, positive-sales filter, promo NaN->0). Ran all 4 categories -- CSD 4209/142/46, Danskvand 1225/55/41, Energidrikke 1702/68/43, RTD 2509/101/41 rows/brands/periods; period counts match F29. Beyond port: agg_dict built from present columns (Danskvand+RTD lack sales_units_any_promo, notebook would KeyError), and validate=m:1 on merges closing F37 fan-out blind spot. F38 (min_periods 40 vs 30 conflict) handed to task 4."
+  "outcome": "Complete 2026-08-12 (revised after Brian challenged the closed-list premise). step_1_load_and_aggregate.py: all 10 critical invariants verbatim; validate=m:1 closes the F37 fan-out blind spot. DEC-OPEN-WORLD: measures are DISCOVERED, not enumerated -- the notebook list of 5 was silently dropping 24 of 29 measure columns (F39). Panel width CSD 8->32, Danskvand 7->15, Energidrikke 8->32, RTD 7->31; rows/brands/periods unchanged (4209/142/46, 1225/55/41, 1702/68/43, 2509/101/41). Only sales_units named, for its role as forecast target. F38 (min_periods 40 vs 30) handed to task 4."
 }

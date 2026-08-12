@@ -16,39 +16,38 @@ LOAD AND MERGE CACHED PARQUET VIEWS
 
 Merged row-level shape: (11596, 35)
 Unique brands:          101
-Elapsed:                1.16s
+Elapsed:                0.94s
 ================================================================================
 
 ================================================================================
 AGGREGATE TO BYMONTH GRAIN
 ================================================================================
-⚠ WARNING: Measure column(s) absent for this category, aggregating without 
-them: sales_units_any_promo
+  Discovered 28 measure columns (12 additive, 16 intensive)
 
-Aggregated shape: (2509, 7)
+Aggregated shape: (2509, 31)
 Unique brands:    101
 Date range:       2023-03 to 2026-07  (41 distinct periods)
-Elapsed:          0.01s
+Elapsed:          1.61s
 ================================================================================
 
 RTD -- brand x month panel (first 10 rows)
 ------------------------------------------
- brand  period_year  period_month  sales_units  sales_value  sales_liters  weighted_dist
-24 ICE         2026             7       2915.0     58054.00        437.25       0.091681
- AERIS         2024            10         27.0      2160.50          2.70       0.002860
- AERIS         2024            11         19.0      1456.40          1.90       0.001673
- AERIS         2024            12        165.0     11710.57         16.50       0.001651
- AERIS         2025             1          8.0       639.65          0.80       0.001121
- AERIS         2025             2          6.0       479.70          0.60       0.000712
- AERIS         2025             3         18.0      1111.52          1.80       0.001132
- AERIS         2025             4          3.0       239.85          0.30       0.000598
- AERIS         2025             5         15.0      1264.50          1.50       0.001263
- AERIS         2025             6         10.0       913.80          1.00       0.000740
+ brand  period_year  period_month  sales_value  sales_liters  sales_units  baseline_sales_value  baseline_sales_in_liters  baseline_sales_units  baseline_sales_value_any_promo  baseline_sales_in_liters_any_promo  baseline_sales_units_any_promo  sales_value_any_promo  sales_in_liters_any_promo  sales_units_any_tpr  numeric_distribution  numeric_distribution_reach  weighted_dist  weighted_distribution_reach  total_weighted_distribution_points_tdp_reach  number_of_items_reach  avg_number_of_stores_selling_reach  universe_number_of_stores  avg_no_of_items_per_store_reach  weighted_distribution_any_promo  weighted_distribution_disp_and_feat  weighted_distribution_disp_wo_feat  weighted_distribution_feat_wo_disp  weighted_distribution_total_feat  weighted_distribution_any_disp  weighted_distribution_any_tpr
+24 ICE         2026             7     58054.00        437.25       2915.0            37841.2121                  285.0079             1900.0526                       5205.7047                             39.2528                        261.6855             20682.5962                   155.8298                  0.0              0.079918                    0.192214       0.091681                     0.232702                                      0.232702                  492.0                              491.25                    2555.75                           1.0015                         0.039966                                  NaN                            0.039966                                 NaN                               NaN                        0.039966                            NaN
+ AERIS         2024            10      2160.50          2.70         27.0              403.5600                    0.5026                5.0259                          0.0000                              0.0000                          0.0000              1498.6000                     1.9000                  6.0              0.001868                    0.003934       0.002860                     0.005268                                      0.005268                   10.0                               10.00                    2542.25                           1.0000                         0.001655                                  NaN                            0.001655                                 NaN                               NaN                        0.001655                       0.000659
+ AERIS         2024            11      1456.40          1.90         19.0             1501.3553                    1.9512               19.5124                        224.7058                              0.2945                          2.9445               228.9500                     0.3000                  0.0              0.001280                    0.003151       0.001673                     0.004048                                      0.004048                    8.0                                8.00                    2538.50                           1.0000                         0.001673                                  NaN                            0.001673                                 NaN                               NaN                        0.001673                            NaN
+ AERIS         2024            12     11710.57         16.50        165.0            11553.8389                   16.3565              163.5646                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.001260                    0.003544       0.001651                     0.003359                                      0.003359                    9.0                                9.00                    2539.60                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
+ AERIS         2025             1       639.65          0.80          8.0              639.6500                    0.8000                8.0000                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.000493                    0.000789       0.001121                     0.001465                                      0.001465                    2.0                                2.00                    2535.50                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
+ AERIS         2025             2       479.70          0.60          6.0              479.7000                    0.6000                6.0000                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.000296                    0.000395       0.000712                     0.000966                                      0.000966                    1.0                                1.00                    2533.75                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
+ AERIS         2025             3      1111.52          1.80         18.0              891.0973                    1.5148               15.1479                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.000551                    0.001575       0.001132                     0.002497                                      0.002497                    4.0                                4.00                    2539.40                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
+ AERIS         2025             4       239.85          0.30          3.0              239.8500                    0.3000                3.0000                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.000295                    0.000393       0.000598                     0.000849                                      0.000849                    1.0                                1.00                    2542.75                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
+ AERIS         2025             5      1264.50          1.50         15.0             1264.5000                    1.5000               15.0000                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.000693                    0.001189       0.001263                     0.001883                                      0.001883                    3.0                                3.00                    2523.50                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
+ AERIS         2025             6       913.80          1.00         10.0              913.8000                    1.0000               10.0000                          0.0000                              0.0000                          0.0000                 0.0000                     0.0000                  0.0              0.000553                    0.001185       0.000740                     0.001914                                      0.001914                    3.0                                3.00                    2532.60                           1.0000                              NaN                                  NaN                                 NaN                                 NaN                               NaN                             NaN                            NaN
 
-ℹ INFO: Wrote step_1_aggregate_bymonth.parquet  (2,509 rows x 7 cols)
+ℹ INFO: Wrote step_1_aggregate_bymonth.parquet  (2,509 rows x 31 cols)
 ℹ INFO: Console log: 
 Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeli
 ne_step_outputs\step_1_console.log
 
-✓ Completed in 1.3s
+✓ Completed in 2.7s
 

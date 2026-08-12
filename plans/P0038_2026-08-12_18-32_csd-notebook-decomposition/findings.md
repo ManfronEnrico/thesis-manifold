@@ -341,3 +341,87 @@ honestly and pass it explicitly to `filter_series`.
 **Task 4 acceptance criterion**: after the port, exactly one value governs, it is
 derived from the brand-depth distribution, and it is passed explicitly rather
 than inherited from a default.
+
+---
+
+## F39 — The notebook silently discarded 24 of 29 available measure columns
+
+**Brian, 2026-08-12**, on the promo-column handling:
+
+> *"why is that even an issue exactly? I thought we wanted to have a general
+> script that is category independent... Couldn't we have this also dynamic?"*
+
+Correct, and following it up exposed something larger than the promo question.
+
+The notebook's `agg_dict` names **five** measure columns. The fact views actually
+carry **29 measures for CSD** (35 distinct across all four categories). So 24
+columns per category never reached the panel — including the entire `baseline_*`
+family (6 columns), the `numeric_distribution` family, `universe_number_of_stores`
+and `sales_units_any_tpr`.
+
+They were not evaluated and rejected. The notebook listed five, and the list was
+inherited unexamined through every subsequent port. **Same defect class as F28
+and F38**: an inherited literal wearing the appearance of a decision.
+
+### Column availability is not just presence/absence
+
+A fixed list cannot express what the data actually does, because the *same
+measure is spelled differently per category*:
+
+| CSD | Energidrikke | RTD |
+|-----|--------------|-----|
+| `weighted_distribution_disp_w_o_feat` | `weighted_distribution_disp_wo_feat` | `weighted_distribution_disp_wo_feat` |
+| `weighted_distribution_feat_w_o_disp` | `weighted_distribution_feat_wo_disp` | `weighted_distribution_feat_wo_disp` |
+| — | — | `weighted_distribution_disp_and_feat` |
+
+Any hardcoded list keeps whichever spelling it happens to name and drops the
+rest, per category, invisibly.
+
+### Fix: open-world discovery
+
+Measures are now **discovered** — every numeric column that is not a join key —
+and classified by what the measure *is*:
+
+- **additive** (`sum`): counts and volumes; a brand's total is the sum of its products
+- **intensive** (`mean`): rates, ratios, distributions, per-store averages. Summing
+  a 70% weighted distribution with another 70% does not give 140%.
+
+Matched on substrings (`distribution`, `avg_`, `universe_`, `_reach`) so a
+newly-arrived Nielsen column is classified by semantics rather than needing to be
+added to a list. All 29 CSD classifications reviewed individually and correct.
+
+### Result
+
+| Category | Panel cols before | after |
+|----------|-------------------|-------|
+| CSD | 8 | **32** |
+| Danskvand | 7 | **15** |
+| Energidrikke | 8 | **32** |
+| RTD | 7 | **31** |
+
+Row counts, brand counts and period counts **unchanged** — this adds columns
+without disturbing the grain.
+
+### The one column that stays named
+
+`sales_units` is the only explicitly required column, and it is required for its
+**role, not its category**: it is the forecast target
+(`Y = log1p(sales_units_{t+1})`). Absent, there is nothing to predict and every
+later step is meaningless, so it raises rather than degrades. This is not a
+category-capability check — a category lacking it is not a category with fewer
+features, it is not a forecasting dataset.
+
+### Bearing on P0036 task 11
+
+Task 11 ("recover discarded product-dimension features") is **partly resolved**
+at the step-1 level: measures are no longer dropped on the way into the panel.
+What remains for task 11 is genuinely product-*dimension* attributes (pack size,
+flavour etc. from `dim_product`), which is a different question from the fact
+measures addressed here.
+
+### Open question, deliberately not settled
+
+`number_of_items_reach` is classified intensive (mean). It is a count, which
+argues additive, but `_reach` metrics are typically already de-duplicated across
+products, so summing would double-count. Mean is the safer default. Flagged for
+step-2 EDA to confirm empirically rather than asserted here.

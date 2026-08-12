@@ -363,5 +363,13 @@
     "category": "CSD",
     "elapsed_sec": 14.29,
     "output_rows": 4209
+  },
+  {
+    "timestamp": "2026-08-12T19:17:17.668861",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "CSD",
+    "elapsed_sec": 16.86,
+    "output_rows": 4209
   }
 ]

@@ -16,39 +16,38 @@ LOAD AND MERGE CACHED PARQUET VIEWS
 
 Merged row-level shape: (11085, 19)
 Unique brands:          55
-Elapsed:                0.69s
+Elapsed:                0.66s
 ================================================================================
 
 ================================================================================
 AGGREGATE TO BYMONTH GRAIN
 ================================================================================
-⚠ WARNING: Measure column(s) absent for this category, aggregating without 
-them: sales_units_any_promo
+  Discovered 12 measure columns (3 additive, 9 intensive)
 
-Aggregated shape: (1225, 7)
+Aggregated shape: (1225, 15)
 Unique brands:    55
 Date range:       2023-03 to 2026-07  (41 distinct periods)
-Elapsed:          0.01s
+Elapsed:          0.18s
 ================================================================================
 
 Danskvand -- brand x month panel (first 10 rows)
 ------------------------------------------------
-      brand  period_year  period_month  sales_units  sales_value  sales_liters  weighted_dist
-ACQUA PANNA         2023             3         95.0      1393.40          47.5       0.000561
-ACQUA PANNA         2023             4         92.0      1359.35          46.0       0.000610
-ACQUA PANNA         2023             5        137.0      2003.80          68.5       0.000526
-ACQUA PANNA         2023             6        396.0      4948.45         198.0       0.000831
-ACQUA PANNA         2023             7        113.0      1309.55          56.5       0.000771
-ACQUA PANNA         2023             8        241.0      3175.65         120.5       0.000733
-ACQUA PANNA         2023             9        275.0      3994.25         137.5       0.001063
-ACQUA PANNA         2023            10        109.0      1583.20          54.5       0.000915
-ACQUA PANNA         2023            11         35.0       507.97          17.5       0.001185
-ACQUA PANNA         2023            12         72.0      1048.50          36.0       0.001023
+      brand  period_year  period_month  sales_value  sales_liters  sales_units  numeric_distribution  numeric_distribution_reach  weighted_dist  weighted_distribution_reach  total_weighted_distribution_points_tdp_reach  number_of_items_reach  avg_number_of_stores_selling_reach  universe_number_of_stores  avg_no_of_items_per_store_reach
+ACQUA PANNA         2023             3      1393.40          47.5         95.0              0.000600                    0.001001       0.000561                     0.000994                                      0.000994                    2.5                                 2.5                    2498.40                              1.0
+ACQUA PANNA         2023             4      1359.35          46.0         92.0              0.000501                    0.000801       0.000610                     0.001177                                      0.001177                    2.0                                 2.0                    2496.25                              1.0
+ACQUA PANNA         2023             5      2003.80          68.5        137.0              0.000402                    0.001007       0.000526                     0.001904                                      0.001904                    2.5                                 2.5                    2482.25                              1.0
+ACQUA PANNA         2023             6      4948.45         198.0        396.0              0.000607                    0.001012       0.000831                     0.001391                                      0.001391                    2.5                                 2.5                    2472.00                              1.0
+ACQUA PANNA         2023             7      1309.55          56.5        113.0              0.000557                    0.000607       0.000771                     0.000782                                      0.000782                    1.5                                 1.5                    2468.25                              1.0
+ACQUA PANNA         2023             8      3175.65         120.5        241.0              0.000507                    0.000607       0.000733                     0.000850                                      0.000850                    1.5                                 1.5                    2468.00                              1.0
+ACQUA PANNA         2023             9      3994.25         137.5        275.0              0.000807                    0.000807       0.001063                     0.001063                                      0.001063                    2.0                                 2.0                    2477.40                              1.0
+ACQUA PANNA         2023            10      1583.20          54.5        109.0              0.000706                    0.000807       0.000915                     0.001123                                      0.001123                    2.0                                 2.0                    2478.25                              1.0
+ACQUA PANNA         2023            11       507.97          17.5         35.0              0.000810                    0.000810       0.001185                     0.001185                                      0.001185                    2.0                                 2.0                    2468.25                              1.0
+ACQUA PANNA         2023            12      1048.50          36.0         72.0              0.000646                    0.000808       0.001023                     0.001506                                      0.001506                    2.0                                 2.0                    2476.00                              1.0
 
-ℹ INFO: Wrote step_1_aggregate_bymonth.parquet  (1,225 rows x 7 cols)
+ℹ INFO: Wrote step_1_aggregate_bymonth.parquet  (1,225 rows x 15 cols)
 ℹ INFO: Console log: 
 Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\
 pipeline_step_outputs\step_1_console.log
 
-✓ Completed in 0.8s
+✓ Completed in 0.9s
 

@@ -51,6 +51,7 @@ working orchestrators are **184 lines each and differ only in the category name*
 | **DEC-CONTRACT** | `{category}_eda_findings.json` is the step 3 → step 4 interface | The JSON already exists and already carries all six params + rationale; it is simply never read back |
 | **DEC-EDA-SPLIT** | Descriptive EDA and parameter-deriving EDA are separate steps | Re-deriving params must not require regenerating ~20 plots; keeps thesis-figure code out of the pipeline's dependency path |
 | **DEC-NO-FALLBACK** | Step 4 fails loudly if the contract JSON is missing/incomplete | Silent in-code defaults are exactly what let the split and MIN_PERIODS rot unnoticed |
+| **DEC-OPEN-WORLD** | Shared steps **discover** columns; they never enumerate them | Brian, 2026-08-12. A hardcoded list is category-*dependent* by construction — it silently drops whatever it does not name. The notebook's 5-column `agg_dict` discarded 24 of 29 available measures (F39) and could not express per-category spelling variants. Only the forecast target is named, and for its **role**, not its category |
 
 ## Evidence base
 
@@ -204,23 +205,30 @@ DEC-GRAIN/P0035 notes, promo NaN→0 semantics, brand×month keys).
 **Live results — all four categories, first time the other three have ever run
 this path:**
 
-| Category | Fact rows | Brand-month rows | Brands | Periods | Cols |
-|----------|-----------|------------------|--------|---------|------|
-| CSD | 37,999 → | 4,209 | 142 | 46 | 8 |
-| Danskvand | 11,085 → | 1,225 | 55 | 41 | 7 |
-| Energidrikke | 12,139 → | 1,702 | 68 | 43 | 8 |
-| RTD | 11,596 → | 2,509 | 101 | 41 | 7 |
+| Category | Brand-month rows | Brands | Periods | Cols |
+|----------|------------------|--------|---------|------|
+| CSD | 4,209 | 142 | 46 | 32 |
+| Danskvand | 1,225 | 55 | 41 | 15 |
+| Energidrikke | 1,702 | 68 | 43 | 32 |
+| RTD | 2,509 | 101 | 41 | 31 |
 
 Period counts match F29's projections exactly (46/41/43/41).
 
 **Two changes beyond a literal port:**
 
-1. **`agg_dict` is built from columns actually present.** Measured: Danskvand
-   (15 fact cols) and RTD (31) have **no `sales_units_any_promo`**; the
-   notebook's fixed dict raises `KeyError` on both. Now degrades with a logged
-   warning to 7 columns, while `sales_units` absence is still a hard error.
-   Capability tiers are nominally a step-4 concern, but they surface here too —
-   you cannot aggregate a column that does not exist.
+1. **Open-world column discovery** (DEC-OPEN-WORLD, F39). Initially ported as a
+   present-column check against a 5-entry list; Brian challenged the premise —
+   a general script should not enumerate columns at all. He was right, and
+   following it up found the notebook was **silently discarding 24 of 29
+   measure columns** per category (the whole `baseline_*` family, the
+   `numeric_distribution` family, `universe_number_of_stores`, …), plus it could
+   not express per-category spelling variants like
+   `disp_w_o_feat` / `disp_wo_feat` / `disp_and_feat`.
+
+   Measures are now discovered and classified by semantics (additive → `sum`,
+   intensive → `mean`). Panel width went **8 → 32** columns for CSD, with row,
+   brand and period counts unchanged. Only `sales_units` is named, and for its
+   role as forecast target rather than as a category feature.
 
 2. **`validate="m:1"` on all three dimension merges** — closes F37, a real
    blind spot in the fan-out guard (see below).
@@ -238,9 +246,26 @@ step 1 deliberately (it is a filtering, not an aggregation, parameter) and
 handed to task 4, which must derive it and pass it explicitly.
 
 ### Task 3 — Shared step 2 (descriptive EDA)
-Port cells 17–39. 8 plots at DPI 150. Must degrade gracefully where a category
-lacks columns — Danskvand has **no promo columns at all**, so the promo plots
-must skip with a logged notice rather than raise.
+Port cells 17–39. 8 plots at DPI 150.
+
+**Follows DEC-OPEN-WORLD** (Brian, 2026-08-12):
+
+> *"where we can get statistics for all numeric features, and non numeric
+> features, similarly have graphs and figures for each of them. That way it
+> shouldn't matter?"*
+
+Correct — and with step 1 now yielding 32/15/32/31 columns instead of 8/7/8/7,
+per-column enumeration is not even viable. The EDA iterates over
+`df.select_dtypes` and emits stats + figures per column found. A category with a
+column no other has gets it analysed automatically; a category lacking one
+produces one fewer figure, with **no branch anywhere naming a category**.
+
+Consequence: "Danskvand has no promo columns, so skip the promo plots" stops
+being a special case — there is no promo-plot code to skip, only a loop that
+runs over whatever columns exist.
+
+**Also confirm here**: whether `number_of_items_reach` is genuinely intensive
+(F39 open question) — its distribution across brands should settle it.
 
 ### Task 4 — Shared step 3 (parameter derivation) + contract
 Port cells 41–53. Writes `{category}_eda_findings.json`.
