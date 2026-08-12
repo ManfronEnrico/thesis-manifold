@@ -1,11 +1,11 @@
 ---
 name: sample-size-and-tool-interface-rationale
-description: RULE - Why 44-month series and ~2.5k rows are adequate for this thesis, how the LLM reaches a forecast without handling feature vectors, and the three leakage defects found and fixed. Write-up material for Ch4/Ch5/Ch7/Ch10.
+description: RULE - Sample-size adequacy, the two deduplication axes, the LLM tool interface, three leakage defects found and fixed, cross-category asymmetry, and data recency/refresh. Write-up material for Ch4/Ch5/Ch6/Ch7/Ch10. NOTE - all counts are snapshot-specific and superseded by the 2026-08-12 re-pull.
 category: reference
 applies-to: [ch4-data, ch5-design, ch6-benchmark, ch7-interface, ch8-evaluation, ch10-limitations]
-triggers: [writing Ch4 data adequacy, defending sample size, describing the tool interface, writing limitations, defending leakage control, justifying market scope]
+triggers: [writing Ch4 data adequacy, defending sample size, describing the tool interface, writing limitations, defending leakage control, justifying market scope, cross-category comparison, data recency, forecast horizon]
 created: 2026_08_11-16_21
-updated: 2026_08_11-21_55
+updated: 2026_08_12-16_10
 ---
 
 # Sample Size & Tool Interface — Write-Up Rationale
@@ -13,6 +13,20 @@ updated: 2026_08_11-21_55
 Captured 2026-08-11 from an investigation session. These points are **not obvious from the
 code** and will be asked at defence. Full measurements in
 `plans/P0036_2026-08-11_16-08_csd-fixes-before-mirror/findings.md`.
+
+> ## ⚠️ ALL COUNTS BELOW ARE SNAPSHOT-SPECIFIC AND NOW SUPERSEDED
+>
+> Every figure in §1 and §2 (44 months, 3,917 brand-month rows, 37,999 fact rows,
+> 2,552 matrix rows, 140 brands) was measured against the extract ending **2026-05**.
+> On **2026-08-12** the source warehouse was found to be live and additive, reaching
+> **2026-07** for all four categories, and a fresh pull was run (F22).
+>
+> **Re-measure before quoting any count in the thesis.** The *reasoning* in every
+> section remains valid — the market-scope argument, the two deduplication axes, the
+> NULL/zero problem, the leakage fixes — only the numbers move. Expected new depths:
+> CSD 46, Energidrikke 43, Danskvand 41, RTD 41 months.
+>
+> See §10 for the recency/refresh findings and what they mean for horizon claims.
 
 ---
 
@@ -564,3 +578,78 @@ observed SKU count carried forward six months, and its accuracy degrades with ho
 Options: hold constant and document, forecast it as a secondary series, or restrict it
 to short horizons. Measure the degradation before choosing — this is a real constraint
 on long-horizon queries regardless of which option is taken.
+
+---
+
+## 10. Data recency, refresh, and what "forecast horizon" actually means (Ch4/Ch5/Ch7/Ch10)
+
+Verified 2026-08-12 by querying the Fabric warehouse directly (F22).
+
+### The source database is live and additive
+
+| Category | DB newest | DB oldest | Periods |
+|---|---|---|---|
+| CSD | 2026-07 | 2022-10 | 46 |
+| Danskvand | 2026-07 | 2023-03 | 41 |
+| Energidrikke | 2026-07 | 2023-01 | 43 |
+| RTD | 2026-07 | 2023-03 | 41 |
+
+Two properties matter for the write-up, and both were verified rather than assumed:
+
+1. **Live** — all four categories reach 2026-07, one month before the session date. The
+   warehouse receives new periods.
+2. **Additive, not rolling** — the oldest period in the DB is identical to the oldest in
+   an older local snapshot for every category, and all period sequences are contiguous.
+   Refreshing *gains* months without losing history.
+
+**Therefore "the dataset is a fixed historical extract" is NOT a valid limitation.** The
+refresh path exists, runs in minutes, and is reproducible. What *is* true is that any
+reported result is computed against a **named snapshot**, which is a reproducibility
+statement, not a constraint:
+
+> Results are computed against the Nielsen extract pulled on <DATE>, covering
+> <YYYY-MM> to <YYYY-MM>. The warehouse is updated monthly and retains full history;
+> the extract is versioned so results are reproducible.
+
+**Ch4 must state the snapshot date and period range explicitly**, because every count in
+this note (panel depth, brand-month rows, matrix rows) is snapshot-specific.
+
+### What this means for forecast horizon — a modelling limit, not a data limit
+
+An earlier draft of this reasoning argued that a "6-month forecast" was really a
+long-range extrapolation because the data lagged the present. **With a current extract
+that is false**: a query in August 2026 asking six months ahead is a genuine
+6-step-ahead forecast.
+
+The real constraint is the model: **it is trained one-step-ahead.** Multi-step requires
+recursive prediction (feeding each forecast back as the next `lag_1`), and errors
+compound with each step. That is P0037's open **DEC-HORIZON** decision, and it applies
+to `n_skus_active` no differently than to `lag_1` — the feature inherits the existing
+limitation rather than adding one.
+
+### Auto-derive vs training average — genuinely different, and worth stating
+
+For a brand with history, the service does not need the user to supply range features:
+
+| | Source | Faxe Kondi example |
+|---|---|---|
+| **Auto-derive** (default) | *That brand's* last known value | 44 SKUs — its own |
+| **Training average** (cold start only) | *Category* mean across all brands | ~9.7 SKUs |
+
+These are not the same fallback. Auto-derive is brand-specific and far more accurate;
+the category mean is a last resort for a brand with no history at all. With a refreshable
+extract, auto-derive additionally uses **recent** stocking information rather than a
+value frozen months back — which is the main practical gain from keeping the extract
+current.
+
+### Evaluation must be anchored to the data end, not to "today"
+
+Hold out the last *k* months of the extract and forecast those. Then:
+
+- "6-month forecast" means something **measurable** — there is ground truth to score against.
+- The same held-out window scores all SRQ4 arms (code-as-action LLM / LLM + data /
+  LLM + trained model), so the comparison is like-for-like.
+- A question about a date beyond the extract cannot be evaluated at all, only asserted.
+
+This is the reference point the SRQ4 three-arm comparison requires, and it should be
+defined once in Ch5 and reused in Ch6 and Ch8.

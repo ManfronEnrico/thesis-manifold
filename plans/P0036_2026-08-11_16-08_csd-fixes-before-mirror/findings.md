@@ -716,3 +716,76 @@ of unmapped volume sits in the top 100 ids; the long tail of ~6,550 low-volume i
 unverified. If any are genuine SKUs, they are individually negligible (<0.01% of volume
 each), so no result is at risk — but a Ch4 sentence should say "aggregate rows and a
 negligible tail" rather than claiming all 6,652 are rollups.
+
+---
+
+## F22 — The Nielsen DB is LIVE and ADDITIVE; RTD was a failed pull, not missing data
+
+Brian challenged the claim that the data is "a static snapshot, not a live feed."
+**That claim was wrong.** Verified by connecting to the Fabric warehouse directly
+(read-only, `SELECT MAX/MIN/COUNT` only).
+
+### The database is live and 2-4 months ahead of our snapshot
+
+| Category | DB newest | Our snapshot | DB fact rows | Our fact rows |
+|---|---|---|---|---|
+| CSD | **2026-07** | 2026-05 | 10,311,342 | 9,080,538 |
+| Danskvand | **2026-07** | 2026-03 | 1,382,673 | 1,248,913 |
+| Energidrikke | **2026-07** | 2026-05 | 3,476,121 | 3,112,010 |
+| RTD | **2026-07** | 2026-03 | **2,409,362** | **0** |
+
+All four now reach **2026-07** — one month before today (2026-08-12). The staleness was
+**our pull being old**, not a dead database.
+
+### RTD: the view has 2.4M rows in the DB. Our parquet is 0x0.
+
+`rtd_clean_facts_v` = 2,409,362 rows; `rtd_clean_facts` = 9,094,805 rows. The data
+exists and always did. **F20's "RTD is a missing dataset" was wrong — the pull failed
+for RTD.** A re-pull fixes it; no re-export request to the supplier is needed. Task 12
+rescoped accordingly.
+
+### NOT a rolling window — additive. Re-pull is safe.
+
+The decisive question (Brian): does the DB drop old periods as new ones arrive? **No.**
+
+| Category | DB oldest | Our oldest | DB periods | Ours | Gain |
+|---|---|---|---|---|---|
+| CSD | 2022-10 | 2022-10 ✅ | **46** | 44 | +2 |
+| Danskvand | 2023-03 | 2023-03 ✅ | **41** | 37 | **+4** |
+| Energidrikke | 2023-01 | 2023-01 ✅ | **43** | 41 | +2 |
+| RTD | 2023-03 | 2023-03 ✅ | **41** | 37 | **+4** |
+
+Every oldest period is identical to ours, and all four period sequences are
+**contiguous** (no interior gaps). History is preserved; new months append. No pipeline
+change is needed to guard against data loss on refresh.
+
+### Consequences
+
+1. **Panel depth grows**: 44 → 46 (CSD), 37 → 41 (Danskvand, RTD), 41 → 43
+   (Energidrikke). The two shortest panels gain the most (~11% each).
+2. **All four align at the recent end (2026-07) for the first time**, which helps SRQ1's
+   cross-category comparison. Start dates still differ, so depth stays uneven.
+3. **Every measured figure in F15-F21 is superseded by the re-pull** — 44 months,
+   3,917 brand-month rows, 37,999 fact rows, 2,552 matrix rows, the 140/144 brand counts.
+   All were correct for the old snapshot. Task 6's parity check must re-measure.
+4. **"The data cannot be refreshed" is not a valid limitation.** The refresh path exists
+   and works (`save_all_datasets.py --only <CATS> --parallel`, ~3 min, views+metadata).
+
+### Re-pull command (Brian ran this)
+
+```
+python 02_thesis_data/_00_raw/nielsen/scripts/save_all_datasets.py \
+    --only CSD Danskvand Energidrikke RTD --parallel
+```
+
+Explicit `--only` excludes **Totalbeer**, which P0034 dropped on compute grounds; a bare
+`--parallel` would pull it.
+
+### Correction to the horizon argument (supersedes part of the §9 note)
+
+I argued a "6-month forecast" was really a 21-month extrapolation because the data ended
+2026-05. With data to **2026-07**, a query made in August 2026 for six months ahead is a
+genuine **6-step-ahead** forecast. The horizon problem is therefore a *modelling*
+question (the model is one-step-ahead — P0037 DEC-HORIZON), **not** a data-staleness
+question. The recursive-error-compounding point stands; the "stale snapshot" framing
+does not.

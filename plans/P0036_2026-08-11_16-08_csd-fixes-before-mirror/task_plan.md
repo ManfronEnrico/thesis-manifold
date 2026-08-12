@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-11 22:00:00
+updated: 2026-08-12 16:15:00
 status: in_progress
-focus_detail: "Tasks 1-3 and 5 complete. CSD filters to parent 1256338 (37,999 rows, 1 market, 140 brands, promo populated); make_calendar bfill future-leakage removed (contaminated 1,176 rows / 19.1% / 51 brands, all leading gaps) and its docstring now names both leakage kinds. F15 corrects the plan's wrong scope numbers; F16 documents the bfill fix. Ch4 writing notes updated with the corrected funnel + a leakage-control section. NEXT: task 4 (derived promo asserts + reusable all-zero guard), then task 6 (re-run, the gate that unblocks P0033). Notebook is 57.8k tokens -- Grep + JSON-patch script; Read and NotebookEdit both refuse it."
+focus_detail: "Tasks 1,2,3,5,10 complete. BLOCKED ON DATA REFRESH: the Nielsen warehouse is live and additive (F22) -- it reaches 2026-07 while our extract ended 2026-05, and RTD's local parquet was empty only because the pull FAILED (the DB has 2.4M rows). Brian re-ran save_all_datasets.py 2026-08-12. Task 13 (verify re-pull + re-convert to parquet) now gates tasks 4, 6 and 12, and every count in F15-F21 must be re-measured against the new extract. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. DECISION LOCKED: no shared feature-engineering module -- Danskvand has zero promo measures, so each category notebook adapts its own. Unblocked meanwhile: task 12 prep (capability matrix), P0037 DEC-HORIZON."
 ---
 
 # P0036 — Fix CSD Before Mirroring
