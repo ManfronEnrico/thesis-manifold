@@ -355,3 +355,63 @@ defect as intended behaviour**, and is exactly where someone would look for the
 "right" pattern. Worth cleaning up when tests are next touched.
 
 The 7 other matches are all under `.archive/` (dead code, out of scope).
+
+---
+
+## F17 — Fact-table sparsity verified; "196,657" explained; both stale tests archived
+
+Three loose ends closed after Brian challenged an unverified claim.
+
+### 1. Is the facts table sparse? Partly — the claim needed correcting
+
+Stated in conversation that Nielsen "only emits rows where a brand sold something."
+**Measured, that is half right.** At parent market `1256338`, before any filter:
+
+| | Rows |
+|---|---|
+| Total | 196,657 |
+| `sales_units > 0` | 182,399 |
+| `sales_units == 0` | **14,202** |
+| `sales_units` NULL | **14,190** |
+| `sales_units < 0` | 56 |
+
+So explicit zeros and nulls **do** exist — absence and zero are not interchangeable.
+But the table is genuinely sparse at the grid level: **1,923 SKUs × 44 periods =
+84,612 possible cells, 43,559 present — 51.5% populated.**
+
+Accurate statement for Ch4: *Nielsen emits rows sparsely, mostly where a product was
+tracked as selling, with some explicit zeros and nulls; about half the possible
+SKU-month grid is absent.* This is why `make_calendar` exists.
+
+Does not affect the F16 fix: whatever the reason a month is missing, filling it from
+a *later* month still imports future information.
+
+### 2. Where the plan's "196,657" came from
+
+It is the **raw parent-market row count before the `sales_units > 0` filter**. Not
+invented, and not a different market scope — measured one pipeline stage earlier than
+the 37,999 it was compared against in F15.
+
+F15's verdict stands (the brand-count, promo and brand-month figures were wrong), but
+this one figure is now explained rather than simply wrong. The Ch4 funnel now shows
+both stages: 9,080,538 → 196,657 → 37,999 → 3,917 → 6,160 → 2,552.
+
+### 3. Both archived tests confirmed stale, for *different* reasons
+
+Brian moved `test_agent_system_comprehensive.py` and `test_builder_integration.py` to
+`utility_scripts/tests/.archive/` — both from the superseded "multiple agents write
+everything" approach. Verified:
+
+| File | Verdict |
+|---|---|
+| `test_agent_system_comprehensive.py` | **Ran, but asserted a defect correct.** Self-contained mock; reproduced `.ffill().bfill()` on `price_per_unit:292` and asserted "forward/backward filled" correct |
+| `test_builder_integration.py` | **Could not run at all.** Imports `thesis.thesis_production_system.agents.builder`, removed by the P0028 restructure (2026-07-11). Fails at import; `find_spec("thesis")` → `None`. Dead since July |
+
+`README.md` added to `.archive/` recording both, so this is not re-derived.
+
+**The instructive one is the first.** A test that runs green while encoding a bug is
+worse than one that cannot run: the broken test announces itself, the passing test
+provides false assurance. Same shape as the root cause in F16 — the `make_calendar`
+docstring covered cross-group leakage thoroughly and was silent on future leakage,
+so reviewers checked the documented risk and stopped. **Partial coverage reading as
+full coverage.**

@@ -59,15 +59,17 @@ Anticipated examiner question: *"You started with 9 million rows and modelled 2,
 
 | Stage | Rows | What happens |
 |-------|------|--------------|
-| Raw facts (all markets) | 9,080,538 | every SKU × market × period |
-| Scoped to `DVH EXCL. HD` parent | **37,999** | one market, positive sales only |
+| Raw facts (all markets) | 9,080,538 | every SKU × market × period present |
+| Scoped to `DVH EXCL. HD` parent | **196,657** | one market of 86 |
+| Positive sales only | **37,999** | drops 14,202 zero, 14,190 null, 56 negative |
 | Aggregated to brand × month | **3,917** | SKU → brand rollup (DEC-GRAIN) |
 | Calendar-filled | **6,160** | 140 brands × 44 months, gaps included |
 | MIN_PERIODS filter | 2,552 | short series dropped |
 
-> Earlier drafts showed "196,657 → 3,975". Both were wrong: 196,657 matched no
-> measured scope, and 3,975 is the *region-child* aggregate, so the funnel silently
-> mixed two market scopes. Corrected above (F15).
+> Earlier drafts collapsed the two scoping steps and showed "196,657 → 3,975". The
+> 196,657 was right but sat one stage earlier than labelled; 3,975 is the
+> *region-child* aggregate, so the funnel silently mixed two market scopes.
+> Corrected above (F15).
 
 Two separate reductions, and they should be described differently:
 
@@ -235,6 +237,18 @@ worth a paragraph in Ch4 and a limitations note in Ch10.
 | V3 | `promo_intensity` computed from `sales_units_t` | **Target leakage** | The target's own denominator. Unconstructible at forecast time — you cannot know this month's units before forecasting them |
 | — | bare `shift(1)` on a frame sorted by (brand, date) | **Cross-series leakage** | Carries the last row of brand A into the first row of brand B. Fixed with `groupby(group_keys).shift(1)` |
 | — | `make_calendar` chained `.ffill().bfill()` | **Future leakage within a series** | `bfill` fills *leading* gaps — months before a brand's first observation — with its first observed value, i.e. a fact from the future |
+
+### Why gap-filling is needed at all (state this before the bfill example)
+
+Nielsen's fact table is **sparse**: at the parent market the SKU × month grid is only
+**51.5% populated** (1,923 SKUs × 44 months = 84,612 possible; 43,559 present). Most
+absent cells are products not tracked that month. Nielsen *does* also emit explicit
+zeros and nulls (14,202 and 14,190 rows at parent scope), so absence and zero are not
+interchangeable — but roughly half the grid is simply missing.
+
+The model needs an evenly-spaced series per brand, so the pipeline builds the full
+140 × 44 calendar and fills the holes. **Sales** gaps fill with 0 (no recorded sales
+= none sold). **Distribution** gaps are where the leakage crept in.
 
 ### The bfill case, with numbers (good Ch4 example)
 
