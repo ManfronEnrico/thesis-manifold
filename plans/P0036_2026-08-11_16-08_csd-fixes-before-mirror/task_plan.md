@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-11 21:40:00
+updated: 2026-08-11 22:00:00
 status: in_progress
-focus_detail: "Tasks 1-3 complete. CSD now filters to parent 1256338 (verified: 37,999 rows, 1 market, 140 brands, all 7 promo columns populated where they were 0). F15 records that the plan's supporting numbers were wrong -- parent scope COSTS 1.5% of brand-month rows and buys the promo family; it is not a free win. Next: task 5 (make_calendar bfill, independent) or task 4 (derived promo asserts). Notebook is 57.8k tokens -- Grep + JSON-patch script, Read and NotebookEdit both refuse it."
+focus_detail: "Tasks 1-3 and 5 complete. CSD filters to parent 1256338 (37,999 rows, 1 market, 140 brands, promo populated); make_calendar bfill future-leakage removed (contaminated 1,176 rows / 19.1% / 51 brands, all leading gaps) and its docstring now names both leakage kinds. F15 corrects the plan's wrong scope numbers; F16 documents the bfill fix. Ch4 writing notes updated with the corrected funnel + a leakage-control section. NEXT: task 4 (derived promo asserts + reusable all-zero guard), then task 6 (re-run, the gate that unblocks P0033). Notebook is 57.8k tokens -- Grep + JSON-patch script; Read and NotebookEdit both refuse it."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -73,9 +73,9 @@ children (6.41× redundancy) without adding information at the modelling grain.
 |----|-------|-------|------------|--------|
 | 1 | Cherry-pick V3/V4 `engineer_features.py` from the locked worktree | 1 | — | ✅ complete |
 | 2 | Preserve + remove four stale worktrees | 1 | 1 | ✅ complete |
-| 3 | Switch CSD market filter to parent `1256338` | 2 | — | pending |
+| 3 | Switch CSD market filter to parent `1256338` | 2 | — | ✅ complete |
 | 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | pending |
-| 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | pending |
+| 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | ✅ complete |
 | 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | pending |
 | 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | 6 | pending |
 | 8 | Decide MIN_PERIODS threshold | 4 | 6 | pending |

@@ -3,7 +3,7 @@
   "subject": "Fix make_calendar bfill future-leakage",
   "description": "_shared_modules/engineer_features.py:232-235. weighted_dist uses .replace(0,nan).ffill().bfill().fillna(0). The bfill pulls FUTURE distribution values backward across gap months -- real leakage.\n\nFix: drop .bfill(), keep .ffill().fillna(0). Leading gaps fill 0, not a future value.\n\nAlso fix the docstring at :196-203: it documents only the CROSS-GROUP leak (handled via group_keys) and is silent on within-series future leakage -- which is why this survived review.\n\nShared module: affects all 4 categories.\n\nVerify: unit-test a series with a leading gap -- gap fills 0, not the later value.",
   "activeForm": "Fixing make_calendar bfill leakage",
-  "status": "pending",
+  "status": "completed",
   "blocks": [
     "6"
   ],

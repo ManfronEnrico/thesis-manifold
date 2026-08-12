@@ -289,3 +289,69 @@ Guard confirmed to raise on a simulated 2-market frame.
   starting figure is wrong; rebuild the funnel from 37,999 once task 6 runs.
 - **FAXE KONDI** confirmed at full 44/44 month depth, 118,158,520 units — the System B
   demo brand is intact under parent scope (feeds task 9).
+
+---
+
+## F16 — make_calendar bfill leakage: measured, fixed, and one live copy left behind
+
+Task 5. The defect at `_shared_modules/engineer_features.py:271` was:
+
+```python
+.transform(lambda s: s.replace(0, np.nan).ffill().bfill().fillna(0))
+```
+
+`ffill` is legitimate — it carries the last *known* value forward, using only past
+information. `bfill` fills **leading** gaps (months before a series' first observation)
+with that series' **first observed** value: a fact from the future.
+
+### Impact, measured on CSD at parent scope
+
+| | |
+|---|---|
+| Calendar rows | 6,160 (140 brands × 44 months) |
+| Rows changed by dropping `bfill` | **1,176 (19.1%)** |
+| Brands affected | **51 of 140** |
+| Of affected rows, in a leading gap | **1,176 (100%)** |
+| Leaked value: median / max | 0.0025 / **0.157** |
+
+100% in leading gaps is the diagnostic signature — if `bfill` were doing something
+benign, affected rows would be scattered through interior gaps instead.
+
+Worked example, `SPIRIT OF SWEDEN`: 2023-04 through 2023-07 all carried `0.157`,
+a value first observed **2023-08**.
+
+### Magnitude is small; that is not the argument
+
+Max leaked value 0.157, median 0.0025 — affected brands are low-distribution
+newcomers. The case for fixing is **correctness, not effect size**: a feature that
+cannot be constructed at forecast time invalidates the evaluation regardless of how
+far it moves the metric.
+
+### Fix
+
+`.ffill().bfill().fillna(0)` → `.ffill().fillna(0)`. Leading gaps fill 0, which is
+also the truthful value (the brand was not distributed). Unit-tested: leading gaps
+→ 0 not the future value; real observations preserved; no cross-group leak;
+**trailing gaps still ffill from the past** (confirming no over-correction).
+
+### Why it survived review — the transferable lesson
+
+The docstring documented the **cross-group** leak (handled via `group_keys`) in
+detail and was **silent on future leakage**. Reviewers checked the documented risk
+and stopped. Docstring now names both, with reasoning for each.
+
+> Documenting one failure mode can create false assurance about a neighbouring one.
+
+### Left behind deliberately — one live copy of the pattern
+
+`utility_scripts/tests/test_agent_system_comprehensive.py:292` reproduces
+`.ffill().bfill().fillna(0)` on `price_per_unit`, and asserts the result is correct
+("forward/backward filled").
+
+**Not fixed here**, because: it builds its own mock frame, never imports
+`engineer_features`, and is a test fixture rather than pipeline code — so it neither
+breaks from this change nor affects any result. But it is a **test encoding the
+defect as intended behaviour**, and is exactly where someone would look for the
+"right" pattern. Worth cleaning up when tests are next touched.
+
+The 7 other matches are all under `.archive/` (dead code, out of scope).

@@ -230,14 +230,27 @@ def make_calendar(
 ) -> tuple[pd.DataFrame, list]:
     """
     Add a datetime 'date' column and ensure every group (default: each brand)
-    has the full month calendar (fill gaps with 0 for sales, ffill/bfill for
+    has the full month calendar (fill gaps with 0 for sales, ffill for
     distribution). Clips negative sales (returns/corrections) to 0.
 
-    group_keys: columns identifying a distinct series. Default ["brand"] matches
-    brand×month grain. Pass e.g. ["brand", "market_id"] for a region/chain grain
-    so the calendar cross-product and the weighted_dist ffill don't mix rows
-    across groups — ffill would otherwise leak a value from group A into the
-    first gap of group B.
+    Two distinct leakage risks are guarded here — they are easy to conflate:
+
+    1. CROSS-GROUP leakage (handled by group_keys). Without grouping, ffill
+       carries the last row of series A into the first gap of series B.
+       group_keys identifies a distinct series: default ["brand"] matches
+       brand×month grain; pass e.g. ["brand", "market_id"] for a region/chain
+       grain so the calendar cross-product and the ffill don't mix rows.
+
+    2. FUTURE leakage WITHIN a series (handled by not calling bfill). An
+       earlier version chained .ffill().bfill(); the bfill filled leading gaps
+       — months before a brand's first observation — with the brand's FIRST
+       OBSERVED value, i.e. a fact from the future. Such a row cannot be
+       constructed at forecast time, so a model trained on it is scored on
+       information it would not have in production. Leading gaps now fill 0,
+       which is also the truthful value: the brand was not yet distributed.
+
+    Guard 1 was documented from the start; guard 2 was not, which is why the
+    bfill survived review. Keep both documented.
 
     Returns: (filled_df, sorted list of unique dates).
     """
@@ -266,9 +279,15 @@ def make_calendar(
 
     sales_cols = ["sales_units", "sales_value", "sales_liters", "promo_units"]
     full[sales_cols] = full[sales_cols].fillna(0)
+    # ffill only -- NO bfill. bfill would pull a FUTURE distribution value
+    # backward into a leading gap, encoding information that did not exist at
+    # that date. Leading gaps (months before a brand's first observation) fill
+    # with 0, which is also the truthful value: the brand was not distributed.
+    # Measured on CSD at parent scope: bfill contaminated 1,176 rows (19.1% of
+    # the calendar) across 51 brands, every one of them a leading gap.
     full["weighted_dist"] = (
         full.groupby(group_keys)["weighted_dist"]
-        .transform(lambda s: s.replace(0, np.nan).ffill().bfill().fillna(0))
+        .transform(lambda s: s.replace(0, np.nan).ffill().fillna(0))
     )
 
     for c in sales_cols:

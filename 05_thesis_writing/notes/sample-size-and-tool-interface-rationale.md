@@ -1,11 +1,11 @@
 ---
 name: sample-size-and-tool-interface-rationale
-description: RULE - Why 44-month series and ~2.5k rows are adequate for this thesis, and how the LLM reaches a forecast without handling feature vectors. Write-up material for Ch4/Ch5/Ch7/Ch10.
+description: RULE - Why 44-month series and ~2.5k rows are adequate for this thesis, how the LLM reaches a forecast without handling feature vectors, and the three leakage defects found and fixed. Write-up material for Ch4/Ch5/Ch7/Ch10.
 category: reference
 applies-to: [ch4-data, ch5-design, ch6-benchmark, ch7-interface, ch8-evaluation, ch10-limitations]
-triggers: [writing Ch4 data adequacy, defending sample size, describing the tool interface, writing limitations]
+triggers: [writing Ch4 data adequacy, defending sample size, describing the tool interface, writing limitations, defending leakage control, justifying market scope]
 created: 2026_08_11-16_21
-updated: 2026_08_11-16_21
+updated: 2026_08_11-21_55
 ---
 
 # Sample Size & Tool Interface — Write-Up Rationale
@@ -18,37 +18,69 @@ code** and will be asked at defence. Full measurements in
 
 ## 1. The dataset facts (CSD, at DVH EXCL. HD)
 
+> **Figures corrected 2026-08-11** against the parquet views (P0036 F15). Earlier
+> values in this note were partly wrong and partly mixed two different market
+> scopes. Use these.
+
 | Quantity | Value |
 |----------|-------|
 | Periods available | **44 months** (hard ceiling) |
-| Brands | 144 |
+| Brands | **140** |
 | Brands at all 44 months | **51** |
-| Brand-month rows (>0) | 3,917 |
-| Rows @ MIN_PERIODS>=24 | 3,392 (85 brands) |
+| Brand-month rows (>0) | **3,917** |
+| Rows @ MIN_PERIODS>=24 | 3,392 (**85** brands) |
 | Current feature matrix | 2,552 rows / 58 brands |
-| FAXE KONDI | 44/44 months, 118M units, 4th by volume |
+| FAXE KONDI | 44/44 months, 118,158,520 units |
 
 **44 months is invariant.** It does not change with market scope, MIN_PERIODS, or brand
 selection. Every sample-size argument below reduces to this number.
 
+**Market scope is DEC-SCOPE: the `DVH EXCL. HD` parent (`market_id` 1256338)**, not its
+9 regional children. The children were used until 2026-08-11. The switch is worth one
+sentence in Ch4 because it is the reason promotional features exist at all:
+
+| | Parent (used) | Region children (prior) |
+|---|---|---|
+| Nonzero promo, per column | **~23,400** | **0** |
+| Distinct brands | 140 | 140 |
+| Brand-month rows | 3,917 | 3,975 |
+| Fact rows | 37,999 | 243,691 |
+
+The honest framing: parent scope **costs 1.5% of brand-month rows and buys the entire
+promotional feature family**. Do *not* claim it gains rows — the 9 children are a
+partition of the same universe, so their fact-row count is ~6.4× inflated by repetition,
+and an examiner can see that from the aggregation arithmetic.
+
 ---
 
-## 2. Why the 196k → 2,552 funnel is not data loss
+## 2. Why the 9M → 2,552 funnel is not data loss
 
 Anticipated examiner question: *"You started with 9 million rows and modelled 2,552?"*
 
-| Stage | Rows |
-|-------|------|
-| Raw facts (all markets) | 9,080,538 |
-| Scoped to DVH EXCL. HD | 196,657 |
-| Aggregated to brand × month | 3,975 |
-| Calendar-filled | 6,160 |
-| MIN_PERIODS filter | 2,552 |
+| Stage | Rows | What happens |
+|-------|------|--------------|
+| Raw facts (all markets) | 9,080,538 | every SKU × market × period |
+| Scoped to `DVH EXCL. HD` parent | **37,999** | one market, positive sales only |
+| Aggregated to brand × month | **3,917** | SKU → brand rollup (DEC-GRAIN) |
+| Calendar-filled | **6,160** | 140 brands × 44 months, gaps included |
+| MIN_PERIODS filter | 2,552 | short series dropped |
 
-The large drop is the **product→brand rollup**. 196k rows are SKU-level observations;
-144 brands × 44 months caps at ~6,336 cells. The reduction is **definitional, not
-attrition** — it is the unit of analysis DEC-GRAIN specifies. Say this explicitly in Ch4;
-it looks alarming otherwise.
+> Earlier drafts showed "196,657 → 3,975". Both were wrong: 196,657 matched no
+> measured scope, and 3,975 is the *region-child* aggregate, so the funnel silently
+> mixed two market scopes. Corrected above (F15).
+
+Two separate reductions, and they should be described differently:
+
+1. **9,080,538 → 37,999 is market scoping.** Selecting one market from 86 (and dropping
+   zero-sales rows). Not attrition — the other markets are alternative views, including
+   the 9 children that partition this same parent.
+2. **37,999 → 3,917 is the product→brand rollup.** SKU-level observations collapse to
+   brand-level; 140 brands × 44 months caps at 6,160 cells. This is **definitional, not
+   attrition** — it is the unit of analysis DEC-GRAIN specifies.
+
+Note the calendar-fill step *raises* the count (3,917 → 6,160) by inserting explicit
+zero rows for months where a brand recorded no sales. Say this explicitly in Ch4; a
+funnel that goes down, down, then up looks like an error otherwise.
 
 ---
 
@@ -188,6 +220,66 @@ construct features itself on every invocation, with no guarantee of doing it ide
 twice. That is precisely the *consistency* and *replicability* axis SRQ4 measures — the
 tool interface's determinism is not incidental, it is the hypothesised mechanism of
 improvement.
+
+---
+
+## 7. Leakage control — three defects found and fixed (Ch4 + Ch10)
+
+**This is a methodological strength worth claiming explicitly, not an embarrassment to
+bury.** Three distinct target-leakage defects were found by audit and fixed before any
+reported result. Each is a different *kind* of leakage, which is what makes the set
+worth a paragraph in Ch4 and a limitations note in Ch10.
+
+| # | Defect | Kind | Why it is leakage |
+|---|--------|------|-------------------|
+| V3 | `promo_intensity` computed from `sales_units_t` | **Target leakage** | The target's own denominator. Unconstructible at forecast time — you cannot know this month's units before forecasting them |
+| — | bare `shift(1)` on a frame sorted by (brand, date) | **Cross-series leakage** | Carries the last row of brand A into the first row of brand B. Fixed with `groupby(group_keys).shift(1)` |
+| — | `make_calendar` chained `.ffill().bfill()` | **Future leakage within a series** | `bfill` fills *leading* gaps — months before a brand's first observation — with its first observed value, i.e. a fact from the future |
+
+### The bfill case, with numbers (good Ch4 example)
+
+Measured on CSD at parent scope: the `bfill` contaminated **1,176 rows — 19.1% of the
+calendar — across 51 of 140 brands**, and **100% of affected rows were leading gaps**,
+which is the diagnostic signature of future leakage.
+
+Worked example, brand `SPIRIT OF SWEDEN`:
+
+| Month | Sales | Raw dist | With `bfill` (old) | `ffill` only (fixed) |
+|-------|-------|----------|--------------------|----------------------|
+| 2023-04 | 0 | — | **0.157** | 0.000 |
+| 2023-05 | 0 | — | **0.157** | 0.000 |
+| 2023-06 | 0 | — | **0.157** | 0.000 |
+| 2023-07 | 0 | — | **0.157** | 0.000 |
+| 2023-08 | 35,819 | 0.157 | 0.157 | 0.157 |
+
+Four months before the brand existed in distribution carried a value first observed in
+August. Fixed: leading gaps fill `0`, which is also the *truthful* value — the brand was
+not distributed. Trailing gaps still `ffill`, which is legitimate because it uses only
+past information.
+
+**The magnitude was small (max 0.157) but that is not the argument.** Frame it as
+correctness, not effect size: a feature that cannot be constructed at forecast time
+invalidates the evaluation regardless of how much it moves the metric. An examiner who
+finds this unfixed will discount every number in Ch6; an examiner who sees it found,
+measured and fixed reads it as evidence of a controlled pipeline.
+
+### Why these survived earlier review — the transferable lesson
+
+The `make_calendar` docstring documented the *cross-series* risk carefully and was
+**silent on future leakage**. Reviewers checked the documented risk and moved on. The
+docstring now names both, with the reasoning for each.
+
+Generalisable point for Ch10: **documenting one failure mode can create false assurance
+about a neighbouring one.** Leakage audits should enumerate leakage *kinds*
+(target / cross-series / future / train-test contamination), not spot-check individual
+lines.
+
+### Related structural safeguard
+
+The same audit added a **market fan-out guard**: a `market_description` join resolving to
+more than one `market_id` silently multiplies every `SUM()`. This produced a 6.16×
+double-count in an earlier iteration (P0027). The pipeline now asserts exactly one market
+survives filtering — `== 1`, not `> 0`, because `> 0` passes the fan-out case unchanged.
 
 ---
 
