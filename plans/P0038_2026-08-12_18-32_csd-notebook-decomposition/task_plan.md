@@ -338,6 +338,45 @@ P0036 keeps: 4 (promo asserts), 6 (parity — now P0038 task 8), 7, 8, 9, 11.
 - Old tree retired; 32 files → 11
 - P0033 unblocked
 
+## Open decisions
+
+### DEC-ALIAS — unify the three cross-category spelling variants? (Brian)
+
+Three measures arrive under different names per category, confirmed identical by
+metadata description (F41):
+
+| Measure | CSD | Energidrikke | RTD |
+|---------|-----|--------------|-----|
+| display **and** feature | `…_disp_feat` | `…_disp_feat` | `…_disp_and_feat` |
+| display **without** feature | `…_disp_w_o_feat` | `…_disp_wo_feat` | `…_disp_wo_feat` |
+| feature **without** display | `…_feat_w_o_disp` | `…_feat_wo_disp` | `…_feat_wo_disp` |
+
+**Not decided here, because it is a modelling question**: renaming asserts the
+measures are interchangeable across categories, which SRQ1's cross-category
+ranking would then rely on.
+
+| Option | Consequence |
+|--------|-------------|
+| **A — unify** to one canonical name | These become comparable features across 3 categories; assumes Nielsen computes them identically per category |
+| **B — leave as-is** | Each spelling stays category-unique, so they can only be used within a category, never compared across |
+
+Recommendation: **A**, if Nielsen's per-category definitions are genuinely the
+same computation — the descriptions are byte-identical, which is evidence but not
+proof. Cheap to reverse; the mapping would live in `pipeline_config`.
+
+**Not blocking**: step 2's EDA is open-world and analyses whatever columns exist
+under whatever names, so this can be settled any time before step 4.
+
+**Warning for whoever implements it**: do NOT match on tokens.
+`disp_w_o_feat` and `feat_w_o_disp` share every token and mean opposite things.
+
+### Also open
+
+- **F42** — RTD carries negative `weighted_distribution*` values (min −0.17) in
+  columns documented as fractions 0–1. The positive-sales filter does not remove
+  them. Clip / drop / leave? Needs a decision, deferred to step-2 EDA.
+- **F39** — is `number_of_items_reach` intensive (current) or additive?
+
 ## Explicitly out of scope
 
 - Building step 4 for the other three categories (that *is* P0033)

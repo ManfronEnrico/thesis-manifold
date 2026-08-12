@@ -425,3 +425,92 @@ measures addressed here.
 argues additive, but `_reach` metrics are typically already de-duplicated across
 products, so summing would double-count. Mean is the safer default. Flagged for
 step-2 EDA to confirm empirically rather than asserted here.
+
+---
+
+## F40 — The forecast target is present verbatim in all four categories
+
+**Brian, 2026-08-12:**
+
+> *"which dataset does not have sales units? Are you certain that is the case or
+> did you simply try to match verbatim on the wording, but perhaps that dataset
+> has a sales column, just not with the same name?"*
+
+Fair challenge — the F39 work matched on names only. Checked properly against
+the metadata this time.
+
+**Answer: no category is missing it.** `sales_units`, `sales_value` and
+`sales_in_liters` are present verbatim in all four. 35 sales-like candidate
+columns were tested by name *and* by metadata description against
+`sales|volume|units|qty|quantity|turnover|revenue|value|liter|litre|amount`;
+none is an alias for the target in a category that lacks it.
+
+So `REQUIRED_MEASURES` never fires today. It stays as a guard against a future
+delivery, but it is not a live constraint — worth stating plainly, because the
+earlier framing implied some category was at risk of tripping it.
+
+---
+
+## F41 — Three confirmed alias groups, verified by metadata not by name
+
+The same measure is delivered under different spellings per category. Confirmed
+by **byte-identical metadata descriptions**, not name similarity:
+
+| Measure | CSD | Energidrikke | RTD | Danskvand |
+|---------|-----|--------------|-----|-----------|
+| display **and** feature | `…_disp_feat` | `…_disp_feat` | `…_disp_and_feat` | — |
+| display **without** feature | `…_disp_w_o_feat` | `…_disp_wo_feat` | `…_disp_wo_feat` | — |
+| feature **without** display | `…_feat_w_o_disp` | `…_feat_wo_disp` | `…_feat_wo_disp` | — |
+
+Value distributions corroborate: medians 0.059/0.060, 0.039–0.081, 0.145–0.175
+across the spellings.
+
+### Deliberately NOT merged — DEC-ALIAS is open
+
+Unifying these is a **modelling** decision, not a porting detail: it asserts the
+measures are interchangeable across categories, which affects any cross-category
+comparison SRQ1 makes. Reported, not silently renamed. **Brian's call.**
+
+### A token-based matcher is not sufficient — one false positive
+
+`weighted_distribution_disp_w_o_feat` and `weighted_distribution_feat_w_o_disp`
+contain **the same tokens** but mean **opposite** things (display-without-feature
+vs feature-without-display). My first automated pass paired them. Alias detection
+must read the descriptions; names alone will produce wrong merges.
+
+### Coverage
+
+| Present in | Columns |
+|---|---|
+| all 4 | 35 |
+| 3 | 17 |
+| 2 | 14 |
+| 1 | 35 |
+
+Artifacts: `_shared_modules/build_feature_inventory.py` (re-runnable),
+`nielsen_feature_inventory.csv`, `user-docs/reference/nielsen-feature-inventory.md`.
+
+---
+
+## F42 — Negative values exist in every category's sales measures
+
+Surfaced while validating F41's distributions.
+
+| Scope | Columns affected | Rate | Extreme |
+|-------|------------------|------|---------|
+| All 4 categories | `sales_value`, `sales_units`, `sales_in_liters` | 0.02–0.06% | −27,266 (RTD value) |
+| CSD/Ene/RTD | promo + tpr variants | 0.01–0.05% | −217,242 (RTD tpr) |
+| **RTD only** | 9 × `weighted_distribution*` | 0.01–0.04% | **−0.1745** |
+
+The sales negatives are returns / Nielsen restatements, and step 1's
+`sales_units > 0` filter removes those rows before aggregation — so the panel is
+unaffected.
+
+**The RTD distribution negatives are different** and worth flagging: those
+columns are documented as "fraction 0–1", and a row can carry a negative
+distribution while still having positive `sales_units`, so the positive-sales
+filter does **not** remove it. Rare (≤0.04%), but it means a distribution
+feature can be negative where the metadata says it cannot.
+
+Not acted on — it needs a decision (clip at 0? drop? leave?) rather than a
+silent fix. Flagged for step-2 EDA.
