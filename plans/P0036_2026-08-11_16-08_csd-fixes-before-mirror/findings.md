@@ -415,3 +415,80 @@ provides false assurance. Same shape as the root cause in F16 — the `make_cale
 docstring covered cross-group leakage thoroughly and was silent on future leakage,
 so reviewers checked the documented risk and stopped. **Partial coverage reading as
 full coverage.**
+
+---
+
+## F18 — Funnel step mislabelled; drop-then-refill fabricates 157 observations
+
+Three challenges from Brian, all substantive. Measured rather than argued.
+
+### 1. The 196,657 → 37,999 step was attributed to the wrong cause
+
+Documented as "drops 14,202 zero, 14,190 null, 56 negative." **Wrong.** Measured at
+parent market:
+
+| Stage | Rows |
+|---|---|
+| Parent market, raw | 196,657 |
+| After brand/period dim join | **43,559** |
+| After `sales_units > 0` | 37,999 |
+
+**~78% of the drop is the dimension join** — fact rows whose `product_id`/`period_id`
+has no dimension entry. The `> 0` filter removes only **5,560** rows (5,525 NULL, 28
+negative, 7 zero). The zero/null counts previously cited (14,202 / 14,190) were
+measured *before* the brand join and do not describe this step.
+
+Funnel corrected to 6 stages: 9,080,538 → 196,657 → 43,559 → 37,999 → 3,917 → 6,160
+→ 2,552.
+
+### 2. Drop-then-refill is real for 158 brand-months — and 157 are fabricated
+
+Brian: *"we drop rows where sales_units == 0 or NULL ... but then re-add them with
+the calendar fill? How does that make sense?"*
+
+| | Brand-months |
+|---|---|
+| Present in raw data | 4,075 |
+| Survive `> 0` | 3,917 |
+| **Lost then re-added as explicit 0** | **158** |
+| Dropped SKU row had a selling sibling (no gap) | 1,249 |
+
+~89% of drops are invisible at brand grain — the drop is at SKU grain, the refill at
+brand grain, and a sibling variant usually keeps the brand-month alive. The remaining
+**158 are a genuine round trip**.
+
+**The real defect is what they were:** **157 NULL-only, 0 zero-only.** NULL = not
+measured; 0 = measured, sold nothing. After calendar fill both are `0.0`.
+
+> **157 unmeasured cells are asserted as confirmed zero sales.** 2.5% of the modelled
+> frame. Not a chosen modelling assumption — an artifact of drop-then-fill ordering.
+
+Ch10 limitation: the pipeline cannot distinguish "not measured" from "sold nothing."
+
+### 3. "Zero/null/negative are not forecastable targets" — overstated
+
+- **Zeros: the claim was wrong.** A zero is a real observation carrying signal
+  (seasonality, decline). The `> 0` filter acts on *raw SKU rows*; the model trains on
+  the calendar-filled frame where brand-month zeros are present. `filter_series` counts
+  non-zero periods only to judge series *length*, not to drop zeros from training.
+- **NULLs: genuinely different**, and the collapse above is the actual problem.
+- **Negatives: Brian's seasonal-returns hypothesis is sound but absent here.** 28 rows
+  across 9 distinct calendar months, no spike. Moot regardless — `make_calendar`
+  applies `clip(lower=0)`.
+
+**Corrected framing:** `> 0` is a **convention inherited from the SQL view**, not a
+first-principles derivation. Defensible, but state it as a decision with a rationale.
+
+### 4. SKU → brand: causality was backwards
+
+Attributed the rollup to SKU sparsity. **The driver is the research question** — SRQ1
+concerns brand-level demand forecasting for decision support; DEC-GRAIN fixes brand ×
+month. Sparsity (51.5% populated at SKU) is a consequence that helps, not the reason.
+
+Stating it backwards invites: *"so you aggregated until the data looked good?"*
+
+All four points written into
+`05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md` §2, including a
+kind-of-reduction table (deduplication / integrity / convention / definitional /
+completion / genuine exclusion) making explicit that **only the MIN_PERIODS step is
+true attrition**.

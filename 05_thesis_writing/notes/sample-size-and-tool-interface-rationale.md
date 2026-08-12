@@ -61,28 +61,83 @@ Anticipated examiner question: *"You started with 9 million rows and modelled 2,
 |-------|------|--------------|
 | Raw facts (all markets) | 9,080,538 | every SKU × market × period present |
 | Scoped to `DVH EXCL. HD` parent | **196,657** | one market of 86 |
-| Positive sales only | **37,999** | drops 14,202 zero, 14,190 null, 56 negative |
+| Joined to brand + period dims | **43,559** | SKUs with no brand mapping drop out |
+| Positive sales only | **37,999** | drops 5,525 NULL, 28 negative, 7 zero |
 | Aggregated to brand × month | **3,917** | SKU → brand rollup (DEC-GRAIN) |
-| Calendar-filled | **6,160** | 140 brands × 44 months, gaps included |
+| Calendar-filled | **6,160** | 140 brands × 44 months, gaps made explicit |
 | MIN_PERIODS filter | 2,552 | short series dropped |
 
-> Earlier drafts collapsed the two scoping steps and showed "196,657 → 3,975". The
-> 196,657 was right but sat one stage earlier than labelled; 3,975 is the
-> *region-child* aggregate, so the funnel silently mixed two market scopes.
-> Corrected above (F15).
+> Two corrections (F15, F18). Earlier drafts collapsed the scoping steps and showed
+> "196,657 → 3,975" — 3,975 is the *region-child* aggregate, so the funnel mixed two
+> market scopes. A later draft then attributed the 196,657 → 37,999 drop to
+> zero/null/negative sales; that is wrong. **~78% of that drop is the brand/period
+> join** (196,657 → 43,559), not the sales filter. The `> 0` filter removes only
+> 5,560 rows.
 
-Two separate reductions, and they should be described differently:
+### The five reductions are five *different kinds* of operation
 
-1. **9,080,538 → 37,999 is market scoping.** Selecting one market from 86 (and dropping
-   zero-sales rows). Not attrition — the other markets are alternative views, including
-   the 9 children that partition this same parent.
-2. **37,999 → 3,917 is the product→brand rollup.** SKU-level observations collapse to
-   brand-level; 140 brands × 44 months caps at 6,160 cells. This is **definitional, not
-   attrition** — it is the unit of analysis DEC-GRAIN specifies.
+Conflating them is what makes the funnel look alarming. Only one is genuine loss:
 
-Note the calendar-fill step *raises* the count (3,917 → 6,160) by inserting explicit
-zero rows for months where a brand recorded no sales. Say this explicitly in Ch4; a
-funnel that goes down, down, then up looks like an error otherwise.
+| Step | Kind | Why it is defensible |
+|------|------|----------------------|
+| 9.08M → 196,657 | **Deduplication** | The 86 markets are overlapping *views* of one universe (channel totals, size tiers, 9 regions, EAST/WEST and national rollups). One carton sold in Copenhagen appears in the KBH row, the DVH parent, the EAST rollup, a size tier and the national total. Summing them is the 6.16× double-count P0027 found. Picking one lens is not loss |
+| 196,657 → 43,559 | **Referential integrity** | Fact rows whose `product_id`/`period_id` has no dimension entry. Unusable — no brand to attribute them to |
+| 43,559 → 37,999 | **Validity convention** | 5,525 NULL, 28 negative, 7 zero. See the caveat below — this is a *convention*, not a derivation |
+| 37,999 → 3,917 | **Definitional** | Unit of analysis changes from SKU to brand. Nothing is discarded; observations are *summed*. 1,923 SKUs → 140 brands |
+| 3,917 → 6,160 | **Completion (+57%)** | Adds explicit rows for real absences. The only step that goes *up* |
+| 6,160 → 2,552 | **Genuine exclusion** | Series too short to model. **The only true attrition** |
+
+Say that last sentence in Ch4. A funnel that appears to discard 99.97% of the data
+reads very differently once the reader sees that four of the five steps are
+deduplication, integrity, regraining and completion.
+
+### Why brand, not SKU — get the causality right
+
+The rollup is driven by **the research question**, not by data quality. SRQ1 concerns
+FMCG *demand forecasting for decision support*; the System B user asks "how will Faxe
+Kondi sell next month," not about the 1.5L PET variant. Brand is the decision-relevant
+unit, and DEC-GRAIN fixes it.
+
+Sparsity (51.5% populated at SKU grain, denser at brand) is a **consequence that
+happens to help**, not the reason. Stating it the other way round invites the obvious
+question: *"so you aggregated until the data looked good?"*
+
+### Caveat: drop-then-refill, and the NULL/zero collapse (measured, F18)
+
+The pipeline drops rows at SKU grain, then re-adds brand-months as explicit zeros
+during calendar fill. That sounds circular; measured, it mostly is not — but where it
+is, it fabricates observations:
+
+| | Brand-months |
+|---|---|
+| Present in raw data | 4,075 |
+| Survive the `> 0` filter | 3,917 |
+| **Lost, then re-added as explicit 0** | **158** |
+| Dropped SKU row coexisted with a selling sibling (no gap created) | 1,249 |
+
+So ~89% of SKU-level drops are invisible at brand grain — a sibling variant sold, so
+the brand-month survives. The remaining **158 are a true round trip**.
+
+**The problem is what those 158 were.** 157 of them were **NULL-only** (Nielsen
+recorded nothing) and **zero of them were zero-only**. NULL means *not measured*; 0
+means *measured, sold nothing*. After calendar fill both are `0.0`. So **157 unmeasured
+cells are asserted as confirmed zero sales** — an information loss nobody chose, an
+artifact of dropping first and filling later.
+
+Small (2.5% of the modelled frame) but state it in Ch10: the pipeline cannot
+distinguish "not measured" from "sold nothing," and treats the former as the latter.
+
+**Zeros are not excluded from modelling.** A zero is a real observation and carries
+signal (seasonality, decline). The `> 0` filter operates on *raw SKU rows*; the model
+trains on the calendar-filled frame where brand-month zeros are present and explicit.
+`filter_series` counts non-zero periods only to decide series *length*, not to drop
+zeros from training.
+
+**Negatives — checked, no seasonal pattern.** Returns/corrections could in principle
+carry signal (e.g. post-campaign returns clustering in one month). Measured: 28 rows
+spread across 9 distinct calendar months, no spike. Moot anyway — `make_calendar`
+applies `clip(lower=0)`, so a surviving negative would be zeroed there regardless.
+Worth one Ch10 sentence: returns dynamics are outside the modelled target.
 
 ---
 
