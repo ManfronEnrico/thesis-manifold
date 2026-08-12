@@ -70,6 +70,10 @@ build/
 # output the CSD notebook used to retain on save, so a step's printed diagnostics
 # stay reviewable and diffable across runs rather than living only in a terminal.
 !02_thesis_data/_02_preprocessing/nielsen/*/pipeline_step_outputs/*.log
+# Exception: the feature inventory CSV is the machine-readable half of
+# user-docs/reference/nielsen-feature-inventory.md. Versioning both together
+# makes a Nielsen re-delivery show up as a reviewable diff.
+!02_thesis_data/_02_preprocessing/nielsen/_shared_modules/nielsen_feature_inventory.csv
 .claude/settings.local.json
 .claude/logs/
 # External confidential code (Manifold/RU Graph Engine) — local working copy only

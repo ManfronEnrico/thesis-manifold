@@ -514,3 +514,61 @@ feature can be negative where the metadata says it cannot.
 
 Not acted on — it needs a decision (clip at 0? drop? leave?) rather than a
 silent fix. Flagged for step-2 EDA.
+
+---
+
+## F43 — Metadata JSONL and parquet metadata are identical; JSONL is now the source
+
+Brian, 2026-08-12: *"i hope you read each and every metadata file such as
+`metadata_csd_columns.jsonl`"*
+
+The first inventory pass read the **parquet** metadata under `_01_converted/`,
+not the delivered JSONL under `_00_raw/`. Verified before rebuilding:
+
+| Check | Result |
+|-------|--------|
+| Column sets per category | identical (70 / 54 / 72 / 70) |
+| Field contents (`data_type`, `unit`, `null_meaning`, `description`) | **266 field-sets compared, 0 differences** |
+
+So nothing was wrong in the earlier output — but the generator now reads the
+**JSONL** regardless. It is the delivered artifact; the parquet is a Stage-1
+conversion of it, and reading the source directly means the inventory cannot
+silently inherit a conversion defect.
+
+---
+
+## F44 — 52 columns are stored with a dtype contradicting their documented type
+
+Surfaced by the rebuilt inventory. Two distinct classes:
+
+**Foreign keys documented `string`, stored `int64`** (`market_id`, `period_id`,
+`product_id`, `product_hierarchy_number`, `product_hierarchy_level`) — 8 per
+category. Harmless for joining, since both sides converted consistently, but a
+leading zero would already have been lost at Stage-1. Worth knowing before
+anyone treats an ID as text.
+
+**Columns that are 100% NULL** — `market_hierarchy_{level,number,name,column}`
+in all four (Nielsen's own `null_meaning` documents these as a known upstream
+issue), plus `controlled_label` (CSD/Danskvand/Energidrikke) and
+`energy_drinks` (Energidrikke).
+
+The all-null case also caused a **reporting bug**, now fixed: pandas types an
+all-null column as `float64` regardless of content, so the report labelled
+documented `string` columns as numeric. The generator now trusts the metadata
+for `kind` when a column is entirely null.
+
+---
+
+## F45 — CSD has 508,714 NULL `sales_units` (4.9%); the other three have none
+
+Surfaced by the per-category target table. Investigated:
+
+- all 508,714 also have NULL `sales_value` (jointly missing, not partial)
+- they span 7,691 of 8,881 distinct products
+- **254,463 are UPC-level rows**; the other 254,251 have **no `dim_product`
+  match at all** — the same orphan-row issue as P0036 F10
+
+**Not a defect for the panel.** Step 1 filters to `sales_units > 0`, so NULL
+rows never reach the brand×month grain, and the modelling grain is brand-level
+where these UPC rows aggregate away. Recorded because a 4.9% null rate in the
+forecast target looks alarming in isolation and will be asked about again.
