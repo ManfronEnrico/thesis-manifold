@@ -588,3 +588,131 @@ applied-research practice.
 It also yields a concrete Ch10 further-work claim: **finer-grained questions (SKU,
 pack size, regional) require a broader and denser dataset than the one licensed here**
 — a limitation of the data, not the method.
+
+---
+
+## F20 — Schemas differ across categories; RTD is EMPTY; shared script not viable as-is
+
+Brian: *"A shared engineer feature script makes sense only if each dataset can be
+dynamically engineered in the same fashion ... we must verify with .head() of the real
+datasets."* Verified. **The premise does not hold.**
+
+### Facts view, per category
+
+| Category | Facts shape | Promo columns | Periods | Coverage |
+|---|---|---|---|---|
+| CSD | 9,080,538 × 32 | ✅ full | 44 (2022-01..) | 24.0% |
+| Danskvand | 1,248,913 × **15** | ❌ **NONE** | 37 (2023-01..) | 45.0% |
+| Energidrikke | 3,112,010 × 32 | ✅ (renamed) | 41 (2023-01..) | 26.6% |
+| **RTD** | **0 × 0 — EMPTY FILE** | — | 37 | n/a |
+
+### Three blockers for a single shared script
+
+1. **RTD's facts parquet is empty** — zero rows, zero columns. P0033 cannot mirror a
+   notebook to RTD; there is no data to process. This is a *missing dataset*, not a
+   missing notebook. Must be re-exported or RTD dropped from scope.
+2. **Danskvand has no promotional data whatsoever.** 15 columns vs CSD's 32: no
+   `sales_units_any_promo`, no `baseline_*`, no `weighted_distribution_*` promo
+   variants. `promo_units` / `promo_intensity` / `has_promo` are **not computable**
+   for Danskvand. Not a configuration difference — the source lacks the measures.
+3. **Energidrikke renames columns**: `weighted_distribution_disp_wo_feat` /
+   `_feat_wo_disp` vs CSD's `_disp_w_o_feat` / `_feat_w_o_disp`. A shared script
+   matching on exact names silently drops them.
+
+Dimension views differ too: Danskvand and RTD `dim_market` carry 2 columns vs CSD's 6
+(no market hierarchy); their `dim_period` carries 4 vs CSD's 9.
+
+### What IS consistent — the shareable core
+
+- `market_id` **1256338 = "DVH EXCL. HD" exists in all four categories** → DEC-SCOPE
+  generalises unchanged.
+- Join keys `market_id` / `period_id` / `product_id` are `int64` everywhere present.
+- Core measures `sales_value` / `sales_in_liters` / `sales_units` /
+  `weighted_distribution` exist in all three non-empty categories with identical dtypes.
+
+### Implication — resolves the "shared vs per-notebook" question
+
+Brian framed it as either/or: *"either we should remove the notebook specific
+engineering or the shared one."* The evidence supports **neither extreme**:
+
+- A fully shared script **cannot** work — Danskvand would need promo features that do
+  not exist, and RTD has nothing at all.
+- Fully per-notebook duplicates the leakage-prone logic 3-4× — exactly the multiplication
+  P0036 exists to prevent (V3/V4 and the bfill fix each had to be made once, in the
+  shared module, precisely because it is shared).
+
+**Recommended: shared *core*, declared per-category capability.** Keep
+`make_calendar` / `filter_series` / `engineer_features` / lag construction shared, since
+those operate on the post-aggregation frame whose schema IS uniform. Make the
+*aggregation* step declare which optional measure families the category has
+(promo: yes/no; baseline: yes/no) and skip absent ones rather than assuming CSD's schema.
+
+This also means **P0033's premise needs revisiting**: it assumes mirroring a CSD
+template three times. Danskvand's notebook cannot carry promo features, and RTD cannot
+be mirrored at all until its data is re-exported.
+
+### dim_product coverage is systematic, not a CSD bug (task 10 input)
+
+24.0% / 45.0% / 26.6% across CSD / Danskvand / Energidrikke. Whatever causes the
+unmapped-product gap affects every category, so task 10's answer applies pipeline-wide.
+
+---
+
+## F21 — Task 10 RESOLVED: the 153,098 unmapped rows are Nielsen AGGREGATE rows
+
+The `⚠️` raised in F19 is **cleared**. The `dim_product` join is not losing data — it is
+the mechanism that prevents double-counting on the **product** axis, exactly as the
+market filter does on the market axis.
+
+### Evidence
+
+| Test | Result | Reading |
+|---|---|---|
+| Largest unmapped "SKU" | **975,587,575 units** | **12.5× the largest real SKU** (77,781,929). No single product outsells the biggest flagship 12-fold |
+| Volume concentration | top 50 ids = **82.5%** of unmapped volume; top 100 = 89.0% | Real SKU volume does not concentrate this way; rollup rows do |
+| `dim_product` density in its own id range | **1.66%** (2,103 ids spanning 1..127,020) | A deliberately *filtered* whitelist, not a truncated export |
+| `dim_product.category` | single value `'CSD'` | Scoped to the category on purpose |
+
+**Conclusion: the fact table contains Nielsen's precomputed subtotals** (segment,
+manufacturer, category totals) alongside individual SKUs. `dim_product` lists only
+genuine SKUs. Joining to it selects real products and discards the rollups.
+
+The alarming "96.9% of sales volume at the parent market is unmapped" is the *same
+phenomenon* as the 6.16× market double-count — summing rollups together with their
+constituents. Both are correctly handled by selecting one level of a hierarchy.
+
+### `product_id` is NOT globally unique — reused across categories
+
+| Pair | Overlapping ids | Same product? |
+|---|---|---|
+| CSD vs Danskvand | 40 | **No** — id 10 is `FEVER TREE` in CSD, `EGEKILDE` in Danskvand |
+| CSD vs Energidrikke | 84 | **No** — id 20 is `FEVER TREE` in CSD, `COCA COLA` in Energidrikke |
+| Danskvand vs Energidrikke | 84 | **No** |
+
+**Consequence:** `product_id` is only meaningful *within* a category. Never join
+product dimensions across categories, and never pool fact tables on `product_id`. Of
+CSD's 6,652 unmapped ids, 495 appear in another category's dimension — those are
+coincidental id reuse, not recoverable products.
+
+This is a real trap for P0033 mirroring and for any future pooled model.
+
+### Corrections to earlier findings
+
+- **F19 item 1 overstated the problem.** "26.1bn units, 144,400 rows with positive
+  sales — these are not malformed records" was true but drew the wrong inference: they
+  are not malformed *because they are legitimate aggregates*, not because they are
+  missing products.
+- The funnel step `196,657 → 43,559` is **correct as implemented** and should be
+  labelled **deduplication (product axis)**, alongside the market-axis deduplication —
+  not "⚠️ unresolved".
+- Coverage percentages (24.0% / 45.0% / 26.6% across CSD / Danskvand / Energidrikke)
+  are **expected**, not defects. They vary because categories have different ratios of
+  rollup rows to SKUs.
+
+### Residual check for task 6
+
+The one thing this does *not* prove is that **every** unmapped id is an aggregate. 89%
+of unmapped volume sits in the top 100 ids; the long tail of ~6,550 low-volume ids is
+unverified. If any are genuine SKUs, they are individually negligible (<0.01% of volume
+each), so no result is at risk — but a Ch4 sentence should say "aggregate rows and a
+negligible tail" rather than claiming all 6,652 are rollups.

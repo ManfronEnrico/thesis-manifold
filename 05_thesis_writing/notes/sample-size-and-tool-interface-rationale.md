@@ -81,28 +81,53 @@ Conflating them is what makes the funnel look alarming. Only one is genuine loss
 | Step | Kind | Why it is defensible |
 |------|------|----------------------|
 | 9.08M → 196,657 | **Deduplication** | The 86 markets are overlapping *views* of one universe (channel totals, size tiers, 9 regions, EAST/WEST and national rollups). One carton sold in Copenhagen appears in the KBH row, the DVH parent, the EAST rollup, a size tier and the national total. Summing them is the 6.16× double-count P0027 found. Picking one lens is not loss |
-| 196,657 → 43,559 | ⚠️ **Unresolved — see below** | Fact rows whose `product_id` is absent from `dim_product`. **Not benign**: 153,098 rows, 6,306 products, 26.1bn units, 144,400 of them with real positive sales |
+| 196,657 → 43,559 | **Deduplication (product axis)** | Discards Nielsen's precomputed subtotal rows (segment / manufacturer / category totals), keeping only genuine SKUs. Same logic as the market step, one axis over. See below |
 | 43,559 → 37,999 | **Aggregation hygiene** | 5,525 NULL, 28 negative, 7 zero at SKU grain. Near-no-op for sums; materially changes the one *averaged* column. See below |
 | 37,999 → 3,917 | **Definitional** | Unit of analysis changes from SKU to brand. Nothing discarded; observations are *summed*. 1,923 SKUs → 140 brands |
 | 3,917 → 6,160 | **Completion (+57%)** | Adds explicit rows for real absences. The only step that goes *up* |
 | 6,160 → 2,552 | **Genuine exclusion** | Series too short to model. **The only step that is true attrition** |
 
-### ⚠️ Open issue: 153,098 fact rows have no product dimension entry
+### The product-dimension join is a second deduplication, not data loss (F21)
 
-`dim_product` covers **2,103 of the 8,229 `product_id`s appearing in the facts (26%)**.
-The unmapped 6,306 products carry **26.1 billion sales units**, and **144,400 of those
-rows have positive sales** — these are not malformed records.
+`dim_product` lists **2,103 of the 8,229 `product_id`s** in the facts (26%). At first
+reading that looks alarming — the unmapped rows carry **96.9% of sales volume at the
+modelled market**. Investigated, and the explanation is the same one that justifies the
+market filter:
 
-ID ranges of mapped and unmapped products fully overlap, so this is not a clean
-category cut. **Cause unknown.** Possibilities: `dim_product` was exported with a
-narrower filter than the facts; the facts span products outside the CSD category;
-or the dimension export is incomplete.
+**The fact table contains Nielsen's precomputed subtotals alongside individual SKUs.**
+`dim_product` is a whitelist of genuine products; joining to it discards the rollups.
 
-**This must be resolved or explicitly bounded before Ch4 claims a sample size.** If
-these are in-scope CSD products, the study is currently modelling a fraction of the
-available market. An earlier draft of this note dismissed the step as "referential
-integrity — unusable, no brand to attribute them to." That is mechanically true and
-badly understates it.
+| Test | Result |
+|---|---|
+| Largest "unmapped SKU" | **975,587,575 units — 12.5× the largest real SKU** (77.8M) |
+| Volume concentration | top 50 unmapped ids = **82.5%** of unmapped volume |
+| `dim_product` density in its id range | **1.66%** — a filtered whitelist, not a truncated export |
+| `dim_product.category` | single value `'CSD'` |
+
+No individual product outsells the biggest brand's flagship twelvefold, and real SKU
+volume does not concentrate into 50 ids. These are segment, manufacturer and category
+totals.
+
+**So the funnel has two deduplication steps, on two axes:** the market filter removes
+rollups across geography/channel; the product join removes rollups across the product
+hierarchy. Both prevent the same error — summing a total together with its parts.
+This is the 6.16× double-count pattern P0027 found, in a second guise.
+
+**Ch4 phrasing:** *"aggregate rows and a negligible unverified tail"* — 89% of unmapped
+volume sits in the top 100 ids; the remaining ~6,550 low-volume ids were not
+individually inspected, but each is <0.01% of volume, so no result depends on them.
+
+### ⚠️ `product_id` is NOT globally unique — never pool across categories
+
+| Pair | Overlapping ids | Same product? |
+|---|---|---|
+| CSD vs Danskvand | 40 | **No** — id 10 = `FEVER TREE` (CSD) / `EGEKILDE` (Danskvand) |
+| CSD vs Energidrikke | 84 | **No** — id 20 = `FEVER TREE` (CSD) / `COCA COLA` (Energidrikke) |
+| Danskvand vs Energidrikke | 84 | **No** |
+
+`product_id` is meaningful only **within** a category. Never join product dimensions
+across categories and never pool fact tables on `product_id` — a trap for any
+cross-category or pooled model.
 
 ### Why brand, not SKU — two honest reasons, in order
 
@@ -447,3 +472,95 @@ survives filtering — `== 1`, not `> 0`, because `> 0` passes the fan-out case 
 - `01_thesis_research/research-questions/research-questions.md` — RQ v4 (canonical)
 - `00_thesis_context/thesis-topic/project-overview.md` — ⚠️ SUPERSEDED (v2 RQs) + has an
   unresolved merge conflict at lines 2–8
+
+---
+
+## 8. Cross-category asymmetry — the four datasets are not equivalent (Ch4 + Ch6 + Ch10)
+
+Verified 2026-08-11 against the parquet views (F20). **SRQ1 compares model ranking "on
+identical data." The data is not identical, and one category has none.**
+
+| Category | Facts rows | Cols | Promo measures | Periods | From |
+|---|---|---|---|---|---|
+| CSD | 9,080,538 | 32 | ✅ full | **44** | 2022-01 |
+| Danskvand | 1,248,913 | **15** | ❌ **none** | 37 | 2023-01 |
+| Energidrikke | 3,112,010 | 32 | ✅ (renamed) | 41 | 2023-01 |
+| **RTD** | **0** | **0** | — | 37 | — |
+
+Three facts that must reach the write-up:
+
+1. **RTD's fact table is empty.** Not "not yet processed" — the parquet is 0×0. Either
+   it is re-exported or RTD leaves scope. Any claim of *four* categories is currently
+   unsupported for one of them.
+2. **Danskvand has no promotional data at all.** Not a config gap: the source lacks the
+   measures. `promo_units` / `promo_intensity` / `has_promo` cannot exist there. So a
+   cross-category model comparison either drops promo features everywhere (weakening
+   CSD and Energidrikke) or compares models on **different feature sets** — which
+   changes what SRQ1's "relative model ranking on identical data" can claim.
+3. **Panel depth differs**: 44 / 41 / 37 months. Any "44 months" statement is
+   CSD-specific.
+
+**What is consistent, and worth stating positively:** `market_id 1256338` (`DVH EXCL.
+HD`) exists in all four categories, so DEC-SCOPE is not a CSD-only choice; and the join
+keys plus core measures (`sales_units`, `sales_value`, `sales_in_liters`,
+`weighted_distribution`) are identical in name and dtype wherever present.
+
+**Ch6 framing:** report per-category feature availability in the results table rather
+than implying a uniform design. **Ch10:** the promotional-feature asymmetry limits
+cross-category generalisation of any promo-driven finding.
+
+---
+
+## 9. Product-range features — recoverable signal, and the deployment problem (Ch4/Ch5/Ch10)
+
+`dim_product` carries 20+ attributes (manufacturer, packaging, size_variants, variant,
+subbrand, organic, private_label, price_category…). The brand-month rollup currently
+keeps **two**: `product_id` and `brand`. Everything else is discarded rather than
+aggregated.
+
+Raw SKU attributes genuinely cannot survive the rollup — FAXE KONDI spans 7 sizes and 3
+packaging types across 144 SKUs, so there is no single "the size" for a brand-month.
+But **brand-month aggregates of them can**, and they carry signal:
+
+| Candidate feature | r with `sales_units` |
+|---|---|
+| **`n_skus_active`** (distinct products on shelf that month) | **0.848** |
+| `n_sizes` | 0.658 |
+| `n_packaging` | 0.469 |
+| *(existing `weighted_dist`)* | *0.756* |
+| *(existing `lag_1`)* | *0.585* |
+
+`n_skus_active` outperforms every current feature. It measures range expansion and
+delisting — a real commercial dynamic the model is presently blind to.
+
+**Two caveats before claiming this** (task 11): it may be a size proxy (large brands
+have more SKUs *and* more sales — needs a **within-brand** correlation), and it requires
+`shift(1)` like `promo_intensity`, since the current month's SKU count is not known when
+forecasting the current month.
+
+### The deployment question (raised by Brian) — and why it is an SRQ2 opportunity
+
+*"It is unrealistic that a marketing manager knows or voices the listings by heart."*
+Correct — but the feature does not need to be user-supplied. `n_skus_active` is a
+property of **the brand's own history**, already in the feature matrix, so the forecast
+service derives it server-side exactly as it derives `lag_1`. This is the same
+separation described in §6: the LLM never handles feature vectors.
+
+Three tiers:
+
+| Tier | When | Source |
+|---|---|---|
+| 1. **Auto-derive** (default) | Always | Last known value from history, like the lags |
+| 2. **User override** (optional) | Manager *does* know a planned change | Optional typed tool parameter |
+| 3. **Training average** | Cold-start brand only | Category mean |
+
+Tier 2 converts a limitation into a **capability**: *"what happens to Faxe Kondi if we
+delist the 1.5L?"* is precisely the forecast-informed decision support the main RQ
+describes, and it is only expressible because feature construction is server-side and
+typed.
+
+**Honest limitation for Ch10:** at a 6-month horizon the auto-derived value is the last
+observed SKU count carried forward six months, and its accuracy degrades with horizon.
+Options: hold constant and document, forecast it as a secondary series, or restrict it
+to short horizons. Measure the degradation before choosing — this is a real constraint
+on long-horizon queries regardless of which option is taken.
