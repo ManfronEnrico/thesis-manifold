@@ -642,3 +642,50 @@ asking. The evidence supports the choice and reversal is cheap (delete five
 - THEN task 9: retire the notebook, repoint the 12 downstream consumers (F65),
   archive anything carrying decision evidence.
 
+---
+
+## Session 2026-08-18 (cont.) — THE GATE PASSED
+
+Task 8 / session task 23: CSD parity against the last notebook run. **PASS.**
+**P0033 is unblocked.**
+
+Brian confirmed DEC-ALIAS (option A) at the start of this stretch; the decision
+is closed and the canonical names stand.
+
+**Headline**: the notebook's split was 56.8/13.6/**29.5** — a test set more than
+double its intended size, the hardcoded-cutoff drift DEC-SPLIT exists to fix.
+The pipeline delivers **69.6/15.2/15.2**. The old numbers reproduce the plan's
+recorded 1450/348/754 exactly, so the baseline is the right one.
+
+**Every difference traced** (the plan's criterion was explicable, not identical):
++2 months from the re-pull; +37 brands from DEC-SCOPE (all with full 46-month
+history, so previously excluded rather than newly arrived — 38.9% of rows but
+0.83% of units); the column changes are the discarded Nielsen measures plus
+renames; and the value differences are 84.2% larger (scope), 5.0% smaller
+(Nielsen restatement, 8,484 units = 0.001% of volume).
+
+**Zero brands lost.** All 58 survive.
+
+**Corrected my own hypothesis mid-check.** `weighted_dist` moves the opposite way
+to everything else (median ratio 0.735). I assumed the bfill fix, then tested it:
+bfill would concentrate the effect in each brand's early months, and it does not
+— the reduction is uniform across history. Measured the raw facts instead: parent
+scope mean 0.1489 vs regional children 0.1973, ratio **0.7548**, matching the
+observed 0.735. Distribution is a share-of-stores measure, so regional scope
+systematically *overstated* it.
+
+**Independent construction checks** (assertions on the output, not comparisons):
+log target 100%, lag_1 100%, lag_3 100%, rolling_mean_4 excludes the current
+month 100% (the leaky variant would match only 10.48%), promo_intensity uses t-1
+99.97% (leaky 22.40%), splits strictly ordered. The single promo residual is a
+correct clip of a 1.365 raw ratio. **No future leakage.**
+
+### State
+
+- Tasks 1-8 of the plan complete (session tasks 16-23). **The gate is passed.**
+- NEXT: task 9 — retire the notebook + old step scripts, repoint the 12
+  downstream consumers (F65), archive anything carrying decision evidence.
+- Also to clean in task 9: the stale `*_bymonth.parquet` intermediates (142
+  brands, pre-re-pull, pre-DEC-SCOPE) — they are notebook-era, not current
+  output, and could be misread as such.
+

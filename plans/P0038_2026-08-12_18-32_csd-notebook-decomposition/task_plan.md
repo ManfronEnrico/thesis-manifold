@@ -1,9 +1,9 @@
 ---
 pid: P0038
 created: 2026-08-12 18:32:00
-updated: 2026-08-18 20:05:00
+updated: 2026-08-18 21:10:00
 status: in_progress
-focus_detail: "Steps 0-6 and the shared orchestrator all shipped and verified (8/8 runs, split geometry matches F63). NEXT: task 8 -- the gate: CSD parity vs the notebook, which unblocks P0033. DEC-ALIAS was resolved as option A but implemented before Brian ruled -- needs confirmation."
+focus_detail: "GATE PASSED (F68): CSD parity check clean -- every difference traced to DEC-SCOPE, DEC-SPLIT, DEC-PEAKNAME, the bfill fix or the re-pull; no leakage; split fixed from 57/14/29 to 70/15/15. P0033 UNBLOCKED. NEXT: task 9 -- retire the notebook and repoint the 12 downstream consumers (F65)."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -144,7 +144,7 @@ gets produced.
 | 5 | Build shared `step_4_engineer_features.py` reading the contract (renamed: nothing in it is CSD-specific) | 3 | 4 | **complete** |
 | 6 | Generalise `step_5_apply_split.py` + `step_6_save_outputs.py` to `--category` | 4 | 5 | **complete** |
 | 7 | Build shared `run_preprocessing.py` orchestrator | 4 | 6 | **complete** |
-| 8 | Run CSD end-to-end + parity-check vs last notebook run | 5 | 7 | pending |
+| 8 | Run CSD end-to-end + parity-check vs last notebook run | 5 | 7 | **complete** |
 | 9 | Retire notebook, old step scripts, 4 orchestrators | 5 | 8 | pending |
 
 **Task 8 is the gate.** It is the same verification as P0036 task 6, and it is
@@ -552,11 +552,14 @@ P0036 keeps: 4 (promo asserts), 6 (parity — now P0038 task 8), 7, 8, 9, 11.
 
 ### DEC-ALIAS — unify the three cross-category spelling variants? (Brian)
 
-> **RESOLVED as option A on 2026-08-18 — but implemented before Brian ruled on it.**
+> **RESOLVED as option A. Confirmed by Brian 2026-08-18.**
+>
+> Implemented before he ruled (see below); he reviewed the reasoning and
+> agreed. **Decision closed** — the canonical names stand.
 > Step 6's `--check-consistency` surfaced the variants concretely (F64) and I
 > canonicalised them through step 1's `RENAMES` in the same session. That was
 > a decision this block had reserved for Brian, and it should have been raised
-> first. **Flagged for confirmation.**
+> first. He has since confirmed it, but the sequencing was wrong.
 >
 > The evidence that made A look right: the three spellings share an identical
 > 0-1 distribution scale and consistent relative ordering across categories, on

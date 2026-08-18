@@ -1422,3 +1422,127 @@ computes them identically per category.
 re-run. Nothing downstream hardcodes the canonical names. Flagged for Brian's
 confirmation.
 
+**Resolved 2026-08-18**: Brian reviewed and confirmed option A. The canonical
+names stand and DEC-ALIAS is closed. The substance was right; the sequencing was
+not, and that is the part worth remembering — a decision the plan assigns to a
+person gets raised before it is implemented, even when the fix looks like
+routine cleaning and even when reverting is cheap.
+
+---
+
+## F68 — parity check PASSES: every difference is explained by a decision we made
+
+Task 8, the gate. The criterion the plan set was **not** that the numbers match —
+the 2026-08-12 re-pull and three deliberate fixes guarantee they will not — but
+that every difference is *explicable*. Each one below traces to a specific
+decision, and nothing is left unaccounted for.
+
+### The headline check: the split is fixed
+
+| | train | val | test | ratio |
+|--|------:|----:|-----:|-------|
+| notebook (old) | 1,450 | 348 | 754 | 56.8 / 13.6 / **29.5** |
+| pipeline (new) | 3,040 | 665 | 665 | 69.6 / 15.2 / **15.2** |
+
+The old test set was **more than double its intended size** — the hardcoded
+cutoffs had drifted as data accumulated, which is exactly the failure DEC-SPLIT
+was raised to fix. The plan's target was ~70/15/15; the pipeline delivers
+69.6/15.2/15.2. The old figures reproduce the plan's recorded 1450/348/754
+exactly, confirming the baseline is the right one.
+
+### The four differences, each traced
+
+**1. +2 months of data** (ends 2026-07 vs 2026-05) — the 2026-08-12 re-pull.
+Every one of the 58 shared brands gained exactly +2 rows. Nothing else moved.
+
+**2. +37 brands** (58 → 95), from DEC-SCOPE. Decisive evidence that these are
+*not* new arrivals: **all 37 have the full 46-month history back to 2022-10**,
+and zero start in the two new months. They existed throughout and were being
+excluded. They are 38.9% of rows but only **0.83% of units** — the long tail of
+small brands that regional scope was dropping.
+
+**Zero brands were lost.** All 58 old brands survive.
+
+**3. +28 columns, −10 columns.** The additions are the Nielsen measures the
+notebook discarded (baseline_*, numeric_distribution, the reach family) plus the
+new rolling windows. The removals are either renames (`holiday_month` →
+`peak_month`, DEC-PEAKNAME), window changes (`rolling_mean_12` → `rolling_mean_13`,
+`lag_12` → `lag_13`), or capability columns now recorded in the manifest instead
+(`has_promo`).
+
+**4. Every measured value differs.** This is the one that needed real work, since
+raw `sales_units` differing is alarming on its face.
+
+| Direction | Share of cells | Cause |
+|-----------|---------------:|-------|
+| new **>** old | 84.2% | DEC-SCOPE: parent market vs 15 regional children |
+| new **=** old | 10.8% | — |
+| new **<** old | 5.0% | Nielsen restatement in the re-pull |
+
+Total volume uplift **1.0765x**. The decreases were the part that could have
+indicated a defect — a wider scope cannot reduce a brand's sales — so I measured
+them: **8,484 units in total, 0.001% of volume**, median ratio 0.9992, scattered
+across all 34 months rather than clustered at a boundary. That is Nielsen
+revising history in the re-pull, not a pipeline error.
+
+### `weighted_dist` moves the *opposite* way — and that is correct
+
+It was the one feature with **0% exact matches** and, unlike everything else,
+systematically **lower**: median ratio 0.735.
+
+**I first hypothesised the bfill fix** (task 5) and tested it: if bfill were the
+cause, the effect would concentrate in each brand's early months, where the
+notebook invented distribution before the brand was stocked. It does not — the
+reduction is uniform across brand history (median 0.73 in months 1-3 and 0.73 at
+25+). **Hypothesis rejected.**
+
+Measured directly on the raw facts instead:
+
+| Scope | n | mean `weighted_distribution` |
+|-------|--:|-----:|
+| DVH EXCL. HD (parent) | 223,240 | 0.1489 |
+| 15 regional children | 2,565,349 | 0.1973 |
+| **ratio** | | **0.7548** |
+
+The raw ratio 0.7548 matches the observed feature ratio 0.735. **Mechanism**:
+distribution is a share-of-stores measure, so a brand stocked in a handful of
+shops scores higher *within one region* than nationally. The old regional scope
+systematically **overstated** distribution. Uniformity across brand history now
+follows — it is a property of scope, not of time.
+
+### Independent construction checks (not comparisons — assertions on the output)
+
+| Check | Result |
+|-------|--------|
+| `log_sales_units` == `log1p(sales_units)` | **100.00%** |
+| `lag_1` == previous month's sales | **100.00%** (4,275 rows) |
+| `lag_3` == t-3 sales | **100.00%** (4,085 rows) |
+| `rolling_mean_4` **excludes** current month | **100.00%** (3,990 rows) |
+| — leaky variant (including t) would match | only 10.48% |
+| `promo_intensity` uses t-1, not t | **99.97%**; leaky variant 22.40% |
+| train < val < test, strictly | **True** on both boundaries |
+
+The single `promo_intensity` residual (1 row of 3,699) is JARRITOS 2023-05, where
+the raw ratio is 1.365 — promo units exceeding total sales, a Nielsen artifact —
+correctly clipped to 1.0. A guard working, not a defect.
+
+**No future leakage.** The rolling-window and promo checks are the ones that
+matter here, because leakage does not announce itself: it produces a model that
+looks excellent and fails in production.
+
+### Verdict
+
+**PASS.** Every difference is attributable to a decision on the record —
+DEC-SCOPE, DEC-SPLIT, DEC-PEAKNAME, the bfill fix, and the re-pull — and the
+feature construction verifies correct against independently recomputed values.
+The notebook's split was genuinely broken; the pipeline's is not.
+
+**P0033 is unblocked.**
+
+### Caveat carried forward
+
+The `*_bymonth.parquet` intermediates in `pipeline_step_outputs/` are stale
+notebook-era artifacts (142 brands, pre-re-pull, pre-DEC-SCOPE). They are not
+the current pipeline's output and must not be read as such — they are removed in
+task 9.
+
