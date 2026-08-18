@@ -1672,3 +1672,138 @@ regenerated file is worse than the committed one regardless of its numbers. The
 script writes without specifying an encoding and inherits cp1252 on Windows.
 That is a real bug in `srq1_baselines_stat.py`, filed here rather than fixed
 mid-cleanup.
+
+---
+
+## F72 — why Prophet diverged: unbounded trend, exponentiated
+
+Brian asked. Diagnosed per-brand rather than reasoned about in the abstract.
+
+**One brand causes it.** CSD, H=3:
+
+| Brand | actual (test) | Prophet predicted | share of category error |
+|-------|--------------:|------------------:|------------------------:|
+| FRESH | 300,859 | **101,201,667** | **59.9%** |
+| JOLLY | 3,166,314 | 16,741,237 | 8.1% |
+| FRESH MOJITO | 78,986 | 10,908,130 | 6.4% |
+
+FRESH is over by **336x**. WMAPE is volume-weighted and unbounded above, so a
+single exploded series sets the category number.
+
+### Mechanism
+
+1. The script fits on `log(units)`, so the model operates on exponents.
+2. Prophet's default trend is **linear and unbounded**; it extrapolates the
+   slope it saw in training with nothing to stop it.
+3. `expm1()` inverts. The largest log-space prediction observed is **17.2**,
+   which becomes **2.85e7**.
+
+In log space the error is a few units — unremarkable. After exponentiating, a
+few units *is* a factor of several hundred. Prophet does not know it is
+predicting a physical quantity with a ceiling.
+
+Three properties make CSD especially exposed:
+
+| Property | Value | Why it matters |
+|----------|------:|----------------|
+| brands hitting 0 in train | **38 of 95** | the `max(units, 1)` floor creates artificial cliffs in log space |
+| max within-brand dynamic range | **6,308x** | a slope fitted on the low end explodes at the high end |
+| short, noisy small-brand histories | — | a spurious upward slope is easy to fit and impossible to falsify in-sample |
+
+### A separate, genuine bug
+
+`run_arima` and `run_prophet` both fit with `np.log(max(y, 1))` and invert with
+`np.expm1()`. **Those do not pair**: `expm1` is the inverse of `log1p`, not of
+`log`. It is a constant off-by-one — negligible at 1e6 units, real at small
+counts, and exactly the kind of asymmetry that survives review because the two
+function names look symmetrical.
+
+### Why the number moved from 1.7e18% to 105.7%
+
+Not a fix. The committed run scored **77 series** on the notebook's matrix;
+today's scores **95** on the H=3 matrix. Different brands, different fitted
+slopes, different worst case. **The failure mode is still live** — it is simply
+less extreme for this particular brand set.
+
+That is the part worth carrying forward: a metric that swings by 16 orders of
+magnitude on a change of series membership is not measuring forecast quality.
+
+### Recommendation (Brian's call, not changed here)
+
+Cap the trend before reporting either figure — `growth="logistic"` with a
+per-series cap, or a much lower `changepoint_prior_scale`. An unbounded-trend
+baseline fitted in log space is not a fair comparator: it makes the ML models
+look strong for a reason that has nothing to do with the ML models.
+
+Reporting 105.7% as "Prophet's performance" would overstate how weak the
+statistical baseline genuinely is.
+
+---
+
+## F73 — capability-transfer audit: one real feature was dropped, and it was leaky
+
+Brian asked for proof that the archived scripts' capabilities were transferred,
+improved, or removed *on purpose* — not silently lost — before anything is
+deleted. Audited by diffing every function defined in the archived notebook
+export against the shared pipeline.
+
+**6 functions in the notebook, 65 in the pipeline. Four appeared "missing":**
+
+| Archived function | Disposition |
+|---|---|
+| `_load_merged` | renamed → `step_1.load_merged` |
+| `build_calendar_index` | renamed → `engineer_features.make_calendar` |
+| `_get_date_str` | local report-string helper; pipeline formats dates directly — no capability |
+| `_zero_run_features` | **genuinely dropped — now restored, fixed** |
+
+### The one that mattered
+
+The notebook computed two intermittent-demand features:
+
+```
+zero_run_flag   = (sales_units == 0)             at time t
+zero_run_length = length of the zero run ending at t
+```
+
+**Both read `sales_units[t]` — the value being forecast.** Verified against the
+preserved baseline: `zero_run_flag` equals `(sales_units == 0)` on **100.00%** of
+rows. Not correlated with the target; a *function of* the target, at the same
+timestamp.
+
+**Why nobody noticed**: the notebook's matrix had **0 rows** with
+`sales_units == 0` — regional scope filtered them out — so a leaky feature was
+constant and harmless. The current parent-scope matrix has **588 (13.5%)**.
+Restoring the code as written would have leaked on one row in seven.
+
+### Restored, shifted
+
+The signal is real: intermittent demand is a distinct forecasting regime, and a
+brand two months into a stock-out behaves unlike one selling steadily. So both
+features are kept, shifted one period within `group_keys` — the same discipline
+`promo_intensity` already uses. At time t they describe t-1, which a forecaster
+genuinely knows.
+
+**Verified on the regenerated matrix:**
+
+| Test | Result |
+|------|--------|
+| matches `sales_units[t] == 0` (old leaky behaviour) | 96.05% |
+| matches `sales_units[t-1] == 0` (correct behaviour) | **100.00%** |
+| run length range | 0..29, 576 non-zero rows |
+| first row of each series | `NaN` (no prior month) |
+| feature count | 41 → **43** |
+
+Worked example: April 2023 has sales of 44 but `zero_run_flag = 1`, correctly
+describing March.
+
+**The 96.05% figure is the lesson.** The leaky version still matches the current
+month on 96% of rows — close enough to look correct in any spot check. Only an
+explicit t vs t-1 comparison separates them.
+
+### Audit verdict
+
+Every archived capability is accounted for: two renamed, one genuinely
+unnecessary, one restored in corrected form. **Safe to delete the superseded
+tree**, with the notebook itself archived rather than deleted since it is the
+parity baseline's source.
+

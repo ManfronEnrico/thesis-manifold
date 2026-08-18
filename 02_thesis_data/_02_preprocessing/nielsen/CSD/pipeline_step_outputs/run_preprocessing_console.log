@@ -1,5 +1,104 @@
 
 ================================================================================
+  STEP 3 -- derive contract  (H=1)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: CSD (horizon=1)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (223240, 32)
+  Products shape: (2130, 23)
+  Periods shape:  (46, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 4,209 rows x 32 columns, 142 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 1 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 15  (= warmup + horizon + 1, derived)
+  peak_months        = [3, 6, 9, 12]
+
+SPLIT
+  train_end             = (2025, 5)
+  val_end               = (2025, 12)
+  months                = 32 train / 7 val / 7 test (of 46)
+  test origins          = 7 at horizon 1
+
+RETENTION AT min_periods
+  brands                = 106 / 142 kept (36 dropped)
+  training rows         = 2,467 / 2,467 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_findings_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=1)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: CSD (horizon=1)
+================================================================================
+
+Contract: csd_eda_findings_h1.json (version 1.1)
+  target                = sales_units
+  min_periods           = 15
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [3, 6, 9, 12]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (223240, 32)
+  Products shape: (2130, 23)
+  Periods shape:  (46, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 4,209 rows x 32 columns, 142 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 4,209 rows / 142 brands
+  after calendar fill   = 6,532 rows
+  after min_periods     = 4,876 rows / 106 brands (36 dropped)
+  engineered            = 4,876 rows x 49 columns
+  peak flag set on      = [3, 6, 9, 12] (matches contract)
+  promo_intensity       = built
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_4_engineered_features_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_4_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=1)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: CSD (horizon=1)
+================================================================================
+
+Contract: csd_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 4,876 rows x 49 columns
+
+Applying cutoffs from the contract: train<=(2025, 5), val<=(2025, 12)
+
+SPLIT APPLIED
+  train = 32 months (2022-10 .. 2025-05),  3,392 rows, 106 brands [69.6%]
+  val   =  7 months (2025-06 .. 2025-12),    742 rows, 106 brands [15.2%]
+  test  =  7 months (2026-01 .. 2026-07),    742 rows, 106 brands [15.2%]
+  test origins at horizon 1: 7
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=1)
 ================================================================================
 ================================================================================
@@ -7,7 +106,7 @@ STEP 6 -- SAVE OUTPUTS: CSD (horizon=1)
 ================================================================================
 
 Contract: csd_eda_findings_h1.json
-Split:    step_5_split_applied_h1.parquet -- 4,876 rows x 49 columns
+Split:    step_5_split_applied_h1.parquet -- 4,876 rows x 51 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\CSD
   feature_matrix  csd_feature_matrix_h1.parquet
@@ -18,7 +117,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\C
 SUMMARY
   brands            = 106
   rows              = 4,876
-  features          = 41 (of 49 columns)
+  features          = 43 (of 51 columns)
   promo available   = True
   train             = 2022-10 .. 2025-05
   val               = 2025-06 .. 2025-12
@@ -35,6 +134,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=3)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: CSD (horizon=3)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (223240, 32)
+  Products shape: (2130, 23)
+  Periods shape:  (46, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 4,209 rows x 32 columns, 142 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 3 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 17  (= warmup + horizon + 1, derived)
+  peak_months        = [3, 6, 9, 12]
+
+SPLIT
+  train_end             = (2025, 5)
+  val_end               = (2025, 12)
+  months                = 32 train / 7 val / 7 test (of 46)
+  test origins          = 5 at horizon 3
+
+RETENTION AT min_periods
+  brands                = 95 / 142 kept (47 dropped)
+  training rows         = 2,262 / 2,262 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_findings_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=3)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: CSD (horizon=3)
+================================================================================
+
+Contract: csd_eda_findings_h3.json (version 1.1)
+  target                = sales_units
+  min_periods           = 17
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [3, 6, 9, 12]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (223240, 32)
+  Products shape: (2130, 23)
+  Periods shape:  (46, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 4,209 rows x 32 columns, 142 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 4,209 rows / 142 brands
+  after calendar fill   = 6,532 rows
+  after min_periods     = 4,370 rows / 95 brands (47 dropped)
+  engineered            = 4,370 rows x 49 columns
+  peak flag set on      = [3, 6, 9, 12] (matches contract)
+  promo_intensity       = built
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_4_engineered_features_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_4_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=3)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: CSD (horizon=3)
+================================================================================
+
+Contract: csd_eda_findings_h3.json (version 1.1)
+Matrix:   step_4_engineered_features_h3.parquet -- 4,370 rows x 49 columns
+
+Applying cutoffs from the contract: train<=(2025, 5), val<=(2025, 12)
+
+SPLIT APPLIED
+  train = 32 months (2022-10 .. 2025-05),  3,040 rows,  95 brands [69.6%]
+  val   =  7 months (2025-06 .. 2025-12),    665 rows,  95 brands [15.2%]
+  test  =  7 months (2026-01 .. 2026-07),    665 rows,  95 brands [15.2%]
+  test origins at horizon 3: 5
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_5_split_applied_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_5_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=3)
 ================================================================================
 ================================================================================
@@ -42,7 +240,7 @@ STEP 6 -- SAVE OUTPUTS: CSD (horizon=3)
 ================================================================================
 
 Contract: csd_eda_findings_h3.json
-Split:    step_5_split_applied_h3.parquet -- 4,370 rows x 49 columns
+Split:    step_5_split_applied_h3.parquet -- 4,370 rows x 51 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\CSD
   feature_matrix  csd_feature_matrix_h3.parquet
@@ -53,7 +251,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\C
 SUMMARY
   brands            = 95
   rows              = 4,370
-  features          = 41 (of 49 columns)
+  features          = 43 (of 51 columns)
   promo available   = True
   train             = 2022-10 .. 2025-05
   val               = 2025-06 .. 2025-12
@@ -70,6 +268,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=1)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Danskvand (horizon=1)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 1 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 15  (= warmup + horizon + 1, derived)
+  peak_months        = [6, 7, 8, 9]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 6 at horizon 1
+
+RETENTION AT min_periods
+  brands                = 30 / 55 kept (25 dropped)
+  training rows         = 679 / 679 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=1)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: Danskvand (horizon=1)
+================================================================================
+
+Contract: danskvand_eda_findings_h1.json (version 1.1)
+  target                = sales_units
+  min_periods           = 15
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [6, 7, 8, 9]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 1,225 rows / 55 brands
+  after calendar fill   = 2,255 rows
+  after min_periods     = 1,230 rows / 30 brands (25 dropped)
+  engineered            = 1,230 rows x 31 columns
+  peak flag set on      = [6, 7, 8, 9] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_engineered_features_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=1)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: Danskvand (horizon=1)
+================================================================================
+
+Contract: danskvand_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 1,230 rows x 31 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),    870 rows,  30 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    180 rows,  30 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    180 rows,  30 brands [14.6%]
+  test origins at horizon 1: 6
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=1)
 ================================================================================
 ================================================================================
@@ -77,7 +374,7 @@ STEP 6 -- SAVE OUTPUTS: Danskvand (horizon=1)
 ================================================================================
 
 Contract: danskvand_eda_findings_h1.json
-Split:    step_5_split_applied_h1.parquet -- 1,230 rows x 31 columns
+Split:    step_5_split_applied_h1.parquet -- 1,230 rows x 33 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Danskvand
   feature_matrix  danskvand_feature_matrix_h1.parquet
@@ -88,7 +385,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\D
 SUMMARY
   brands            = 30
   rows              = 1,230
-  features          = 23 (of 31 columns)
+  features          = 25 (of 33 columns)
   promo available   = False
   train             = 2023-03 .. 2025-07
   val               = 2025-08 .. 2026-01
@@ -105,6 +402,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=3)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Danskvand (horizon=3)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 3 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 17  (= warmup + horizon + 1, derived)
+  peak_months        = [6, 7, 8, 9]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 4 at horizon 3
+
+RETENTION AT min_periods
+  brands                = 29 / 55 kept (26 dropped)
+  training rows         = 620 / 620 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=3)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: Danskvand (horizon=3)
+================================================================================
+
+Contract: danskvand_eda_findings_h3.json (version 1.1)
+  target                = sales_units
+  min_periods           = 17
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [6, 7, 8, 9]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 1,225 rows / 55 brands
+  after calendar fill   = 2,255 rows
+  after min_periods     = 1,189 rows / 29 brands (26 dropped)
+  engineered            = 1,189 rows x 31 columns
+  peak flag set on      = [6, 7, 8, 9] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_engineered_features_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=3)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: Danskvand (horizon=3)
+================================================================================
+
+Contract: danskvand_eda_findings_h3.json (version 1.1)
+Matrix:   step_4_engineered_features_h3.parquet -- 1,189 rows x 31 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),    841 rows,  29 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    174 rows,  29 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    174 rows,  29 brands [14.6%]
+  test origins at horizon 3: 4
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_split_applied_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=3)
 ================================================================================
 ================================================================================
@@ -112,7 +508,7 @@ STEP 6 -- SAVE OUTPUTS: Danskvand (horizon=3)
 ================================================================================
 
 Contract: danskvand_eda_findings_h3.json
-Split:    step_5_split_applied_h3.parquet -- 1,189 rows x 31 columns
+Split:    step_5_split_applied_h3.parquet -- 1,189 rows x 33 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Danskvand
   feature_matrix  danskvand_feature_matrix_h3.parquet
@@ -123,7 +519,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\D
 SUMMARY
   brands            = 29
   rows              = 1,189
-  features          = 23 (of 31 columns)
+  features          = 25 (of 33 columns)
   promo available   = False
   train             = 2023-03 .. 2025-07
   val               = 2025-08 .. 2026-01
@@ -140,6 +536,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=1)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Energidrikke (horizon=1)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (55216, 32)
+  Products shape: (1271, 25)
+  Periods shape:  (43, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 1,702 rows x 32 columns, 68 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 1 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 15  (= warmup + horizon + 1, derived)
+  peak_months        = [3, 6, 9]
+
+SPLIT
+  train_end             = (2025, 6)
+  val_end               = (2025, 12)
+  months                = 30 train / 6 val / 7 test (of 43)
+  test origins          = 7 at horizon 1
+
+RETENTION AT min_periods
+  brands                = 50 / 68 kept (18 dropped)
+  training rows         = 877 / 877 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_findings_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=1)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: Energidrikke (horizon=1)
+================================================================================
+
+Contract: energidrikke_eda_findings_h1.json (version 1.1)
+  target                = sales_units
+  min_periods           = 15
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [3, 6, 9]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (55216, 32)
+  Products shape: (1271, 25)
+  Periods shape:  (43, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 1,702 rows x 32 columns, 68 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 1,702 rows / 68 brands
+  after calendar fill   = 2,924 rows
+  after min_periods     = 2,150 rows / 50 brands (18 dropped)
+  engineered            = 2,150 rows x 49 columns
+  peak flag set on      = [3, 6, 9] (matches contract)
+  promo_intensity       = built
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_4_engineered_features_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_4_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=1)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: Energidrikke (horizon=1)
+================================================================================
+
+Contract: energidrikke_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 2,150 rows x 49 columns
+
+Applying cutoffs from the contract: train<=(2025, 6), val<=(2025, 12)
+
+SPLIT APPLIED
+  train = 30 months (2023-01 .. 2025-06),  1,500 rows,  50 brands [69.8%]
+  val   =  6 months (2025-07 .. 2025-12),    300 rows,  50 brands [14.0%]
+  test  =  7 months (2026-01 .. 2026-07),    350 rows,  50 brands [16.3%]
+  test origins at horizon 1: 7
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=1)
 ================================================================================
 ================================================================================
@@ -147,7 +642,7 @@ STEP 6 -- SAVE OUTPUTS: Energidrikke (horizon=1)
 ================================================================================
 
 Contract: energidrikke_eda_findings_h1.json
-Split:    step_5_split_applied_h1.parquet -- 2,150 rows x 49 columns
+Split:    step_5_split_applied_h1.parquet -- 2,150 rows x 51 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Energidrikke
   feature_matrix  energidrikke_feature_matrix_h1.parquet
@@ -158,7 +653,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\E
 SUMMARY
   brands            = 50
   rows              = 2,150
-  features          = 41 (of 49 columns)
+  features          = 43 (of 51 columns)
   promo available   = True
   train             = 2023-01 .. 2025-06
   val               = 2025-07 .. 2025-12
@@ -175,6 +670,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=3)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Energidrikke (horizon=3)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (55216, 32)
+  Products shape: (1271, 25)
+  Periods shape:  (43, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 1,702 rows x 32 columns, 68 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 3 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 17  (= warmup + horizon + 1, derived)
+  peak_months        = [3, 6, 9]
+
+SPLIT
+  train_end             = (2025, 6)
+  val_end               = (2025, 12)
+  months                = 30 train / 6 val / 7 test (of 43)
+  test origins          = 5 at horizon 3
+
+RETENTION AT min_periods
+  brands                = 44 / 68 kept (24 dropped)
+  training rows         = 780 / 780 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_findings_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=3)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: Energidrikke (horizon=3)
+================================================================================
+
+Contract: energidrikke_eda_findings_h3.json (version 1.1)
+  target                = sales_units
+  min_periods           = 17
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [3, 6, 9]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (55216, 32)
+  Products shape: (1271, 25)
+  Periods shape:  (43, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 1,702 rows x 32 columns, 68 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 1,702 rows / 68 brands
+  after calendar fill   = 2,924 rows
+  after min_periods     = 1,892 rows / 44 brands (24 dropped)
+  engineered            = 1,892 rows x 49 columns
+  peak flag set on      = [3, 6, 9] (matches contract)
+  promo_intensity       = built
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_4_engineered_features_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_4_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=3)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: Energidrikke (horizon=3)
+================================================================================
+
+Contract: energidrikke_eda_findings_h3.json (version 1.1)
+Matrix:   step_4_engineered_features_h3.parquet -- 1,892 rows x 49 columns
+
+Applying cutoffs from the contract: train<=(2025, 6), val<=(2025, 12)
+
+SPLIT APPLIED
+  train = 30 months (2023-01 .. 2025-06),  1,320 rows,  44 brands [69.8%]
+  val   =  6 months (2025-07 .. 2025-12),    264 rows,  44 brands [14.0%]
+  test  =  7 months (2026-01 .. 2026-07),    308 rows,  44 brands [16.3%]
+  test origins at horizon 3: 5
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_5_split_applied_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_5_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=3)
 ================================================================================
 ================================================================================
@@ -182,7 +776,7 @@ STEP 6 -- SAVE OUTPUTS: Energidrikke (horizon=3)
 ================================================================================
 
 Contract: energidrikke_eda_findings_h3.json
-Split:    step_5_split_applied_h3.parquet -- 1,892 rows x 49 columns
+Split:    step_5_split_applied_h3.parquet -- 1,892 rows x 51 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Energidrikke
   feature_matrix  energidrikke_feature_matrix_h3.parquet
@@ -193,7 +787,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\E
 SUMMARY
   brands            = 44
   rows              = 1,892
-  features          = 41 (of 49 columns)
+  features          = 43 (of 51 columns)
   promo available   = True
   train             = 2023-01 .. 2025-06
   val               = 2025-07 .. 2025-12
@@ -210,6 +804,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=1)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: RTD (horizon=1)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (49976, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 28 measure columns (12 additive, 16 intensive)
+  Panel: 2,509 rows x 31 columns, 101 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 1 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 15  (= warmup + horizon + 1, derived)
+  peak_months        = [5, 6, 12]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 6 at horizon 1
+
+RETENTION AT min_periods
+  brands                = 72 / 101 kept (29 dropped)
+  training rows         = 1,309 / 1,309 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_findings_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=1)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: RTD (horizon=1)
+================================================================================
+
+Contract: rtd_eda_findings_h1.json (version 1.1)
+  target                = sales_units
+  min_periods           = 15
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [5, 6, 12]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (49976, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 28 measure columns (12 additive, 16 intensive)
+  Panel: 2,509 rows x 31 columns, 101 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 2,509 rows / 101 brands
+  after calendar fill   = 4,141 rows
+  after min_periods     = 2,952 rows / 72 brands (29 dropped)
+  engineered            = 2,952 rows x 47 columns
+  peak flag set on      = [5, 6, 12] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_4_engineered_features_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_4_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=1)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: RTD (horizon=1)
+================================================================================
+
+Contract: rtd_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 2,952 rows x 47 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),  2,088 rows,  72 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    432 rows,  72 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    432 rows,  72 brands [14.6%]
+  test origins at horizon 1: 6
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=1)
 ================================================================================
 ================================================================================
@@ -217,7 +910,7 @@ STEP 6 -- SAVE OUTPUTS: RTD (horizon=1)
 ================================================================================
 
 Contract: rtd_eda_findings_h1.json
-Split:    step_5_split_applied_h1.parquet -- 2,952 rows x 47 columns
+Split:    step_5_split_applied_h1.parquet -- 2,952 rows x 49 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\RTD
   feature_matrix  rtd_feature_matrix_h1.parquet
@@ -228,7 +921,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\R
 SUMMARY
   brands            = 72
   rows              = 2,952
-  features          = 39 (of 47 columns)
+  features          = 41 (of 49 columns)
   promo available   = False
   train             = 2023-03 .. 2025-07
   val               = 2025-08 .. 2026-01
@@ -245,6 +938,105 @@ SUMMARY
   Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
 
 ================================================================================
+  STEP 3 -- derive contract  (H=3)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: RTD (horizon=3)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (49976, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 28 measure columns (12 additive, 16 intensive)
+  Panel: 2,509 rows x 31 columns, 101 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 3 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 17  (= warmup + horizon + 1, derived)
+  peak_months        = [5, 6, 12]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 4 at horizon 3
+
+RETENTION AT min_periods
+  brands                = 62 / 101 kept (39 dropped)
+  training rows         = 1,170 / 1,170 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_findings_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=3)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: RTD (horizon=3)
+================================================================================
+
+Contract: rtd_eda_findings_h3.json (version 1.1)
+  target                = sales_units
+  min_periods           = 17
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [5, 6, 12]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (49976, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 28 measure columns (12 additive, 16 intensive)
+  Panel: 2,509 rows x 31 columns, 101 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 2,509 rows / 101 brands
+  after calendar fill   = 4,141 rows
+  after min_periods     = 2,542 rows / 62 brands (39 dropped)
+  engineered            = 2,542 rows x 47 columns
+  peak flag set on      = [5, 6, 12] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_4_engineered_features_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_4_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=3)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: RTD (horizon=3)
+================================================================================
+
+Contract: rtd_eda_findings_h3.json (version 1.1)
+Matrix:   step_4_engineered_features_h3.parquet -- 2,542 rows x 47 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),  1,798 rows,  62 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    372 rows,  62 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    372 rows,  62 brands [14.6%]
+  test origins at horizon 3: 4
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_5_split_applied_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_5_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
   STEP 6 -- save outputs  (H=3)
 ================================================================================
 ================================================================================
@@ -252,7 +1044,7 @@ STEP 6 -- SAVE OUTPUTS: RTD (horizon=3)
 ================================================================================
 
 Contract: rtd_eda_findings_h3.json
-Split:    step_5_split_applied_h3.parquet -- 2,542 rows x 47 columns
+Split:    step_5_split_applied_h3.parquet -- 2,542 rows x 49 columns
 
 ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\RTD
   feature_matrix  rtd_feature_matrix_h3.parquet
@@ -263,7 +1055,7 @@ ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\R
 SUMMARY
   brands            = 62
   rows              = 2,542
-  features          = 39 (of 47 columns)
+  features          = 41 (of 49 columns)
   promo available   = False
   train             = 2023-03 .. 2025-07
   val               = 2025-08 .. 2026-01
@@ -283,28 +1075,76 @@ SUMMARY
   PIPELINE SUMMARY
 ================================================================================
 
-  CSD  H=1   [OK]      0.3s
-    step 6      0.3s   save outputs
-
-  CSD  H=3   [OK]      0.2s
+  CSD  H=1   [OK]     24.7s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3     14.7s   derive contract
+    step 4      9.8s   engineer features
+    step 5      0.1s   apply split
     step 6      0.2s   save outputs
 
-  Danskvand  H=1   [OK]      0.1s
+  CSD  H=3   [OK]     16.3s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      7.7s   derive contract
+    step 4      8.3s   engineer features
+    step 5      0.1s   apply split
     step 6      0.1s   save outputs
 
-  Danskvand  H=3   [OK]      0.1s
+  Danskvand  H=1   [OK]      1.8s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      0.9s   derive contract
+    step 4      0.7s   engineer features
+    step 5      0.0s   apply split
     step 6      0.1s   save outputs
 
-  Energidrikke  H=1   [OK]      0.1s
+  Danskvand  H=3   [OK]      1.7s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      0.8s   derive contract
+    step 4      0.8s   engineer features
+    step 5      0.1s   apply split
     step 6      0.1s   save outputs
 
-  Energidrikke  H=3   [OK]      0.1s
+  Energidrikke  H=1   [OK]      8.2s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      4.0s   derive contract
+    step 4      4.0s   engineer features
+    step 5      0.1s   apply split
     step 6      0.1s   save outputs
 
-  RTD  H=1   [OK]      0.1s
+  Energidrikke  H=3   [OK]      7.9s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      3.8s   derive contract
+    step 4      3.9s   engineer features
+    step 5      0.1s   apply split
     step 6      0.1s   save outputs
 
-  RTD  H=3   [OK]      0.1s
+  RTD  H=1   [OK]      9.1s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      4.4s   derive contract
+    step 4      4.4s   engineer features
+    step 5      0.1s   apply split
+    step 6      0.1s   save outputs
+
+  RTD  H=3   [OK]      9.6s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      4.4s   derive contract
+    step 4      5.0s   engineer features
+    step 5      0.1s   apply split
     step 6      0.1s   save outputs
 
   All 8 run(s) completed.

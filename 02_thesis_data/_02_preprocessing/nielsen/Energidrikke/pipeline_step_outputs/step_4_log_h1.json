@@ -1,10 +1,10 @@
 {
-  "generated_utc": "2026-08-18T18:24:48+00:00",
+  "generated_utc": "2026-08-18T19:22:15+00:00",
   "generated_by": "step_4_engineer_features.py",
   "category": "Energidrikke",
   "forecast_horizon": 1,
   "contract_version": "1.1",
-  "contract_generated_utc": "2026-08-18T18:24:44+00:00",
+  "contract_generated_utc": "2026-08-18T19:22:11+00:00",
   "parameters_applied": {
     "target_col": "sales_units",
     "min_periods": 15,
@@ -33,7 +33,7 @@
     "rows_filtered": 2150,
     "brands_filtered": 50,
     "rows_out": 2150,
-    "cols_out": 47,
+    "cols_out": 49,
     "brands_out": 50,
     "has_promo": true,
     "peak_months_verified": [

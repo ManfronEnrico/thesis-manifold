@@ -135,7 +135,7 @@ def main():
 
     df = pd.DataFrame(rows)
     df.to_csv(OUT / "tuned_metrics.csv", index=False)
-    (OUT / "tuned_params.json").write_text(json.dumps(params, indent=2))
+    (OUT / "tuned_params.json").write_text(json.dumps(params, indent=2), encoding="utf-8", newline="\n")
 
     lines = ["# SRQ1 benchmark — Optuna-tuned (TPE, seed=42)", "",
              f"Trials per model: {trials}. Tuned on validation (WMAPE), refit on "
@@ -148,7 +148,7 @@ def main():
             lines.append(f"| {x['category']} | {x['model']} | {x['test_wmape']:.1f}% | "
                          f"{x['test_mape']:.1f}% | {x['test_median']:.1f}% | {x['val_wmape']:.1f}% |")
         lines.append("")
-    (OUT / "tuned_summary.md").write_text("\n".join(lines) + "\n")
+    (OUT / "tuned_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"\nSaved tuned_metrics.csv + tuned_params.json + tuned_summary.md in {OUT}")
 
 

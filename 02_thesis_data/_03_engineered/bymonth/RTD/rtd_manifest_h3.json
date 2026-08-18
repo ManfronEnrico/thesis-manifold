@@ -1,12 +1,12 @@
 {
-  "generated_utc": "2026-08-18T19:03:51+00:00",
+  "generated_utc": "2026-08-18T19:22:42+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "RTD",
   "forecast_horizon": 3,
   "target_col": "sales_units",
   "log_transform_target": true,
   "contract_version": "1.1",
-  "contract_generated_utc": "2026-08-18T18:25:47+00:00",
+  "contract_generated_utc": "2026-08-18T19:22:37+00:00",
   "parameters_applied": {
     "min_periods": 17,
     "lags": [
@@ -33,9 +33,9 @@
   },
   "shape": {
     "rows": 2542,
-    "columns": 47,
+    "columns": 49,
     "brands": 62,
-    "n_features": 39
+    "n_features": 41
   },
   "features": [
     "avg_no_of_items_per_store_reach",
@@ -76,7 +76,9 @@
     "weighted_distribution_disp_without_feat",
     "weighted_distribution_feat_without_disp",
     "weighted_distribution_reach",
-    "weighted_distribution_total_feat"
+    "weighted_distribution_total_feat",
+    "zero_run_flag",
+    "zero_run_length"
   ],
   "split_dates": {
     "train_start": "2023-03",

@@ -193,7 +193,7 @@ def main():
                              f"{int(x['n_train'])} | {int(x['n_test'])} | "
                              f"{int(x['n_series']) if pd.notna(x.get('n_series')) else '-'} |")
         lines.append("")
-    (OUT / "summary.md").write_text("\n".join(lines) + "\n")
+    (OUT / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"\nSaved metrics.csv + summary.md in {OUT}")
 
 

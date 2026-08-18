@@ -12,6 +12,6 @@
 | brands_after_min_periods | 50        |
 | rows_after_min_periods   | 2150      |
 | rows_engineered          | 2150      |
-| columns_engineered       | 47        |
+| columns_engineered       | 49        |
 | min_periods_applied      | 15        |
 | peak_months_applied      | [3, 6, 9] |

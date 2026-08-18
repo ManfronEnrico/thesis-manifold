@@ -68,5 +68,5 @@ for _, x in df.iterrows():
 lines += ["", "Coverage near nominal indicates the conformal interval is a usable confidence "
           "signal for the agentic layer (SRQ2); systematic over/under-coverage flags residual "
           "heteroskedasticity (interval width is global, not per-series)."]
-(RES / "calibration.md").write_text("\n".join(lines) + "\n")
+(RES / "calibration.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 print("Saved calibration.csv + calibration.md")

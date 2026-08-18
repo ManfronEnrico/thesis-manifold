@@ -133,7 +133,7 @@ for cat in SELECTED:
                  f"{vc.get('Moderate',0):.0f}% | {vc.get('Low',0):.0f}% | {cov:.1f}% |")
 lines += ["", "Confidence-tier triage lets the agentic layer surface High-confidence forecasts "
           "directly and flag Low-confidence ones for human review (SRQ2 reliability/traceability)."]
-(OUT / "synthesis_summary.md").write_text("\n".join(lines) + "\n")
+(OUT / "synthesis_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 print("Saved synthesis.csv + synthesis_summary.md")
 for cat in SELECTED:
     s = df[df.category == cat]

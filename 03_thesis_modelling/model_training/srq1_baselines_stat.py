@@ -104,7 +104,7 @@ def main():
              "|---|---|---|---|---|"]
     for _, x in df.iterrows():
         lines.append(f"| {x['category']} | {x['model']} | {x['wmape']:.1f}% | {x['median_mape']:.1f}% | {int(x['n_series'])} |")
-    (RES / "stat_baselines.md").write_text("\n".join(lines) + "\n")
+    (RES / "stat_baselines.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("Saved stat_baselines.csv + stat_baselines.md")
 
 

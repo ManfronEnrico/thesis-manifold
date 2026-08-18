@@ -7,7 +7,7 @@
 |:---------------------------|:-------------------|
 | brands                     | 44                 |
 | rows                       | 1892               |
-| features                   | 41                 |
+| features                   | 43                 |
 | promotional data available | True               |
 | train period               | 2023-01 .. 2025-06 |
 | validation period          | 2025-07 .. 2025-12 |

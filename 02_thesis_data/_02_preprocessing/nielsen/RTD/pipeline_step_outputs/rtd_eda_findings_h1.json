@@ -1,7 +1,7 @@
 {
   "contract_version": "1.1",
   "category": "RTD",
-  "generated_utc": "2026-08-18T18:25:38+00:00",
+  "generated_utc": "2026-08-18T19:22:28+00:00",
   "generated_by": "step_3_derive_params.py",
   "target_col": "sales_units",
   "forecast_horizon": 1,

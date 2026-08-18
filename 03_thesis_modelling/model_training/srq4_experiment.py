@@ -269,7 +269,7 @@ def run_full(repeats=5):
         f"| Cost — total USD this run | ${A['total_cost']:.2f} | ${B['total_cost']:.2f} |",
         f"| Latency — mean seconds (lower=better) | {A['latency']:.1f} | {B['latency']:.1f} |",
         f"| Failures (no answer) | {A['failures']} | {B['failures']} |", ""]
-    (OUT / "summary.md").write_text("\n".join(lines) + "\n")
+    (OUT / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("\n" + "\n".join(lines))
     print(f"\nSaved runs.csv + summary.md in {OUT}")
 

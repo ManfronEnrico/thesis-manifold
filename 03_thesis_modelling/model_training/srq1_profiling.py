@@ -97,7 +97,7 @@ def main():
     lines += ["", "All models fit comfortably within the ≤8 GB budget (peak RAM in the "
               "tens-of-MB range). Note tracemalloc captures Python-level allocations; native "
               "library buffers (LightGBM/XGBoost C++) are additional but small at this data scale."]
-    (RES / "profiling.md").write_text("\n".join(lines) + "\n")
+    (RES / "profiling.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("Saved profiling.csv + profiling.md")
 
 

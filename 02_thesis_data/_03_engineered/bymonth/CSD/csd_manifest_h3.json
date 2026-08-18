@@ -1,12 +1,12 @@
 {
-  "generated_utc": "2026-08-18T19:03:50+00:00",
+  "generated_utc": "2026-08-18T19:22:04+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "CSD",
   "forecast_horizon": 3,
   "target_col": "sales_units",
   "log_transform_target": true,
   "contract_version": "1.1",
-  "contract_generated_utc": "2026-08-18T18:23:34+00:00",
+  "contract_generated_utc": "2026-08-18T19:21:55+00:00",
   "parameters_applied": {
     "min_periods": 17,
     "lags": [
@@ -34,9 +34,9 @@
   },
   "shape": {
     "rows": 4370,
-    "columns": 49,
+    "columns": 51,
     "brands": 95,
-    "n_features": 41
+    "n_features": 43
   },
   "features": [
     "avg_no_of_items_per_store_reach",
@@ -79,7 +79,9 @@
     "weighted_distribution_disp_without_feat",
     "weighted_distribution_feat_without_disp",
     "weighted_distribution_reach",
-    "weighted_distribution_total_feat"
+    "weighted_distribution_total_feat",
+    "zero_run_flag",
+    "zero_run_length"
   ],
   "split_dates": {
     "train_start": "2022-10",

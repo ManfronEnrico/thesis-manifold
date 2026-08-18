@@ -126,7 +126,7 @@ def main():
             row = agg.loc[sysname]
             lines.append(f"| {sysname} | " + " | ".join(f"{row[d]:.2f}" for d in DIMS) +
                          f" | {row.mean():.2f} |")
-    (OUT / "llm_summary.md").write_text("\n".join(lines) + "\n")
+    (OUT / "llm_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("Saved recommendations.csv + judge_scores.csv + llm_summary.md")
     print(agg.round(2).to_string())
 

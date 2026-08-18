@@ -470,6 +470,36 @@ def engineer_features(
             [df[k] for k in group_keys]
         ).shift(1)
 
+    # Intermittency (restored from the archived notebook, P0038, 2026-08-18).
+    #
+    # The notebook computed these UNSHIFTED -- zero_run_flag was exactly
+    # (sales_units == 0) at time t, i.e. a function of the target itself.
+    # Verified 100.00% identical on the preserved baseline. It went unnoticed
+    # because that matrix had 0 zero-rows (regional scope dropped them); the
+    # current parent-scope matrix has 588 (13.5%), so the same code would now
+    # leak on one row in seven.
+    #
+    # The signal is genuine -- intermittent demand is a distinct forecasting
+    # regime, and a brand two months into a stock-out behaves unlike one that is
+    # selling steadily. So it is kept, but shifted by one period within
+    # group_keys, matching promo_intensity above: at time t these describe
+    # t-1, which a forecaster actually knows.
+    _is_zero = (df["sales_units"] == 0).astype("int8")
+    _grouped = _is_zero.groupby([df[k] for k in group_keys])
+
+    # Run length: cumulative count of consecutive zeros, reset by any non-zero.
+    # cumsum() over the non-zero mask gives a run id; counting within it gives
+    # the length; multiplying by _is_zero zeroes out the non-zero rows.
+    _run_id = (1 - _is_zero).groupby([df[k] for k in group_keys]).cumsum()
+    _run_len = _is_zero.groupby(
+        [df[k] for k in group_keys] + [_run_id]
+    ).cumsum() * _is_zero
+
+    df["zero_run_flag"] = _grouped.shift(1)
+    df["zero_run_length"] = _run_len.groupby(
+        [df[k] for k in group_keys]
+    ).shift(1)
+
     # Log-transformed target
     df["log_sales_units"] = np.log1p(df["sales_units"])
 

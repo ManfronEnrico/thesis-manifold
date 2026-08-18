@@ -4,11 +4,11 @@ WMAPE = volume-weighted across brands; medMAPE = median per-series. For SRQ4 com
 
 | Category | Model | WMAPE | median MAPE | n_series |
 |---|---|---|---|---|
-| CSD | ARIMA | 24.2% | 43.1% | 77 |
-| CSD | Prophet | 1715701549531750912.0% | 65.7% | 77 |
-| danskvand | ARIMA | 33.4% | 52.8% | 24 |
-| danskvand | Prophet | 16.9% | 36.2% | 24 |
-| energidrikke | ARIMA | 15.7% | 47.2% | 27 |
-| energidrikke | Prophet | 14858220394.7% | 55.4% | 27 |
-| RTD | ARIMA | 48.2% | 68.0% | 42 |
-| RTD | Prophet | 45.4% | 49.8% | 42 |
+| CSD | ARIMA | 21.8% | 57.8% | 95 |
+| CSD | Prophet | 105.7% | 64.4% | 95 |
+| danskvand | ARIMA | 33.5% | 48.3% | 29 |
+| danskvand | Prophet | 19.6% | 37.1% | 29 |
+| energidrikke | ARIMA | 19.4% | 74.1% | 44 |
+| energidrikke | Prophet | 1030.1% | 114.5% | 44 |
+| RTD | ARIMA | 53.3% | 59.1% | 62 |
+| RTD | Prophet | 67.0% | 86.7% | 62 |
