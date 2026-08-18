@@ -1,10 +1,10 @@
 {
-  "generated_utc": "2026-08-18T19:37:38+00:00",
+  "generated_utc": "2026-08-18T20:01:28+00:00",
   "generated_by": "step_4_engineer_features.py",
   "category": "Danskvand",
   "forecast_horizon": 1,
   "contract_version": "1.1",
-  "contract_generated_utc": "2026-08-18T19:37:38+00:00",
+  "contract_generated_utc": "2026-08-18T20:01:27+00:00",
   "parameters_applied": {
     "target_col": "sales_units",
     "min_periods": 15,
@@ -42,7 +42,8 @@
       7,
       8,
       9
-    ]
+    ],
+    "degenerate_features": 0
   },
   "output_parquet": "step_4_engineered_features_h1.parquet"
 }

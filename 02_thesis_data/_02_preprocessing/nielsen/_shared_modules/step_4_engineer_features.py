@@ -262,6 +262,53 @@ def _verify(df: pd.DataFrame, contract: dict, stats: dict) -> None:
 			"absent from the matrix."
 		)
 
+	# --- degenerate-feature guard (P0036 task 4) ---------------------------
+	#
+	# A feature that is present but constant carries no information, and its
+	# silence is the problem: a column of zeros is made of valid numbers, so
+	# nothing downstream objects. The promo family was entirely zero at region
+	# scope for weeks before anyone noticed (P0032 F10.2).
+	#
+	# Scoped to every engineered feature, not just promo -- the original task
+	# asked for exactly that generality, and the next silent-zero column will
+	# not be one anybody predicted.
+	#
+	# A legitimately ABSENT column is not a failure (DEC-NO-PROMO-FILL: a
+	# category with no promotion has no promo_intensity, correctly). That case
+	# belongs to the presence check above. This one fires only on columns that
+	# exist and say nothing.
+	_exempt = {
+		# Calendar and identity columns are constant-by-design at some grains.
+		"brand", "date", "period_index", "period_year", "period_month",
+		"split", "month", "quarter",
+		# peak_month is legitimately all-zero when a category has no peak
+		# months in its contract; verified against the contract just above.
+		"peak_month",
+	}
+	_degenerate = []
+	for _c in sorted(set(df.columns) - _exempt):
+		if not pd.api.types.is_numeric_dtype(df[_c]):
+			continue
+		_vals = df[_c].dropna()
+		if len(_vals) == 0:
+			_degenerate.append((_c, "all-null"))
+		elif _vals.nunique() == 1:
+			_degenerate.append((_c, f"constant ({_vals.iloc[0]:g})"))
+
+	if _degenerate:
+		_detail = "\n".join(f"    {c:<34} {why}" for c, why in _degenerate)
+		raise ContractError(
+			f"{len(_degenerate)} engineered feature(s) carry no information:\n"
+			f"{_detail}\n"
+			f"  A constant column cannot inform a model, and it fails silently "
+			f"because its values are individually valid.\n"
+			f"  Either the source measure is empty at this scope (check the "
+			f"market filter), or the feature's inputs are missing.\n"
+			f"  If the column is legitimately unavailable for this category, it "
+			f"should be OMITTED rather than filled (DEC-NO-PROMO-FILL)."
+		)
+	stats["degenerate_features"] = 0
+
 
 # ============================================================================
 # RUN

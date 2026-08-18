@@ -194,6 +194,13 @@ def main():
     df.to_csv(OUT / "metrics.csv", index=False)
 
     # summary.md
+    # `mean MAPE` is deliberately absent from this table (P0038 F75). MAPE
+    # divides by the actual, guarded as max(y, 1e-9), and 13.8% of CSD's test
+    # rows have exactly zero sales at parent scope -- so a one-unit error there
+    # scores 1e11 %. The mean carries that; the median does not. It read 1e12 -
+    # 1e15 % for every model INCLUDING SeasonalNaive, which is uninterpretable
+    # rather than merely unflattering. Still computed and written to metrics.csv,
+    # because the raw numbers are evidence; just not reported as a headline.
     lines = ["# SRQ1 benchmark — corrected DVH EXCL. HD matrices", "",
              "Test-set accuracy. WMAPE = volume-weighted (business metric); "
              "medMAPE = median per-row APE. Models trained in log space, seed=42.", ""]
@@ -202,14 +209,14 @@ def main():
         if sub.empty:
             continue
         lines += [f"## Dataset: {ds}", "",
-                  "| Category | Model | WMAPE | mean MAPE | median MAPE | n_train | n_test | n_series |",
-                  "|---|---|---|---|---|---|---|---|"]
+                  "| Category | Model | WMAPE | median MAPE | n_train | n_test | n_series |",
+                  "|---|---|---|---|---|---|---|"]
         for cat in CATS:
             for _, x in sub[sub.category == cat].iterrows():
                 wm = f"{x['wmape']:.1f}%" if pd.notna(x.get("wmape")) else "ERR"
                 mp = f"{x['mape_mean']:.1f}%" if pd.notna(x.get("mape_mean")) else "-"
                 md = f"{x['mape_median']:.1f}%" if pd.notna(x.get("mape_median")) else "-"
-                lines.append(f"| {cat} | {x['model']} | {wm} | {mp} | {md} | "
+                lines.append(f"| {cat} | {x['model']} | {wm} | {md} | "
                              f"{int(x['n_train'])} | {int(x['n_test'])} | "
                              f"{int(x['n_series']) if pd.notna(x.get('n_series')) else '-'} |")
         lines.append("")

@@ -1,7 +1,7 @@
 {
   "contract_version": "1.1",
   "category": "CSD",
-  "generated_utc": "2026-08-18T19:37:12+00:00",
+  "generated_utc": "2026-08-18T20:01:01+00:00",
   "generated_by": "step_3_derive_params.py",
   "target_col": "sales_units",
   "forecast_horizon": 1,

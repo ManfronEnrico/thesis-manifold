@@ -1,7 +1,7 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-18 22:35:00
+updated: 2026-08-18 23:00:00
 status: in_progress
 focus_detail: "P0038 COMPLETE, unblocking everything here. Task 9 CLOSED (its own measurement refutes the single-brand premise: 3,392 pooled rows vs 44). Task 4 half delivered (has_promo recorded, DEC-NO-PROMO-FILL); the all-zero assertion is still missing and two 2026-08-18 failures would have been caught by it. Tasks 7 and 11 unblocked; 11 still needs defining. See the 2026-08-18 status refresh at the foot of this file."
 ---
@@ -74,7 +74,7 @@ children (6.41× redundancy) without adding information at the modelling grain.
 | 1 | Cherry-pick V3/V4 `engineer_features.py` from the locked worktree | 1 | — | ✅ complete |
 | 2 | Preserve + remove four stale worktrees | 1 | 1 | ✅ complete |
 | 3 | Switch CSD market filter to parent `1256338` | 2 | — | ✅ complete |
-| 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | pending (half delivered — see note) |
+| 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | **complete** |
 | 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | ✅ complete |
 | 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | → **moved to P0038 task 8** |
 | 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | P0038 t8 | pending |

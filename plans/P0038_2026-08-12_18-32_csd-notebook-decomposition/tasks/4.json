@@ -4,7 +4,7 @@
   "subject": "Assert promo columns are non-degenerate",
   "description": "NEXT -- the critical-path blocker. Build _shared_modules/step_3_derive_params.py writing {category}_eda_findings.json as the step 3 -> step 4 contract (DEC-CONTRACT). Ports notebook cells 41-53 MINUS 43/49/51, which moved to step 2 as descriptive figures. Six parameters cross the boundary (F26, AST-traced): LAGS, ROLLING_WINDOWS, HOLIDAY_MONTHS, LOG_TRANSFORM_NECESSARY, TRAIN_END, VAL_END. Must ALSO settle two open defects: (a) MIN_PERIODS, currently hardcoded 40 with a rationale string written against CSD's 43-month span -- decide with a stated basis, evidence is step_2_06_brand_retention (F38 / P0036 task 8); (b) TRAIN_END/VAL_END drifted to a 24-27%% test share against an intended 15%% (F25/F28) -- derive proportionally, not hardcoded. Open-world per DEC-OPEN-WORLD. Must run for all four categories.\n\nUPDATE 2026-08-18 (F59): part 1 is partly answered. promo_units does not exist for Danskvand or RTD -- Nielsen reports no promotion for them -- so promo_intensity is now OMITTED there rather than zero-filled, and step 4 records has_promo per run. The degeneracy assertion (part 2) is still needed for CSD/Energidrikke, and the not_measured flag (part 3) is untouched. Note the assertion must treat an ABSENT column as legitimate category capability, not as a failure.",
   "activeForm": "Building shared step 3 parameter derivation",
-  "status": "pending",
+  "status": "completed",
   "blocks": [
     "6"
   ],

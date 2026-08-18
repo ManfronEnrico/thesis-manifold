@@ -44,7 +44,10 @@ def _date(yr, mo):
 def run_arima(series):
     from statsmodels.tsa.statespace.sarimax import SARIMAX
     fit = series["fit"]; h = series["h"]
-    y = np.log(np.maximum(fit, 1.0))
+    # log1p/expm1 are a matched pair; log/expm1 is not (expm1 inverts log1p).
+    # log1p also handles the genuine zeros in this panel without the max(y, 1.0)
+    # floor, which would rewrite a real zero as a one.
+    y = np.log1p(np.maximum(fit, 0.0))
     m = SARIMAX(y, order=(1, 1, 1), enforce_stationarity=False, enforce_invertibility=False)
     r = m.fit(disp=False)
     return np.expm1(r.forecast(h))
@@ -52,7 +55,9 @@ def run_arima(series):
 
 def run_prophet(series):
     from prophet import Prophet
-    df = pd.DataFrame({"ds": series["fit_ds"], "y": np.log(np.maximum(series["fit"], 1.0))})
+    # See run_arima: log1p pairs with the expm1 used to invert below.
+    df = pd.DataFrame({"ds": series["fit_ds"],
+                       "y": np.log1p(np.maximum(series["fit"], 0.0))})
     m = Prophet(yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False)
     m.fit(df)
     fut = pd.DataFrame({"ds": series["test_ds"]})
@@ -98,12 +103,16 @@ def main():
     df = pd.DataFrame(rows)
     df.to_csv(RES / "stat_baselines.csv", index=False)
     lines = ["# SRQ1 statistical baselines — ARIMA + Prophet (brand×month, per-brand)", "",
-             "WMAPE = volume-weighted across brands; medMAPE = median per-series. "
+             "**medMAPE (median per-series) is the headline metric here.** "
+             "WMAPE is volume-weighted and unbounded above, so one diverged "
+             "series sets the category figure -- CSD Prophet's WMAPE is 60% a "
+             "single brand (P0038 F72). Both are reported; prefer medMAPE when "
+             "comparing per-series statistical baselines. "
              "For SRQ4 comparison vs the tabular models (tuned_summary.md).", "",
-             "| Category | Model | WMAPE | median MAPE | n_series |",
+             "| Category | Model | medMAPE | WMAPE | n_series |",
              "|---|---|---|---|---|"]
     for _, x in df.iterrows():
-        lines.append(f"| {x['category']} | {x['model']} | {x['wmape']:.1f}% | {x['median_mape']:.1f}% | {int(x['n_series'])} |")
+        lines.append(f"| {x['category']} | {x['model']} | {x['median_mape']:.1f}% | {x['wmape']:.1f}% | {int(x['n_series'])} |")
     (RES / "stat_baselines.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("Saved stat_baselines.csv + stat_baselines.md")
 

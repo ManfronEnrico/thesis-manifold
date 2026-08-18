@@ -1889,3 +1889,74 @@ agree with each other. **Recommendation: drop mean MAPE from the reported table*
 rather than explain it — a column no reader can interpret is worse than absent.
 Not removed here: which metrics the thesis reports is Brian's call.
 
+---
+
+## F76 — P0036 task 4 delivered: the degenerate-feature guard
+
+The missing half of task 4. The existing verification checked that contracted
+columns are **present**; a column can be present and carry no information, which
+is the failure that actually happened.
+
+Added to `step_4_engineer_features._verify()`, scoped to **every** engineered
+feature rather than promo alone — what the original task asked for, and the next
+silent-zero column will not be one anybody predicted.
+
+**Distinguishing degenerate from legitimately absent was the design question.**
+DEC-NO-PROMO-FILL means a category without promotion has no `promo_intensity`
+column at all, and that is correct. So the guard fires only on columns that
+**exist and say nothing** (single distinct value, or all-null); absence stays
+with the presence check above it. Calendar/identity columns are exempt, plus
+`peak_month`, which is legitimately all-zero when a contract lists no peak months
+and is verified against the contract separately.
+
+**Verified by mutation, not by observing it stay quiet.** A guard that never
+fires is untested:
+
+| Case | Result |
+|------|--------|
+| unmodified matrix (control) | **PASS** |
+| `promo_intensity` all-zero — *the exact P0032 failure* | **CAUGHT** `constant (0)` |
+| `lag_1` all-null | **CAUGHT** `all-null` |
+| `weighted_dist` constant | **CAUGHT** `constant (0.5)` |
+
+Full pipeline re-run afterwards: **8/8 clean**. No degenerate features in current
+data, which is the correct outcome — the guard is a tripwire, not a finding.
+
+The error message names the likely causes (empty source measure at this scope,
+or missing inputs) and states the DEC-NO-PROMO-FILL rule, so whoever hits it is
+not left to rediscover this session's reasoning.
+
+---
+
+## F77 — metric reporting fixed: mean MAPE dropped, medMAPE promoted, log1p paired
+
+Three changes acting on F72 and F75, all in the reported tables rather than in
+the models — deliberately, since tuning a baseline until it flatters the models
+it is compared against is not a defensible move.
+
+**1. `mean MAPE` dropped from the benchmark table.** It read 1e12 – 1e15 % for
+every model *including SeasonalNaive*. Cause measured: MAPE divides by the
+actual, guarded as `max(y, 1e-9)`, and **92 of CSD's 665 test rows (13.8%) are
+exactly zero** at parent scope, so a one-unit error there scores 1e11 %. Still
+written to `metrics.csv` — the raw numbers are evidence — but no longer reported
+as a headline a reader might quote.
+
+**2. medMAPE promoted to headline for the statistical baselines**, WMAPE kept
+alongside with a caption explaining why. The table is now readable: Prophet beats
+ARIMA on Danskvand (37.1% vs 48.4%) and loses elsewhere, which is a sentence the
+thesis can carry. Energidrikke's WMAPE of 975.6% is still visible but no longer
+leads.
+
+**3. `log` → `log1p` in both baseline fit paths.** Both fitted on
+`np.log(max(y, 1.0))` and inverted with `np.expm1()`. Those do not pair — `expm1`
+inverts `log1p`, not `log` — leaving a constant −1-unit bias on every prediction,
+negligible at 1e6 units and material for the small brands that dominate the
+per-series median. `log1p` also removes the need for the `max(y, 1.0)` floor,
+which silently rewrote genuine zeros as ones.
+
+**The divergence itself is untouched.** F72's recommendation stands: Prophet's
+unbounded linear trend fitted in log space is still capable of predicting 101M
+against 301k actual. What changed is that the reported metric no longer lets one
+series set a category's number. Capping the trend remains available and remains
+Brian's call.
+
