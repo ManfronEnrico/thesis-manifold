@@ -134,6 +134,32 @@ RENAMES: dict[str, str] = {
 	"sales_in_liters": "sales_liters",
 	"sales_units_any_promo": "promo_units",
 	"weighted_distribution": "weighted_dist",
+
+	# --- per-category spelling variants (P0038, 2026-08-18) -----------------
+	# Nielsen spells the same three display/feature measures differently per
+	# category. Without canonicalisation they present as six distinct features,
+	# and any cross-category comparison misreports what the categories share
+	# (found by step 6 --check-consistency). The common-to-all count stays 23,
+	# since these three measures are absent from Danskvand regardless; what the
+	# canonicalisation fixes is the pairwise picture -- CSD and Energidrikke now
+	# show as feature-identical (41 each), and RTD differs from them by exactly
+	# the two promo columns rather than by five apparent absences, so a real
+	# capability gap is no longer masked by three spelling artifacts.
+	#
+	#   measure                  CSD            Energidrikke   RTD
+	#   display AND feature      disp_feat      disp_feat      disp_and_feat
+	#   display WITHOUT feature  disp_w_o_feat  disp_wo_feat   disp_wo_feat
+	#   feature WITHOUT display  feat_w_o_disp  feat_wo_disp   feat_wo_disp
+	#
+	# This is a naming difference, not a capability difference -- precisely the
+	# case DEC-OPEN-WORLD anticipated. Canonical form spells out and/without:
+	# "disp_feat" does not say whether it means "display and feature" or the
+	# pair, and "w_o" is an abbreviation the reader must decode.
+	"weighted_distribution_disp_feat": "weighted_distribution_disp_and_feat",
+	"weighted_distribution_disp_w_o_feat": "weighted_distribution_disp_without_feat",
+	"weighted_distribution_disp_wo_feat": "weighted_distribution_disp_without_feat",
+	"weighted_distribution_feat_w_o_disp": "weighted_distribution_feat_without_disp",
+	"weighted_distribution_feat_wo_disp": "weighted_distribution_feat_without_disp",
 }
 
 

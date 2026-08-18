@@ -1,0 +1,42 @@
+{
+  "generated_utc": "2026-08-18T13:47:19+00:00",
+  "generated_by": "step_5_apply_split.py",
+  "category": "RTD",
+  "forecast_horizon": 1,
+  "contract_version": "1.1",
+  "cutoffs_applied": {
+    "train_end": [
+      2025,
+      7
+    ],
+    "val_end": [
+      2026,
+      1
+    ]
+  },
+  "n_test_origins": 6,
+  "partitions": {
+    "train": {
+      "rows": 2088,
+      "months": 29,
+      "brands": 72,
+      "start": "2023-03",
+      "end": "2025-07"
+    },
+    "val": {
+      "rows": 432,
+      "months": 6,
+      "brands": 72,
+      "start": "2025-08",
+      "end": "2026-01"
+    },
+    "test": {
+      "rows": 432,
+      "months": 6,
+      "brands": 72,
+      "start": "2026-02",
+      "end": "2026-07"
+    }
+  },
+  "output_parquet": "step_5_split_applied_h1.parquet"
+}

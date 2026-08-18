@@ -1,0 +1,8 @@
+{
+  "train_start": "2022-10",
+  "train_end": "2025-05",
+  "val_start": "2025-06",
+  "val_end": "2025-12",
+  "test_start": "2026-01",
+  "test_end": "2026-07"
+}

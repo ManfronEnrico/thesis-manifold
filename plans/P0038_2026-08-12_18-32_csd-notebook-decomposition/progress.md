@@ -549,3 +549,49 @@ treat an ABSENT column as legitimate category capability rather than as a failur
 - Carry into step 6: the four categories no longer share a feature space (F59), so a
   pooled output must either intersect columns or record the difference explicitly.
 
+---
+
+## Session 2026-08-18 (cont.) — steps 5 and 6, and the pipeline is complete
+
+Built `step_5_apply_split.py` and `step_6_save_outputs.py` (task 6 / session task 21).
+**24 runs clean**: 4 categories x 2 horizons x 3 steps. Steps 0-6 now all exist as
+shared scripts.
+
+**Split geometry matches the F29 projection exactly in all four categories** —
+CSD 32/7/7, Danskvand 29/6/6, Energidrikke 30/6/7, RTD 29/6/6. That was the plan's
+stated verification criterion for this task. Ratios hold near 70/15/15 everywhere,
+against the 24-27% test share the hardcoded dates had drifted to. 18 pooled test
+origins at H=3.
+
+**Step 5 refuses an unevaluable split**, which is what the plan asked it to own. The
+three steps now differ deliberately: step 3 warns (a contract is a measurement),
+step 4 warns (a matrix is still valid), step 5 refuses (a split IS the evaluation, so
+an unevaluable one is a contradiction). Verified end to end at H=12, including the
+`--allow-unevaluable` escape hatch. Four label guards confirmed firing, the important
+one being strict temporal ordering — a shuffled split fails silently with excellent
+meaningless accuracy.
+
+**Step 6's --check-consistency earned its place immediately (F64).** It found three
+Nielsen measures spelled three different ways across categories (`disp_feat` /
+`disp_and_feat`, `disp_w_o_feat` / `disp_wo_feat`, and so on). Verified same measure,
+not different ones, then canonicalised via step 1's existing RENAMES hook. CSD and
+Energidrikke now show as feature-identical (41 each) and RTD differs by exactly the
+two promo columns — previously a real capability gap was masked by spelling
+artifacts. Corrected my own note in the process: I predicted the common count would
+rise to 26; it stays at 23, since those measures are absent from Danskvand anyway.
+
+**Found but deliberately not fixed (F65).** Twelve scripts in `03_thesis_modelling/`
+still read the notebook's un-suffixed `{slug}_feature_matrix.parquet`. Repointing them
+now would destroy the parity baseline task 23 needs and would switch modelling onto
+unverified data. Correct order: parity passes, then repoint, then retire. Noted for
+task 24 that this is not a find-and-replace — H=1 and H=3 are different matrices, so
+"the" feature matrix no longer has an unambiguous referent downstream.
+
+### State
+
+- Tasks 1-6 of the plan complete (session tasks 16-21). Steps 0-6 all shipped.
+- NEXT: task 7 — the shared `run_preprocessing.py` orchestrator, which chains
+  steps 0-6 for one category at one horizon.
+- THEN task 23, the gate: CSD end-to-end plus parity against the notebook. Unblocks
+  P0033.
+

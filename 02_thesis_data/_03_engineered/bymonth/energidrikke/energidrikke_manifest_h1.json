@@ -1,0 +1,98 @@
+{
+  "generated_utc": "2026-08-18T13:47:22+00:00",
+  "generated_by": "step_6_save_outputs.py",
+  "category": "Energidrikke",
+  "forecast_horizon": 1,
+  "target_col": "sales_units",
+  "log_transform_target": true,
+  "contract_version": "1.1",
+  "contract_generated_utc": "2026-08-18T13:31:52+00:00",
+  "parameters_applied": {
+    "min_periods": 15,
+    "lags": [
+      1,
+      2,
+      3,
+      4,
+      8,
+      13
+    ],
+    "rolling_windows": [
+      4,
+      13
+    ],
+    "peak_months": [
+      3,
+      6,
+      9
+    ]
+  },
+  "capabilities": {
+    "has_promo": true,
+    "has_weighted_dist": true
+  },
+  "shape": {
+    "rows": 2150,
+    "columns": 48,
+    "brands": 50,
+    "n_features": 41
+  },
+  "features": [
+    "avg_no_of_items_per_store_reach",
+    "avg_number_of_stores_selling_reach",
+    "baseline_sales_in_liters",
+    "baseline_sales_in_liters_any_promo",
+    "baseline_sales_units",
+    "baseline_sales_units_any_promo",
+    "baseline_sales_value",
+    "baseline_sales_value_any_promo",
+    "lag_1",
+    "lag_13",
+    "lag_2",
+    "lag_3",
+    "lag_4",
+    "lag_8",
+    "month",
+    "number_of_items_reach",
+    "numeric_distribution",
+    "numeric_distribution_reach",
+    "peak_month",
+    "promo_intensity",
+    "promo_units",
+    "quarter",
+    "rolling_mean_13",
+    "rolling_mean_4",
+    "rolling_std_4",
+    "sales_in_liters_any_promo",
+    "sales_liters",
+    "sales_units_any_tpr",
+    "sales_value",
+    "sales_value_any_promo",
+    "total_weighted_distribution_points_tdp_reach",
+    "universe_number_of_stores",
+    "weighted_dist",
+    "weighted_distribution_any_disp",
+    "weighted_distribution_any_promo",
+    "weighted_distribution_any_tpr",
+    "weighted_distribution_disp_and_feat",
+    "weighted_distribution_disp_without_feat",
+    "weighted_distribution_feat_without_disp",
+    "weighted_distribution_reach",
+    "weighted_distribution_total_feat"
+  ],
+  "split_dates": {
+    "train_start": "2023-01",
+    "train_end": "2025-06",
+    "val_start": "2025-07",
+    "val_end": "2025-12",
+    "test_start": "2026-01",
+    "test_end": "2026-07"
+  },
+  "n_test_origins": 7,
+  "files": {
+    "feature_matrix": "energidrikke_feature_matrix_h1.parquet",
+    "series_index": "energidrikke_series_index_h1.csv",
+    "split_dates": "energidrikke_split_dates_h1.json",
+    "manifest": "energidrikke_manifest_h1.json"
+  }
+}

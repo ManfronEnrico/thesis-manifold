@@ -3,7 +3,7 @@
   "description": "",
   "activeForm": "Generalise step_5_apply_split.py and step_6_save_outputs.py to --category",
   "subject": "Generalise step_5_apply_split.py and step_6_save_outputs.py to --category",
-  "status": "pending",
+  "status": "completed",
   "blockedBy": [
     "20"
   ],

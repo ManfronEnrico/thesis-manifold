@@ -1222,3 +1222,112 @@ Corrected list written in place with the original retained in an HTML comment an
 NEEDS REVIEW flag — not silently rewritten, since it may reflect an earlier deliberate
 design decision.
 
+---
+
+## F63 — steps 5 and 6 shipped; the split now matches the F29 projection exactly
+
+`_shared_modules/step_5_apply_split.py` and `step_6_save_outputs.py` built and
+verified. **24 runs clean** (4 categories x 2 horizons x 3 steps).
+
+Split geometry at H=3, against the F29 projection:
+
+| Category | Projected | Actual | Ratio | Test origins |
+|----------|-----------|--------|-------|-------------:|
+| CSD | 32/7/7 | **32/7/7** | 69.6 / 15.2 / 15.2 | 5 |
+| Danskvand | 29/6/6 | **29/6/6** | 70.7 / 14.6 / 14.6 | 4 |
+| Energidrikke | 30/6/7 | **30/6/7** | 69.8 / 14.0 / 16.3 | 5 |
+| RTD | 29/6/6 | **29/6/6** | 70.7 / 14.6 / 14.6 | 4 |
+
+Four for four. Against the 24-27% test share the hardcoded dates had drifted to,
+the proportional rule holds ~15% everywhere. **18 pooled test origins** at H=3.
+
+**Step 5 refuses an unevaluable split — verified end to end.** This is the guard the
+plan assigned to this step, and the three steps now differ deliberately in how they
+treat H=12:
+
+| Step | Behaviour at H=12 | Why |
+|------|-------------------|-----|
+| 3 | warns, writes contract | a contract is a measurement; recording that a horizon is unevaluable IS the finding |
+| 4 | warns, builds matrix | a feature matrix is still a valid artifact independent of evaluation |
+| 5 | **refuses** | a split is the object that DEFINES the evaluation, so an unevaluable split is a contradiction in terms |
+
+`--allow-unevaluable` exists for inspection and prints a loud banner. Verified: H=12
+is refused by default, labelled with the flag.
+
+**Step 5 also verifies the labels rather than trusting them.** Four guards, all
+confirmed firing:
+
+| Guard | Catches |
+|-------|---------|
+| empty partition | a split with no validation or test rows |
+| month counts vs contract | matrix covering a different period than step 3 measured |
+| strict temporal ordering | overlapping partitions — training on the future |
+| cutoffs read from contract, never re-derived | the F25/F28 drift, structurally |
+
+The ordering guard matters most because its failure is silent: a shuffled split
+trains on the future and reports excellent, meaningless accuracy.
+
+**Step 6 reads split dates back off the labelled frame** rather than recomputing them
+from the contract. The two should agree, and step 5 asserts they do — but if they
+ever diverge the file must report what the data says, because that is what a model was
+actually trained on.
+
+---
+
+## F64 — three Nielsen measures were spelled three different ways across categories
+
+Found immediately by step 6's `--check-consistency`, which is the argument for having
+built it:
+
+| Measure | CSD | Energidrikke | RTD |
+|---------|-----|--------------|-----|
+| display AND feature | `disp_feat` | `disp_feat` | `disp_and_feat` |
+| display WITHOUT feature | `disp_w_o_feat` | `disp_wo_feat` | `disp_wo_feat` |
+| feature WITHOUT display | `feat_w_o_disp` | `feat_wo_disp` | `feat_wo_disp` |
+
+Verified as the same measure, not different ones: identical 0-1 distribution scale,
+consistent relative ordering across all three categories.
+
+This is exactly the case DEC-OPEN-WORLD anticipated when it noted a hardcoded column
+list "could not express per-category spelling variants". Canonicalised through the
+existing `RENAMES` map in step 1, spelling out `and`/`without` — `disp_feat` does not
+say whether it means "display and feature" or the pair, and `w_o` must be decoded.
+
+**Effect on the cross-category picture:**
+
+| | Before | After |
+|--|--------|-------|
+| CSD vs Energidrikke | 3 apparent absences each | **feature-identical, 41 each** |
+| RTD vs those two | 5 apparent absences | **differs by exactly the 2 promo columns** |
+| Common to all four | 23 | 23 (unchanged) |
+
+The common count does not move, because these measures are absent from Danskvand
+regardless. What the fix buys is that RTD's **real** capability gap (no promo) is no
+longer masked by three spelling artifacts. A correction to the note first written in
+step 1: I predicted 26 common features; the true figure is unchanged at 23.
+
+---
+
+## F65 — twelve downstream scripts still read the notebook's output, not the pipeline's
+
+`grep` across `03_thesis_modelling/` finds **12 scripts** reading
+`{slug}_feature_matrix.parquet` — the un-suffixed file the notebook wrote. The new
+pipeline writes `{slug}_feature_matrix_h{N}.parquet`, so nothing downstream currently
+consumes it.
+
+Affected: `srq1_baselines_stat`, `srq1_calibration`, `srq1_shap`, `srq1_benchmark`,
+`srq1_benchmark_tuned`, `srq1_figures`, `srq1_profiling`, `srq2_synthesis`,
+`srq4_experiment` (3 sites), `srq4_tier2`.
+
+**Deliberately NOT changed here.** Task 23 is the parity check, and it compares the
+new pipeline's output against the notebook's. Repointing the consumers first would
+destroy the baseline the check needs, and would switch the modelling layer onto
+unverified data. The correct order is: parity passes (task 23), then repoint, then
+retire the notebook artifacts (task 24).
+
+**Note for task 24**: repointing is not a pure find-and-replace. The consumers must
+also choose a horizon, and H=1 and H=3 are different matrices with different
+`min_periods` (15 vs 17) and different brand counts. A script that reads "the" feature
+matrix no longer has an unambiguous referent — the horizon has to become an explicit
+parameter downstream, exactly as it is in the pipeline.
+
