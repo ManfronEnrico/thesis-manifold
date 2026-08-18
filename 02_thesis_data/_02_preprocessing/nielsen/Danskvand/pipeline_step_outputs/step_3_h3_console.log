@@ -1,0 +1,35 @@
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Danskvand (horizon=3)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 3 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 17  (= warmup + horizon + 1, derived)
+  peak_months        = [6, 7, 8, 9]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 4 at horizon 3
+
+RETENTION AT min_periods
+  brands                = 29 / 55 kept (26 dropped)
+  training rows         = 620 / 620 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables

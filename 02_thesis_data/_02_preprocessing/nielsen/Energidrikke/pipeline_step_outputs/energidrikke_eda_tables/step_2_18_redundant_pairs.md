@@ -38,7 +38,7 @@
 | promo_units                                  | sales_units_any_tpr                          |      0.9832 |
 | sales_value                                  | promo_units                                  |      0.9828 |
 | sales_units                                  | baseline_sales_value_any_promo               |      0.9820 |
-| weighted_distribution_disp_wo_feat           | weighted_distribution_any_disp               |      0.9798 |
+| weighted_distribution_disp_without_feat      | weighted_distribution_any_disp               |      0.9798 |
 | baseline_sales_in_liters                     | baseline_sales_in_liters_any_promo           |      0.9791 |
 | baseline_sales_units                         | baseline_sales_value_any_promo               |      0.9775 |
 | baseline_sales_units                         | baseline_sales_units_any_promo               |      0.9772 |
@@ -66,7 +66,7 @@
 | baseline_sales_value_any_promo               | baseline_sales_in_liters_any_promo           |      0.9664 |
 | sales_value_any_promo                        | sales_in_liters_any_promo                    |      0.9646 |
 | baseline_sales_in_liters                     | baseline_sales_units                         |      0.9639 |
-| weighted_distribution_feat_wo_disp           | weighted_distribution_total_feat             |      0.9629 |
+| weighted_distribution_feat_without_disp      | weighted_distribution_total_feat             |      0.9629 |
 | sales_in_liters_any_promo                    | baseline_sales_units                         |      0.9627 |
 | sales_value                                  | sales_units_any_tpr                          |      0.9605 |
 | sales_units_any_tpr                          | baseline_sales_value_any_promo               |      0.9593 |

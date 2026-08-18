@@ -19,13 +19,13 @@
 | sales_in_liters_any_promo                    |      0.9680 |       0.9665 |      0.0015 | False        |
 | baseline_sales_in_liters_any_promo           |      0.9541 |       0.9582 |      0.0041 | False        |
 | baseline_sales_in_liters                     |      0.9466 |       0.9808 |      0.0343 | False        |
-| weighted_distribution_feat_wo_disp           |      0.6613 |       0.5865 |      0.0748 | False        |
+| weighted_distribution_feat_without_disp      |      0.6613 |       0.5865 |      0.0748 | False        |
 | weighted_distribution_total_feat             |      0.6349 |       0.5716 |      0.0633 | False        |
 | baseline_sales_value                         |      0.5387 |       0.9833 |      0.4446 | True         |
 | weighted_distribution_any_tpr                |      0.4997 |       0.7550 |      0.2553 | True         |
 | weighted_distribution_any_promo              |      0.4646 |       0.7992 |      0.3345 | True         |
 | numeric_distribution                         |      0.4597 |       0.9214 |      0.4617 | True         |
-| weighted_distribution_disp_feat              |      0.4533 |       0.4209 |      0.0324 | False        |
+| weighted_distribution_disp_and_feat          |      0.4533 |       0.4209 |      0.0324 | False        |
 | weighted_dist                                |      0.4206 |       0.8852 |      0.4645 | True         |
 | number_of_items_reach                        |      0.3903 |       0.8983 |      0.5080 | True         |
 | avg_number_of_stores_selling_reach           |      0.3900 |       0.8983 |      0.5083 | True         |
@@ -33,6 +33,6 @@
 | total_weighted_distribution_points_tdp_reach |      0.3592 |       0.8552 |      0.4961 | True         |
 | weighted_distribution_reach                  |      0.3592 |       0.8552 |      0.4961 | True         |
 | weighted_distribution_any_disp               |      0.3289 |       0.7139 |      0.3850 | True         |
-| weighted_distribution_disp_wo_feat           |      0.2631 |       0.6856 |      0.4225 | True         |
+| weighted_distribution_disp_without_feat      |      0.2631 |       0.6856 |      0.4225 | True         |
 | avg_no_of_items_per_store_reach              |     -0.0080 |       0.5429 |      0.5509 | True         |
 | universe_number_of_stores                    |      0.0018 |      -0.0890 |      0.0907 | False        |

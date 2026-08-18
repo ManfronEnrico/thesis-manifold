@@ -22,8 +22,8 @@
 | baseline_sales_value_any_promo               |      0.8232 |       0.9211 |      0.0978 | False        |
 | weighted_distribution_total_feat             |      0.4684 |       0.6367 |      0.1683 | True         |
 | numeric_distribution                         |      0.4631 |       0.9223 |      0.4591 | True         |
-| weighted_distribution_disp_feat              |      0.4398 |       0.5103 |      0.0705 | False        |
-| weighted_distribution_feat_w_o_disp          |      0.4392 |       0.6496 |      0.2104 | True         |
+| weighted_distribution_disp_and_feat          |      0.4398 |       0.5103 |      0.0705 | False        |
+| weighted_distribution_feat_without_disp      |      0.4392 |       0.6496 |      0.2104 | True         |
 | weighted_dist                                |      0.4302 |       0.9076 |      0.4774 | True         |
 | numeric_distribution_reach                   |      0.4029 |       0.9050 |      0.5021 | True         |
 | number_of_items_reach                        |      0.4028 |       0.9050 |      0.5022 | True         |
@@ -33,6 +33,6 @@
 | weighted_distribution_any_promo              |      0.3551 |       0.8085 |      0.4533 | True         |
 | weighted_distribution_any_disp               |      0.3191 |       0.7254 |      0.4062 | True         |
 | weighted_distribution_any_tpr                |      0.3101 |       0.7775 |      0.4674 | True         |
-| weighted_distribution_disp_w_o_feat          |      0.2332 |       0.7057 |      0.4725 | True         |
+| weighted_distribution_disp_without_feat      |      0.2332 |       0.7057 |      0.4725 | True         |
 | universe_number_of_stores                    |      0.0060 |      -0.0194 |      0.0254 | False        |
 | avg_no_of_items_per_store_reach              |     -0.0006 |       0.5964 |      0.5970 | True         |

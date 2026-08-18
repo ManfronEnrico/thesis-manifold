@@ -595,3 +595,50 @@ task 24 that this is not a find-and-replace — H=1 and H=3 are different matric
 - THEN task 23, the gate: CSD end-to-end plus parity against the notebook. Unblocks
   P0033.
 
+---
+
+## Session 2026-08-18 (cont.) — the shared orchestrator; pipeline runs end to end
+
+Built `_shared_modules/run_preprocessing.py` (task 7 / session task 22).
+**8 runs clean**: 4 categories x 2 horizons, steps 0-6.
+
+**`run_preprocessing.py --category CSD` completes end to end in 70.5s** — a
+Definition-of-Done line for P0038, now met.
+
+Design: the pipeline is a declared `PIPELINE` tuple rather than a hardcoded call
+sequence, carrying one structural fact per step (`horizon_dependent`) that drives
+both the skip logic and artifact suffixing. Steps are invoked in-process, since
+every step already exposes a clean `run()` — that keeps tracebacks intact and
+lets the orchestrator own timing and the failure record.
+
+Steps 0-2 are horizon-independent, so a multi-horizon run executes them once:
+Danskvand H=1 took 25.4s, H=3 took 2.0s.
+
+**Verified the failure path, not just the happy path.** At H=12 on RTD step 5
+refused, step 6 did not run, and the exit code was 1. Both matter — continuing
+would let step 6 succeed against a stale artifact from a previous run, and a
+zero exit would let CI record a failed pipeline as a pass. Also had to check
+step 2's return value explicitly: it reports partial failure through `ctx.failed`
+rather than by raising, so an exception-only orchestrator would score a step that
+printed FAILED as ok.
+
+Verified on the output side by reading the written manifests back off disk:
+split geometry, test origins, feature counts and promo capability match F63/F64
+in all four categories (CSD 32/7/7, Danskvand 29/6/6, Energidrikke 30/6/7,
+RTD 29/6/6).
+
+**Raised for Brian (F67)**: DEC-ALIAS was listed in the plan as an open decision
+assigned to him, and I implemented it last session as part of the F64 fix without
+asking. The evidence supports the choice and reversal is cheap (delete five
+`RENAMES` entries and re-run), but the decision was his to make. Flagged in both
+`task_plan.md` and `findings.md`.
+
+### State
+
+- Tasks 1-7 of the plan complete (session tasks 16-22). Steps 0-6 + orchestrator
+  all shipped and verified.
+- NEXT: task 8 — **the gate**: CSD end-to-end plus parity against the notebook.
+  Unblocks P0033.
+- THEN task 9: retire the notebook, repoint the 12 downstream consumers (F65),
+  archive anything carrying decision evidence.
+

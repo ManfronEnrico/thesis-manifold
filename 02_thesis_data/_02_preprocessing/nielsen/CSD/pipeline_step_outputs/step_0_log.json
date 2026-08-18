@@ -62,5 +62,21 @@
     "category": "CSD",
     "elapsed_sec": 0.0,
     "output_rows": 4
+  },
+  {
+    "timestamp": "2026-08-18T20:20:02.202067",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "CSD",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
+  },
+  {
+    "timestamp": "2026-08-18T20:22:18.549590",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "CSD",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
   }
 ]

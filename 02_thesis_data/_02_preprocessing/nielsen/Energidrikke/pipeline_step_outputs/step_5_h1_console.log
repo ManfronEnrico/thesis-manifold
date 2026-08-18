@@ -1,0 +1,18 @@
+================================================================================
+STEP 5 -- APPLY SPLIT: Energidrikke (horizon=1)
+================================================================================
+
+Contract: energidrikke_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 2,150 rows x 47 columns
+
+Applying cutoffs from the contract: train<=(2025, 6), val<=(2025, 12)
+
+SPLIT APPLIED
+  train = 30 months (2023-01 .. 2025-06),  1,500 rows,  50 brands [69.8%]
+  val   =  6 months (2025-07 .. 2025-12),    300 rows,  50 brands [14.0%]
+  test  =  7 months (2026-01 .. 2026-07),    350 rows,  50 brands [16.3%]
+  test origins at horizon 1: 7
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables

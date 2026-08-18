@@ -1,0 +1,139 @@
+
+================================================================================
+  STEP 3 -- derive contract  (H=12)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: RTD (horizon=12)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (49976, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 28 measure columns (12 additive, 16 intensive)
+  Panel: 2,509 rows x 31 columns, 101 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 12 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 26  (= warmup + horizon + 1, derived)
+  peak_months        = [5, 6, 12]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 0 at horizon 12
+
+  !! HORIZON NOT EVALUABLE: the test window is shorter than the
+     forecast horizon, so no forecast origin has its target
+     inside the window. Step 5 will refuse this split.
+     Lower --horizon, or extend the observed period.
+
+RETENTION AT min_periods
+  brands                = 51 / 101 kept (50 dropped)
+  training rows         = 668 / 668 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_findings_h12.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=12)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: RTD (horizon=12)
+================================================================================
+
+Contract: rtd_eda_findings_h12.json (version 1.1)
+  target                = sales_units
+  min_periods           = 26
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [5, 6, 12]
+  log_transform_target  = True
+
+  !! This contract reports zero evaluable test origins at horizon 12.
+     The matrix will build, but step 5 will refuse the split.
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (49976, 31)
+  Products shape: (728, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 28 measure columns (12 additive, 16 intensive)
+  Panel: 2,509 rows x 31 columns, 101 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 2,509 rows / 101 brands
+  after calendar fill   = 4,141 rows
+  after min_periods     = 2,091 rows / 51 brands (50 dropped)
+  engineered            = 2,091 rows x 45 columns
+  peak flag set on      = [5, 6, 12] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_4_engineered_features_h12.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_4_log_h12.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=12)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: RTD (horizon=12)
+================================================================================
+
+Contract: rtd_eda_findings_h12.json (version 1.1)
+Traceback (most recent call last):
+  File "Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\_shared_modules\run_preprocessing.py", line 197, in run_pipeline
+    out = _invoke(step, category, horizon, make_plots, allow_unevaluable)
+  File "Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\_shared_modules\run_preprocessing.py", line 145, in _invoke
+    return step.module.run(category, horizon, allow_unevaluable)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\_shared_modules\step_5_apply_split.py", line 187, in run
+    check_evaluable(contract, horizon, allow_unevaluable)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\_shared_modules\step_5_apply_split.py", line 102, in check_evaluable
+    raise ContractError(
+    ...<2 lines>...
+    )
+step_4_engineer_features.ContractError: Split is not evaluable at horizon 12.
+  Test window: 6 month(s)
+  Forecast origins with their target inside it: 0
+  A forecast made at origin t targets t+12. With a test window shorter than the horizon, no origin's target lands in the window, so every downstream metric would be computed over an empty set.
+  Lower --horizon, or extend the observed period.
+  Pass --allow-unevaluable to label the split anyway (it will not be usable for evaluation).
+
+================================================================================
+  PIPELINE SUMMARY
+================================================================================
+
+  RTD  H=12   [FAILED]      9.8s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      5.9s   derive contract
+    step 4      4.0s   engineer features
+    step 5      0.0s   apply split  <-- FAILED
+             ContractError: Split is not evaluable at horizon 12.
+  Test window: 6 month(s)
+  Forecast origins with their target inside it: 0
+  A forecast made at origin t targets t+12. With a test window shorter than the horizon, no origin's target lands in the window, so every downstream metric would be computed over an empty set.
+  Lower --horizon, or extend the observed period.
+  Pass --allow-unevaluable to label the split anyway (it will not be usable for evaluation).
+
+  1 of 1 run(s) FAILED:
+    RTD H=12 step 5: ContractError: Split is not evaluable at horizon 12.
+  Test window: 6 month(s)
+  Forecast origins with their target inside it: 0
+  A forecast made at origin t targets t+12. With a test window shorter than the horizon, no origin's target lands in the window, so every downstream metric would be computed over an empty set.
+  Lower --horizon, or extend the observed period.
+  Pass --allow-unevaluable to label the split anyway (it will not be usable for evaluation).

@@ -27,8 +27,8 @@
 | numeric_distribution_reach                   |      0.5051 |       0.9282 |      0.4230 | True         |
 | weighted_dist                                |      0.4766 |       0.9205 |      0.4439 | True         |
 | weighted_distribution_total_feat             |      0.4552 |       0.6711 |      0.2159 | True         |
-| weighted_distribution_feat_wo_disp           |      0.4391 |       0.6563 |      0.2172 | True         |
-| weighted_distribution_disp_wo_feat           |      0.4350 |       0.7307 |      0.2957 | True         |
+| weighted_distribution_feat_without_disp      |      0.4391 |       0.6563 |      0.2172 | True         |
+| weighted_distribution_disp_without_feat      |      0.4350 |       0.7307 |      0.2957 | True         |
 | total_weighted_distribution_points_tdp_reach |      0.4133 |       0.9068 |      0.4935 | True         |
 | weighted_distribution_reach                  |      0.4133 |       0.9068 |      0.4935 | True         |
 | weighted_distribution_disp_and_feat          |      0.4063 |       0.5902 |      0.1839 | True         |

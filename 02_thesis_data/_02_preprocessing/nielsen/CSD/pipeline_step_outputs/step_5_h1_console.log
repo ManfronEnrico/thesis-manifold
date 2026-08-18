@@ -1,0 +1,18 @@
+================================================================================
+STEP 5 -- APPLY SPLIT: CSD (horizon=1)
+================================================================================
+
+Contract: csd_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 4,876 rows x 47 columns
+
+Applying cutoffs from the contract: train<=(2025, 5), val<=(2025, 12)
+
+SPLIT APPLIED
+  train = 32 months (2022-10 .. 2025-05),  3,392 rows, 106 brands [69.6%]
+  val   =  7 months (2025-06 .. 2025-12),    742 rows, 106 brands [15.2%]
+  test  =  7 months (2026-01 .. 2026-07),    742 rows, 106 brands [15.2%]
+  test origins at horizon 1: 7
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables

@@ -36,5 +36,5 @@ Status: OK -- [Danskvand] All 4 required parquet view files present
 Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\
 pipeline_step_outputs\step_0_console.log
 
-✓ Completed in 0.0s
+✓ Completed in 0.1s
 

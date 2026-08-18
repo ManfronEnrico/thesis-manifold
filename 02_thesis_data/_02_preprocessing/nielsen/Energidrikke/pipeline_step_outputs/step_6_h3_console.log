@@ -1,0 +1,31 @@
+================================================================================
+STEP 6 -- SAVE OUTPUTS: Energidrikke (horizon=3)
+================================================================================
+
+Contract: energidrikke_eda_findings_h3.json
+Split:    step_5_split_applied_h3.parquet -- 1,892 rows x 48 columns
+
+ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Energidrikke
+  feature_matrix  energidrikke_feature_matrix_h3.parquet
+  series_index    energidrikke_series_index_h3.csv
+  split_dates     energidrikke_split_dates_h3.json
+  manifest        energidrikke_manifest_h3.json
+
+SUMMARY
+  brands            = 44
+  rows              = 1,892
+  features          = 41 (of 48 columns)
+  promo available   = True
+  train             = 2023-01 .. 2025-06
+  val               = 2025-07 .. 2025-12
+  test              = 2026-01 .. 2026-07
+  test origins      = 5 at horizon 3
+
+  Largest brands by total units:
+    RED BULL         95,510,635  (43 periods)
+    MONSTER ENERGY     95,200,963  (43 periods)
+    FAXE KONDI BOOSTER     83,710,989  (43 periods)
+    CULT             12,282,263  (43 periods)
+    STATE            11,634,076  (43 periods)
+
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables

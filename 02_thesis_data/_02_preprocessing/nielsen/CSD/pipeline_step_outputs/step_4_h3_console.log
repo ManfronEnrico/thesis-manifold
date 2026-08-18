@@ -1,0 +1,34 @@
+================================================================================
+STEP 4 -- ENGINEER FEATURES: CSD (horizon=3)
+================================================================================
+
+Contract: csd_eda_findings_h3.json (version 1.1)
+  target                = sales_units
+  min_periods           = 17
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [3, 6, 9, 12]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (223240, 32)
+  Products shape: (2130, 23)
+  Periods shape:  (46, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 4,209 rows x 32 columns, 142 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 4,209 rows / 142 brands
+  after calendar fill   = 6,532 rows
+  after min_periods     = 4,370 rows / 95 brands (47 dropped)
+  engineered            = 4,370 rows x 47 columns
+  peak flag set on      = [3, 6, 9, 12] (matches contract)
+  promo_intensity       = built
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_4_engineered_features_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\step_4_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeline_step_outputs\csd_eda_tables

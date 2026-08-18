@@ -1,0 +1,913 @@
+
+================================================================================
+  STEP 0 -- validate cache
+================================================================================
+
+===============================================================================
+=
+Nielsen Danskvand — Step 0: Validate Parquet Cache
+===============================================================================
+=
+
+
+================================================================================
+Danskvand Preprocessing Configuration
+================================================================================
+  Category:        Danskvand
+  Views dir:       Z:\_dev-ssd\thesis-manifold\02_thesis_data\_01_converted\nielsen\parquet_nielsen\Danskvand\views
+  Step outputs:    Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs
+  Output findings: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings.json
+  Plots directory: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_plots
+
+ML TARGET DEFINITION
+  Y                    = log1p(sales_units_{t+1})
+  Forecast horizon (H) = 1 month(s)
+  Log transform        = True
+  Warmup buffer        = 13 periods (excluded per brand)
+
+================================================================================
+CACHE VERIFICATION SUMMARY
+================================================================================
+Category:       Danskvand
+Cache location: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_01_converted\nielsen\parquet_nielsen\Danskvand\views
+Status: OK -- [Danskvand] All 4 required parquet view files present
+  danskvand_clean_dim_market_v.parquet  (0.0 MB)
+  danskvand_clean_dim_period_v.parquet  (0.0 MB)
+  danskvand_clean_dim_product_v.parquet  (0.0 MB)
+  danskvand_clean_facts_v.parquet  (71.2 MB)
+================================================================================
+ℹ INFO: Console log: 
+Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\
+pipeline_step_outputs\step_0_console.log
+
+✓ Completed in 0.0s
+
+
+================================================================================
+  STEP 1 -- load and aggregate
+================================================================================
+
+===============================================================================
+=
+Nielsen Danskvand — Step 1: Load, Merge and Aggregate
+===============================================================================
+=
+
+================================================================================
+LOAD AND MERGE CACHED PARQUET VIEWS
+================================================================================
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+
+Merged row-level shape: (11085, 19)
+Unique brands:          55
+Elapsed:                0.63s
+================================================================================
+
+================================================================================
+AGGREGATE TO BYMONTH GRAIN
+================================================================================
+  Discovered 12 measure columns (3 additive, 9 intensive)
+
+Aggregated shape: (1225, 15)
+Unique brands:    55
+Date range:       2023-03 to 2026-07  (41 distinct periods)
+Elapsed:          0.48s
+================================================================================
+
+Danskvand -- brand x month panel (first 10 rows)
+------------------------------------------------
+      brand  period_year  period_month  sales_value  sales_liters  sales_units  numeric_distribution  numeric_distribution_reach  weighted_dist  weighted_distribution_reach  total_weighted_distribution_points_tdp_reach  number_of_items_reach  avg_number_of_stores_selling_reach  universe_number_of_stores  avg_no_of_items_per_store_reach
+ACQUA PANNA         2023             3      1393.40          47.5         95.0              0.000600                    0.001001       0.000561                     0.000994                                      0.000994                    2.5                                 2.5                    2498.40                              1.0
+ACQUA PANNA         2023             4      1359.35          46.0         92.0              0.000501                    0.000801       0.000610                     0.001177                                      0.001177                    2.0                                 2.0                    2496.25                              1.0
+ACQUA PANNA         2023             5      2003.80          68.5        137.0              0.000402                    0.001007       0.000526                     0.001904                                      0.001904                    2.5                                 2.5                    2482.25                              1.0
+ACQUA PANNA         2023             6      4948.45         198.0        396.0              0.000607                    0.001012       0.000831                     0.001391                                      0.001391                    2.5                                 2.5                    2472.00                              1.0
+ACQUA PANNA         2023             7      1309.55          56.5        113.0              0.000557                    0.000607       0.000771                     0.000782                                      0.000782                    1.5                                 1.5                    2468.25                              1.0
+ACQUA PANNA         2023             8      3175.65         120.5        241.0              0.000507                    0.000607       0.000733                     0.000850                                      0.000850                    1.5                                 1.5                    2468.00                              1.0
+ACQUA PANNA         2023             9      3994.25         137.5        275.0              0.000807                    0.000807       0.001063                     0.001063                                      0.001063                    2.0                                 2.0                    2477.40                              1.0
+ACQUA PANNA         2023            10      1583.20          54.5        109.0              0.000706                    0.000807       0.000915                     0.001123                                      0.001123                    2.0                                 2.0                    2478.25                              1.0
+ACQUA PANNA         2023            11       507.97          17.5         35.0              0.000810                    0.000810       0.001185                     0.001185                                      0.001185                    2.0                                 2.0                    2468.25                              1.0
+ACQUA PANNA         2023            12      1048.50          36.0         72.0              0.000646                    0.000808       0.001023                     0.001506                                      0.001506                    2.0                                 2.0                    2476.00                              1.0
+
+ℹ INFO: Wrote step_1_aggregate_bymonth.parquet  (1,225 rows x 15 cols)
+ℹ INFO: Console log: 
+Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\
+pipeline_step_outputs\step_1_console.log
+
+✓ Completed in 1.3s
+
+
+================================================================================
+  STEP 2 -- descriptive EDA
+================================================================================
+================================================================================
+STEP 2 -- DESCRIPTIVE EDA: Danskvand
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+================================================================================
+3.01  DATA PREVIEW AND STATISTICS
+================================================================================
+
+Data Shape
+----------------------------------------
+  - Dimensions of the analysis panel: one observation per brand per calendar month, aggregated across the retail universe covered by the Nielsen delivery.
+  - The panel is unbalanced. Brands enter and exit the market over the observation window, so the row count is the number of observed brand-months rather than the product of brands and months.
+
+       Metric Value
+   Total Rows 1,225
+Unique Brands    55
+      Columns    15
+
+Columns & Data Quality
+----------------------------------------
+  - Each measure delivered for this category, with its storage type and the count of unreported values.
+  - The number of measures differs across categories because Nielsen reports different measure sets per category. A measure absent here was not supplied in the delivery rather than lost in processing.
+
+                                      Column Data Type  Non-Null  Missing  Missing %
+                                       brand    object      1225        0        0.0
+                                 period_year     int64      1225        0        0.0
+                                period_month     int64      1225        0        0.0
+                                 sales_value   float64      1225        0        0.0
+                                sales_liters   float64      1225        0        0.0
+                                 sales_units   float64      1225        0        0.0
+                        numeric_distribution   float64      1225        0        0.0
+                  numeric_distribution_reach   float64      1225        0        0.0
+                               weighted_dist   float64      1225        0        0.0
+                 weighted_distribution_reach   float64      1225        0        0.0
+total_weighted_distribution_points_tdp_reach   float64      1225        0        0.0
+                       number_of_items_reach   float64      1225        0        0.0
+          avg_number_of_stores_selling_reach   float64      1225        0        0.0
+                   universe_number_of_stores   float64      1225        0        0.0
+             avg_no_of_items_per_store_reach   float64      1225        0        0.0
+
+Missing Value Analysis: no missing values in any column
+
+Sample Data (first 10 rows):
+      brand  period_year  period_month  sales_value  sales_liters  sales_units  numeric_distribution  numeric_distribution_reach  weighted_dist  weighted_distribution_reach  total_weighted_distribution_points_tdp_reach  number_of_items_reach  avg_number_of_stores_selling_reach  universe_number_of_stores  avg_no_of_items_per_store_reach
+ACQUA PANNA         2023             3      1393.40          47.5         95.0              0.000600                    0.001001       0.000561                     0.000994                                      0.000994                    2.5                                 2.5                    2498.40                              1.0
+ACQUA PANNA         2023             4      1359.35          46.0         92.0              0.000501                    0.000801       0.000610                     0.001177                                      0.001177                    2.0                                 2.0                    2496.25                              1.0
+ACQUA PANNA         2023             5      2003.80          68.5        137.0              0.000402                    0.001007       0.000526                     0.001904                                      0.001904                    2.5                                 2.5                    2482.25                              1.0
+ACQUA PANNA         2023             6      4948.45         198.0        396.0              0.000607                    0.001012       0.000831                     0.001391                                      0.001391                    2.5                                 2.5                    2472.00                              1.0
+ACQUA PANNA         2023             7      1309.55          56.5        113.0              0.000557                    0.000607       0.000771                     0.000782                                      0.000782                    1.5                                 1.5                    2468.25                              1.0
+ACQUA PANNA         2023             8      3175.65         120.5        241.0              0.000507                    0.000607       0.000733                     0.000850                                      0.000850                    1.5                                 1.5                    2468.00                              1.0
+ACQUA PANNA         2023             9      3994.25         137.5        275.0              0.000807                    0.000807       0.001063                     0.001063                                      0.001063                    2.0                                 2.0                    2477.40                              1.0
+ACQUA PANNA         2023            10      1583.20          54.5        109.0              0.000706                    0.000807       0.000915                     0.001123                                      0.001123                    2.0                                 2.0                    2478.25                              1.0
+ACQUA PANNA         2023            11       507.97          17.5         35.0              0.000810                    0.000810       0.001185                     0.001185                                      0.001185                    2.0                                 2.0                    2468.25                              1.0
+ACQUA PANNA         2023            12      1048.50          36.0         72.0              0.000646                    0.000808       0.001023                     0.001506                                      0.001506                    2.0                                 2.0                    2476.00                              1.0
+
+================================================================================
+3.02  DISTRIBUTION ANALYSIS WITH SKEWNESS
+================================================================================
+
+Skewness Analysis
+----------------------------------------
+  - Fisher-Pearson skewness coefficient per measure. A value of zero indicates a symmetric distribution; positive values indicate a long right tail.
+  - Interpretation follows Kim (2013): absolute skewness above 2 indicates substantial departure from normality, and values between 0.5 and 2 moderate departure.
+  - Skewness in the forecast target is the empirical basis for applying a logarithmic transformation before modelling.
+  - This coefficient describes the marginal distribution only. It carries no information about temporal dependence, which is characterised separately by the stationarity and autocorrelation analyses.
+
+                                     feature  skewness                                                                          interpretation
+                                 sales_value     2.966 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                sales_liters     4.917 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                 sales_units     4.940 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                        numeric_distribution     2.020 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                  numeric_distribution_reach     1.755                                                 Right-skewed -- log transform justified
+                               weighted_dist     1.877                                                 Right-skewed -- log transform justified
+                 weighted_distribution_reach     1.623                                                 Right-skewed -- log transform justified
+total_weighted_distribution_points_tdp_reach     1.623                                                 Right-skewed -- log transform justified
+                       number_of_items_reach     1.763                                                 Right-skewed -- log transform justified
+          avg_number_of_stores_selling_reach     1.763                                                 Right-skewed -- log transform justified
+                   universe_number_of_stores    -0.763                                                                  Left-skewed (negative)
+             avg_no_of_items_per_store_reach    27.233 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+
+================================================================================
+3.03  DATE RANGE & TIME PERIOD ANALYSIS
+================================================================================
+
+Coverage
+----------------------------------------
+  - Observed temporal span of the panel. The count of distinct months bounds every window-based feature: a twelve-month rolling statistic is undefined in a series shorter than twelve months.
+  - The span also bounds the train-validation-test partition, since each split must retain enough history for the lag structure to be computable within it.
+
+        Metric              Value
+    Date Range 2023-03 to 2026-07
+  Total Months                 41
+    Total Rows              1,225
+ Unique Brands                 55
+Avg Rows/Brand               22.3
+
+Rows per Brand Distribution
+----------------------------------------
+  - Distribution of observation counts across brands, showing how much history each brand contributes.
+  - Brands with short histories cannot support long lags: a brand observed for fewer months than the longest lag yields no usable training rows once the warm-up period is discarded.
+  - A pronounced left tail indicates a panel dominated by short-lived brands, which bears on whether such brands are retained for modelling.
+
+Statistic Rows/Brand
+      Min          1
+      Max         41
+     Mean       22.3
+   Median         20
+  Std Dev       17.0
+
+================================================================================
+3.04  STRUCTURAL BREAK SCAN (AUTO-DETECTED)
+================================================================================
+
+  Scanned 29 candidate break points across 41 months
+
+Top 3 Break Candidates by Chow F-statistic
+------------------------------------------
+  - Chow test for a structural break in the aggregate series. The null hypothesis is that the same relationship holds before and after the candidate break date (Chow, 1960).
+  - A low p-value indicates that the mean or variance of the series shifts at that date. This bears directly on the validity of the temporal split, since a break inside the evaluation window means the held-out period is not drawn from the same regime as the training period.
+  - The three strongest candidates are reported rather than a single verdict. With one series and many candidate dates, the procedure is exploratory and subject to multiple-comparisons inflation, so these p-values are not adjusted significance levels.
+
+   date  chow_f  chow_p  mean_ratio  std_ratio
+2025-06  13.892  0.0006       1.327      1.287
+2025-05  12.621  0.0010       1.311      1.255
+2025-07  10.389  0.0026       1.293      1.257
+
+  STRUCTURAL BREAK DETECTED at 2025-06 (Chow F=13.89, p=0.0006)
+  -> Consider a binary post_break feature at this date, or separate pre/post models if severity warrants it.
+
+================================================================================
+3.05  STATIONARITY TESTING -- PER-BRAND ADF
+================================================================================
+
+  H0: non-stationary  |  p < 0.05 -> stationary
+  Testing raw, log1p, and first-difference
+
+
+ADF Test per Brand (top brands by volume)
+-----------------------------------------
+  - Augmented Dickey-Fuller test per brand. The null hypothesis is the presence of a unit root, that is, non-stationarity; a p-value below 0.05 rejects it in favour of stationarity (Dickey and Fuller, 1979).
+  - Failure to reject is weak evidence. The test has low power against near-unit-root alternatives in short samples, and these series span at most 46 monthly observations, so a non-rejection should be read as inconclusive rather than as evidence of a unit root.
+  - Non-stationary series motivate either differencing or the inclusion of lagged terms that allow the model to absorb the trend rather than extrapolate it.
+
+            brand  n  p_raw  p_log  p_diff recommendation
+           HARBOE 41  0.999  0.996   0.000     log1p+diff
+        BLUE KELD 41  0.071  0.001   0.000          log1p
+      FIRST PRICE 41  0.000  0.744   0.000            raw
+        AQUA D'OR 41  0.165  0.384   0.000     log1p+diff
+        KILDEVÆLD 41  0.000  0.002   0.000            raw
+         EGEKILDE 41  0.993  0.998   0.000     log1p+diff
+   SAN PELLEGRINO 41  0.000  0.001   0.000            raw
+         RAMLOESA 31  0.180  0.958   0.011     log1p+diff
+          RAMLØSA 10  0.839  0.582   0.863     log1p+diff
+      OTHER BRAND 31  0.029  0.340   0.000            raw
+        ACTIVE 02 41  0.549  0.579   0.000     log1p+diff
+          HANCOCK 41  0.501  0.003   0.000          log1p
+CARLSBERG KURVAND 41  0.197  0.271   0.000     log1p+diff
+          PERRIER 41  0.000  0.026   0.000            raw
+          OK PLUS 40  0.000  0.000   0.000            raw
+            KIRVI 41  0.288  0.994   0.000     log1p+diff
+            EVIAN 41  0.816  0.481   0.000     log1p+diff
+     LIQUID DEATH 26  0.000  0.999   0.000            raw
+     ØVRIGE BRAND 10  0.726  0.020   0.000          log1p
+             FREM 41  0.666  0.694   0.005     log1p+diff
+
+  CROSS-BRAND STATIONARITY SUMMARY (20 brands tested):
+    Stationary raw:             7/20 (35%)
+    Stationary after log1p:     3/20 (15%)
+    Needs log1p + differencing: 10/20 (50%)
+
+  -> LOG TRANSFORM SUPPORTED (majority of brands benefit)
+  Note: given the per-brand spread above, feature engineering should apply log1p universally for stability.
+
+  Aggregate series (reference only): ADF p=0.9991 (non-stationary)
+  The aggregate can mask per-brand heterogeneity -- the per-brand result above takes precedence.
+
+================================================================================
+3.06  BRAND STABILITY ANALYSIS (SERIES LENGTH)
+================================================================================
+
+Brand Retention at Different MIN_PERIODS Thresholds
+---------------------------------------------------
+  - Number of brands retained at each candidate minimum-observation threshold, expressed as both a count and a share of the full brand set.
+  - Candidate thresholds are generated from the observed span of this panel, so the ladder is comparable across categories with different histories.
+  - The trade-off is explicit: a higher threshold yields longer and more complete series at the cost of brand coverage, narrowing the population to which results generalise.
+  - The point at which retention falls sharply identifies where the panel's usable history is concentrated.
+
+ Min Periods  Brands Retained % of Total Data Quality
+           5               43      78.2%          Low
+          10               33      60.0%          Low
+          15               30      54.5%          Low
+          20               28      50.9%          Low
+          25               27      49.1%          Low
+          30               25      45.5%       Medium
+          35               22      40.0%       Medium
+          40               21      38.2%         High
+
+  MIN_PERIODS is not selected here. The retention curve above is the evidence;
+  the threshold is a modelling decision made in step 3 (P0036 task 8, open).
+  Observed series length: min=1, max=41, median=20
+
+================================================================================
+3.07  ZERO-SALES CHARACTERISATION
+================================================================================
+
+Zero-Sales Characterisation across 55 brands
+--------------------------------------------
+  - Brands classified by the position of zero-sales months in their series: leading zeros preceding market entry, trailing zeros following exit, intermittent zeros interspersed through an active period, or none.
+  - The distinction is substantive. Leading and trailing zeros denote periods in which the brand was not on the market, whereas intermittent zeros are realised demand of zero and are part of the process being modelled; discarding the latter would bias the target distribution upward.
+  - Intermittent demand also constrains the choice of accuracy metric, since percentage-error measures are undefined when the actual value is zero (Hyndman and Koehler, 2006).
+
+    type  brands
+no zeros      55
+
+  Brands with any zeros: 0 / 55
+
+  Imputation implications:
+    Clustered (entry/exit) -> exclude pre-entry periods; carry a distribution indicator
+    Scattered (data gaps)  -> forward-fill up to 2 periods; flag with a missingness indicator
+    Rolling means must handle zeros before computing, or lags understate the true trend.
+
+================================================================================
+3.08  SEASONAL PATTERN ANALYSIS (PEAK-MONTH EFFECT)
+================================================================================
+
+Monthly Sales Distribution (Full Year)
+----------------------------------------
+  - Total sales by calendar month, aggregated across all years and brands, describing the seasonal profile of the category.
+  - This profile is confounded with trend: a category growing over the observation window inflates whichever calendar months its later years cover more heavily. The decomposition analysis separates the two components.
+  - Months of elevated demand identified here provide the empirical basis for calendar features representing seasonal peaks.
+
+ Month Month Name Sales Units % of Total Classification
+     1        Jan   8,686,690       5.4%         Valley
+     2        Feb   8,211,296       5.1%         Valley
+     3        Mar  14,672,866       9.2%         Normal
+     4        Apr  13,049,659       8.2%         Normal
+     5        May  15,987,012      10.0%         Normal
+     6        Jun  23,087,159      14.4%           PEAK
+     7        Jul  19,263,864      12.0%           PEAK
+     8        Aug  13,331,528       8.3%         Normal
+     9        Sep  14,568,488       9.1%         Normal
+    10        Oct   9,864,407       6.2%         Valley
+    11        Nov   8,867,560       5.5%         Valley
+    12        Dec  10,457,044       6.5%         Valley
+
+Peak & Valley Analysis
+----------------------------------------
+  - Highest and lowest months of the seasonal profile, with their ratio as a single-figure measure of seasonal amplitude.
+  - A large peak-to-trough ratio supports the inclusion of month-of-year features; a flat profile indicates such features would add parameters without explanatory value.
+
+              Category     Months % of Sales
+          Top 3 Months  [6, 7, 5]      36.5%
+       Bottom 3 Months [2, 1, 11]      16.1%
+Peak Months (75th pct)  [5, 6, 7]      36.5%
+
+  Observed peak months (top quartile, each >= 15,001,403 units): [5, 6, 7]
+
+================================================================================
+3.09  MONTHLY SALES BAR PLOT
+================================================================================
+  Peak months (highlighted): [5, 6, 7]
+  Valley months: [2, 1, 11]
+
+================================================================================
+3.10  SEASONAL DECOMPOSITION
+================================================================================
+
+  Additive residual variance:       2.04e+10
+  Multiplicative residual variance: 1.80e-03
+  -> Selected model: 'multiplicative' (lower residual variance)
+
+  Trend over the observed window: Increasing
+  Seasonal peaks (top 3 months): [6, 9, 8]
+  Compare with 3.08 top-quartile months: [5, 6, 7]
+
+================================================================================
+3.11  TOP BRANDS TIME SERIES
+================================================================================
+
+Top 5 Brands by Total Sales
+----------------------------------------
+  - Brands ranked by cumulative sales volume over the observation window.
+  - These brands dominate any volume-weighted error metric, so a model may report strong aggregate accuracy while performing poorly across the remaining brands. Disaggregated reporting is therefore necessary to characterise performance.
+  - The ranking reflects volume, not predictability. A high-volume brand is not necessarily a stable or readily forecastable one.
+
+ Rank       Brand Total Sales
+    1      HARBOE  73,560,373
+    2   BLUE KELD  25,136,770
+    3 FIRST PRICE  16,138,631
+    4   AQUA D'OR  13,559,660
+    5   KILDEVÆLD   8,483,825
+
+================================================================================
+3.12  CROSS-BRAND HETEROGENEITY
+================================================================================
+
+Sales CV (std/mean) across 50 brands
+----------------------------------------
+  - Coefficient of variation per brand, defined as the standard deviation divided by the mean, which normalises volatility by scale and so permits comparison across brands of different sizes.
+  - A high coefficient identifies an intrinsically harder series. The dispersion of this statistic across brands is the basis for expecting heterogeneous accuracy rather than treating a single aggregate error as representative of all brands.
+  - The statistic is undefined for a brand with zero mean and unstable for near-zero means, so extreme values should be read alongside the zero-sales characterisation.
+
+Statistic    CV
+      Min 0.000
+      P25 0.395
+   Median 0.815
+      P75 1.169
+      Max 3.786
+
+  Brands with CV > 1.0 (high volatility): 17 / 50
+  High CV means the sales pattern varies greatly over time, which is harder for a single pooled model.
+
+  Distribution of brands' peak sales month:
+    Jan: # (1)
+    Feb: # (1)
+    Mar: ##### (5)
+    Apr: ##### (5)
+    May: ### (3)
+    Jun: #################### (20)
+    Jul: ######### (9)
+    Aug: ### (3)
+    Sep: ## (2)
+    Oct: #### (4)
+    Dec: ## (2)
+
+Brands' Peak Sales Month
+----------------------------------------
+  - The calendar month of peak sales for each brand, indicating whether brands share the category-level seasonal pattern or exhibit individual ones.
+  - Clustering of peaks supports a single shared seasonal feature. Dispersed peaks indicate brand-specific seasonality, which requires seasonal terms that vary by brand rather than a single category-wide profile.
+
+Month  Brands Peaking
+  Jan               1
+  Feb               1
+  Mar               5
+  Apr               5
+  May               3
+  Jun              20
+  Jul               9
+  Aug               3
+  Sep               2
+  Oct               4
+  Dec               2
+
+  Peak-month concentration: 0.36 (1.0 = all brands peak in the same month)
+  -> Most brands share a peak month; a shared seasonal feature is likely sufficient.
+
+  Heterogeneity verdict:
+    High CV + varied peak months -> consider brand fixed effects or per-brand models.
+    A single pooled model is viable only with a brand embedding or categorical feature.
+
+================================================================================
+3.13  PROMO INTENSITY ACROSS BRANDS
+================================================================================
+  SKIPPED -- this category has no promo_units column(s).
+  Not an error: the analysis is undefined without them, so there is nothing to report.
+
+================================================================================
+3.14  MEASURE-COLUMN DATA QUALITY
+================================================================================
+
+Measure-Column Quality Scan
+----------------------------------------
+  - Per-measure scan for two data-quality conditions: values that are impossible given the measure's definition, and rate measures that would be corrupted by summation.
+  - Counts and shares cannot be negative by definition, so any negative values reported here indicate defects in the delivered data. They are reported rather than adjusted, since imputing a substitute value would present a fabricated figure as an observation.
+  - Measures observed entirely within the interval [0, 100] behave as rates rather than counts and must be averaged when aggregating across records. Summing two distribution figures of 70 per cent into 140 per cent is the specific error this check identifies.
+  - The resulting classification of measures as additive or intensive determines the aggregation function applied to each when constructing the brand-month panel.
+
+                                      column         min          max         mean  nulls  zeros  negatives  neg_pct  in_0_100
+                                 sales_value    1.000000 1.891327e+07 1.061231e+06      0      0          0      0.0     False
+                                sales_liters    0.200000 4.621588e+06 1.538316e+05      0      0          0      0.0     False
+                                 sales_units    1.000000 3.852226e+06 1.306511e+05      0      0          0      0.0     False
+                        numeric_distribution    0.000078 2.894355e-01 3.344720e-02      0      0          0      0.0      True
+                  numeric_distribution_reach    0.000391 3.165753e-01 4.361160e-02      0      0          0      0.0      True
+                               weighted_dist    0.000007 3.191400e-01 4.416624e-02      0      0          0      0.0      True
+                 weighted_distribution_reach    0.000031 3.420857e-01 5.566720e-02      0      0          0      0.0      True
+total_weighted_distribution_points_tdp_reach    0.000031 3.420857e-01 5.566720e-02      0      0          0      0.0      True
+                       number_of_items_reach    1.000000 8.098765e+02 1.102634e+02      0      0          0      0.0     False
+          avg_number_of_stores_selling_reach    1.000000 8.091665e+02 1.100309e+02      0      0          0      0.0     False
+                   universe_number_of_stores 2468.000000 2.556000e+03 2.521443e+03      0      0          0      0.0     False
+             avg_no_of_items_per_store_reach    0.995400 1.375000e+00 1.001620e+00      0      0          0      0.0      True
+
+  No negative values in any measure column.
+
+  Column(s) observed entirely within [0, 100], consistent with a rate/share rather than a count:
+    numeric_distribution
+    numeric_distribution_reach
+    weighted_dist
+    weighted_distribution_reach
+    total_weighted_distribution_points_tdp_reach
+    avg_no_of_items_per_store_reach
+  Relevant to F39: such columns must be averaged, not summed, when aggregating (70% + 70% != 140%).
+
+================================================================================
+3.15  EMPIRICAL CDF OF THE FORECAST TARGET
+================================================================================
+
+Target Distribution Quantiles (sales_units)
+-------------------------------------------
+  - Cumulative share of brand-months at or below each value of the forecast target, describing the distribution without the bin-width dependence inherent in a histogram.
+  - The interval between the median and the upper decile measures the concentration of sales volume that the model must accommodate.
+  - A pronounced right tail is the empirical basis for a logarithmic transformation of the target. The second panel of the accompanying figure shows the transformed distribution, in which an approximately linear curve indicates the transformation has achieved approximate symmetry.
+  - This presentation complements the skewness coefficient, which summarises asymmetry as a single number, by showing where in the distribution that asymmetry arises.
+
+quantile       value
+     p25    183.0000
+     p50   2122.1568
+     p75 105615.4320
+     p90 362044.6819
+
+================================================================================
+3.16  AUTOCORRELATION STRUCTURE (ACF / PACF)
+================================================================================
+
+Significant ACF Lags per Brand
+----------------------------------------
+  - Lags at which the sample autocorrelation exceeds the 95 per cent confidence band of plus or minus 1.96 divided by the square root of the sample size, the standard criterion for identifying significant autocorrelation (Box and Jenkins, 1970).
+  - Lags significant across a majority of the leading brands indicate category-level temporal structure, whereas a lag significant for a single brand is more plausibly sampling variation.
+  - Significance at lag 12 indicates annual seasonality; significance at lags 1 to 3 indicates short-run persistence. Both motivate the inclusion of lagged sales as predictors.
+  - Autocorrelations are computed on the logarithmic transformation of the target, so the reported lags describe the series in the form in which it is modelled.
+  - The confidence band assumes a stationary series; where the stationarity tests are inconclusive, significance at long lags may reflect trend rather than genuine seasonal dependence.
+
+      brand  n_periods  conf_band                                      significant_lags
+     HARBOE         41     0.3061                [1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 15]
+  BLUE KELD         41     0.3061                                           [3, 12, 15]
+FIRST PRICE         41     0.3061 [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 16, 17, 18, 19]
+  AQUA D'OR         41     0.3061                     [1, 2, 7, 11, 12, 13, 14, 15, 19]
+  KILDEVÆLD         41     0.3061 [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 16, 17, 18]
+
+================================================================================
+3.17  PROMO INTENSITY DISTRIBUTION
+================================================================================
+  SKIPPED -- this category has no promo_units column(s).
+  Not an error: the analysis is undefined without them, so there is nothing to report.
+
+================================================================================
+3.18  CORRELATION STRUCTURE (PEARSON vs SPEARMAN)
+================================================================================
+
+Correlation with sales_units
+----------------------------------------
+  - Pearson and Spearman correlation of each measure with the forecast target. Pearson quantifies linear association; Spearman quantifies monotone association between ranks.
+  - A large absolute difference between the two coefficients indicates a relationship that is monotone but not linear, identifying measures for which a transformation is more appropriate than inclusion in raw form.
+  - The rank-based coefficient is the more robust of the two for this data, since the target is right-skewed and the product-moment correlation is sensitive to the resulting extreme values.
+  - These correlations are contemporaneous. The measures are observed in the same month as the target, so a high coefficient does not establish predictive value at a one-month forecast horizon.
+  - Association reported here is descriptive and does not identify a causal relationship between any measure and sales.
+
+                                      column  pearson_r  spearman_r  abs_delta  non_linear
+                                sales_liters     0.9799      0.9894     0.0095       False
+                                 sales_value     0.9162      0.9811     0.0649       False
+                        numeric_distribution     0.8042      0.9088     0.1045        True
+                               weighted_dist     0.7722      0.8911     0.1189        True
+                       number_of_items_reach     0.7634      0.8911     0.1276        True
+          avg_number_of_stores_selling_reach     0.7632      0.8910     0.1278        True
+                  numeric_distribution_reach     0.7623      0.8903     0.1279        True
+total_weighted_distribution_points_tdp_reach     0.7316      0.8704     0.1389        True
+                 weighted_distribution_reach     0.7316      0.8704     0.1389        True
+                   universe_number_of_stores     0.0313      0.0360     0.0047       False
+             avg_no_of_items_per_store_reach     0.0080      0.6442     0.6362        True
+
+Near-Duplicate Column Pairs (|r| > 0.9)
+----------------------------------------
+  - Pairs of measures whose absolute Pearson correlation exceeds 0.9, the conventional threshold for treating two variables as carrying substantially equivalent information.
+  - Retaining both members of such a pair introduces collinearity without adding explanatory content.
+  - Collinearity inflates the sampling variance of coefficient estimates in linear models. Tree-based ensembles are robust to it in terms of predictive accuracy, but distribute split importance across the correlated measures, which renders variable-importance rankings unreliable.
+  - High correlation between two measures does not by itself determine which of them to retain; that requires their definitions and their individual association with the target.
+
+                                    column_a                                     column_b  pearson_r
+                 weighted_distribution_reach total_weighted_distribution_points_tdp_reach     1.0000
+                       number_of_items_reach           avg_number_of_stores_selling_reach     1.0000
+                  numeric_distribution_reach                        number_of_items_reach     0.9999
+                  numeric_distribution_reach           avg_number_of_stores_selling_reach     0.9999
+                               weighted_dist                  weighted_distribution_reach     0.9883
+                               weighted_dist total_weighted_distribution_points_tdp_reach     0.9883
+                        numeric_distribution                   numeric_distribution_reach     0.9856
+                        numeric_distribution                        number_of_items_reach     0.9855
+                        numeric_distribution           avg_number_of_stores_selling_reach     0.9854
+                  numeric_distribution_reach                  weighted_distribution_reach     0.9851
+                  numeric_distribution_reach total_weighted_distribution_points_tdp_reach     0.9851
+                        numeric_distribution                                weighted_dist     0.9850
+total_weighted_distribution_points_tdp_reach           avg_number_of_stores_selling_reach     0.9846
+total_weighted_distribution_points_tdp_reach                        number_of_items_reach     0.9846
+                 weighted_distribution_reach           avg_number_of_stores_selling_reach     0.9846
+                 weighted_distribution_reach                        number_of_items_reach     0.9846
+                  numeric_distribution_reach                                weighted_dist     0.9809
+                               weighted_dist                        number_of_items_reach     0.9805
+                               weighted_dist           avg_number_of_stores_selling_reach     0.9804
+                                sales_liters                                  sales_units     0.9799
+                        numeric_distribution total_weighted_distribution_points_tdp_reach     0.9640
+                        numeric_distribution                  weighted_distribution_reach     0.9640
+                                 sales_value                                  sales_units     0.9162
+                                 sales_value                                 sales_liters     0.9074
+
+================================================================================
+STEP 2 SUMMARY -- Danskvand
+================================================================================
+  Sections completed: 16 / 18
+  Tables written:     19 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+  Plots written:      7 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_plots
+
+  Skipped (2) -- column(s) absent in this category:
+    3.13  PROMO INTENSITY ACROSS BRANDS
+      missing: promo_units
+    3.17  PROMO INTENSITY DISTRIBUTION
+      missing: promo_units
+
+  This step derives no parameters. Its output is evidence for Chapter 4;
+  the feature-engineering contract is step 3's responsibility.
+
+================================================================================
+  STEP 3 -- derive contract  (H=1)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Danskvand (horizon=1)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 1 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 15  (= warmup + horizon + 1, derived)
+  peak_months        = [6, 7, 8, 9]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 6 at horizon 1
+
+RETENTION AT min_periods
+  brands                = 30 / 55 kept (25 dropped)
+  training rows         = 679 / 679 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=1)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: Danskvand (horizon=1)
+================================================================================
+
+Contract: danskvand_eda_findings_h1.json (version 1.1)
+  target                = sales_units
+  min_periods           = 15
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [6, 7, 8, 9]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 1,225 rows / 55 brands
+  after calendar fill   = 2,255 rows
+  after min_periods     = 1,230 rows / 30 brands (25 dropped)
+  engineered            = 1,230 rows x 29 columns
+  peak flag set on      = [6, 7, 8, 9] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_engineered_features_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=1)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: Danskvand (horizon=1)
+================================================================================
+
+Contract: danskvand_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 1,230 rows x 29 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),    870 rows,  30 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    180 rows,  30 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    180 rows,  30 brands [14.6%]
+  test origins at horizon 1: 6
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 6 -- save outputs  (H=1)
+================================================================================
+================================================================================
+STEP 6 -- SAVE OUTPUTS: Danskvand (horizon=1)
+================================================================================
+
+Contract: danskvand_eda_findings_h1.json
+Split:    step_5_split_applied_h1.parquet -- 1,230 rows x 30 columns
+
+ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Danskvand
+  feature_matrix  danskvand_feature_matrix_h1.parquet
+  series_index    danskvand_series_index_h1.csv
+  split_dates     danskvand_split_dates_h1.json
+  manifest        danskvand_manifest_h1.json
+
+SUMMARY
+  brands            = 30
+  rows              = 1,230
+  features          = 23 (of 30 columns)
+  promo available   = False
+  train             = 2023-03 .. 2025-07
+  val               = 2025-08 .. 2026-01
+  test              = 2026-02 .. 2026-07
+  test origins      = 6 at horizon 1
+
+  Largest brands by total units:
+    HARBOE           73,560,373  (41 periods)
+    BLUE KELD        25,136,770  (41 periods)
+    FIRST PRICE      16,138,631  (41 periods)
+    AQUA D'OR        13,559,660  (41 periods)
+    KILDEVÆLD         8,483,825  (41 periods)
+
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 3 -- derive contract  (H=3)
+================================================================================
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Danskvand (horizon=3)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 3 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 17  (= warmup + horizon + 1, derived)
+  peak_months        = [6, 7, 8, 9]
+
+SPLIT
+  train_end             = (2025, 7)
+  val_end               = (2026, 1)
+  months                = 29 train / 6 val / 6 test (of 41)
+  test origins          = 4 at horizon 3
+
+RETENTION AT min_periods
+  brands                = 29 / 55 kept (26 dropped)
+  training rows         = 620 / 620 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 4 -- engineer features  (H=3)
+================================================================================
+================================================================================
+STEP 4 -- ENGINEER FEATURES: Danskvand (horizon=3)
+================================================================================
+
+Contract: danskvand_eda_findings_h3.json (version 1.1)
+  target                = sales_units
+  min_periods           = 17
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  peak_months        = [6, 7, 8, 9]
+  log_transform_target  = True
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+Applying the contract...
+
+FEATURE MATRIX
+  panel in              = 1,225 rows / 55 brands
+  after calendar fill   = 2,255 rows
+  after min_periods     = 1,189 rows / 29 brands (26 dropped)
+  engineered            = 1,189 rows x 29 columns
+  peak flag set on      = [6, 7, 8, 9] (matches contract)
+  promo_intensity       = OMITTED (category has no promo_units)
+
+  Matrix   -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_engineered_features_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_4_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 5 -- apply split  (H=3)
+================================================================================
+================================================================================
+STEP 5 -- APPLY SPLIT: Danskvand (horizon=3)
+================================================================================
+
+Contract: danskvand_eda_findings_h3.json (version 1.1)
+Matrix:   step_4_engineered_features_h3.parquet -- 1,189 rows x 29 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),    841 rows,  29 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    174 rows,  29 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    174 rows,  29 brands [14.6%]
+  test origins at horizon 3: 4
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_split_applied_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  STEP 6 -- save outputs  (H=3)
+================================================================================
+================================================================================
+STEP 6 -- SAVE OUTPUTS: Danskvand (horizon=3)
+================================================================================
+
+Contract: danskvand_eda_findings_h3.json
+Split:    step_5_split_applied_h3.parquet -- 1,189 rows x 30 columns
+
+ARTIFACTS -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_03_engineered\bymonth\Danskvand
+  feature_matrix  danskvand_feature_matrix_h3.parquet
+  series_index    danskvand_series_index_h3.csv
+  split_dates     danskvand_split_dates_h3.json
+  manifest        danskvand_manifest_h3.json
+
+SUMMARY
+  brands            = 29
+  rows              = 1,189
+  features          = 23 (of 30 columns)
+  promo available   = False
+  train             = 2023-03 .. 2025-07
+  val               = 2025-08 .. 2026-01
+  test              = 2026-02 .. 2026-07
+  test origins      = 4 at horizon 3
+
+  Largest brands by total units:
+    HARBOE           73,560,373  (41 periods)
+    BLUE KELD        25,136,770  (41 periods)
+    FIRST PRICE      16,138,631  (41 periods)
+    AQUA D'OR        13,559,660  (41 periods)
+    KILDEVÆLD         8,483,825  (41 periods)
+
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+
+================================================================================
+  PIPELINE SUMMARY
+================================================================================
+
+  Danskvand  H=1   [OK]     25.4s
+    step 0      0.0s   validate cache
+    step 1      1.3s   load and aggregate
+    step 2     22.4s   descriptive EDA
+    step 3      0.6s   derive contract
+    step 4      0.9s   engineer features
+    step 5      0.1s   apply split
+    step 6      0.1s   save outputs
+
+  Danskvand  H=3   [OK]      2.0s
+    step 0    skipped   -- horizon-independent; --skip-shared
+    step 1    skipped   -- horizon-independent; --skip-shared
+    step 2    skipped   -- horizon-independent; --skip-shared
+    step 3      1.0s   derive contract
+    step 4      0.8s   engineer features
+    step 5      0.1s   apply split
+    step 6      0.1s   save outputs
+
+  All 2 run(s) completed.

@@ -1331,3 +1331,94 @@ also choose a horizon, and H=1 and H=3 are different matrices with different
 matrix no longer has an unambiguous referent — the horizon has to become an explicit
 parameter downstream, exactly as it is in the pipeline.
 
+---
+
+## F66 — the shared orchestrator replaces four; the pipeline runs end to end
+
+`_shared_modules/run_preprocessing.py` built (task 7). **8 runs clean**: 4
+categories x 2 horizons, steps 0-6.
+
+**`run_preprocessing.py --category CSD` completes end to end in 70.5s** — a
+Definition-of-Done line for this plan, now met.
+
+The four orchestrators it replaces were 184 lines each and differed only in the
+category name, which is the failure mode DEC-OPEN-WORLD exists to prevent: a fix
+applied to one was a fix missing from three. CSD's was already broken.
+
+**The pipeline is declared, not hardcoded.** A `PIPELINE` tuple of `Step`
+records carries one structural fact per step — `horizon_dependent` — and that
+single flag drives both the skip logic and the artifact suffixing. Adding a step
+is adding a row.
+
+**Steps 0-2 are horizon-independent, and the orchestrator exploits it.** They
+validate the cache, build the brand x month panel and describe it; none of that
+changes with the horizon. So on a multi-horizon run they execute once and are
+skipped thereafter — automatically, not only under an explicit `--skip-shared`:
+
+| Run | Wall clock |
+|-----|-----------:|
+| Danskvand H=1 (steps 0-6) | 25.4s |
+| Danskvand H=3 (steps 3-6, 0-2 skipped) | **2.0s** |
+
+**Verified failure behaviour, which is the part that matters.** At H=12 on RTD:
+step 5 refused, **step 6 did not run**, and the process exited **1**. Both halves
+are load-bearing. Continuing past a failed step would let step 6 succeed against
+a *stale artifact from a previous run* and write a manifest describing data that
+the current run never produced. And without the non-zero exit, a shell loop or CI
+job would record a failed pipeline as a pass.
+
+**Step 2 needed explicit outcome checking.** It is the one step that reports
+partial failure through its return value rather than by raising — individual EDA
+sections are caught and collected so one bad section does not cost the other
+forty. An orchestrator that only caught exceptions would record a step that
+printed FAILED as `ok`.
+
+**Output-side verification against F63.** Reading the written manifests back off
+disk, rather than trusting the run summary:
+
+| Category | Split (train/val/test) | F63 | Origins | Features | Promo |
+|----------|------------------------|-----|--------:|---------:|-------|
+| CSD | 32/7/7 | 32/7/7 | 5 | 41 | yes |
+| Danskvand | 29/6/6 | 29/6/6 | 4 | 23 | no |
+| Energidrikke | 30/6/7 | 30/6/7 | 5 | 41 | yes |
+| RTD | 29/6/6 | 29/6/6 | 4 | 39 | no |
+
+Four for four on geometry, origins, feature counts and promo capability.
+
+**Deliberately not using `terminal_utils.print_orchestrator_start`.** Those
+helpers render rich panels containing U+2713, which raises `UnicodeEncodeError`
+under the cp1252 default the moment the console is teed to a file on Windows —
+which is exactly what the orchestrator does. Matched the steps' own plain `=`
+rule convention instead.
+
+**Note on the manifest**: `split_dates` carries the boundary dates but not the
+month counts, so the geometry above had to be derived from the boundaries. Not
+changed here (task 8 compares against the notebook's manifests, and altering the
+schema mid-comparison would muddy it), but worth adding afterwards — the counts
+are the thing anyone actually checks.
+
+---
+
+## F67 — DEC-ALIAS was implemented before Brian ruled on it
+
+Recording this as a process finding, not a technical one.
+
+`task_plan.md` lists DEC-ALIAS under **Open decisions**, explicitly assigned to
+Brian, and explicitly framed as "a modelling question" because unifying the names
+asserts the measures are interchangeable across categories — something SRQ1's
+cross-category ranking would then rely on.
+
+In the previous session, step 6's `--check-consistency` surfaced the variants
+concretely (F64) and I canonicalised them through step 1's `RENAMES` immediately,
+treating it as a data-cleaning fix. It is one, but it is also the reserved
+decision, and it should have been raised before acting.
+
+The evidence gathered does support option A and is stronger than what the block
+had when written — identical 0-1 scale and consistent relative ordering, on top
+of the byte-identical metadata descriptions. It is still not proof that Nielsen
+computes them identically per category.
+
+**Reversal is cheap**: delete the five spelling entries from `RENAMES` and
+re-run. Nothing downstream hardcodes the canonical names. Flagged for Brian's
+confirmation.
+

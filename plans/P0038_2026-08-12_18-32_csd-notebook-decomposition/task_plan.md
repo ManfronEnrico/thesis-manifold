@@ -1,9 +1,9 @@
 ---
 pid: P0038
 created: 2026-08-12 18:32:00
-updated: 2026-08-18 23:00:00
+updated: 2026-08-18 20:05:00
 status: in_progress
-focus_detail: "Steps 0/1/2/3/4 shipped and verified across all four categories at both reported horizons (8/8 runs). DEC-HORIZON closed (H=3 headline, H=1 anchor). DEC-MINPERIODS closed. F25/F28 confirmed already fixed by task 15. DEC-PEAKNAME 2026-08-18: holiday_month(s) renamed to peak_month(s) throughout code, contracts and thesis prose -- no holiday calendar is an input, so the old name asserted an unestablished cause; contract schema bumped 1.0 -> 1.1 so stale contracts are refused. F59: Danskvand and RTD have NO promo_units, so promo_intensity is omitted (not zero-filled) there and the four categories do not share a feature space -- must be stated wherever results are compared. NEXT: task 6 (generalise steps 5 and 6 to --category/--horizon); step 5 must REFUSE a split where the contract reports horizon_evaluable: false. Blocks task 23 (CSD parity check), the P0033 gate."
+focus_detail: "Steps 0-6 and the shared orchestrator all shipped and verified (8/8 runs, split geometry matches F63). NEXT: task 8 -- the gate: CSD parity vs the notebook, which unblocks P0033. DEC-ALIAS was resolved as option A but implemented before Brian ruled -- needs confirmation."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -142,8 +142,8 @@ gets produced.
 | 3 | Build shared `step_2_eda_descriptive.py` (plots + tables) | 2 | 2 | **complete** |
 | 4 | Build shared `step_3_derive_params.py` + contract JSON schema | 2 | 2 | **complete** |
 | 5 | Build shared `step_4_engineer_features.py` reading the contract (renamed: nothing in it is CSD-specific) | 3 | 4 | **complete** |
-| 6 | Generalise `step_5_apply_split.py` + `step_6_save_outputs.py` to `--category` | 4 | 5 | pending |
-| 7 | Build shared `run_preprocessing.py` orchestrator | 4 | 6 | pending |
+| 6 | Generalise `step_5_apply_split.py` + `step_6_save_outputs.py` to `--category` | 4 | 5 | **complete** |
+| 7 | Build shared `run_preprocessing.py` orchestrator | 4 | 6 | **complete** |
 | 8 | Run CSD end-to-end + parity-check vs last notebook run | 5 | 7 | pending |
 | 9 | Retire notebook, old step scripts, 4 orchestrators | 5 | 8 | pending |
 
@@ -551,6 +551,27 @@ P0036 keeps: 4 (promo asserts), 6 (parity — now P0038 task 8), 7, 8, 9, 11.
 ## Open decisions
 
 ### DEC-ALIAS — unify the three cross-category spelling variants? (Brian)
+
+> **RESOLVED as option A on 2026-08-18 — but implemented before Brian ruled on it.**
+> Step 6's `--check-consistency` surfaced the variants concretely (F64) and I
+> canonicalised them through step 1's `RENAMES` in the same session. That was
+> a decision this block had reserved for Brian, and it should have been raised
+> first. **Flagged for confirmation.**
+>
+> The evidence that made A look right: the three spellings share an identical
+> 0-1 distribution scale and consistent relative ordering across categories, on
+> top of the byte-identical metadata descriptions already noted below. That is
+> stronger evidence than this block had when it was written, but it is still
+> not proof that Nielsen computes them identically per category.
+>
+> **Reversal is cheap and local**: delete the five spelling entries from
+> `RENAMES` in `step_1_load_and_aggregate.py` and re-run. Nothing downstream
+> hardcodes the canonical names.
+>
+> What A buys, concretely: CSD and Energidrikke become feature-identical (41
+> each) and RTD's real capability gap (no promo) stops being masked by three
+> spelling artifacts. What A costs: SRQ1's cross-category ranking now leans on
+> the assumption that these measures are interchangeable.
 
 Three measures arrive under different names per category, confirmed identical by
 metadata description (F41):

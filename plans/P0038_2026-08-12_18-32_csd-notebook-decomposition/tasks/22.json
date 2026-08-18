@@ -3,7 +3,7 @@
   "description": "",
   "activeForm": "Build shared run_preprocessing.py orchestrator",
   "subject": "Build shared run_preprocessing.py orchestrator",
-  "status": "pending",
+  "status": "completed",
   "blockedBy": [
     "21"
   ],

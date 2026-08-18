@@ -1,0 +1,18 @@
+================================================================================
+STEP 5 -- APPLY SPLIT: RTD (horizon=3)
+================================================================================
+
+Contract: rtd_eda_findings_h3.json (version 1.1)
+Matrix:   step_4_engineered_features_h3.parquet -- 2,542 rows x 45 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),  1,798 rows,  62 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    372 rows,  62 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    372 rows,  62 brands [14.6%]
+  test origins at horizon 3: 4
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_5_split_applied_h3.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\step_5_log_h3.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\RTD\pipeline_step_outputs\rtd_eda_tables

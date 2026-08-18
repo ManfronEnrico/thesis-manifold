@@ -39,7 +39,7 @@
 | sales_value                                  | sales_in_liters_any_promo                    |      0.9596 |
 | baseline_sales_value                         | baseline_sales_units_any_promo               |      0.9553 |
 | baseline_sales_in_liters_any_promo           | baseline_sales_units_any_promo               |      0.9537 |
-| weighted_distribution_disp_wo_feat           | weighted_distribution_any_disp               |      0.9413 |
+| weighted_distribution_disp_without_feat      | weighted_distribution_any_disp               |      0.9413 |
 | sales_value_any_promo                        | sales_units_any_tpr                          |      0.9386 |
 | numeric_distribution_reach                   | total_weighted_distribution_points_tdp_reach |      0.9370 |
 | numeric_distribution_reach                   | weighted_distribution_reach                  |      0.9370 |
@@ -47,7 +47,7 @@
 | total_weighted_distribution_points_tdp_reach | number_of_items_reach                        |      0.9366 |
 | weighted_distribution_reach                  | avg_number_of_stores_selling_reach           |      0.9366 |
 | weighted_distribution_reach                  | number_of_items_reach                        |      0.9366 |
-| weighted_distribution_feat_wo_disp           | weighted_distribution_total_feat             |      0.9362 |
+| weighted_distribution_feat_without_disp      | weighted_distribution_total_feat             |      0.9362 |
 | sales_value                                  | baseline_sales_value_any_promo               |      0.9269 |
 | numeric_distribution_reach                   | weighted_dist                                |      0.9251 |
 | weighted_dist                                | avg_number_of_stores_selling_reach           |      0.9250 |

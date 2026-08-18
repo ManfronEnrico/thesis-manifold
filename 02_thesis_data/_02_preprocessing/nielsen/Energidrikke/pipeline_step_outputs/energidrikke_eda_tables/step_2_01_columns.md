@@ -25,9 +25,9 @@
 | universe_number_of_stores                    | float64     |       1702 |         0 |      0.0000 |
 | avg_no_of_items_per_store_reach              | float64     |       1702 |         0 |      0.0000 |
 | weighted_distribution_any_promo              | float64     |       1370 |       332 |     19.5000 |
-| weighted_distribution_disp_feat              | float64     |        512 |      1190 |     69.9000 |
-| weighted_distribution_disp_wo_feat           | float64     |       1199 |       503 |     29.6000 |
-| weighted_distribution_feat_wo_disp           | float64     |        561 |      1141 |     67.0000 |
+| weighted_distribution_disp_and_feat          | float64     |        512 |      1190 |     69.9000 |
+| weighted_distribution_disp_without_feat      | float64     |       1199 |       503 |     29.6000 |
+| weighted_distribution_feat_without_disp      | float64     |        561 |      1141 |     67.0000 |
 | weighted_distribution_total_feat             | float64     |        563 |      1139 |     66.9000 |
 | weighted_distribution_any_disp               | float64     |       1199 |       503 |     29.6000 |
 | weighted_distribution_any_tpr                | float64     |       1322 |       380 |     22.3000 |

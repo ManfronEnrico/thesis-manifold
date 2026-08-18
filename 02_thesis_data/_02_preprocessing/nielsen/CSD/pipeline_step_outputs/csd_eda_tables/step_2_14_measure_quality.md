@@ -30,9 +30,9 @@
 | universe_number_of_stores                    |  2468.0000 |      2556.0000 |    2522.5998 |       0 |       0 |           0 |    0.0000 | False      |
 | avg_no_of_items_per_store_reach              |     0.9441 |         2.0000 |       1.0022 |       0 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_any_promo              |     0.0000 |         0.5612 |       0.0423 |    1236 |       0 |           0 |    0.0000 | True       |
-| weighted_distribution_disp_feat              |     0.0002 |         0.2052 |       0.0230 |    3432 |       0 |           0 |    0.0000 | True       |
-| weighted_distribution_disp_w_o_feat          |     0.0000 |         0.2783 |       0.0193 |    1705 |       0 |           0 |    0.0000 | True       |
-| weighted_distribution_feat_w_o_disp          |     0.0004 |         0.1285 |       0.0369 |    3310 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_disp_and_feat          |     0.0002 |         0.2052 |       0.0230 |    3432 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_disp_without_feat      |     0.0000 |         0.2783 |       0.0193 |    1705 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_feat_without_disp      |     0.0004 |         0.1285 |       0.0369 |    3310 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_total_feat             |     0.0004 |         0.3219 |       0.0529 |    3309 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_any_disp               |     0.0000 |         0.3848 |       0.0230 |    1703 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_any_tpr                |     0.0000 |         0.4545 |       0.0323 |    1436 |       0 |           0 |    0.0000 | True       |

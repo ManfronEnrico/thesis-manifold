@@ -24,9 +24,9 @@
 | universe_number_of_stores                    |    -0.8940 | Left-skewed (negative)                                                                  |
 | avg_no_of_items_per_store_reach              |    32.1950 | Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary |
 | weighted_distribution_any_promo              |     1.3290 | Right-skewed -- log transform justified                                                 |
-| weighted_distribution_disp_feat              |     1.1120 | Right-skewed -- log transform justified                                                 |
-| weighted_distribution_disp_wo_feat           |     2.0730 | Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary |
-| weighted_distribution_feat_wo_disp           |     1.3310 | Right-skewed -- log transform justified                                                 |
+| weighted_distribution_disp_and_feat          |     1.1120 | Right-skewed -- log transform justified                                                 |
+| weighted_distribution_disp_without_feat      |     2.0730 | Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary |
+| weighted_distribution_feat_without_disp      |     1.3310 | Right-skewed -- log transform justified                                                 |
 | weighted_distribution_total_feat             |     1.1840 | Right-skewed -- log transform justified                                                 |
 | weighted_distribution_any_disp               |     1.8890 | Right-skewed -- log transform justified                                                 |
 | weighted_distribution_any_tpr                |     1.3490 | Right-skewed -- log transform justified                                                 |

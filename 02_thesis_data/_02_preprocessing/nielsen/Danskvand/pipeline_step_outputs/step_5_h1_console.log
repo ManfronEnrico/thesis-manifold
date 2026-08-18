@@ -1,0 +1,18 @@
+================================================================================
+STEP 5 -- APPLY SPLIT: Danskvand (horizon=1)
+================================================================================
+
+Contract: danskvand_eda_findings_h1.json (version 1.1)
+Matrix:   step_4_engineered_features_h1.parquet -- 1,230 rows x 29 columns
+
+Applying cutoffs from the contract: train<=(2025, 7), val<=(2026, 1)
+
+SPLIT APPLIED
+  train = 29 months (2023-03 .. 2025-07),    870 rows,  30 brands [70.7%]
+  val   =  6 months (2025-08 .. 2026-01),    180 rows,  30 brands [14.6%]
+  test  =  6 months (2026-02 .. 2026-07),    180 rows,  30 brands [14.6%]
+  test origins at horizon 1: 6
+
+  Split    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_split_applied_h1.parquet
+  Log      -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\step_5_log_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables

@@ -1,0 +1,35 @@
+================================================================================
+STEP 3 -- DERIVE PARAMETERS: Energidrikke (horizon=1)
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (55216, 32)
+  Products shape: (1271, 25)
+  Periods shape:  (43, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 1,702 rows x 32 columns, 68 brands
+
+DERIVED PARAMETERS
+  target                = sales_units
+  forecast_horizon      = 1 month(s)
+  log_transform_target  = True
+  lags                  = [1, 2, 3, 4, 8, 13]
+  rolling_windows       = [4, 13]
+  warmup_periods        = 13
+  min_periods           = 15  (= warmup + horizon + 1, derived)
+  peak_months        = [3, 6, 9]
+
+SPLIT
+  train_end             = (2025, 6)
+  val_end               = (2025, 12)
+  months                = 30 train / 6 val / 7 test (of 43)
+  test origins          = 7 at horizon 1
+
+RETENTION AT min_periods
+  brands                = 50 / 68 kept (18 dropped)
+  training rows         = 877 / 877 (100.0%)
+
+  Contract -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_findings_h1.json
+  Table    -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables

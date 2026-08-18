@@ -30,8 +30,8 @@
 | avg_no_of_items_per_store_reach              |      0.9909 |        5.0000 |      1.0044 |       0 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_any_promo              |      0.0000 |        0.6501 |      0.0567 |     854 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_disp_and_feat          |      0.0001 |        0.1985 |      0.0312 |    2088 |       0 |           0 |    0.0000 | True       |
-| weighted_distribution_disp_wo_feat           |     -0.0000 |        0.4472 |      0.0279 |    1246 |       0 |           1 |    0.0400 | False      |
-| weighted_distribution_feat_wo_disp           |      0.0003 |        0.4429 |      0.0551 |    2055 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_disp_without_feat      |     -0.0000 |        0.4472 |      0.0279 |    1246 |       0 |           1 |    0.0400 | False      |
+| weighted_distribution_feat_without_disp      |      0.0003 |        0.4429 |      0.0551 |    2055 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_total_feat             |      0.0004 |        0.5950 |      0.0804 |    2052 |       0 |           0 |    0.0000 | True       |
 | weighted_distribution_any_disp               |     -0.0000 |        0.5775 |      0.0351 |    1239 |       0 |           1 |    0.0400 | False      |
 | weighted_distribution_any_tpr                |      0.0000 |        0.4349 |      0.0416 |     957 |       0 |           0 |    0.0000 | True       |
