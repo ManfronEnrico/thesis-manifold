@@ -1,9 +1,9 @@
 ---
 pid: P0038
 created: 2026-08-12 18:32:00
-updated: 2026-08-12 18:32:00
+updated: 2026-08-18 00:00:00
 status: in_progress
-focus_detail: "Decompose the CSD notebook into 6 shared + 4 category-specific step scripts, replacing 32 near-duplicate files with 11. Not started -- plan written, tasks loaded. NEXT: task 1 (shared step 0 + step 1) as the pattern for the rest. Supersedes P0036 tasks 12/14/15, which collapse into this structure. Blocks P0036 task 6 (CSD re-run parity check), which is the P0033 gate."
+focus_detail: "Steps 0/1/2 shipped and verified across all four categories. Step 2 runs 18/18 sections for CSD+Energidrikke, 16/18 for Danskvand+RTD (promo sections skipped by column discovery, not by category name). NEXT: task 4 (step_3_derive_params.py + contract JSON) -- it is the last blocker before feature engineering, and it must settle MIN_PERIODS (F38/P0036-8) and the TRAIN_END/VAL_END drift (F25/F28). Blocks P0036 task 6 (CSD parity check), which is the P0033 gate."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -135,7 +135,7 @@ gets produced.
 |----|-------|-------|------------|--------|
 | 1 | Build shared `step_0_validate_cache.py` + console/table capture utils | 1 | — | **complete** |
 | 2 | Build shared `step_1_load_and_aggregate.py` (carries DEC-SCOPE) | 1 | 1 | **complete** |
-| 3 | Build shared `step_2_eda_descriptive.py` (plots + tables) | 2 | 2 | pending |
+| 3 | Build shared `step_2_eda_descriptive.py` (plots + tables) | 2 | 2 | **complete** |
 | 4 | Build shared `step_3_derive_params.py` + contract JSON schema | 2 | 2 | pending |
 | 5 | Build `step_4_engineer_csd.py` reading the contract | 3 | 4 | pending |
 | 6 | Generalise `step_5_apply_split.py` + `step_6_save_outputs.py` to `--category` | 4 | 5 | pending |
@@ -145,6 +145,104 @@ gets produced.
 
 **Task 8 is the gate.** It is the same verification as P0036 task 6, and it is
 what unblocks P0033.
+
+## Session 2026-08-18 — step 2 shipped, EDA now exists for all four categories
+
+### Task 3 complete
+
+`_shared_modules/step_2_eda_descriptive.py`, **18 sections**, run clean across
+all four categories:
+
+| Category | Sections | Tables | Plots |
+|----------|----------|--------|-------|
+| CSD | 18/18 | 22 | 8 |
+| Energidrikke | 18/18 | 22 | 8 |
+| Danskvand | 16/18 | 19 | 7 |
+| RTD | 16/18 | 20 | 7 |
+
+Zero failures. The two skipped sections in Danskvand/RTD are 3.13 and 3.17,
+both requiring `promo_units`, skipped by **column discovery** with a printed
+reason — no branch anywhere names a category (DEC-OPEN-WORLD holds).
+
+**The defect this fixes, precisely.** Notebook cell 39 referenced
+`df['promo_units']` guarded only by an `.empty` check, which tests for zero
+**rows**, not a missing **column**. Danskvand has no promo columns, so the cell
+raised `KeyError`. That single line is why three of four categories had no EDA.
+
+### Blocker found and fixed mid-task: ArrowMemoryError in step 1
+
+Step 2 could not run for CSD at all:
+`pyarrow.lib.ArrowMemoryError: malloc of size 2097152 failed`.
+
+`load_merged()` read the full facts table before applying the DEC-SCOPE filter.
+CSD facts are **10,311,342 rows × 32 float64 columns** (767.5 MB compressed),
+which materialises to ~2.6 GB dense plus pyarrow's conversion copy — against
+2.0 GB free of 15.8 GB.
+
+The filter keeps only the parent market, measured at **2.16%** of CSD rows
+(Danskvand 1.99%, Energidrikke 1.59%, RTD 2.07%). Pushing it into the parquet
+reader (`filters=[("market_id", "==", DVH_PARENT_MARKET_ID)]`) cuts the working
+set ~46×: facts now load as **223,240 rows** and step 1 finishes in 6.5 s.
+
+The pandas-level filter was **deliberately kept**. It is now a no-op on the
+data, but it remains the readable statement of DEC-SCOPE and still guards the
+case where a future engine ignores `filters=`.
+
+**Verified non-regressive**: 142 brands / 4,209 rows / 32 cols / 46 periods,
+identical to the pre-fix run.
+
+### Brian's requirements, 2026-08-18
+
+1. **Tables as Markdown, not TXT.** `save_table()` now writes `.md`. The TXT
+   rendering mirrored notebook cell output, but these tables go into thesis
+   appendices, and monospace alignment collapses the moment it is pasted into
+   Word or Docs, which reflows it proportionally. `tabulate` is a hard
+   dependency now, raising with the install command rather than degrading to
+   `to_string()` — a silent fallback would put a fixed-width body in a `.md`
+   file and look broken for an invisible reason. CSV is untouched.
+
+2. **Interpretation bullets above every table.** `ctx.save(notes=[...])`, on
+   all 22 tables. Each states what the table shows, how to read it, and the
+   methodological basis where one exists — Kim (2013) skewness bands,
+   Box & Jenkins (1970) for ACF, Chow (1960), Dickey & Fuller (1979). Several
+   deliberately state a limitation rather than a finding (promo/no-promo is
+   confounded by selection; contemporaneous correlation is not predictive
+   value; ADF has low power at n≈46). Notes go to the `.md` only, not the CSV.
+
+3. **Four orphaned plots recovered into step 2.** `02_ecdf`, `06_acf_pacf`,
+   `07_promo_intensity`, `08_correlation` existed as PNGs under `CSD/` that no
+   code regenerated. Now sections 3.15–3.18:
+   - **3.16 / 3.17 / 3.18** recovered from notebook cells 43 / 49 / 51.
+   - **3.15 (ECDF)** could not be recovered — the cell had already been deleted
+     from the notebook, whose header still advertises "14 visualizations"
+     against 8 PNGs on disk. Rebuilt from the documented intent.
+   - **3.18 was closed-world in the notebook**: cell 51 hardcoded five column
+     names and silently analysed only those it found. Now discovers every
+     numeric measure, and adds a |r| > 0.9 near-duplicate scan feeding P0036 F7.
+
+### Architecture question settled (Brian's recollection, checked)
+
+Brian asked whether the per-category step scripts are stale duplicates.
+**Confirmed, with one correction.**
+
+- ✅ The three orchestrators are **byte-identical after name normalisation**
+  (verified by `diff` on sed-normalised copies). DEC-SHARED-SEAM stands:
+  shared = steps 0,1,2,3,5,6; per-category = step 4 only.
+- ❌ They are **not stale EDA**. None of the 24 per-category scripts imports
+  matplotlib — they do no EDA at all. CSD was not missing EDA scripts; CSD was
+  the only category that *had* EDA, and it lived in the notebook.
+- ⚠️ **Numbering trap**: old `step_2` = `build_calendar`, new `step_2` = EDA.
+  Same number, different meaning. Task 9 (retirement) must not match on number.
+
+### Deviation from plan: 18 sections, not 12
+
+The plan scoped step 2 to notebook cells 17–39. Cells 43/49/51 sit inside the
+41–53 range assigned to **step 3**, but they are descriptive figures, not
+parameter derivation. Splitting on cell number would have sent plots into the
+parameter step and violated DEC-EDA-SPLIT, whose whole point is that
+re-deriving parameters must not regenerate ~20 plots. **The seam is the
+function, not the cell index.** Cells 43/49/51 moved to step 2; the parameter
+logic in 41–53 stays with step 3.
 
 ## Task detail
 

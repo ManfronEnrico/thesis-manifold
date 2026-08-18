@@ -2,9 +2,9 @@
   "id": "3",
   "session_id": "18",
   "subject": "Build shared step_2_eda_descriptive.py (plots + tables)",
-  "description": "Port notebook cells 17-39 (EDA 3.01-3.12) to _shared_modules/step_2_eda_descriptive.py, taking --category. ~24k chars.\n\n8 plots at DPI 150 already save via 'if OUTPUT_PLOTS_DIR.exists(): plt.savefig(...)'. Keep that; additionally capture printed DataFrames via save_table() and console via tee_console().\n\nMUST DEGRADE GRACEFULLY: Danskvand has ZERO promo columns (15 cols, 0 promo vs CSD's 32/7). RTD lacks sales_units_any_promo (31/6). Promo plots and column-dependent analysis must skip with a logged notice, not raise. This is the whole reason the other three categories have no EDA today.\n\nThis step produces NO parameters -- evidence for Ch4 only. Nothing downstream consumes it, which is why it is separable from step 3.\n\nVerify: runs clean for all four categories; Danskvand skips promo sections with a visible notice.",
+  "description": "DONE 2026-08-18. _shared_modules/step_2_eda_descriptive.py, 18 sections. CSD 18/18 (22 tables, 8 plots), Energidrikke 18/18, Danskvand 16/18, RTD 16/18. Zero failures. Skips are driven by column discovery (promo_units absent), never keyed on a category name. Also fixed ArrowMemoryError in step 1 via predicate pushdown (10.3M -> 223k rows), switched tables to Markdown with interpretation bullets, and recovered 4 orphaned notebook plots as sections 3.15-3.18.",
   "activeForm": "Building shared step 2 descriptive EDA",
-  "status": "pending",
+  "status": "completed",
   "blocks": [],
   "blockedBy": [
     "2"

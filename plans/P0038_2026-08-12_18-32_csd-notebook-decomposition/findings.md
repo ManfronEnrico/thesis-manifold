@@ -572,3 +572,80 @@ Surfaced by the per-category target table. Investigated:
 rows never reach the brand×month grain, and the modelling grain is brand-level
 where these UPC rows aggregate away. Recorded because a 4.9% null rate in the
 forecast target looks alarming in isolation and will be asked about again.
+
+---
+
+## F43 — step 1 read 10.3M rows to keep 223k; predicate pushdown, not a tuning knob
+
+`load_merged()` called `pd.read_parquet()` on the full facts table and applied
+the DEC-SCOPE market filter afterwards. Measured on CSD: **10,311,342 rows ×
+32 float64 columns**, 767.5 MB compressed, ~818 MB uncompressed columnar,
+~2.6 GB as a dense pandas frame — plus pyarrow's conversion copy, roughly 5 GB
+peak against **2.0 GB free of 15.8 GB**. Result: `ArrowMemoryError`.
+
+Share of rows surviving the filter, measured per category:
+
+| Category | Total rows | Parent-market rows | Share |
+|----------|-----------:|-------------------:|------:|
+| CSD | 10,311,342 | 223,240 | 2.16% |
+| Danskvand | 1,382,673 | 27,449 | 1.99% |
+| Energidrikke | 3,476,121 | 55,216 | 1.59% |
+| RTD | 2,409,362 | 49,976 | 2.07% |
+
+~98% of every read was being materialised only to be discarded. Fixed by
+pushing the predicate into the reader. Step 1 for CSD: **6.5 s**, output
+unchanged (142 brands / 4,209 rows / 46 periods).
+
+**Why this was latent rather than new**: step 1 had run successfully earlier
+the same day. The fragility was always there; it surfaced when free memory
+dropped. A pipeline whose success depends on how much RAM happens to be free
+is not reproducible, which matters more than the speed gain.
+
+---
+
+## F44 — the notebook's EDA was already lossy before decomposition
+
+The notebook header advertises "**14 visualizations**". Eight PNGs exist on
+disk, and only seven have surviving source cells — the cell that produced
+`02_ecdf_distributions.png` had been deleted while the PNG remained.
+
+So a stale-plot problem predates this decomposition: the notebook was already
+emitting artifacts it could no longer regenerate. Recovered as section 3.15
+rebuilt from the documented intent, not from source.
+
+**Implication for task 9 (retirement)**: the notebook cannot be treated as the
+authoritative record of what the EDA did. Where a plot exists without source,
+step 2 is now the authority.
+
+---
+
+## F45 — the per-category scripts are duplicates, but they never did EDA
+
+Checked against Brian's recollection that the per-category scripts were stale
+EDA duplicates. Half right:
+
+- The three working orchestrators are **byte-identical after normalising the
+  category name** — verified by diffing sed-normalised copies, zero output.
+  Duplication confirmed; DEC-SHARED-SEAM is the right response.
+- But **none of the 24 per-category scripts imports matplotlib**. They do no
+  EDA whatsoever. The other three categories had no EDA to be stale.
+
+**Numbering hazard for task 9**: the old and new step numbers do not mean the
+same thing. Old `pre_{cat}_2_build_calendar.py` vs new `step_2_eda_descriptive`;
+old `_3_filter_series` vs new `step_3_derive_params`. Retirement must match on
+filename, never on step number.
+
+---
+
+## F46 — F7's redundancy question now has a standing measurement
+
+Section 3.18 emits `step_2_18_redundant_pairs` for every |r| > 0.9 column pair.
+CSD lands **13 pairs** above that threshold, including
+`sales_in_liters_any_promo` ↔ `sales_units_any_tpr` at 0.9400 and
+`weighted_distribution_any_promo` ↔ `weighted_distribution_any_tpr` at 0.9374.
+
+This is a stricter bar than the 0.756 `weighted_dist` correlation P0036 F7 is
+tracking, so it does not resolve F7 — but the pairs listed here are a stronger
+claim, and the table regenerates on every run rather than being a one-off
+measurement. Feeds P0036 task 7.
+

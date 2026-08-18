@@ -169,3 +169,57 @@ Unpushed commits on `main` from `31d2c65` through `af4cad9`. Commit `95723c3`
 sits alone on `thesis/serving-interface-refinement` (= `main` + that one commit)
 awaiting a fast-forward; `git checkout main` was blocked by the permission
 classifier earlier in the session and was left for Brian.
+
+---
+
+## Session 2026-08-18 — task 3 (step 2) complete
+
+### Shipped
+
+| File | Change |
+|------|--------|
+| `_shared_modules/step_2_eda_descriptive.py` | **new**, 18 sections |
+| `_shared_modules/step_1_load_and_aggregate.py` | predicate pushdown on `market_id` |
+| `_shared_modules/capture_utils.py` | `.md` output + `notes=` bullets |
+
+### Run results
+
+All four categories, zero failures:
+
+| Category | Sections | Tables | Plots |
+|----------|----------|--------|-------|
+| CSD | 18/18 | 22 | 8 |
+| Energidrikke | 18/18 | 22 | 8 |
+| Danskvand | 16/18 | 19 | 7 |
+| RTD | 16/18 | 20 | 7 |
+
+**Three of four categories now have EDA for the first time.**
+
+### Errors encountered
+
+| Error | Cause | Resolution |
+|-------|-------|------------|
+| `ArrowMemoryError: malloc of size 2097152 failed` | step 1 materialised 10.3M × 32 before filtering to 2.16% | predicate pushdown at the reader (F43) |
+| `ModuleNotFoundError: statsmodels` | ADF + seasonal decomposition dependency absent | `python -m pip install statsmodels` (0.14.6) |
+| Heredoc mangled `\n` and apostrophes in patch scripts | bash consumed the escapes before Python saw them | wrote patch content via the Write tool instead |
+
+### Verification
+
+- Step 1 output identical pre/post pushdown: 142 brands, 4,209 rows, 32 cols,
+  46 periods
+- Facts load drops 10,311,342 → 223,240 rows, matching the independently
+  measured parent-market count exactly
+- Danskvand/RTD skip 3.13 and 3.17 with a printed reason, not a raise
+- Markdown tables verified to carry alignment markers and render as real tables
+
+### State at session end
+
+- Tasks 1, 2, 3 complete → **task 4 (`step_3_derive_params.py`) is next**
+- Task 4 must settle MIN_PERIODS (F38 / P0036-8) and TRAIN_END/VAL_END (F25/F28)
+- **Unpushed**: `main` is 13 commits ahead of `origin/main`. `git push` is
+  blocked by the permission classifier; Brian runs `! git push origin main`.
+- Correction to the previous session's note: `thesis/serving-interface-refinement`
+  does **not** exist, and `95723c3` is already on both `main` and `origin/main`.
+- `origin/enrico/local-backup` last moved 2026-07-13 and touches no
+  preprocessing code — not a merge risk for this work.
+
