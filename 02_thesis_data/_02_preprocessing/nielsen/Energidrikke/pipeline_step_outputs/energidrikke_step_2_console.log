@@ -1,0 +1,434 @@
+================================================================================
+STEP 2 -- DESCRIPTIVE EDA: Energidrikke
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (55216, 32)
+  Products shape: (1271, 25)
+  Periods shape:  (43, 9)
+  Markets shape:  (86, 6)
+  Discovered 29 measure columns (13 additive, 16 intensive)
+  Panel: 1,702 rows x 32 columns, 68 brands
+
+================================================================================
+3.01  DATA PREVIEW AND STATISTICS
+================================================================================
+
+Data Shape
+----------------------------------------
+       Metric Value
+   Total Rows 1,702
+Unique Brands    68
+      Columns    32
+
+Columns & Data Quality
+----------------------------------------
+                                      Column Data Type  Non-Null  Missing  Missing %
+                                       brand    object      1702        0        0.0
+                                 period_year     int64      1702        0        0.0
+                                period_month     int64      1702        0        0.0
+                                 sales_value   float64      1702        0        0.0
+                                sales_liters   float64      1702        0        0.0
+                                 sales_units   float64      1702        0        0.0
+                       sales_value_any_promo   float64      1702        0        0.0
+                   sales_in_liters_any_promo   float64      1702        0        0.0
+                                 promo_units   float64      1702        0        0.0
+                         sales_units_any_tpr   float64      1702        0        0.0
+                        numeric_distribution   float64      1702        0        0.0
+                  numeric_distribution_reach   float64      1702        0        0.0
+                               weighted_dist   float64      1702        0        0.0
+                 weighted_distribution_reach   float64      1702        0        0.0
+total_weighted_distribution_points_tdp_reach   float64      1702        0        0.0
+                       number_of_items_reach   float64      1702        0        0.0
+          avg_number_of_stores_selling_reach   float64      1702        0        0.0
+                   universe_number_of_stores   float64      1702        0        0.0
+             avg_no_of_items_per_store_reach   float64      1702        0        0.0
+             weighted_distribution_any_promo   float64      1370      332       19.5
+             weighted_distribution_disp_feat   float64       512     1190       69.9
+          weighted_distribution_disp_wo_feat   float64      1199      503       29.6
+          weighted_distribution_feat_wo_disp   float64       561     1141       67.0
+            weighted_distribution_total_feat   float64       563     1139       66.9
+              weighted_distribution_any_disp   float64      1199      503       29.6
+               weighted_distribution_any_tpr   float64      1322      380       22.3
+                        baseline_sales_value   float64      1702        0        0.0
+                    baseline_sales_in_liters   float64      1702        0        0.0
+                        baseline_sales_units   float64      1702        0        0.0
+              baseline_sales_value_any_promo   float64      1702        0        0.0
+          baseline_sales_in_liters_any_promo   float64      1702        0        0.0
+              baseline_sales_units_any_promo   float64      1702        0        0.0
+
+Missing Value Analysis
+----------------------------------------
+                            Column  Missing  Missing %
+   weighted_distribution_any_promo      332       19.5
+   weighted_distribution_disp_feat     1190       69.9
+weighted_distribution_disp_wo_feat      503       29.6
+weighted_distribution_feat_wo_disp     1141       67.0
+  weighted_distribution_total_feat     1139       66.9
+    weighted_distribution_any_disp      503       29.6
+     weighted_distribution_any_tpr      380       22.3
+
+Sample Data (first 10 rows):
+brand  period_year  period_month  sales_value  sales_liters  sales_units  sales_value_any_promo  sales_in_liters_any_promo  promo_units  sales_units_any_tpr  numeric_distribution  numeric_distribution_reach  weighted_dist  weighted_distribution_reach  total_weighted_distribution_points_tdp_reach  number_of_items_reach  avg_number_of_stores_selling_reach  universe_number_of_stores  avg_no_of_items_per_store_reach  weighted_distribution_any_promo  weighted_distribution_disp_feat  weighted_distribution_disp_wo_feat  weighted_distribution_feat_wo_disp  weighted_distribution_total_feat  weighted_distribution_any_disp  weighted_distribution_any_tpr  baseline_sales_value  baseline_sales_in_liters  baseline_sales_units  baseline_sales_value_any_promo  baseline_sales_in_liters_any_promo  baseline_sales_units_any_promo
+4MOVE         2023             1  294115.0764    20692.6051   27590.1401            225087.5021                 15792.5918   21056.7891            1176.8391              0.133388                    0.193931       0.183891                     0.261663                                      0.261663             490.095238                          486.620700                    2509.25                         1.007200                         0.130846                         0.043221                            0.063516                            0.015977                          0.059197                        0.106736                       0.011303           180913.0317                12669.6922            16892.9228                     118633.6455                           8258.1145                      11010.8193
+4MOVE         2023             2   69308.3294     4836.0119    6448.6826             44346.9966                  3093.7438    4124.9919             304.1307              0.030278                    0.059811       0.041042                     0.080273                                      0.080273             150.821429                          149.991075                    2507.75                         1.004250                         0.035131                              NaN                            0.027879                                 NaN                               NaN                        0.027879                       0.009669           116626.2282                 8099.5801            10799.8918                      25085.7249                           1732.1909                       2309.5877
+4MOVE         2023             3  334662.9604    25403.0608   33870.7475            330819.9515                 25102.8752   33470.5004           32132.6510              0.085816                    0.130090       0.115270                     0.177930                                      0.177930             325.142857                          325.015800                    2498.40                         1.000533                         0.113161                              NaN                            0.053360                                 NaN                               NaN                        0.053360                       0.159467            55495.0622                 3929.9300             5239.9068                      21538.1922                           1512.2766                       2016.3687
+4MOVE         2023             4   43723.1618     3143.5206    4191.3608             33992.9944                  2493.4458    3324.5944            2121.3806              0.025392                    0.053620       0.033363                     0.071429                                      0.071429             133.852713                          133.848800                    2496.25                         0.999700                         0.027353                              NaN                            0.016633                                 NaN                               NaN                        0.016633                       0.023566            51897.4243                 3289.9796             4386.6395                       4184.9955                            291.3416                        388.4554
+4MOVE         2023             5  292710.1426    22032.3546   29376.4729            156036.3073                 12191.1201   16254.8269            3289.2844              0.062141                    0.082526       0.084657                     0.112100                                      0.112100             204.952381                          204.850000                    2482.25                         1.003080                         0.056219                         0.000240                            0.065900                                 NaN                          0.000240                        0.065980                       0.010766           240089.5371                16660.9720            22214.6294                      66891.8578                           4706.2567                       6275.0088
+4MOVE         2023             6   48087.3899     3632.1820    4842.9093             26625.6814                  2124.2481    2832.3308             509.0900              0.014854                    0.032582       0.020561                     0.049616                                      0.049616              80.542857                           80.542840                    2472.00                         1.000000                         0.032508                              NaN                            0.030372                                 NaN                               NaN                        0.030372                       0.009322            47431.6598                 3528.3962             4704.5281                      10234.7901                            793.5877                       1058.1170
+4MOVE         2023             7  181158.0698    13554.3634   18072.4846            115774.9184                  8771.8077   11695.7436               0.0000              0.047011                    0.096765       0.062248                     0.138219                                      0.138219             239.964286                          238.839275                    2468.25                         1.002400                         0.078303                         0.021927                            0.020640                            0.035737                          0.057663                        0.042565                            NaN           133387.6407                10029.1577            13372.2103                      68105.2351                           5167.5589                       6890.0785
+4MOVE         2023             8  132464.6095    10559.0965   14078.7953             95136.7364                  7692.8949   10257.1932            2193.6314              0.044012                    0.068972       0.061629                     0.094867                                      0.094867             170.575610                          170.222480                    2468.00                         1.001160                         0.101899                              NaN                            0.093470                                 NaN                               NaN                        0.093470                       0.017781            96137.3517                 7299.7736             9733.0314                      29505.7663                           2223.0942                       2964.1256
+4MOVE         2023             9   22557.0558     1774.3973    2365.8631              6714.0642                   564.6926     752.9233             196.0476              0.011272                    0.026527       0.013824                     0.032923                                      0.032923              65.969512                           65.718300                    2477.40                         1.001650                         0.009515                              NaN                            0.008565                                 NaN                               NaN                        0.008565                       0.006447            32861.0227                 2532.9906             3377.3208                       2047.8434                            158.0788                        210.7718
+4MOVE         2023            10  261743.1921    21795.3401   29060.4535            102749.8677                  8549.1034   11398.8045            1984.1738              0.082727                    0.099044       0.115332                     0.135585                                      0.135585             245.963415                          245.455450                    2478.25                         1.001075                         0.042106                              NaN                            0.039711                                 NaN                               NaN                        0.039711                       0.013286           196275.8375                16536.6887            22048.9182                      41336.7507                           3875.2176                       5166.9567
+
+================================================================================
+3.02  DISTRIBUTION ANALYSIS WITH SKEWNESS
+================================================================================
+
+Skewness Analysis
+----------------------------------------
+                                     feature  skewness                                                                          interpretation
+                                 sales_value     3.436 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                sales_liters     3.764 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                 sales_units     3.396 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                       sales_value_any_promo     3.702 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                   sales_in_liters_any_promo     3.976 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                 promo_units     3.659 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                         sales_units_any_tpr     3.923 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                        numeric_distribution     1.774                                                 Right-skewed -- log transform justified
+                  numeric_distribution_reach     1.716                                                 Right-skewed -- log transform justified
+                               weighted_dist     1.488                                                 Right-skewed -- log transform justified
+                 weighted_distribution_reach     1.378                                                 Right-skewed -- log transform justified
+total_weighted_distribution_points_tdp_reach     1.378                                                 Right-skewed -- log transform justified
+                       number_of_items_reach     1.717                                                 Right-skewed -- log transform justified
+          avg_number_of_stores_selling_reach     1.717                                                 Right-skewed -- log transform justified
+                   universe_number_of_stores    -0.894                                                                  Left-skewed (negative)
+             avg_no_of_items_per_store_reach    32.195 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+             weighted_distribution_any_promo     1.329                                                 Right-skewed -- log transform justified
+             weighted_distribution_disp_feat     1.112                                                 Right-skewed -- log transform justified
+          weighted_distribution_disp_wo_feat     2.073 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+          weighted_distribution_feat_wo_disp     1.331                                                 Right-skewed -- log transform justified
+            weighted_distribution_total_feat     1.184                                                 Right-skewed -- log transform justified
+              weighted_distribution_any_disp     1.889                                                 Right-skewed -- log transform justified
+               weighted_distribution_any_tpr     1.349                                                 Right-skewed -- log transform justified
+                        baseline_sales_value    28.474 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                    baseline_sales_in_liters     3.884 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                        baseline_sales_units     3.326 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+              baseline_sales_value_any_promo     3.733 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+          baseline_sales_in_liters_any_promo     4.151 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+              baseline_sales_units_any_promo     3.712 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+
+================================================================================
+3.03  DATE RANGE & TIME PERIOD ANALYSIS
+================================================================================
+
+Coverage
+----------------------------------------
+        Metric              Value
+    Date Range 2023-01 to 2026-07
+  Total Months                 43
+    Total Rows              1,702
+ Unique Brands                 68
+Avg Rows/Brand               25.0
+
+Rows per Brand Distribution
+----------------------------------------
+Statistic Rows/Brand
+      Min          1
+      Max         43
+     Mean       25.0
+   Median         25
+  Std Dev       14.4
+
+================================================================================
+3.04  STRUCTURAL BREAK SCAN (AUTO-DETECTED)
+================================================================================
+
+  Scanned 31 candidate break points across 43 months
+
+Top 3 Break Candidates by Chow F-statistic
+------------------------------------------
+   date  chow_f  chow_p  mean_ratio  std_ratio
+2025-03  19.804  0.0001       1.236      1.231
+2025-05  17.178  0.0002       1.228      1.223
+2025-06  16.741  0.0002       1.229      1.261
+
+  STRUCTURAL BREAK DETECTED at 2025-03 (Chow F=19.80, p=0.0001)
+  -> Consider a binary post_break feature at this date, or separate pre/post models if severity warrants it.
+
+================================================================================
+3.05  STATIONARITY TESTING -- PER-BRAND ADF
+================================================================================
+
+  H0: non-stationary  |  p < 0.05 -> stationary
+  Testing raw, log1p, and first-difference
+
+
+ADF Test per Brand (top brands by volume)
+-----------------------------------------
+             brand  n  p_raw  p_log  p_diff recommendation
+          RED BULL 43  0.954  0.934   0.000     log1p+diff
+    MONSTER ENERGY 43  0.999  0.998   0.045     log1p+diff
+FAXE KONDI BOOSTER 43  0.857  0.706   0.001     log1p+diff
+              CULT 43  0.997  0.999   0.046     log1p+diff
+             STATE 43  0.000  0.000   0.000            raw
+      VITAMIN WELL 43  0.001  0.003   0.006            raw
+             X-RAY 33  0.999  0.998   0.029     log1p+diff
+          POWERADE 43  0.000  0.000   0.000            raw
+             PRIME 39  0.000  0.391   0.167            raw
+              XRAY 10  0.089  0.003   0.050          log1p
+             NOCCO 43  0.932  0.009   0.000          log1p
+    FAXE KONDI PRO 30  0.271  0.000   0.000          log1p
+          ROCKSTAR 43  0.888  0.964   0.468     log1p+diff
+            NAILED 17  0.154  0.322   0.120     log1p+diff
+              PURE 16  0.687  0.119   0.001     log1p+diff
+         POWERKING 43  0.760  0.667   0.987     log1p+diff
+     STATE VITAMIN 43  0.006  0.062   0.000            raw
+          GATORADE 43  0.002  0.025   0.000            raw
+              SMAG 43  0.044  0.852   0.004            raw
+      BLACK ENERGY 14  0.000  0.748   0.003            raw
+
+  CROSS-BRAND STATIONARITY SUMMARY (20 brands tested):
+    Stationary raw:             8/20 (40%)
+    Stationary after log1p:     3/20 (15%)
+    Needs log1p + differencing: 9/20 (45%)
+
+  -> LOG TRANSFORM SUPPORTED (majority of brands benefit)
+  Note: given the per-brand spread above, feature engineering should apply log1p universally for stability.
+
+  Aggregate series (reference only): ADF p=0.9768 (non-stationary)
+  The aggregate can mask per-brand heterogeneity -- the per-brand result above takes precedence.
+
+================================================================================
+3.06  BRAND STABILITY ANALYSIS (SERIES LENGTH)
+================================================================================
+
+Brand Retention at Different MIN_PERIODS Thresholds
+---------------------------------------------------
+ Min Periods  Brands Retained % of Total Data Quality
+           5               62      91.2%          Low
+          10               55      80.9%          Low
+          15               50      73.5%          Low
+          20               38      55.9%          Low
+          25               34      50.0%          Low
+          30               31      45.6%       Medium
+          35               22      32.4%       Medium
+          40               18      26.5%         High
+
+  MIN_PERIODS is not selected here. The retention curve above is the evidence;
+  the threshold is a modelling decision made in step 3 (P0036 task 8, open).
+  Observed series length: min=1, max=43, median=25
+
+================================================================================
+3.07  ZERO-SALES CHARACTERISATION
+================================================================================
+
+Zero-Sales Characterisation across 68 brands
+--------------------------------------------
+    type  brands
+no zeros      68
+
+  Brands with any zeros: 0 / 68
+
+  Imputation implications:
+    Clustered (entry/exit) -> exclude pre-entry periods; carry a distribution indicator
+    Scattered (data gaps)  -> forward-fill up to 2 periods; flag with a missingness indicator
+    Rolling means must handle zeros before computing, or lags understate the true trend.
+
+================================================================================
+3.08  SEASONAL PATTERN ANALYSIS (HOLIDAY EFFECT)
+================================================================================
+
+Monthly Sales Distribution (Full Year)
+----------------------------------------
+ Month Month Name Sales Units % of Total Classification
+     1        Jan  27,184,161       7.8%         Valley
+     2        Feb  27,777,010       8.0%         Normal
+     3        Mar  37,152,577      10.7%           PEAK
+     4        Apr  30,393,202       8.8%         Normal
+     5        May  32,433,109       9.4%         Normal
+     6        Jun  41,625,869      12.0%           PEAK
+     7        Jul  30,604,038       8.8%         Normal
+     8        Aug  22,797,637       6.6%         Valley
+     9        Sep  29,836,182       8.6%         Normal
+    10        Oct  21,529,345       6.2%         Valley
+    11        Nov  20,883,159       6.0%         Valley
+    12        Dec  24,436,582       7.0%         Valley
+
+Peak & Valley Analysis
+----------------------------------------
+                 Category      Months % of Sales
+             Top 3 Months   [6, 3, 5]      32.1%
+          Bottom 3 Months [11, 10, 8]      18.8%
+Holiday Months (75th pct)   [3, 5, 6]      32.1%
+
+  Observed holiday months (top quartile, each >= 31,061,306 units): [3, 5, 6]
+
+================================================================================
+3.09  MONTHLY SALES BAR PLOT
+================================================================================
+  Peak months (highlighted): [3, 5, 6]
+  Valley months: [11, 10, 8]
+
+================================================================================
+3.10  SEASONAL DECOMPOSITION
+================================================================================
+
+  Additive residual variance:       1.37e+10
+  Multiplicative residual variance: 2.44e-04
+  -> Selected model: 'multiplicative' (lower residual variance)
+
+  Trend over the observed window: Increasing
+  Seasonal peaks (top 3 months): [9, 6, 3]
+  Compare with 3.08 top-quartile months: [3, 5, 6]
+
+================================================================================
+3.11  TOP BRANDS TIME SERIES
+================================================================================
+
+Top 5 Brands by Total Sales
+----------------------------------------
+ Rank              Brand Total Sales
+    1           RED BULL  95,510,635
+    2     MONSTER ENERGY  95,200,963
+    3 FAXE KONDI BOOSTER  83,710,989
+    4               CULT  12,282,263
+    5              STATE  11,634,076
+
+================================================================================
+3.12  CROSS-BRAND HETEROGENEITY
+================================================================================
+
+Sales CV (std/mean) across 67 brands
+----------------------------------------
+Statistic    CV
+      Min 0.039
+      P25 0.448
+   Median 0.807
+      P75 1.358
+      Max 2.086
+
+  Brands with CV > 1.0 (high volatility): 26 / 67
+  High CV means the sales pattern varies greatly over time, which is harder for a single pooled model.
+
+  Distribution of brands' peak sales month:
+    Jan: ###### (6)
+    Feb: ## (2)
+    Mar: ########### (11)
+    Apr: ###### (6)
+    May: # (1)
+    Jun: ######################### (25)
+    Jul: ### (3)
+    Aug: ## (2)
+    Sep: ##### (5)
+    Oct: ## (2)
+    Nov: ### (3)
+    Dec: ## (2)
+
+Brands' Peak Sales Month
+----------------------------------------
+Month  Brands Peaking
+  Jan               6
+  Feb               2
+  Mar              11
+  Apr               6
+  May               1
+  Jun              25
+  Jul               3
+  Aug               2
+  Sep               5
+  Oct               2
+  Nov               3
+  Dec               2
+
+  Peak-month concentration: 0.37 (1.0 = all brands peak in the same month)
+  -> Most brands share a peak month; a shared seasonal feature is likely sufficient.
+
+  Heterogeneity verdict:
+    High CV + varied peak months -> consider brand fixed effects or per-brand models.
+    A single pooled model is viable only with a brand embedding or categorical feature.
+
+================================================================================
+3.13  PROMO INTENSITY ACROSS BRANDS
+================================================================================
+
+Promo Intensity per Brand (where promo > 0)
+-------------------------------------------
+Statistic Promo Intensity
+      Min           0.126
+      P25           0.370
+   Median           0.528
+      P75           0.620
+      Max           0.945
+
+  Brands with any promotional activity: 61 / 68
+  Rows with promo_units > 0: 1,369 / 1,702 (80.4%)
+
+================================================================================
+3.14  MEASURE-COLUMN DATA QUALITY
+================================================================================
+
+Measure-Column Quality Scan
+----------------------------------------
+                                      column         min          max         mean  nulls  zeros  negatives  neg_pct  in_0_100
+                                 sales_value    5.000000 5.749336e+07 2.954004e+06      0      0          0    0.000     False
+                                sales_liters    0.040000 2.185647e+06 9.430911e+04      0      0          0    0.000     False
+                                 sales_units    1.000000 3.561737e+06 2.036738e+05      0      0          0    0.000     False
+                       sales_value_any_promo    0.000000 3.559515e+07 1.608761e+06      0    333          0    0.000     False
+                   sales_in_liters_any_promo    0.000000 1.388970e+06 5.433459e+04      0    333          0    0.000     False
+                                 promo_units    0.000000 2.461378e+06 1.202783e+05      0    333          0    0.000     False
+                         sales_units_any_tpr   -5.000000 1.692844e+06 7.619608e+04      0    380          1    0.059     False
+                        numeric_distribution    0.000078 7.113295e-01 8.145461e-02      0      0          0    0.000      True
+                  numeric_distribution_reach    0.000391 8.730017e-01 1.147326e-01      0      0          0    0.000      True
+                               weighted_dist    0.000017 7.886963e-01 1.087988e-01      0      0          0    0.000      True
+                 weighted_distribution_reach    0.000044 9.349417e-01 1.471934e-01      0      0          0    0.000      True
+total_weighted_distribution_points_tdp_reach    0.000044 9.349417e-01 1.471934e-01      0      0          0    0.000      True
+                       number_of_items_reach    1.000000 2.201829e+03 2.897872e+02      0      0          0    0.000     False
+          avg_number_of_stores_selling_reach    1.000000 2.199746e+03 2.893026e+02      0      0          0    0.000     False
+                   universe_number_of_stores 2468.000000 2.556000e+03 2.523356e+03      0      0          0    0.000     False
+             avg_no_of_items_per_store_reach    0.983700 2.000000e+00 1.002614e+00      0      0          0    0.000      True
+             weighted_distribution_any_promo    0.000012 4.854800e-01 8.002620e-02    332      0          0    0.000      True
+             weighted_distribution_disp_feat    0.000240 9.173500e-02 2.098141e-02   1190      0          0    0.000      True
+          weighted_distribution_disp_wo_feat    0.000099 3.346350e-01 4.130373e-02    503      0          0    0.000      True
+          weighted_distribution_feat_wo_disp    0.000481 1.668602e-01 3.664861e-02   1141      0          0    0.000      True
+            weighted_distribution_total_feat    0.000240 2.585950e-01 5.351768e-02   1139      0          0    0.000      True
+              weighted_distribution_any_disp    0.000099 3.629007e-01 4.765203e-02    503      0          0    0.000      True
+               weighted_distribution_any_tpr    0.000012 4.047570e-01 5.121544e-02    380      0          0    0.000      True
+                        baseline_sales_value    1.032300 5.952243e+08 2.902023e+06      0      0          0    0.000     False
+                    baseline_sales_in_liters    0.025500 1.961832e+06 7.895122e+04      0      0          0    0.000     False
+                        baseline_sales_units    0.086000 2.890565e+06 1.597620e+05      0      0          0    0.000     False
+              baseline_sales_value_any_promo    0.000000 2.504306e+07 1.045445e+06      0    363          0    0.000     False
+          baseline_sales_in_liters_any_promo    0.000000 8.902611e+05 3.029663e+04      0    363          0    0.000     False
+              baseline_sales_units_any_promo    0.000000 1.485082e+06 6.757559e+04      0    363          0    0.000     False
+
+  1 column(s) carry negative values:
+    sales_units_any_tpr: 1 rows (0.059%), min=-5.0000
+  A negative share or distribution value is impossible by definition, so these are delivery defects.
+  Reported, not corrected: clipping would manufacture a plausible-looking value and hide the problem (F42 open).
+
+  Column(s) observed entirely within [0, 100], consistent with a rate/share rather than a count:
+    numeric_distribution
+    numeric_distribution_reach
+    weighted_dist
+    weighted_distribution_reach
+    total_weighted_distribution_points_tdp_reach
+    avg_no_of_items_per_store_reach
+    weighted_distribution_any_promo
+    weighted_distribution_disp_feat
+    weighted_distribution_disp_wo_feat
+    weighted_distribution_feat_wo_disp
+    weighted_distribution_total_feat
+    weighted_distribution_any_disp
+    weighted_distribution_any_tpr
+  Relevant to F39: such columns must be averaged, not summed, when aggregating (70% + 70% != 140%).
+
+================================================================================
+STEP 2 SUMMARY -- Energidrikke
+================================================================================
+  Sections completed: 14 / 14
+  Tables written:     17 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+  Plots written:      4 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_plots
+
+  This step derives no parameters. Its output is evidence for Chapter 4;
+  the feature-engineering contract is step 3's responsibility.

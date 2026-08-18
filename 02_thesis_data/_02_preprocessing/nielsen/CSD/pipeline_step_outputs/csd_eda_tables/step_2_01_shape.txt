@@ -1,0 +1,7 @@
+Data Shape
+========================================
+
+       Metric Value
+   Total Rows 4,209
+Unique Brands   142
+      Columns    32

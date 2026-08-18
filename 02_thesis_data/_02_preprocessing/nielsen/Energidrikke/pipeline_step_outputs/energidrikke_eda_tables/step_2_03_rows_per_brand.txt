@@ -1,0 +1,9 @@
+Rows per Brand Distribution
+========================================
+
+Statistic Rows/Brand
+      Min          1
+      Max         43
+     Mean       25.0
+   Median         25
+  Std Dev       14.4

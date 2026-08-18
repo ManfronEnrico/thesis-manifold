@@ -1,0 +1,9 @@
+Sales CV (std/mean) across 67 brands
+========================================
+
+Statistic    CV
+      Min 0.039
+      P25 0.448
+   Median 0.807
+      P75 1.358
+      Max 2.086

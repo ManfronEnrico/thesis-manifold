@@ -31,5 +31,13 @@
     "category": "RTD",
     "elapsed_sec": 2.69,
     "output_rows": 2509
+  },
+  {
+    "timestamp": "2026-08-18T12:30:50.901526",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "RTD",
+    "elapsed_sec": 2.27,
+    "output_rows": 2509
   }
 ]

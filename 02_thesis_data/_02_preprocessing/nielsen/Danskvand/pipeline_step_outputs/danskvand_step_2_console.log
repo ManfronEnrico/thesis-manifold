@@ -1,0 +1,356 @@
+================================================================================
+STEP 2 -- DESCRIPTIVE EDA: Danskvand
+================================================================================
+
+Rebuilding the analysis panel via step 1...
+  Loading view parquet files...
+  Facts shape:    (27449, 15)
+  Products shape: (1071, 24)
+  Periods shape:  (41, 9)
+  Markets shape:  (86, 6)
+  Discovered 12 measure columns (3 additive, 9 intensive)
+  Panel: 1,225 rows x 15 columns, 55 brands
+
+================================================================================
+3.01  DATA PREVIEW AND STATISTICS
+================================================================================
+
+Data Shape
+----------------------------------------
+       Metric Value
+   Total Rows 1,225
+Unique Brands    55
+      Columns    15
+
+Columns & Data Quality
+----------------------------------------
+                                      Column Data Type  Non-Null  Missing  Missing %
+                                       brand    object      1225        0        0.0
+                                 period_year     int64      1225        0        0.0
+                                period_month     int64      1225        0        0.0
+                                 sales_value   float64      1225        0        0.0
+                                sales_liters   float64      1225        0        0.0
+                                 sales_units   float64      1225        0        0.0
+                        numeric_distribution   float64      1225        0        0.0
+                  numeric_distribution_reach   float64      1225        0        0.0
+                               weighted_dist   float64      1225        0        0.0
+                 weighted_distribution_reach   float64      1225        0        0.0
+total_weighted_distribution_points_tdp_reach   float64      1225        0        0.0
+                       number_of_items_reach   float64      1225        0        0.0
+          avg_number_of_stores_selling_reach   float64      1225        0        0.0
+                   universe_number_of_stores   float64      1225        0        0.0
+             avg_no_of_items_per_store_reach   float64      1225        0        0.0
+
+Missing Value Analysis: no missing values in any column
+
+Sample Data (first 10 rows):
+      brand  period_year  period_month  sales_value  sales_liters  sales_units  numeric_distribution  numeric_distribution_reach  weighted_dist  weighted_distribution_reach  total_weighted_distribution_points_tdp_reach  number_of_items_reach  avg_number_of_stores_selling_reach  universe_number_of_stores  avg_no_of_items_per_store_reach
+ACQUA PANNA         2023             3      1393.40          47.5         95.0              0.000600                    0.001001       0.000561                     0.000994                                      0.000994                    2.5                                 2.5                    2498.40                              1.0
+ACQUA PANNA         2023             4      1359.35          46.0         92.0              0.000501                    0.000801       0.000610                     0.001177                                      0.001177                    2.0                                 2.0                    2496.25                              1.0
+ACQUA PANNA         2023             5      2003.80          68.5        137.0              0.000402                    0.001007       0.000526                     0.001904                                      0.001904                    2.5                                 2.5                    2482.25                              1.0
+ACQUA PANNA         2023             6      4948.45         198.0        396.0              0.000607                    0.001012       0.000831                     0.001391                                      0.001391                    2.5                                 2.5                    2472.00                              1.0
+ACQUA PANNA         2023             7      1309.55          56.5        113.0              0.000557                    0.000607       0.000771                     0.000782                                      0.000782                    1.5                                 1.5                    2468.25                              1.0
+ACQUA PANNA         2023             8      3175.65         120.5        241.0              0.000507                    0.000607       0.000733                     0.000850                                      0.000850                    1.5                                 1.5                    2468.00                              1.0
+ACQUA PANNA         2023             9      3994.25         137.5        275.0              0.000807                    0.000807       0.001063                     0.001063                                      0.001063                    2.0                                 2.0                    2477.40                              1.0
+ACQUA PANNA         2023            10      1583.20          54.5        109.0              0.000706                    0.000807       0.000915                     0.001123                                      0.001123                    2.0                                 2.0                    2478.25                              1.0
+ACQUA PANNA         2023            11       507.97          17.5         35.0              0.000810                    0.000810       0.001185                     0.001185                                      0.001185                    2.0                                 2.0                    2468.25                              1.0
+ACQUA PANNA         2023            12      1048.50          36.0         72.0              0.000646                    0.000808       0.001023                     0.001506                                      0.001506                    2.0                                 2.0                    2476.00                              1.0
+
+================================================================================
+3.02  DISTRIBUTION ANALYSIS WITH SKEWNESS
+================================================================================
+
+Skewness Analysis
+----------------------------------------
+                                     feature  skewness                                                                          interpretation
+                                 sales_value     2.966 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                sales_liters     4.917 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                                 sales_units     4.940 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                        numeric_distribution     2.020 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+                  numeric_distribution_reach     1.755                                                 Right-skewed -- log transform justified
+                               weighted_dist     1.877                                                 Right-skewed -- log transform justified
+                 weighted_distribution_reach     1.623                                                 Right-skewed -- log transform justified
+total_weighted_distribution_points_tdp_reach     1.623                                                 Right-skewed -- log transform justified
+                       number_of_items_reach     1.763                                                 Right-skewed -- log transform justified
+          avg_number_of_stores_selling_reach     1.763                                                 Right-skewed -- log transform justified
+                   universe_number_of_stores    -0.763                                                                  Left-skewed (negative)
+             avg_no_of_items_per_store_reach    27.233 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
+
+================================================================================
+3.03  DATE RANGE & TIME PERIOD ANALYSIS
+================================================================================
+
+Coverage
+----------------------------------------
+        Metric              Value
+    Date Range 2023-03 to 2026-07
+  Total Months                 41
+    Total Rows              1,225
+ Unique Brands                 55
+Avg Rows/Brand               22.3
+
+Rows per Brand Distribution
+----------------------------------------
+Statistic Rows/Brand
+      Min          1
+      Max         41
+     Mean       22.3
+   Median         20
+  Std Dev       17.0
+
+================================================================================
+3.04  STRUCTURAL BREAK SCAN (AUTO-DETECTED)
+================================================================================
+
+  Scanned 29 candidate break points across 41 months
+
+Top 3 Break Candidates by Chow F-statistic
+------------------------------------------
+   date  chow_f  chow_p  mean_ratio  std_ratio
+2025-06  13.892  0.0006       1.327      1.287
+2025-05  12.621  0.0010       1.311      1.255
+2025-07  10.389  0.0026       1.293      1.257
+
+  STRUCTURAL BREAK DETECTED at 2025-06 (Chow F=13.89, p=0.0006)
+  -> Consider a binary post_break feature at this date, or separate pre/post models if severity warrants it.
+
+================================================================================
+3.05  STATIONARITY TESTING -- PER-BRAND ADF
+================================================================================
+
+  H0: non-stationary  |  p < 0.05 -> stationary
+  Testing raw, log1p, and first-difference
+
+
+ADF Test per Brand (top brands by volume)
+-----------------------------------------
+            brand  n  p_raw  p_log  p_diff recommendation
+           HARBOE 41  0.999  0.996   0.000     log1p+diff
+        BLUE KELD 41  0.071  0.001   0.000          log1p
+      FIRST PRICE 41  0.000  0.744   0.000            raw
+        AQUA D'OR 41  0.165  0.384   0.000     log1p+diff
+        KILDEVÆLD 41  0.000  0.002   0.000            raw
+         EGEKILDE 41  0.993  0.998   0.000     log1p+diff
+   SAN PELLEGRINO 41  0.000  0.001   0.000            raw
+         RAMLOESA 31  0.180  0.958   0.011     log1p+diff
+          RAMLØSA 10  0.839  0.582   0.863     log1p+diff
+      OTHER BRAND 31  0.029  0.340   0.000            raw
+        ACTIVE 02 41  0.549  0.579   0.000     log1p+diff
+          HANCOCK 41  0.501  0.003   0.000          log1p
+CARLSBERG KURVAND 41  0.197  0.271   0.000     log1p+diff
+          PERRIER 41  0.000  0.026   0.000            raw
+          OK PLUS 40  0.000  0.000   0.000            raw
+            KIRVI 41  0.288  0.994   0.000     log1p+diff
+            EVIAN 41  0.816  0.481   0.000     log1p+diff
+     LIQUID DEATH 26  0.000  0.999   0.000            raw
+     ØVRIGE BRAND 10  0.726  0.020   0.000          log1p
+             FREM 41  0.666  0.694   0.005     log1p+diff
+
+  CROSS-BRAND STATIONARITY SUMMARY (20 brands tested):
+    Stationary raw:             7/20 (35%)
+    Stationary after log1p:     3/20 (15%)
+    Needs log1p + differencing: 10/20 (50%)
+
+  -> LOG TRANSFORM SUPPORTED (majority of brands benefit)
+  Note: given the per-brand spread above, feature engineering should apply log1p universally for stability.
+
+  Aggregate series (reference only): ADF p=0.9991 (non-stationary)
+  The aggregate can mask per-brand heterogeneity -- the per-brand result above takes precedence.
+
+================================================================================
+3.06  BRAND STABILITY ANALYSIS (SERIES LENGTH)
+================================================================================
+
+Brand Retention at Different MIN_PERIODS Thresholds
+---------------------------------------------------
+ Min Periods  Brands Retained % of Total Data Quality
+           5               43      78.2%          Low
+          10               33      60.0%          Low
+          15               30      54.5%          Low
+          20               28      50.9%          Low
+          25               27      49.1%          Low
+          30               25      45.5%       Medium
+          35               22      40.0%       Medium
+          40               21      38.2%         High
+
+  MIN_PERIODS is not selected here. The retention curve above is the evidence;
+  the threshold is a modelling decision made in step 3 (P0036 task 8, open).
+  Observed series length: min=1, max=41, median=20
+
+================================================================================
+3.07  ZERO-SALES CHARACTERISATION
+================================================================================
+
+Zero-Sales Characterisation across 55 brands
+--------------------------------------------
+    type  brands
+no zeros      55
+
+  Brands with any zeros: 0 / 55
+
+  Imputation implications:
+    Clustered (entry/exit) -> exclude pre-entry periods; carry a distribution indicator
+    Scattered (data gaps)  -> forward-fill up to 2 periods; flag with a missingness indicator
+    Rolling means must handle zeros before computing, or lags understate the true trend.
+
+================================================================================
+3.08  SEASONAL PATTERN ANALYSIS (HOLIDAY EFFECT)
+================================================================================
+
+Monthly Sales Distribution (Full Year)
+----------------------------------------
+ Month Month Name Sales Units % of Total Classification
+     1        Jan   8,686,690       5.4%         Valley
+     2        Feb   8,211,296       5.1%         Valley
+     3        Mar  14,672,866       9.2%         Normal
+     4        Apr  13,049,659       8.2%         Normal
+     5        May  15,987,012      10.0%         Normal
+     6        Jun  23,087,159      14.4%           PEAK
+     7        Jul  19,263,864      12.0%           PEAK
+     8        Aug  13,331,528       8.3%         Normal
+     9        Sep  14,568,488       9.1%         Normal
+    10        Oct   9,864,407       6.2%         Valley
+    11        Nov   8,867,560       5.5%         Valley
+    12        Dec  10,457,044       6.5%         Valley
+
+Peak & Valley Analysis
+----------------------------------------
+                 Category     Months % of Sales
+             Top 3 Months  [6, 7, 5]      36.5%
+          Bottom 3 Months [2, 1, 11]      16.1%
+Holiday Months (75th pct)  [5, 6, 7]      36.5%
+
+  Observed holiday months (top quartile, each >= 15,001,403 units): [5, 6, 7]
+
+================================================================================
+3.09  MONTHLY SALES BAR PLOT
+================================================================================
+  Peak months (highlighted): [5, 6, 7]
+  Valley months: [2, 1, 11]
+
+================================================================================
+3.10  SEASONAL DECOMPOSITION
+================================================================================
+
+  Additive residual variance:       2.04e+10
+  Multiplicative residual variance: 1.80e-03
+  -> Selected model: 'multiplicative' (lower residual variance)
+
+  Trend over the observed window: Increasing
+  Seasonal peaks (top 3 months): [6, 9, 8]
+  Compare with 3.08 top-quartile months: [5, 6, 7]
+
+================================================================================
+3.11  TOP BRANDS TIME SERIES
+================================================================================
+
+Top 5 Brands by Total Sales
+----------------------------------------
+ Rank       Brand Total Sales
+    1      HARBOE  73,560,373
+    2   BLUE KELD  25,136,770
+    3 FIRST PRICE  16,138,631
+    4   AQUA D'OR  13,559,660
+    5   KILDEVÆLD   8,483,825
+
+================================================================================
+3.12  CROSS-BRAND HETEROGENEITY
+================================================================================
+
+Sales CV (std/mean) across 50 brands
+----------------------------------------
+Statistic    CV
+      Min 0.000
+      P25 0.395
+   Median 0.815
+      P75 1.169
+      Max 3.786
+
+  Brands with CV > 1.0 (high volatility): 17 / 50
+  High CV means the sales pattern varies greatly over time, which is harder for a single pooled model.
+
+  Distribution of brands' peak sales month:
+    Jan: # (1)
+    Feb: # (1)
+    Mar: ##### (5)
+    Apr: ##### (5)
+    May: ### (3)
+    Jun: #################### (20)
+    Jul: ######### (9)
+    Aug: ### (3)
+    Sep: ## (2)
+    Oct: #### (4)
+    Dec: ## (2)
+
+Brands' Peak Sales Month
+----------------------------------------
+Month  Brands Peaking
+  Jan               1
+  Feb               1
+  Mar               5
+  Apr               5
+  May               3
+  Jun              20
+  Jul               9
+  Aug               3
+  Sep               2
+  Oct               4
+  Dec               2
+
+  Peak-month concentration: 0.36 (1.0 = all brands peak in the same month)
+  -> Most brands share a peak month; a shared seasonal feature is likely sufficient.
+
+  Heterogeneity verdict:
+    High CV + varied peak months -> consider brand fixed effects or per-brand models.
+    A single pooled model is viable only with a brand embedding or categorical feature.
+
+================================================================================
+3.13  PROMO INTENSITY ACROSS BRANDS
+================================================================================
+  SKIPPED -- this category has no promo_units column(s).
+  Not an error: the analysis is undefined without them, so there is nothing to report.
+
+================================================================================
+3.14  MEASURE-COLUMN DATA QUALITY
+================================================================================
+
+Measure-Column Quality Scan
+----------------------------------------
+                                      column         min          max         mean  nulls  zeros  negatives  neg_pct  in_0_100
+                                 sales_value    1.000000 1.891327e+07 1.061231e+06      0      0          0      0.0     False
+                                sales_liters    0.200000 4.621588e+06 1.538316e+05      0      0          0      0.0     False
+                                 sales_units    1.000000 3.852226e+06 1.306511e+05      0      0          0      0.0     False
+                        numeric_distribution    0.000078 2.894355e-01 3.344720e-02      0      0          0      0.0      True
+                  numeric_distribution_reach    0.000391 3.165753e-01 4.361160e-02      0      0          0      0.0      True
+                               weighted_dist    0.000007 3.191400e-01 4.416624e-02      0      0          0      0.0      True
+                 weighted_distribution_reach    0.000031 3.420857e-01 5.566720e-02      0      0          0      0.0      True
+total_weighted_distribution_points_tdp_reach    0.000031 3.420857e-01 5.566720e-02      0      0          0      0.0      True
+                       number_of_items_reach    1.000000 8.098765e+02 1.102634e+02      0      0          0      0.0     False
+          avg_number_of_stores_selling_reach    1.000000 8.091665e+02 1.100309e+02      0      0          0      0.0     False
+                   universe_number_of_stores 2468.000000 2.556000e+03 2.521443e+03      0      0          0      0.0     False
+             avg_no_of_items_per_store_reach    0.995400 1.375000e+00 1.001620e+00      0      0          0      0.0      True
+
+  No negative values in any measure column.
+
+  Column(s) observed entirely within [0, 100], consistent with a rate/share rather than a count:
+    numeric_distribution
+    numeric_distribution_reach
+    weighted_dist
+    weighted_distribution_reach
+    total_weighted_distribution_points_tdp_reach
+    avg_no_of_items_per_store_reach
+  Relevant to F39: such columns must be averaged, not summed, when aggregating (70% + 70% != 140%).
+
+================================================================================
+STEP 2 SUMMARY -- Danskvand
+================================================================================
+  Sections completed: 13 / 14
+  Tables written:     15 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+  Plots written:      4 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_plots
+
+  Skipped (1) -- column(s) absent in this category:
+    3.13  PROMO INTENSITY ACROSS BRANDS
+      missing: promo_units
+
+  This step derives no parameters. Its output is evidence for Chapter 4;
+  the feature-engineering contract is step 3's responsibility.

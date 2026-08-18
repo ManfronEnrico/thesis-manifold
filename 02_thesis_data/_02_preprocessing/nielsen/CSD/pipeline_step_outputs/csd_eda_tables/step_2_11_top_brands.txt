@@ -1,0 +1,9 @@
+Top 5 Brands by Total Sales
+========================================
+
+ Rank      Brand Total Sales
+    1     HARBOE 237,169,352
+    2  COCA COLA 218,038,067
+    3      PEPSI 186,863,901
+    4 FAXE KONDI 141,584,194
+    5      FANTA  38,141,526

@@ -226,7 +226,19 @@ def load_merged(category: str, views_dir: Path) -> pd.DataFrame:
 	facts_f, product_f, period_f, market_f = view_filenames(category)
 
 	print("  Loading view parquet files...")
-	facts = pd.read_parquet(views_dir / facts_f)
+	# Predicate pushdown on market_id, NOT a convenience: the CSD facts table is
+	# 10.3M rows x 32 float64 columns, and the DEC-SCOPE filter below keeps only
+	# ~2% of them (measured 2026-08-12: CSD 2.16%, Danskvand 1.99%,
+	# Energidrikke 1.59%, RTD 2.07%). Materialising the full frame first costs
+	# ~2.6GB dense plus pyarrow's conversion copy, and raised ArrowMemoryError
+	# on a 15.8GB machine. Filtering at the reader keeps the working set ~46x
+	# smaller. The pandas-level filter further down is deliberately KEPT: it is
+	# now a no-op on the data but remains the readable statement of DEC-SCOPE,
+	# and it still guards the case where a future engine ignores `filters=`.
+	facts = pd.read_parquet(
+		views_dir / facts_f,
+		filters=[("market_id", "==", DVH_PARENT_MARKET_ID)],
+	)
 	products = pd.read_parquet(views_dir / product_f)
 	periods = pd.read_parquet(views_dir / period_f)
 	markets = pd.read_parquet(views_dir / market_f)

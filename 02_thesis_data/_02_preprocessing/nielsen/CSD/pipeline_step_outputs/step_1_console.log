@@ -9,14 +9,14 @@ Nielsen CSD — Step 1: Load, Merge and Aggregate
 LOAD AND MERGE CACHED PARQUET VIEWS
 ================================================================================
   Loading view parquet files...
-  Facts shape:    (10311342, 32)
+  Facts shape:    (223240, 32)
   Products shape: (2130, 23)
   Periods shape:  (46, 9)
   Markets shape:  (86, 6)
 
 Merged row-level shape: (43114, 36)
 Unique brands:          142
-Elapsed:                13.27s
+Elapsed:                1.30s
 ================================================================================
 
 ================================================================================
@@ -27,7 +27,7 @@ AGGREGATE TO BYMONTH GRAIN
 Aggregated shape: (4209, 32)
 Unique brands:    142
 Date range:       2022-10 to 2026-07  (46 distinct periods)
-Elapsed:          3.44s
+Elapsed:          2.74s
 ================================================================================
 
 CSD -- brand x month panel (first 10 rows)
@@ -49,5 +49,5 @@ brand  period_year  period_month  sales_value  sales_liters  sales_units  sales_
 Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\CSD\pipeli
 ne_step_outputs\step_1_console.log
 
-✓ Completed in 16.9s
+✓ Completed in 4.1s
 

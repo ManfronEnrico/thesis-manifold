@@ -1,0 +1,9 @@
+Top 5 Brands by Total Sales
+========================================
+
+ Rank       Brand Total Sales
+    1      HARBOE  73,560,373
+    2   BLUE KELD  25,136,770
+    3 FIRST PRICE  16,138,631
+    4   AQUA D'OR  13,559,660
+    5   KILDEVÆLD   8,483,825
