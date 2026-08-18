@@ -30,5 +30,13 @@
     "category": "Energidrikke",
     "elapsed_sec": 0.0,
     "output_rows": 4
+  },
+  {
+    "timestamp": "2026-08-18T21:37:39.844121",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
   }
 ]

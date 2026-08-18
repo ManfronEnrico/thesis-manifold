@@ -64,5 +64,13 @@
     "category": "Energidrikke",
     "elapsed_sec": 2.61,
     "output_rows": 1702
+  },
+  {
+    "timestamp": "2026-08-18T21:37:42.328719",
+    "step_num": 1,
+    "step_name": "Load, Merge and Aggregate",
+    "category": "Energidrikke",
+    "elapsed_sec": 2.47,
+    "output_rows": 1702
   }
 ]

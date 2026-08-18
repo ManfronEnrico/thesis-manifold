@@ -44,6 +44,26 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
 
+def available_features(fm, wanted=None):
+	"""Return the wanted features that this matrix actually contains.
+
+	DEC-OPEN-WORLD: categories differ in capability, not just in values.
+	Danskvand and RTD carry no `promo_units` (Nielsen does not report promotion
+	for them), so the pipeline omits `promo_intensity` for those categories
+	rather than zero-filling -- a constant-zero column would assert "no
+	promotion ran", which the data does not support.
+
+	Indexing by a fixed list therefore raises KeyError on exactly the categories
+	whose capability differs. Selecting by intersection trains each category on
+	what it has, and picks up new columns without a code change.
+
+	The order of `wanted` is preserved so feature-importance output stays
+	comparable across runs.
+	"""
+	wanted = FEATURES if wanted is None else wanted
+	return [c for c in wanted if c in fm.columns]
+
+
 
 def _wmape(y, yhat):
     y = np.asarray(y, float); yhat = np.clip(np.asarray(yhat, float), 0, None)
@@ -94,8 +114,8 @@ def _space(trial, model):
 
 def tune(model, parts, trials):
     tr, va = parts["train"], parts["val"]
-    Xtr, ytr = tr[FEATURES].fillna(0.0), tr["log_sales_units"].values
-    Xva, yva = va[FEATURES].fillna(0.0), np.expm1(va["log_sales_units"].values)
+    Xtr, ytr = tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values
+    Xva, yva = va[available_features(fm)].fillna(0.0), np.expm1(va["log_sales_units"].values)
 
     def objective(trial):
         m = _make(model, _space(trial, model))
@@ -108,9 +128,9 @@ def tune(model, parts, trials):
     # refit best on train+val, eval on test
     trval = pd.concat([tr, va])
     m = _make(model, study.best_params)
-    m.fit(trval[FEATURES].fillna(0.0), trval["log_sales_units"].values)
+    m.fit(trval[available_features(fm)].fillna(0.0), trval["log_sales_units"].values)
     te = parts["test"]
-    pred = np.expm1(m.predict(te[FEATURES].fillna(0.0)))
+    pred = np.expm1(m.predict(te[available_features(fm)].fillna(0.0)))
     mp, md, wm = _all_metrics(np.expm1(te["log_sales_units"].values), pred)
     return dict(val_wmape=study.best_value, test_wmape=wm, test_mape=mp, test_median=md), study.best_params
 

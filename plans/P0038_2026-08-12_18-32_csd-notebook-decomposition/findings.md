@@ -1807,3 +1807,85 @@ unnecessary, one restored in corrected form. **Safe to delete the superseded
 tree**, with the notebook itself archived rather than deleted since it is the
 parity baseline's source.
 
+---
+
+## F74 — deletions executed; audit widened first and found three more issues
+
+Brian asked whether the deletions were safe because functionality was verified
+carried over. My audit had been narrower than that: F73 diffed **function
+definitions**, which would miss logic written inline in notebook cells. Widened
+before deleting, by extracting every column the notebook assigns.
+
+**12 columns assigned; 6 absent from the current matrix:**
+
+| Column | Verdict |
+|--------|---------|
+| `chow_f`, `chow_p`, `mean_ratio`, `std_ratio` | structural-break **diagnostics**, printed to an EDA table — never features |
+| `period` | intermediate merge key, replaced by `date` + `period_index` |
+| `log_weighted_dist` | **genuinely produced**, and genuinely redundant — see below |
+
+`log_weighted_dist` is `log1p(weighted_dist)`. Measured on the preserved
+baseline: Pearson 0.999, **Spearman exactly 1.000**. Rank correlation of 1 means
+any tree model splits identically on either column, and the models here are
+XGBoost/LightGBM. No downstream consumer references it. **Removed with purpose,
+not lost.**
+
+### Three fixes that had to land before deleting
+
+**1. Dead code writing a horizon-ambiguous filename.**
+`engineer_features.save_feature_matrix()` wrote un-suffixed
+`feature_matrix.parquet` and had **no callers** in live code (verified
+repo-wide; the only caller is an archived pre-integration agent). Removed rather
+than left: a dead helper in a *shared module* that writes exactly the artifact
+this cleanup deletes is an invitation to recreate it with apparent authority.
+
+**2. `pipeline_config.findings_json` named a file no step writes.** Step 3 writes
+`{slug}_eda_findings_h{N}.json`. Replaced with `findings_json_for(horizon)`.
+
+**3. Hardcoded FEATURES lists in nine modelling scripts.** This one is
+substantive. Every script indexed the frame by a fixed list including
+`promo_intensity` — which Danskvand and RTD legitimately do not have (F59:
+Nielsen does not report promotion for them, so the pipeline omits the column
+rather than zero-filling). `srq1_benchmark` died with
+`KeyError: ['promo_intensity'] not in index` on Danskvand.
+
+The preprocessing layer follows DEC-OPEN-WORLD; the modelling layer did not.
+Added `available_features(fm)` to all nine, selecting by intersection with the
+frame's actual columns. 24 indexing sites switched.
+
+### Deletions
+
+40 files across groups 1-5, per the inventory. **`step_1_aggregate_bymonth.parquet`
+survived in all four categories** — the live-vs-stale distinction from the
+corrected F68 holding up in practice; a date-based sweep would have taken it.
+
+### Verification after deleting
+
+| Check | Result |
+|-------|--------|
+| full pipeline, 4 categories x 2 horizons | **8/8 clean**, exit 0 |
+| `srq1_benchmark` end to end | **runs on all 4 categories**, incl. the two that crashed |
+| tree models vs naive | beat it everywhere (CSD 17.5% vs 34.9%) |
+
+Also installed the missing ML stack (scikit-learn, xgboost, lightgbm) — without
+it every ML row reported `ERR`, swallowed into the results table rather than
+raised.
+
+---
+
+## F75 — `mean MAPE` is meaningless in the benchmark output and should not be reported
+
+Visible in every row of `04_thesis_results/srq1/summary.md`: mean MAPE runs to
+**10^12 – 10^15 %**, including for **SeasonalNaive**. A naive baseline cannot be
+wrong by a quadrillion percent in any meaningful sense.
+
+Same defect as F72's Prophet blow-up, in a different place: MAPE divides by the
+actual, and the guard is `np.maximum(y, 1e-9)`. For a brand-month with near-zero
+sales the ratio explodes, and the **mean** carries it into the headline. There
+are 588 zero rows (13.5%) in the CSD matrix at parent scope.
+
+`WMAPE` (volume-weighted) and `medMAPE` (median) are both robust to this and
+agree with each other. **Recommendation: drop mean MAPE from the reported table**
+rather than explain it — a column no reader can interpret is worse than absent.
+Not removed here: which metrics the thesis reports is Brian's call.
+

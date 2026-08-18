@@ -1,9 +1,9 @@
 ---
 pid: P0038
 created: 2026-08-12 18:32:00
-updated: 2026-08-18 21:10:00
-status: in_progress
-focus_detail: "GATE PASSED (F68): CSD parity check clean -- every difference traced to DEC-SCOPE, DEC-SPLIT, DEC-PEAKNAME, the bfill fix or the re-pull; no leakage; split fixed from 57/14/29 to 70/15/15. P0033 UNBLOCKED. NEXT: task 9 -- retire the notebook and repoint the 12 downstream consumers (F65)."
+updated: 2026-08-18 22:30:00
+status: complete
+focus_detail: "P0038 COMPLETE. Steps 0-6 + orchestrator shipped, gate passed (F68), notebook archived, 40 stale files deleted, 12 consumers repointed to H=3. Modelling layer now runs end to end on all 4 categories. Open for Brian: F72 (Prophet unbounded trend), F75 (mean MAPE meaningless), and P0036 tasks 4/7/11."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -145,7 +145,7 @@ gets produced.
 | 6 | Generalise `step_5_apply_split.py` + `step_6_save_outputs.py` to `--category` | 4 | 5 | **complete** |
 | 7 | Build shared `run_preprocessing.py` orchestrator | 4 | 6 | **complete** |
 | 8 | Run CSD end-to-end + parity-check vs last notebook run | 5 | 7 | **complete** |
-| 9 | Retire notebook, old step scripts, 4 orchestrators | 5 | 8 | pending |
+| 9 | Retire notebook, old step scripts, 4 orchestrators | 5 | 8 | **complete** |
 
 **Task 8 is the gate.** It is the same verification as P0036 task 6, and it is
 what unblocks P0033.

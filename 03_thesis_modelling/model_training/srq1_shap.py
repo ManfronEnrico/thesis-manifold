@@ -34,6 +34,26 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
 
+def available_features(fm, wanted=None):
+	"""Return the wanted features that this matrix actually contains.
+
+	DEC-OPEN-WORLD: categories differ in capability, not just in values.
+	Danskvand and RTD carry no `promo_units` (Nielsen does not report promotion
+	for them), so the pipeline omits `promo_intensity` for those categories
+	rather than zero-filling -- a constant-zero column would assert "no
+	promotion ran", which the data does not support.
+
+	Indexing by a fixed list therefore raises KeyError on exactly the categories
+	whose capability differs. Selecting by intersection trains each category on
+	what it has, and picks up new columns without a code change.
+
+	The order of `wanted` is preserved so feature-importance output stays
+	comparable across runs.
+	"""
+	wanted = FEATURES if wanted is None else wanted
+	return [c for c in wanted if c in fm.columns]
+
+
 params = json.loads((RES / "tuned_params.json").read_text())
 rows = []
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -45,9 +65,9 @@ for ax, (cat, slug) in zip(axes.ravel(), CATS.items()):
     te = d[d.split == "test"]
     p = params.get(f"brand/{cat}/XGBoost", {})
     m = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **p)
-    m.fit(trval[FEATURES].fillna(0.0), trval["log_sales_units"].values)
+    m.fit(trval[available_features(fm)].fillna(0.0), trval["log_sales_units"].values)
     expl = shap.TreeExplainer(m)
-    sv = expl.shap_values(te[FEATURES].fillna(0.0))
+    sv = expl.shap_values(te[available_features(fm)].fillna(0.0))
     mean_abs = np.abs(sv).mean(axis=0)
     order = np.argsort(mean_abs)[::-1]
     for f, v in zip(np.array(FEATURES)[order], mean_abs[order]):

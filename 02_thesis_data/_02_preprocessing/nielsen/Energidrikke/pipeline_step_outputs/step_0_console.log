@@ -12,7 +12,7 @@ Energidrikke Preprocessing Configuration
   Category:        Energidrikke
   Views dir:       Z:\_dev-ssd\thesis-manifold\02_thesis_data\_01_converted\nielsen\parquet_nielsen\Energidrikke\views
   Step outputs:    Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs
-  Output findings: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_findings.json
+  Output findings: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_findings_h1.json
   Plots directory: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_plots
 
 ML TARGET DEFINITION

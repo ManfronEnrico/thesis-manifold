@@ -719,27 +719,18 @@ class FeatureEngineer:
 # ── Persistence helpers ───────────────────────────────────────────────────────
 
 
-def save_feature_matrix(
-    df: pd.DataFrame,
-    output_dir: Path,
-    series_idx: pd.DataFrame | None = None,
-) -> dict[str, Path]:
-    """
-    Save feature matrix and series index to disk under output_dir/.
-    Returns dict of written paths for downstream agents (ForecastingAgent).
-    """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    fm_path = output_dir / "feature_matrix.parquet"
-    df.to_parquet(fm_path, index=False)
-
-    paths = {"feature_matrix": fm_path}
-    if series_idx is not None:
-        si_path = output_dir / "series_index.csv"
-        series_idx.to_csv(si_path, index=False)
-        paths["series_index"] = si_path
-    return paths
+# save_feature_matrix() was removed here (P0038, 2026-08-18).
+#
+# It wrote an un-suffixed "feature_matrix.parquet" -- the notebook-era name,
+# which carries no horizon and so has no unambiguous referent now that the
+# pipeline produces one matrix per horizon. It had no callers in live code (the
+# only one in the repo is an archived pre-integration agent), and step 6 owns
+# artifact writing.
+#
+# Deleted rather than deprecated: a dead helper that writes a horizon-ambiguous
+# filename invites someone to wire it back up, recreating precisely the stale
+# artifact this cleanup removed -- and lending it the authority of a shared
+# module.
 
 
 # ── Pooled feature matrix construction ────────────────────────────────────────

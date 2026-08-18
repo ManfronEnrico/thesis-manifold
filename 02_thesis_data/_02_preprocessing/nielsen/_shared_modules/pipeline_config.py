@@ -202,7 +202,10 @@ def get_paths(category: str) -> dict[str, Path]:
 		"slug": slug,
 		"views_dir": get_category_views_dir(category),
 		"step_output_dir": step_out,
-		"findings_json": step_out / f"{slug}_eda_findings.json",
+		# NOTE: horizon-suffixed. Step 3 writes one contract per horizon
+		# ({slug}_eda_findings_h{N}.json), so an un-suffixed path here would
+		# name a file no step produces. Callers pass the horizon they mean.
+		"findings_json_for": lambda h: step_out / f"{slug}_eda_findings_h{h}.json",
 		"plots_dir": step_out / f"{slug}_eda_plots",
 		"tables_dir": step_out / f"{slug}_eda_tables",
 	}

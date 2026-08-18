@@ -66,6 +66,26 @@ from xgboost import XGBRegressor
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
+
+def available_features(fm, wanted=None):
+	"""Return the wanted features that this matrix actually contains.
+
+	DEC-OPEN-WORLD: categories differ in capability, not just in values.
+	Danskvand and RTD carry no `promo_units` (Nielsen does not report promotion
+	for them), so the pipeline omits `promo_intensity` for those categories
+	rather than zero-filling -- a constant-zero column would assert "no
+	promotion ran", which the data does not support.
+
+	Indexing by a fixed list therefore raises KeyError on exactly the categories
+	whose capability differs. Selecting by intersection trains each category on
+	what it has, and picks up new columns without a code change.
+
+	The order of `wanted` is preserved so feature-importance output stays
+	comparable across runs.
+	"""
+	wanted = FEATURES if wanted is None else wanted
+	return [c for c in wanted if c in fm.columns]
+
 fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix_h3.parquet")
 d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
 top = d.groupby("brand")["sales_units"].sum().idxmax()
@@ -73,8 +93,8 @@ db = d[d.brand == top].sort_values("period_index")
 tr = d[d.split.isin(["train", "val"])]
 m3 = XGBRegressor(n_estimators=500, learning_rate=0.05, max_depth=6, subsample=0.8,
                   colsample_bytree=0.8, random_state=SEED, verbosity=0)
-m3.fit(tr[FEATURES].fillna(0.0), tr["log_sales_units"].values)
-db = db.assign(pred=np.clip(np.expm1(m3.predict(db[FEATURES].fillna(0.0))), 0, None))
+m3.fit(tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values)
+db = db.assign(pred=np.clip(np.expm1(m3.predict(db[available_features(fm)].fillna(0.0))), 0, None))
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.plot(db.period_index, db.sales_units, "o-", label="actual", color="#1f77b4")
 ax.plot(db.period_index, db.pred, "s--", label="XGBoost forecast", color="#d62728")

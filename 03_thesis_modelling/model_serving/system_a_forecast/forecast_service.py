@@ -34,6 +34,26 @@ LAGS = (1, 2, 3, 4, 8, 13); PEAK = {3, 6, 12}
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
+
+def available_features(fm, wanted=None):
+	"""Return the wanted features that this matrix actually contains.
+
+	DEC-OPEN-WORLD: categories differ in capability, not just in values.
+	Danskvand and RTD carry no `promo_units` (Nielsen does not report promotion
+	for them), so the pipeline omits `promo_intensity` for those categories
+	rather than zero-filling -- a constant-zero column would assert "no
+	promotion ran", which the data does not support.
+
+	Indexing by a fixed list therefore raises KeyError on exactly the categories
+	whose capability differs. Selecting by intersection trains each category on
+	what it has, and picks up new columns without a code change.
+
+	The order of `wanted` is preserved so feature-importance output stays
+	comparable across runs.
+	"""
+	wanted = FEATURES if wanted is None else wanted
+	return [c for c in wanted if c in fm.columns]
+
 # Ch6 §6.5.6 selected (model = tuned XGBoost; granularity per category)
 # GRAIN (P0035, 2026-08-01): DEC-GRAIN (2026-07-12) locked the thesis to
 # brand x month. danskvand was previously pinned to the 'bychain' grain here;
@@ -62,10 +82,10 @@ def build_service():
         if len(d) < 30:
             continue
         m = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params.get(f"{pk}/{cat}/XGBoost", {}))
-        m.fit(d[FEATURES].fillna(0.0), d["log_sales_units"].values)
+        m.fit(d[available_features(fm)].fillna(0.0), d["log_sales_units"].values)
         # conformal half-width on the held-out test residuals (log space), 90%
         te = fm[fm.split == "test"].dropna(subset=["log_sales_units", "lag_1", "lag_13"])
-        q90 = float(np.quantile(np.abs(te["log_sales_units"].values - m.predict(te[FEATURES].fillna(0.0))), 0.90)) if len(te) else 0.5
+        q90 = float(np.quantile(np.abs(te["log_sales_units"].values - m.predict(te[available_features(fm)].fillna(0.0))), 0.90)) if len(te) else 0.5
 
         full = fm.copy().sort_values(keys + ["period_index"])
         for kv, g in full.groupby(keys):

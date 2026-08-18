@@ -28,6 +28,26 @@ CATS = {"CSD": "csd", "danskvand": "danskvand", "energidrikke": "energidrikke", 
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
+
+def available_features(fm, wanted=None):
+	"""Return the wanted features that this matrix actually contains.
+
+	DEC-OPEN-WORLD: categories differ in capability, not just in values.
+	Danskvand and RTD carry no `promo_units` (Nielsen does not report promotion
+	for them), so the pipeline omits `promo_intensity` for those categories
+	rather than zero-filling -- a constant-zero column would assert "no
+	promotion ran", which the data does not support.
+
+	Indexing by a fixed list therefore raises KeyError on exactly the categories
+	whose capability differs. Selecting by intersection trains each category on
+	what it has, and picks up new columns without a code change.
+
+	The order of `wanted` is preserved so feature-importance output stays
+	comparable across runs.
+	"""
+	wanted = FEATURES if wanted is None else wanted
+	return [c for c in wanted if c in fm.columns]
+
 NOMINAL = [0.80, 0.90]
 
 params = json.loads((RES / "tuned_params.json").read_text())
@@ -40,10 +60,10 @@ for cat, slug in CATS.items():
     if len(tr) < 30 or len(va) == 0 or len(te) == 0:
         continue
     m = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params.get(f"brand/{cat}/XGBoost", {}))
-    m.fit(tr[FEATURES].fillna(0.0), tr["log_sales_units"].values)
+    m.fit(tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values)
     # calibration residuals on validation (log space)
-    res = np.abs(va["log_sales_units"].values - m.predict(va[FEATURES].fillna(0.0)))
-    pred_te = m.predict(te[FEATURES].fillna(0.0))
+    res = np.abs(va["log_sales_units"].values - m.predict(va[available_features(fm)].fillna(0.0)))
+    pred_te = m.predict(te[available_features(fm)].fillna(0.0))
     ytrue = np.expm1(te["log_sales_units"].values)
     for nom in NOMINAL:
         q = np.quantile(res, nom)  # symmetric half-width in log space

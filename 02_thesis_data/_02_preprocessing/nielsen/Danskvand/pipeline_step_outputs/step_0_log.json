@@ -30,5 +30,13 @@
     "category": "Danskvand",
     "elapsed_sec": 0.0,
     "output_rows": 4
+  },
+  {
+    "timestamp": "2026-08-18T21:37:27.561103",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "Danskvand",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
   }
 ]

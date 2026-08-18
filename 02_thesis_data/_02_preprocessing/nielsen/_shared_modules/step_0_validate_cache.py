@@ -47,6 +47,7 @@ sys.path.insert(0, str(ROOT_DIR / "02_thesis_data" / "_02_preprocessing" / "niel
 
 from capture_utils import tee_console
 from pipeline_config import (
+	FORECAST_HORIZON,
 	CATEGORIES,
 	get_paths,
 	normalise_category,
@@ -166,7 +167,7 @@ def run(category: str) -> dict:
 			print(f"  Category:        {category}")
 			print(f"  Views dir:       {paths['views_dir']}")
 			print(f"  Step outputs:    {paths['step_output_dir']}")
-			print(f"  Output findings: {paths['findings_json']}")
+			print(f"  Output findings: {paths['findings_json_for'](FORECAST_HORIZON)}")
 			print(f"  Plots directory: {paths['plots_dir']}")
 			print()
 			print_target_definition()

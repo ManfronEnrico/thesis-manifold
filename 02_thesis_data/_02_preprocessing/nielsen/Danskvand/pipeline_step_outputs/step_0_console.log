@@ -12,7 +12,7 @@ Danskvand Preprocessing Configuration
   Category:        Danskvand
   Views dir:       Z:\_dev-ssd\thesis-manifold\02_thesis_data\_01_converted\nielsen\parquet_nielsen\Danskvand\views
   Step outputs:    Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs
-  Output findings: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings.json
+  Output findings: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_findings_h1.json
   Plots directory: Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_plots
 
 ML TARGET DEFINITION

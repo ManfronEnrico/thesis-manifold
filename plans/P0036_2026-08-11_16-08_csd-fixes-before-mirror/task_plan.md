@@ -1,9 +1,9 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-12 18:32:00
+updated: 2026-08-18 22:35:00
 status: in_progress
-focus_detail: "PARTLY SUPERSEDED BY P0038. Tasks 1,2,3,5,10,13 complete. Tasks 12, 14, 15 moved to P0038 (CSD notebook decomposition) -- 14's open seam question is ANSWERED there by DEC-SHARED-SEAM (6 shared step scripts + 1 per-category feature-engineering script; 32 files -> 11). Task 15's shared-module half is DONE and on disk (apply_split now proportional via new resolve_split_cutoffs(); 6 step scripts patched); its notebook half is deliberately skipped since the notebook is being dissolved. Task 6 (CSD re-run parity check) is now P0038 task 8 and runs after the decomposition. DATA REFRESHED AND VERIFIED 2026-08-12: all four categories reach 2026-07 (CSD 46 / Energidrikke 43 / Danskvand 41 / RTD 41 periods); RTD live at 2.4M facts rows after being an empty file. Every count in F15-F21 is SUPERSEDED. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. TASK 8 RESOLVED 2026-08-18 (DEC-MINPERIODS: MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15, derived not chosen, costs 0.0% of training rows vs 20-41% at the old 40). REMAINING HERE: 4 (promo asserts), 7, 9, 11. Also open: P0037 DEC-HORIZON."
+focus_detail: "P0038 COMPLETE, unblocking everything here. Task 9 CLOSED (its own measurement refutes the single-brand premise: 3,392 pooled rows vs 44). Task 4 half delivered (has_promo recorded, DEC-NO-PROMO-FILL); the all-zero assertion is still missing and two 2026-08-18 failures would have been caught by it. Tasks 7 and 11 unblocked; 11 still needs defining. See the 2026-08-18 status refresh at the foot of this file."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -74,12 +74,12 @@ children (6.41× redundancy) without adding information at the modelling grain.
 | 1 | Cherry-pick V3/V4 `engineer_features.py` from the locked worktree | 1 | — | ✅ complete |
 | 2 | Preserve + remove four stale worktrees | 1 | 1 | ✅ complete |
 | 3 | Switch CSD market filter to parent `1256338` | 2 | — | ✅ complete |
-| 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | pending |
+| 4 | Verify promo columns populate; assert non-degenerate | 2 | 3 | pending (half delivered — see note) |
 | 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | ✅ complete |
 | 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | → **moved to P0038 task 8** |
 | 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | P0038 t8 | pending |
 | 8 | Decide MIN_PERIODS threshold | 4 | — | **complete** |
-| 9 | Measure single-brand vs pooled training cost | 4 | P0038 t8 | pending |
+| 9 | Measure single-brand vs pooled training cost | 4 | P0038 t8 | **complete** |
 | 11 | Recover product-dimension features as brand-month signals | 4 | P0038 t8 | pending |
 | 12 | Per-notebook feature engineering for capability tiers | — | — | → **moved to P0038 task 5** |
 | 14 | Decide shared-vs-CSD-specific seam | — | — | → **answered by P0038 DEC-SHARED-SEAM** |
@@ -274,3 +274,71 @@ figure (see `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md
 - P0033 `findings.md` F5–F11 — blocking constraint, funnel analysis, adequacy assessment
 - P0031 task 4 — redundancy (imported as task 5)
 - P0026 — the region-scope decision this reverses
+
+
+---
+
+## 2026-08-18 — status refresh after P0038 completed
+
+P0038 finished (pipeline decomposed, gate passed, notebook retired). That
+unblocks everything here that was waiting on the parity check, and settles some
+of it outright.
+
+### Task 9 — CLOSED, the measurement already answers it
+
+No further work needed. The plan's own table refutes the premise: pooled
+training gives **3,392 rows**, single-brand gives **44**. Selecting the
+best brand yields no extra data because 51 brands already sit at full panel
+depth — `MIN_PERIODS` filters *series length*, and discarding brands cannot
+lengthen the survivor. ~30 features on 44 rows is more features than
+observations, which XGBoost/LightGBM cannot fit. Marked complete.
+
+### Task 4 — half delivered by P0038, and the remaining half is now better motivated
+
+**Delivered**: the pipeline records promo capability per category as
+`has_promo` in the manifest, and omits `promo_intensity` where `promo_units` is
+absent rather than zero-filling (DEC-NO-PROMO-FILL). A constant-zero column
+would assert "no promotion ran", which the data does not support.
+
+**Still missing**: the reusable assertion that **fails loudly on an all-zero
+column**. Two independent failures in the 2026-08-18 session would have been
+caught by exactly that guard:
+
+| Failure | How it presented |
+|---------|------------------|
+| promo columns empty at region scope | silent for weeks (P0032 F10.2) |
+| Prophet uninstalled | `n_series=0`, aggregated to `nan`, script exited 0 |
+
+Both are the same shape: a component produced nothing, and nothing complained.
+Scope the assertion to any all-zero *or* all-null feature, not promo alone.
+
+### Task 7 — unblocked, and P0038 sharpened the `weighted_dist` question
+
+The redundancy half stands: `sales_value` / `sales_liters` / `sales_units` are
+the same quantity in different units.
+
+The `weighted_dist` half is more interesting than when written. P0032 measured
+its target correlation at **0.756**, above `lag_1`'s 0.585 — backwards for a
+supposedly exogenous variable. **P0038 F68 adds context**: `weighted_dist` is a
+share-of-stores measure whose scale depends on market scope (parent mean 0.1489
+vs regional children 0.1973, ratio 0.7548). It was also the one feature the
+notebook back-filled, which P0038 fixed.
+
+Given that P0038 found a leaky feature hiding behind a **96% spot-check match**
+(F73 `zero_run_flag`), a correlation this high on an "exogenous" variable
+deserves an explicit t vs t-1 check before the sensitivity fit, not after.
+
+### Task 11 — unblocked, still undefined
+
+No detail section was ever written for this task. Before starting it, someone
+has to say which product-dimension fields are meant and what brand-month signal
+they would become. As written it is a title, not a task.
+
+### Also open, not tracked here
+
+- **F72** (P0038): Prophet's unbounded log-space trend — one CSD brand predicted
+  101M vs 301k actual, 59.9% of category error. Recommendation is to report
+  medMAPE rather than tune the baseline.
+- **F75** (P0038): `mean MAPE` reaches 10^15% for *SeasonalNaive* in the
+  benchmark table; the column is uninterpretable and should be dropped.
+- **P0037 DEC-HORIZON** remains open per this plan's frontmatter.
