@@ -224,3 +224,43 @@ All four categories, zero failures:
 - `origin/enrico/local-backup` last moved 2026-07-13 and touches no
   preprocessing code — not a merge risk for this work.
 
+---
+
+## Session 2026-08-18 (cont.) — appendix voice + DEC-MINPERIODS
+
+### Bullets rewritten for submission
+
+Brian: the interpretation bullets read as an engineering log, not thesis prose. All 22
+tables rewritten. Removed decision IDs (DEC-*), finding IDs (F25/F39/F42), plan and task
+references, pipeline mechanics ("step 1 produced", "step 3 decides") and deliberative
+framing ("open question", "listed for step 3 to act on").
+
+Retained: the quantity shown, how to read it, the methodological basis with citation, and
+the limitation that qualifies it. Citations name authors — Kim (2013), Chow (1960),
+Dickey and Fuller (1979), Box and Jenkins (1970), Hyndman and Koehler (2006).
+
+Verified by leak audit across all four categories: **zero matches**.
+
+### DEC-MINPERIODS settled
+
+`MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15`, derived rather than chosen. Costs 0.0% of
+training rows in every category; the previous hardcoded 40 cost 20-41%. Full derivation
+and measurements in task_plan.md; evidence in F47/F48.
+
+**Closes P0036 task 8.**
+
+### Written to thesis notes
+
+`05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md`:
+
+- **§11** MIN_PERIODS derivation, the four-category measurement tables, why 40 was wrong,
+  the rejected lag-3 alternative, and the Ch10 external-validity limitation
+- **§12** warm-up as a training-time concept, why it does not exist at serving, and the
+  cold-start coverage limit that does — including why typed refusal strengthens SRQ2
+
+### State
+
+- Tasks 1, 2, 3 complete. Task 4 (`step_3_derive_params.py`) in progress.
+- MIN_PERIODS no longer blocks task 4. Remaining open defect for the contract:
+  TRAIN_END/VAL_END proportional derivation (F25/F28).
+

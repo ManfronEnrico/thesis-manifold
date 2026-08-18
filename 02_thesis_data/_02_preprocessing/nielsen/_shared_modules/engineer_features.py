@@ -34,6 +34,16 @@ DEFAULT_LAGS: tuple[int, ...] = (1, 2, 3, 4, 8, 13)
 DEFAULT_ROLLING_WINDOWS: tuple[int, ...] = (4, 13)
 DEFAULT_HOLIDAY_MONTHS: frozenset[int] = frozenset({1, 4, 6, 10, 12})
 DEFAULT_TARGET_MARKET: str = "DVH EXCL. HD"
+# SUPERSEDED by DEC-MINPERIODS (2026-08-18). This default is a THIRD value --
+# the notebook used 40, this module used 30, and neither was derived. The
+# authoritative value is pipeline_config.MIN_PERIODS (= WARMUP_PERIODS +
+# FORECAST_HORIZON + 1 = 15), and step 4 must take it from the parameter
+# contract rather than from this constant (DEC-CONTRACT / DEC-NO-FALLBACK).
+#
+# Left in place, not deleted: it is still the fallback for direct callers of
+# this module that pass no min_periods. Removing it would break them silently,
+# which is the opposite of what DEC-NO-FALLBACK asks for. It should be removed
+# once step 4 is wired to the contract and no caller relies on the default.
 DEFAULT_MIN_PERIODS: int = 30
 
 # Split sizing is PROPORTIONAL, not calendar-fixed. Each category's panel

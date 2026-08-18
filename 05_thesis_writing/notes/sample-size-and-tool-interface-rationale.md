@@ -3,9 +3,9 @@ name: sample-size-and-tool-interface-rationale
 description: RULE - Sample-size adequacy, the two deduplication axes, the LLM tool interface, three leakage defects found and fixed, cross-category asymmetry, and data recency/refresh. Write-up material for Ch4/Ch5/Ch6/Ch7/Ch10. NOTE - all counts are snapshot-specific and superseded by the 2026-08-12 re-pull.
 category: reference
 applies-to: [ch4-data, ch5-design, ch6-benchmark, ch7-interface, ch8-evaluation, ch10-limitations]
-triggers: [writing Ch4 data adequacy, defending sample size, describing the tool interface, writing limitations, defending leakage control, justifying market scope, cross-category comparison, data recency, forecast horizon]
+triggers: [writing Ch4 data adequacy, defending sample size, describing the tool interface, writing limitations, defending leakage control, justifying market scope, cross-category comparison, data recency, forecast horizon, defending MIN_PERIODS, explaining warmup, cold-start coverage]
 created: 2026_08_11-16_21
-updated: 2026_08_12-16_10
+updated: 2026_08_18-00_00
 ---
 
 # Sample Size & Tool Interface — Write-Up Rationale
@@ -471,7 +471,9 @@ about a neighbouring one.** Leakage audits should enumerate leakage *kinds*
 (target / cross-series / future / train-test contamination), not spot-check individual
 lines.
 
-### Related structural safeguard
+#---
+
+## Related structural safeguard
 
 The same audit added a **market fan-out guard**: a `market_description` join resolving to
 more than one `market_id` silently multiplies every `SUM()`. This produced a 6.16×
@@ -653,3 +655,160 @@ Hold out the last *k* months of the extract and forecast those. Then:
 
 This is the reference point the SRQ4 three-arm comparison requires, and it should be
 defined once in Ch5 and reused in Ch6 and Ch8.
+
+---
+
+## 11. MIN_PERIODS is derived, not chosen (Ch4 + Ch10)
+
+**Anticipated question:** *"Why did you exclude brands with fewer than 15 months? Isn't
+that an arbitrary quality cut that biases your sample toward established brands?"*
+
+**Answer: it is not a quality judgement. It is the minimum-information requirement of the
+feature specification, and it is computed from that specification rather than chosen.**
+
+### The derivation
+
+With `MAX_LAG = 13` and a one-month forecast horizon, a brand-month row is only usable as
+a training example once its lag features are defined. The first 13 months of any brand's
+series have `lag_13` pointing before the series begins, so they carry a known target but
+an incomplete feature vector.
+
+```
+usable_rows(brand) = n_months(brand) - MAX_LAG - HORIZON
+                   = n_months(brand) - 13 - 1
+```
+
+Setting this above zero gives `n_months >= 15`. A brand observed for fewer than 15 months
+**cannot contribute a single row to the design matrix**, regardless of how clean or
+commercially interesting it is. MIN_PERIODS = 15 excludes brands that are *unrepresentable
+under the chosen feature specification*, not brands judged uninteresting.
+
+The rule generalises: at `MAX_LAG = 6` it yields 9, at `MAX_LAG = 3` it yields 6. If the
+lag structure changes, the threshold follows automatically and needs no separate defence.
+
+### The empirical claim: the threshold is free
+
+Measured 2026-08-18 across all four categories. Training rows retained at MIN_PERIODS = 15,
+relative to imposing no threshold at all:
+
+| Category | Brands (no threshold) | Brands (>=15) | Training rows retained |
+|----------|----------------------:|--------------:|-----------------------:|
+| CSD | 142 | 106 | **100.0%** |
+| Danskvand | 55 | 30 | **100.0%** |
+| Energidrikke | 68 | 50 | **100.0%** |
+| RTD | 101 | 72 | **100.0%** |
+
+The threshold discards 25-45% of *brands* and **0% of training rows**, because the
+discarded brands were each contributing zero. This is the strongest possible form of the
+argument: the exclusion costs nothing measurable, because there was nothing there to lose.
+
+### Why the previous threshold of 40 was wrong
+
+The earlier value was 40, carried over with a rationale referring to "high quality" brands.
+It is not defensible and it is expensive:
+
+| Category | Rows at MIN_PERIODS=15 | Rows at MIN_PERIODS=40 | Training data lost |
+|----------|----------------------:|----------------------:|-------------------:|
+| CSD | 2,467 (100%) | 1,961 | **20.5%** |
+| Danskvand | 679 (100%) | 565 | **16.8%** |
+| Energidrikke | 877 (100%) | 519 | **40.8%** |
+| RTD | 1,309 (100%) | 914 | **30.2%** |
+
+Energidrikke was losing over 40% of its training data to a threshold with no derivation
+behind it. **If asked why the value changed, this table is the answer.**
+
+### The limitation to state (Ch10)
+
+> Results generalise to brands with at least 15 months of continuous market presence.
+> Short-lived and newly launched brands are excluded by construction, since the lag
+> structure cannot be computed for them. The forecasting approach therefore does not
+> address the cold-start case, which is a substantive limitation for a category with
+> high brand churn.
+
+This is worth stating plainly rather than hiding: it is a real restriction on external
+validity, and it is *visible* precisely because the threshold is derived. A hardcoded 40
+concealed both the restriction and its arbitrariness.
+
+### Alternative considered and rejected
+
+Dropping to `MAX_LAG = 3` would lower the threshold to 6 and increase CSD training rows
+from 2,467 to 3,533 (+43%). Rejected because the ACF analysis (EDA section 3.16) finds
+**lag 12 significant across the majority of the leading brands** — the annual seasonality
+the category demonstrably exhibits. The gain would come from short, noisy series at the
+cost of a measured seasonal signal.
+
+Worth recording as **future work**: the lag-3 configuration is a one-line change under the
+parameter contract and is the natural sensitivity analysis if a reviewer challenges the lag
+depth.
+
+### Terminology note for the write-up
+
+"Warm-up" is easily misread as a fourth data split. It is not. See §12.
+
+---
+
+## 12. Warm-up is a training-time concept and does not exist at serving (Ch4 + Ch5 + Ch7)
+
+**Anticipated question:** *"If the model needs 13 months of warm-up, how does the served
+system produce a forecast when a user asks for one?"*
+
+**Answer: it does not need to warm up. Warm-up is not a runtime phase.**
+
+### What warm-up actually is
+
+Warm-up is the set of rows at the **start of each brand's own series** whose lag features
+point to months before the data begins. Those rows have a known target but an incomplete
+feature vector, so they cannot serve as *training examples*.
+
+It is **not** a fourth split alongside train/validation/test, and it is not a period the
+model "runs through" before it works. The splits partition the timeline horizontally; the
+warm-up is per-brand and depends on when that brand entered the panel.
+
+```
+Brand A (enters 2022-10, 46 months observed):
+    [ warm-up 13 mo ][ ------- train ------- ][ val ][ test ]
+                      ^ first row with complete lag features
+
+Brand B (enters 2024-06, 14 months observed):
+    [ ------ warm-up 13 mo ------ ][ 1 ]
+                                    ^ single usable row, and it falls in the
+                                      test window -- contributes nothing to training
+```
+
+Brand B illustrates why the count matters: a brand can sit *inside* the training period and
+still contribute zero training rows, because its own history has not cleared the lag depth.
+
+### At serving time
+
+The served brand already has its history stored. The forecast service reads backwards from
+the most recent observed month and constructs the lag vector directly
+(`forecast_service.py`, `build next-step feature row from the most recent values`). Nothing
+is warmed up, because nothing is being trained.
+
+This is consistent with §6: **the LLM never assembles feature vectors.** It emits a typed
+tool call naming the brand and horizon; the service performs the lookup and feature
+construction server-side, where it is versioned and identical on every call.
+
+### The real serving constraint: cold start, not warm-up
+
+There *is* a serving consequence of the 15-month rule, but it is a different one:
+
+> A brand with fewer than 15 months of stored history cannot be forecast, because
+> `lag_13` is undefined for it.
+
+This is a **coverage limitation**, not a warm-up delay. The correct engineering response is
+for the service to return a typed "insufficient history" response identifying the brand and
+the months available, rather than silently returning a degraded point estimate. Returning a
+number computed from an incomplete feature vector would be worse than returning nothing,
+because the caller cannot tell the difference.
+
+**This strengthens rather than weakens the SRQ2 argument.** A structured tool interface can
+express "I cannot answer this, and here is precisely why" as a typed response. A
+code-as-action baseline that constructs features ad hoc has no equivalent guarantee — it is
+free to produce a plausible-looking number from a partially-null feature row. The ability to
+fail explicitly is part of the reliability claim, and is worth demonstrating rather than
+merely asserting.
+
+**Ch7 / Ch10 note:** the proportion of brands falling below the threshold is the honest
+measure of this coverage gap — 25% of CSD brands, 45% of Danskvand brands (see §11).
+Reporting it is more defensible than reporting only the brands the system *can* serve.

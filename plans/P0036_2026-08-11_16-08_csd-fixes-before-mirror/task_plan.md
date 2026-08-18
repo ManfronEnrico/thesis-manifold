@@ -3,7 +3,7 @@ pid: P0036
 created: 2026-08-11 16:08:00
 updated: 2026-08-12 18:32:00
 status: in_progress
-focus_detail: "PARTLY SUPERSEDED BY P0038. Tasks 1,2,3,5,10,13 complete. Tasks 12, 14, 15 moved to P0038 (CSD notebook decomposition) -- 14's open seam question is ANSWERED there by DEC-SHARED-SEAM (6 shared step scripts + 1 per-category feature-engineering script; 32 files -> 11). Task 15's shared-module half is DONE and on disk (apply_split now proportional via new resolve_split_cutoffs(); 6 step scripts patched); its notebook half is deliberately skipped since the notebook is being dissolved. Task 6 (CSD re-run parity check) is now P0038 task 8 and runs after the decomposition. DATA REFRESHED AND VERIFIED 2026-08-12: all four categories reach 2026-07 (CSD 46 / Energidrikke 43 / Danskvand 41 / RTD 41 periods); RTD live at 2.4M facts rows after being an empty file. Every count in F15-F21 is SUPERSEDED. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. REMAINING HERE: 4 (promo asserts), 7, 8 (MIN_PERIODS decision -- P0038 task 4 makes the value derived, the threshold choice stays here), 9, 11. Also open: P0037 DEC-HORIZON."
+focus_detail: "PARTLY SUPERSEDED BY P0038. Tasks 1,2,3,5,10,13 complete. Tasks 12, 14, 15 moved to P0038 (CSD notebook decomposition) -- 14's open seam question is ANSWERED there by DEC-SHARED-SEAM (6 shared step scripts + 1 per-category feature-engineering script; 32 files -> 11). Task 15's shared-module half is DONE and on disk (apply_split now proportional via new resolve_split_cutoffs(); 6 step scripts patched); its notebook half is deliberately skipped since the notebook is being dissolved. Task 6 (CSD re-run parity check) is now P0038 task 8 and runs after the decomposition. DATA REFRESHED AND VERIFIED 2026-08-12: all four categories reach 2026-07 (CSD 46 / Energidrikke 43 / Danskvand 41 / RTD 41 periods); RTD live at 2.4M facts rows after being an empty file. Every count in F15-F21 is SUPERSEDED. Code fixes (market scope, bfill, V3/V4) are data-independent and stand. TASK 8 RESOLVED 2026-08-18 (DEC-MINPERIODS: MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15, derived not chosen, costs 0.0% of training rows vs 20-41% at the old 40). REMAINING HERE: 4 (promo asserts), 7, 9, 11. Also open: P0037 DEC-HORIZON."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -78,7 +78,7 @@ children (6.41× redundancy) without adding information at the modelling grain.
 | 5 | Fix `make_calendar` bfill future-leakage | 3 | 1 | ✅ complete |
 | 6 | Re-run CSD end-to-end + parity check | 5 | 3, 4, 5 | → **moved to P0038 task 8** |
 | 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | P0038 t8 | pending |
-| 8 | Decide MIN_PERIODS threshold | 4 | P0038 t4 | pending |
+| 8 | Decide MIN_PERIODS threshold | 4 | — | **complete** |
 | 9 | Measure single-brand vs pooled training cost | 4 | P0038 t8 | pending |
 | 11 | Recover product-dimension features as brand-month signals | 4 | P0038 t8 | pending |
 | 12 | Per-notebook feature engineering for capability tiers | — | — | → **moved to P0038 task 5** |
@@ -146,19 +146,59 @@ Also re-examine `weighted_dist`: P0032 measured its target correlation at **0.75
 *above* `lag_1`'s 0.585 — suspicious for a supposedly exogenous variable. Recommend a
 fit-with/without sensitivity check.
 
-### Task 8 — Decide MIN_PERIODS
-Current threshold culls 140 → 58 brands (59%). At parent scope:
+### Task 8 — Decide MIN_PERIODS ✅ **RESOLVED 2026-08-18 (DEC-MINPERIODS)**
 
-| MIN_PERIODS | Brands | Rows |
-|-------------|--------|------|
+**Decision: `MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15`** — derived from the feature
+specification, not chosen.
+
+Brian 2026-08-11 called this *"shaky at best either way"*, and it was, because the question
+was being asked in the wrong units.
+
+**The framing error.** The table below (kept for the record, superseded) counted **panel
+rows**, not **usable training rows**. A brand-month is only trainable once its lag features
+are defined:
+
+    usable_rows(brand) = n_months(brand) - MAX_LAG - HORIZON
+
+At `MAX_LAG = 13, HORIZON = 1` a brand with 14 months yields `14 - 13 - 1 = 0`. It counts
+in the panel and contributes nothing to training. Once measured in row terms, the trade-off
+the old table implied largely disappears.
+
+**Superseded table** (panel rows, 44-month extract, pre-refresh):
+
+| MIN_PERIODS | Brands | Panel rows |
+|-------------|--------|------------|
 | >=12 | 109 | 3,744 |
-| >=24 | **85** | **3,392** |
+| >=24 | 85 | 3,392 |
 | >=30 | 76 | 3,152 |
 | >=36 | 67 | 2,865 |
 
-51 brands already have all 44 months. Trade-off is series quality vs pooled sample size.
-Brian 2026-08-11: *"the min_period decision is shaky at best either way."* Needs a
-defensible basis for Ch4, not just a number.
+**Correct measurement** (usable training rows, 46-month refreshed extract, CSD, lag-12):
+
+| MIN_PERIODS | Brands | % brands | Training rows | % of max |
+|------------:|-------:|---------:|--------------:|---------:|
+| 0 | 142 | 100.0% | 2,467 | 100.0% |
+| **15** | **106** | **74.6%** | **2,467** | **100.0%** |
+| 20 | 89 | 62.7% | 2,429 | 98.5% |
+| 30 | 79 | 55.6% | 2,315 | 93.8% |
+| 40 | 62 | 43.7% | 1,961 | 79.5% |
+
+Dropping 36 brands at MIN_PERIODS=15 costs **zero** training rows. Holds in all four
+categories (100.0% retention each). The old hardcoded 40 cost 20.5% / 16.8% / 40.8% /
+30.2% for CSD / Danskvand / Energidrikke / RTD.
+
+**The defensible basis for Ch4** that this task asked for: the threshold is the
+minimum-information requirement of the feature specification. Brands below it are excluded
+because they *cannot be represented*, not because they were judged uninteresting. The rule
+generalises — 9 at lag-6, 6 at lag-3 — so a change to the lag structure carries the
+threshold with it and needs no fresh justification.
+
+**Ch10 limitation**: results generalise to brands with >=15 months of continuous presence;
+the cold-start case is out of scope by construction.
+
+Full derivation, four-category tables and the rejected lag-3 alternative:
+`plans/P0038_.../task_plan.md` (DEC-MINPERIODS), findings F47/F48, and
+`05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md` §11.
 
 ### Task 9 — Single-brand vs pooled training cost
 **Brian's proposal (2026-08-11):** train exclusively on the brand with the most data,

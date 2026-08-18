@@ -63,6 +63,26 @@ MAX_LAG: int = 13                    # lags: (1, 2, 3, 4, 8, 13)
 MAX_WINDOW: int = 13                 # rolling windows: (4, 13)
 WARMUP_PERIODS: int = max(MAX_LAG, MAX_WINDOW)   # = 13
 
+# DEC-MINPERIODS (2026-08-18): the minimum series length is DERIVED from the
+# feature specification above, never chosen. A brand-month row is trainable
+# only once its lag features are defined, so
+#
+#     usable_rows(brand) = n_months(brand) - WARMUP_PERIODS - FORECAST_HORIZON
+#
+# and requiring at least one usable row gives n_months >= 15. A brand below
+# that cannot enter the design matrix at all -- it is excluded because it is
+# unrepresentable under this feature specification, not because it was judged
+# low quality. That distinction is what makes the threshold defensible.
+#
+# Measured 2026-08-18 across all four categories: this threshold costs 0.0% of
+# training rows relative to imposing no threshold, because the brands it drops
+# were each contributing zero. The previous hardcoded 40 cost 20.5% (CSD),
+# 16.8% (Danskvand), 40.8% (Energidrikke) and 30.2% (RTD).
+#
+# Because it is derived, it follows the lag structure automatically: MAX_LAG=6
+# yields 9, MAX_LAG=3 yields 6. Do not hardcode a replacement.
+MIN_PERIODS: int = WARMUP_PERIODS + FORECAST_HORIZON + 1   # = 15
+
 # DEC-SCOPE (P0036, 2026-08-11): market scope is the DVH EXCL. HD *parent*, not
 # its 9 regional children. Full measurement rationale lives at the point of use
 # in step_1_load_and_aggregate.py; the ID is here because more than one step

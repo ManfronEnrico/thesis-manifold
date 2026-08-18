@@ -3,7 +3,7 @@ pid: P0038
 created: 2026-08-12 18:32:00
 updated: 2026-08-18 00:00:00
 status: in_progress
-focus_detail: "Steps 0/1/2 shipped and verified across all four categories. Step 2 runs 18/18 sections for CSD+Energidrikke, 16/18 for Danskvand+RTD (promo sections skipped by column discovery, not by category name). NEXT: task 4 (step_3_derive_params.py + contract JSON) -- it is the last blocker before feature engineering, and it must settle MIN_PERIODS (F38/P0036-8) and the TRAIN_END/VAL_END drift (F25/F28). Blocks P0036 task 6 (CSD parity check), which is the P0033 gate."
+focus_detail: "Steps 0/1/2 shipped and verified across all four categories; EDA table bullets rewritten to submission-ready academic voice. DEC-MINPERIODS settled 2026-08-18: MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15, derived from the feature spec, costs 0.0% of training rows (the old 40 cost 20-41%). NEXT: task 4 (step_3_derive_params.py + contract JSON) -- MIN_PERIODS is now settled, so the remaining open defect is the TRAIN_END/VAL_END drift (F25/F28). Blocks P0036 task 6 (CSD parity check), which is the P0033 gate."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -51,6 +51,7 @@ working orchestrators are **184 lines each and differ only in the category name*
 | **DEC-CONTRACT** | `{category}_eda_findings.json` is the step 3 → step 4 interface | The JSON already exists and already carries all six params + rationale; it is simply never read back |
 | **DEC-EDA-SPLIT** | Descriptive EDA and parameter-deriving EDA are separate steps | Re-deriving params must not require regenerating ~20 plots; keeps thesis-figure code out of the pipeline's dependency path |
 | **DEC-NO-FALLBACK** | Step 4 fails loudly if the contract JSON is missing/incomplete | Silent in-code defaults are exactly what let the split and MIN_PERIODS rot unnoticed |
+| **DEC-MINPERIODS** | `MIN_PERIODS = MAX_LAG + HORIZON + 1` (= 15), derived not chosen | Brian, 2026-08-18. A brand with fewer months contributes **zero** usable training rows, so the threshold excludes what is unrepresentable rather than what is judged low-quality. Measured to cost **0.0% of training rows** in all four categories, against 20-41% lost at the previous hardcoded 40. Generalises: yields 9 at lag-6, 6 at lag-3 |
 | **DEC-OPEN-WORLD** | Shared steps **discover** columns; they never enumerate them | Brian, 2026-08-12. A hardcoded list is category-*dependent* by construction — it silently drops whatever it does not name. The notebook's 5-column `agg_dict` discarded 24 of 29 available measures (F39) and could not express per-category spelling variants. Only the forecast target is named, and for its **role**, not its category |
 
 ## Evidence base
@@ -243,6 +244,55 @@ parameter step and violated DEC-EDA-SPLIT, whose whole point is that
 re-deriving parameters must not regenerate ~20 plots. **The seam is the
 function, not the cell index.** Cells 43/49/51 moved to step 2; the parameter
 logic in 41–53 stays with step 3.
+
+## DEC-MINPERIODS — the threshold is derived from the feature spec (2026-08-18)
+
+**Decision**: `MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15`. Keep `MAX_LAG = 13` (lag-12
+annual term) and `HORIZON = 1`.
+
+**Why this is not an arbitrary quality cut.** A brand-month row is trainable only once its
+lag features are defined, so `usable_rows = n_months - MAX_LAG - HORIZON`. Requiring at
+least one usable row gives `n_months >= 15`. Below that the brand cannot enter the design
+matrix at all.
+
+**The threshold is free.** Measured 2026-08-18 (`minperiods_tradeoff.py`), training rows
+retained at MIN_PERIODS=15 versus no threshold:
+
+| Category | Brands total | Brands >=15 | Rows @ 15 | Rows @ no threshold | Retained |
+|----------|-------------:|------------:|----------:|--------------------:|---------:|
+| CSD | 142 | 106 | 2,467 | 2,467 | **100.0%** |
+| Danskvand | 55 | 30 | 679 | 679 | **100.0%** |
+| Energidrikke | 68 | 50 | 877 | 877 | **100.0%** |
+| RTD | 101 | 72 | 1,309 | 1,309 | **100.0%** |
+
+It discards 25-45% of *brands* and **0% of training rows** — the discarded brands were each
+contributing zero.
+
+**The previous value of 40 was actively costly:**
+
+| Category | Rows @ 15 | Rows @ 40 | Lost |
+|----------|----------:|----------:|-----:|
+| CSD | 2,467 | 1,961 | 20.5% |
+| Danskvand | 679 | 565 | 16.8% |
+| Energidrikke | 877 | 519 | **40.8%** |
+| RTD | 1,309 | 914 | 30.2% |
+
+**Rejected alternative**: `MAX_LAG = 3` would lower the threshold to 6 and raise CSD to
+3,533 rows (+43%), but EDA section 3.16 measured **lag 12 significant across the majority
+of leading brands**. Trading a measured seasonal signal for rows from short, noisy series
+is the wrong direction. Recorded as future work — a one-line change under the contract,
+and the natural sensitivity analysis.
+
+**Corrects a framing error in the earlier analysis.** Brian raised shortening the forecast
+*horizon* to gain training periods. The arithmetic shows horizon is the wrong lever: it
+enters as `-1` versus `-6`, while **lag depth** is what moves row counts materially
+(CSD 2,467 at lag-12 versus 3,533 at lag-3). Horizon and lag depth are separable and were
+being conflated.
+
+**Closes P0036 task 8** ("Decide MIN_PERIODS threshold with stated basis").
+
+**Written up**: `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md` §11
+(derivation, measurements, the Ch10 limitation) and §12 (warm-up versus serving).
 
 ## Task detail
 

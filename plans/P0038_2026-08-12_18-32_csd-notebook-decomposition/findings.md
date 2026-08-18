@@ -649,3 +649,82 @@ tracking, so it does not resolve F7 — but the pairs listed here are a stronger
 claim, and the table regenerates on every run rather than being a one-off
 measurement. Feeds P0036 task 7.
 
+---
+
+## F47 — brands retained is the wrong objective; training rows is the right one
+
+The retention curve reports brands surviving each MIN_PERIODS threshold, and reads as a
+straight trade-off: higher threshold, fewer brands. That framing is misleading, because a
+pooled model consumes **rows**, and short brands contribute almost none.
+
+    usable_rows(brand) = n_months(brand) - MAX_LAG - HORIZON
+
+At `MAX_LAG = 13, HORIZON = 1`, a brand with 14 months yields `14 - 13 - 1 = 0` rows. It
+appears in the brand count and contributes nothing to training.
+
+Measured consequence (`minperiods_tradeoff.py`, 2026-08-18) — CSD at lag-12:
+
+| MIN_PERIODS | Brands | % brands | Training rows | % of max |
+|------------:|-------:|---------:|--------------:|---------:|
+| 0 | 142 | 100.0% | 2,467 | 100.0% |
+| 15 | 106 | 74.6% | **2,467** | **100.0%** |
+| 20 | 89 | 62.7% | 2,429 | 98.5% |
+| 30 | 79 | 55.6% | 2,315 | 93.8% |
+| 40 | 62 | 43.7% | 1,961 | 79.5% |
+
+Dropping 36 brands (25% of the panel) costs **zero** training rows. The same pattern holds
+in all four categories.
+
+**Implication beyond MIN_PERIODS**: any argument phrased in terms of brand counts —
+coverage, representativeness, category comparability — should be re-checked in row terms
+before it is trusted. Brand counts and row counts do not move together.
+
+---
+
+## F48 — forecast horizon and lag depth are separable levers, and were being conflated
+
+The proposal was to shorten the forecast horizon to gain training periods. The arithmetic
+does not support it: horizon enters `usable_rows` as a subtraction of 1 versus 6, whereas
+**lag depth** is what moves row counts materially.
+
+CSD training rows at the minimum viable threshold for each lag structure:
+
+| Structure | Warm-up | MIN_PERIODS floor | Training rows | vs lag-12 |
+|-----------|--------:|------------------:|--------------:|----------:|
+| lag-12 | 13 | 15 | 2,467 | — |
+| lag-6 | 7 | 9 | 3,157 | +28% |
+| lag-3 | 4 | 6 | 3,533 | +43% |
+
+So the gain the proposal sought is real but comes from **reducing lag depth**, not from
+shortening the horizon. The two are independent parameters in the contract and should be
+reasoned about separately.
+
+Rejected here because EDA 3.16 measures lag 12 as significant across the majority of
+leading brands. Retained as future work / sensitivity analysis.
+
+---
+
+## F49 — warm-up does not exist at serving time; the real constraint is cold start
+
+Warm-up is the set of rows at the start of a brand's own series whose lag features point
+before the data begins. It is a **training-time** property, not a runtime phase, and not a
+fourth split alongside train/validation/test.
+
+At serving, `forecast_service.py` builds the next-step feature row from the most recent
+stored values — there is nothing to warm up, because nothing is being trained. This is
+consistent with the SRQ2 design: the LLM emits a typed tool call and never assembles
+feature vectors itself.
+
+**The genuine serving consequence is different**: a brand with fewer than 15 months of
+stored history cannot be forecast at all, because `lag_13` is undefined. That is a
+*coverage* limit, not a delay. The service must return a typed "insufficient history"
+response rather than a point estimate computed from a partially-null feature row.
+
+**This strengthens the SRQ2 argument.** A structured tool interface can express refusal as
+a typed response; a code-as-action baseline constructing features ad hoc has no equivalent
+guarantee and may return a plausible-looking number instead. Explicit failure is part of
+the reliability claim and is demonstrable rather than merely assertable.
+
+Coverage gap to report (Ch7/Ch10): 25% of CSD brands, 45% of Danskvand brands fall below
+the threshold.
+
