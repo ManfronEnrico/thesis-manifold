@@ -216,8 +216,9 @@ All four categories, zero failures:
 
 - Tasks 1, 2, 3 complete → **task 4 (`step_3_derive_params.py`) is next**
 - Task 4 must settle MIN_PERIODS (F38 / P0036-8) and TRAIN_END/VAL_END (F25/F28)
-- **Unpushed**: `main` is 13 commits ahead of `origin/main`. `git push` is
-  blocked by the permission classifier; Brian runs `! git push origin main`.
+- **Unpushed**: 2 commits (`ffe6f45`, `4455951`). The earlier 11 landed on
+  `origin/main` mid-session. `git push` is blocked by the permission
+  classifier for this session; Brian runs `! git push origin main`.
 - Correction to the previous session's note: `thesis/serving-interface-refinement`
   does **not** exist, and `95723c3` is already on both `main` and `origin/main`.
 - `origin/enrico/local-backup` last moved 2026-07-13 and touches no
