@@ -804,3 +804,72 @@ reported 4-5 months per category (epoch-1970 artifact). The step-1 panel keys on
 `period_year`/`period_month` and carries no date column. Any future analysis over this
 panel must construct the period index from those two integer columns.
 
+---
+
+## F53 — the horizon analysis optimised for measurability and ignored usability (CORRECTS F52)
+
+F50-F52 ranked horizons by how precisely they can be *evaluated* on this extract, and
+concluded H=1. Brian rejected the conclusion on domain grounds, and he is right.
+
+**The error**: a tight confidence interval on a question no user asks is still worthless.
+The artefact is decision support for a marketing manager, and campaign planning runs on a
+lead time of roughly a quarter — budget approval, creative production, retailer
+coordination. A manager does not ask "what are sales next month", because by the time next
+month arrives every decision it could inform has already been made.
+
+This matters more here than in a generic forecasting paper: **SRQ2 evaluates an interface
+for a decision-support task.** If the underlying task has no realistic user, the interface
+comparison measures something with no external validity. That is a more serious objection
+than a wide error bar.
+
+**What survives from F52**: H=6 and H=12 remain excluded. Zero evaluable origins at H=12
+is an impossibility, not an imprecision. That measurement stands.
+
+**What was wrong**: the per-category framing. F52 reported origins per category (4-5 at
+H=3) and treated that as marginal. The evaluation pools across four categories:
+
+| H | Pooled origins | CSD | Danskvand | Energidrikke | RTD |
+|--:|---------------:|----:|----------:|-------------:|----:|
+| 1 | 25 | 7 | 6 | 6 | 6 |
+| 3 | **17** | 5 | 4 | 4 | 4 |
+| 6 | 5 | 2 | 1 | 1 | 1 |
+| 12 | **0** | 0 | 0 | 0 | 0 |
+
+17 pooled origins, each covering ~250 brands, is a reportable evaluation — the forecast
+count is in the thousands. The cost of H=3 over H=1 is real but modest: 90.6% of training
+rows and a wider confidence interval, not a broken analysis.
+
+---
+
+## F54 — report two horizons: H=3 operational, H=1 as the measurement anchor
+
+**Decision**: H=3 becomes the primary reported horizon; H=1 is retained and reported
+alongside it.
+
+**Why not H=3 alone.** If the System A vs System B comparison comes out inconclusive at
+H=3, that result is ambiguous between two very different explanations: the interfaces
+genuinely perform alike, or the test lacked power to distinguish them. Running H=1 as well
+separates those. H=1 has the tightest error bars of any evaluable horizon, so an interface
+difference, if one exists, surfaces there most clearly.
+
+The two horizons answer different questions and are not redundant:
+
+| Horizon | Role | Question it answers |
+|---------|------|---------------------|
+| H=3 | Primary / operational | Does the artefact support a real planning decision? |
+| H=1 | Measurement anchor | Does the interface difference hold where measurement is sharpest? |
+
+**Cost**: the pipeline runs twice. Since horizon is a single contract parameter this is
+cheap, and it forces a better design — step 3 must accept horizon as an argument rather
+than reading a module constant, so `FORECAST_HORIZON` becomes a default rather than a
+hardcoded assumption.
+
+**Open for Brian**: (a) whether 3 months is the correct lead time for Danish FMCG
+specifically, ideally anchored to practice or a source rather than estimated; (b) whether
+to report both horizons or accept H=3 alone with weaker statistical power.
+
+**Thesis framing this enables**: "we forecast at the horizon the business plans on, and
+additionally verify at the horizon where measurement is sharpest" is a stronger position
+than "we forecast one month because that is what the data supported". The first is a design
+choice, the second is a concession.
+

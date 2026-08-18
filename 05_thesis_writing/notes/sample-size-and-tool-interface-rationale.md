@@ -884,33 +884,75 @@ only a handful of origins.
 
 ### The decision
 
-**H = 1 month.** It is the only horizon on this extract that yields a test window with
-enough forecast origins to report an error distribution rather than a single number. H=3
-remains defensible (4–5 origins) and is the natural robustness check; H=6 and H=12 are not
-evaluable on 41–46 months of history.
+**Primary horizon: H = 3 months. Secondary: H = 1 month.**
+
+The three constraints above rule out H=6 and H=12 — those are not evaluable on this
+extract, and no framing recovers them. They do **not** rule out H=3, and the choice between
+H=3 and H=1 is not a statistical question at all. It is a question about who the forecast
+is for.
+
+**Why H=3 leads.** The artefact is decision support for a brand or category manager, and
+FMCG campaign planning runs on a lead time of roughly one quarter: budget approval, creative
+production, and retailer coordination all precede execution. A one-month forecast arrives
+after the decisions it could inform have already been taken. Forecast accuracy at an
+unusable horizon is not a useful result.
+
+This bears directly on SRQ2. The research question evaluates an *interface* for a
+decision-support task; if the underlying task has no realistic user, the interface
+comparison has no external validity to speak of. Choosing the horizon from the planning
+cycle rather than from the error bar is what keeps the evaluation grounded in a real
+decision.
+
+**Why H=1 is retained.** Not as a hedge — the two horizons answer different questions:
+
+| Horizon | Role | Question it answers |
+|---------|------|---------------------|
+| H = 3 | Primary, operational | Does the artefact support a real planning decision? |
+| H = 1 | Measurement anchor | Does the interface difference hold where measurement is sharpest? |
+
+If the System A versus System B comparison is inconclusive at H=3, that outcome is ambiguous
+between two very different explanations: the interfaces genuinely perform alike, or the test
+lacked the power to separate them. H=1 has the tightest error bars of any evaluable horizon,
+so reporting both distinguishes those cases. Reporting only H=3 would leave a null result
+uninterpretable.
+
+**The evaluation sample at H=3 is adequate.** Test origins pool across the four categories:
+
+| Horizon | Pooled origins | CSD | Danskvand | Energidrikke | RTD |
+|--------:|---------------:|----:|----------:|-------------:|----:|
+| 1 | 25 | 7 | 6 | 6 | 6 |
+| 3 | **17** | 5 | 4 | 4 | 4 |
+| 6 | 5 | 2 | 1 | 1 | 1 |
+| 12 | **0** | 0 | 0 | 0 | 0 |
+
+Seventeen origins, each covering roughly 250 brands, yields several thousand individual
+forecasts. The cost of H=3 relative to H=1 is a 9.4% reduction in training rows and a wider
+confidence interval — real, but not a threat to the analysis.
 
 ### The limitation to state (Ch10)
 
-> The forecast horizon is restricted to one month by the length of the observed period.
-> With 41–46 months per category and a chronological 70/15/15 split, the test window spans
-> six to seven months, which admits no evaluable forecast origin at a twelve-month horizon
-> and only one at six months. Longer horizons are therefore a question of data depth rather
-> than of method: the same feature specification and the same pipeline would support them
-> given a longer extract, and the horizon is a single parameter in the preprocessing
-> contract. Since planning applications typically require quarterly or annual horizons, this
-> restricts the immediate practical applicability of the forecasting artefact, and
-> extending the extract backwards is the most direct route to addressing it.
+> Forecasts are reported at a three-month horizon, chosen to match the campaign planning
+> lead time typical of fast-moving consumer goods, with a one-month horizon reported
+> alongside as a precision reference. Longer horizons could not be evaluated: with 41 to 46
+> months of history per category and a chronological 70/15/15 split, the test window spans
+> six to seven months, which admits only one evaluable forecast origin at six months and
+> none at twelve. Since annual planning cycles are common in category management, this
+> restricts the artefact's applicability to tactical rather than strategic planning
+> decisions. The constraint is one of data depth rather than method — the same feature
+> specification and pipeline would support longer horizons given a longer extract, and the
+> horizon is a single parameter in the preprocessing contract.
 
 ### Why this is the right framing for the thesis
 
-The horizon is **not** a hyperparameter tuned for accuracy. It is the largest value at which
-the evaluation remains statistically reportable on the available data. Framing it that way
-converts an apparent weakness into a measured constraint with a stated remedy, and it makes
-the number reproducible: another researcher with the same extract would arrive at the same
-horizon by the same argument.
+The horizon is set by the **decision it must support**, and bounded by what the extract can
+evaluate. Those are two independent criteria, and reporting both is what makes the choice
+defensible rather than convenient: the operational argument explains why three months, and
+the measurement argument explains why not twelve.
 
-It also matters for the SRQ2 comparison specifically. Both the tool-calling system and the
-code-as-action baseline forecast at the same horizon, so the horizon does not confound the
-interface comparison — it bounds the absolute accuracy both systems can reach, not the
-difference between them, which is what the research question actually measures.
+Stating it the other way round — selecting the horizon that minimises the error bar and
+justifying it after the fact — would be the weaker position, and a reviewer would be right
+to ask who the resulting forecast was for.
 
+A note on the comparison itself: both the tool-calling system and the code-as-action
+baseline forecast at the same horizon, so the horizon bounds the absolute accuracy both can
+reach but not the difference between them, which is what SRQ2 actually measures.

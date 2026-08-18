@@ -300,3 +300,35 @@ horizon evaluability.
 - Both MIN_PERIODS and HORIZON now settled and documented. Remaining open defect for the
   contract: TRAIN_END/VAL_END proportional derivation (F25/F28).
 
+---
+
+## Session 2026-08-18 (cont.) — horizon revised to H=3 primary
+
+Brian challenged the H=1 conclusion on domain grounds: a marketing manager plans campaigns
+a quarter ahead, so a one-month forecast answers a question nobody asks. He is right, and
+the original analysis had a real flaw — it optimised for measurability and never asked
+whether the horizon was usable.
+
+Sharper still: because SRQ2 evaluates an *interface for a decision-support task*, a task
+with no realistic user undermines the external validity of the whole comparison. That is a
+more serious objection than the wide confidence interval I had been protecting against.
+
+**Also found a framing error in my own measurement.** F52 reported test origins per
+category (4-5 at H=3) and treated that as marginal. The evaluation pools across all four
+categories: **17 pooled origins at H=3**, each covering ~250 brands, so the forecast count
+is in the thousands. H=3 is comfortably reportable. I had made the cost look larger than it
+is.
+
+**Revised decision (F54)**: H=3 primary, H=1 retained as the measurement anchor. Not a
+hedge — if the interface comparison is inconclusive at H=3, only H=1 can distinguish
+"the interfaces are alike" from "the test lacked power".
+
+**What survives from the original analysis**: H=6 and H=12 stay excluded. Zero evaluable
+origins at H=12 is an impossibility, not an imprecision.
+
+**Design consequence**: step 3 must take horizon as a parameter, not read a module
+constant. `FORECAST_HORIZON` becomes a default. Building it that way now.
+
+**Awaiting Brian**: whether 3 months is the right lead time for Danish FMCG specifically,
+and whether to report both horizons or accept H=3 alone.
+

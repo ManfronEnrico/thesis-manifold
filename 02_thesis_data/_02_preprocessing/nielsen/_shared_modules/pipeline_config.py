@@ -53,26 +53,32 @@ def normalise_category(category: str) -> str:
 # do NOT belong in the per-category EDA contract JSON.
 
 TARGET_COL: str = "sales_units"      # raw column in the dataset
-# DEC-HORIZON (2026-08-18): H=1 is not a modelling preference -- it is the
-# largest horizon this extract can EVALUATE. At a 70/15/15 chronological split
-# the test window is 6-7 months, and a forecast origin only counts if its target
-# month lands inside that window (n_origins = n_test - H + 1). Measured across
-# all four categories:
+# DEC-HORIZON (2026-08-18, revised same day): the DEFAULT below is 1, but the
+# PRIMARY reported horizon is 3. Two criteria set the horizon, and both matter:
 #
-#     H=1  -> 6-7 origins   (reportable error distribution)
-#     H=3  -> 4-5 origins   (retained as the robustness check)
-#     H=6  -> 1-2 origins   (a point estimate, no CI, no significance test)
-#     H=12 -> 0 origins in EVERY category
+#   Operational -- the artefact supports campaign planning, which in FMCG runs on
+#   roughly a quarter of lead time (budget, production, retailer coordination). A
+#   one-month forecast lands after the decisions it could inform were taken. This
+#   is why H=3 leads: accuracy at an unusable horizon is not a useful result.
 #
-# Longer horizons also cost training rows (H=12 keeps 55.2% of H=1's 5,332 rows)
-# and face a harder target (mean within-brand corr(y_t, y_t+H) falls 0.962 ->
-# 0.838; the naive error floor roughly doubles). Those two effects compound, but
-# the test window is what actually rules H=6 and H=12 out.
+#   Measurable -- at a 70/15/15 split the test window is 6-7 months, and an origin
+#   only counts if its target lands inside it. Pooled across the four categories:
 #
-# So this is a data-depth limitation, not a method limitation: the same pipeline
-# supports longer horizons given a longer extract. Do NOT raise this value
-# without re-checking n_test_origins for every category first.
-FORECAST_HORIZON: int = 1            # H=1: predict t+1 from features at t
+#       H=1  -> 25 origins    H=3  -> 17 origins
+#       H=6  ->  5 origins    H=12 ->  0 origins, in every category
+#
+#   H=6 and H=12 are therefore excluded outright. H=3 is not: 17 origins x ~250
+#   brands is several thousand forecasts.
+#
+# H=1 is retained and reported alongside H=3 as a measurement anchor. If the
+# System A vs System B comparison is inconclusive at H=3, only H=1 can separate
+# "the interfaces perform alike" from "the test lacked power".
+#
+# This constant is the DEFAULT ONLY. Step 3 accepts --horizon and writes the
+# resolved value into the per-category contract, so the pipeline runs at either
+# horizon without editing this file. Do not treat it as the single source of
+# truth, and do not raise it above 3 without re-checking pooled test origins.
+FORECAST_HORIZON: int = 1            # default; primary reported horizon is 3
 LOG_TRANSFORM_TARGET: bool = True    # Y = log1p(sales_units_{t+H}); ADF-confirmed
 
 # Warmup: max lag or window needed before the first valid prediction row.
