@@ -332,3 +332,28 @@ constant. `FORECAST_HORIZON` becomes a default. Building it that way now.
 **Awaiting Brian**: whether 3 months is the right lead time for Danish FMCG specifically,
 and whether to report both horizons or accept H=3 alone.
 
+---
+
+## Session 2026-08-18 (cont.) — DEC-HORIZON closed
+
+Brian confirmed both open questions:
+
+- **H=3 headline, H=1 alongside** — both reported.
+- **Basis for 3 months**: the quarter as budget-authorisation period, explicitly *not*
+  Brian's own marketing experience. Declining the anecdotal premise was the right call; the
+  quarter argument is structural and does not depend on category or national market, so it
+  needs no citation.
+
+Flagged one framing point for the write-up: unsourced is acceptable, unjustified is not.
+The note states the mechanism (budget approval, creative production, retailer coordination
+consume weeks; the quarter authorises them) rather than merely asserting "three months is a
+quarter".
+
+**Consequence for MIN_PERIODS**: it is derived as `MAX_LAG + HORIZON + 1`, so it is
+horizon-dependent — 15 at H=1, **17 at H=3**. The contract must carry the resolved value
+per run rather than a single constant, otherwise the two horizons silently share a threshold
+that is correct for only one of them. This is exactly the drift class DEC-CONTRACT exists to
+prevent.
+
+**Now building step 3** with `--horizon` as a parameter.
+

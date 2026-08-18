@@ -892,10 +892,30 @@ H=3 and H=1 is not a statistical question at all. It is a question about who the
 is for.
 
 **Why H=3 leads.** The artefact is decision support for a brand or category manager, and
-FMCG campaign planning runs on a lead time of roughly one quarter: budget approval, creative
-production, and retailer coordination all precede execution. A one-month forecast arrives
-after the decisions it could inform have already been taken. Forecast accuracy at an
-unusable horizon is not a useful result.
+the horizon is set by the decision it must reach.
+
+The argument is deliberately *structural* rather than category-specific. Marketing execution
+is preceded by budget authorisation, creative production and retailer coordination, each of
+which consumes weeks; and the period in which budgets are authorised and performance
+reviewed is the fiscal quarter. A forecast is therefore actionable if it reaches the next
+planning period, and the planning period is three months. A one-month forecast arrives after
+the decisions it could inform have already been taken.
+
+Two things are worth noting about how this is argued. First, it does not rest on practice in
+any single market or category — quarterly budgeting is near-universal in commercial
+organisations, so the premise holds regardless of whether the reader knows Danish beverage
+retailing. Second, it is a *reason* rather than an assertion: "three months because that is
+a quarter" would be circular, whereas naming the mechanism — what must happen before a
+campaign runs, and when it is authorised — can be contested on its merits and survives
+that contest.
+
+No citation is offered because the premise is not in dispute; contesting it would mean
+contesting how firms budget. Where a source is wanted, the sales and operations planning
+literature treats planning horizons directly.
+
+Forecast accuracy at an unusable horizon is not a useful result, and this is the criterion
+that selects the horizon. The measurement constraints below then bound it from the other
+side.
 
 This bears directly on SRQ2. The research question evaluates an *interface* for a
 decision-support task; if the underlying task has no realistic user, the interface

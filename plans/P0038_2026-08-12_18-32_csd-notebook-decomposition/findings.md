@@ -864,9 +864,27 @@ cheap, and it forces a better design — step 3 must accept horizon as an argume
 than reading a module constant, so `FORECAST_HORIZON` becomes a default rather than a
 hardcoded assumption.
 
-**Open for Brian**: (a) whether 3 months is the correct lead time for Danish FMCG
-specifically, ideally anchored to practice or a source rather than estimated; (b) whether
-to report both horizons or accept H=3 alone with weaker statistical power.
+**CLOSED by Brian 2026-08-18** — both questions answered:
+
+**(a) Basis for 3 months: the quarter as a planning period, not FMCG-specific practice.**
+Brian declined to anchor this on his own marketing experience (Germany, not Denmark), which
+was the right call — it would have been an anecdotal premise. The stronger basis is that
+the quarter is the *financial reporting and budget-authorisation* period, near-universal
+across commercial organisations, so the argument does not depend on the category or the
+national market at all.
+
+Stated as: a forecast is actionable if it reaches the next planning period; the planning
+period is the quarter; therefore three months. No citation required — contesting the
+premise means contesting how firms budget. If a supervisor later asks for one, the sales &
+operations planning literature covers planning horizons directly.
+
+**Important distinction for the write-up**: unsourced is fine, unjustified is not. "Three
+months because that is a quarter" is an assertion. "Three months because budget approval,
+creative production and retailer coordination each consume weeks, and the quarter is the
+period in which those are authorised" is a reason. Same length, no citation, materially
+harder to challenge. The note is written the second way.
+
+**(b) Report both horizons.** H=3 headline, H=1 alongside. Confirmed.
 
 **Thesis framing this enables**: "we forecast at the horizon the business plans on, and
 additionally verify at the horizon where measurement is sharpest" is a stronger position
