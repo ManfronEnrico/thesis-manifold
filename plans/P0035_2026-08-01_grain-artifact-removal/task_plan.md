@@ -1,10 +1,12 @@
 ---
 pid: P0035
 created: 2026-08-01 00:00:00
-updated: 2026-08-06 00:00:00
-status: blocked
-blocked_reason: "Task 8 (regression gate) cannot run from a worktree — pipeline inputs (*.parquet) and .env are gitignored and exist only in the main folder. Unblocks by merging `chore/p0035-grain-artifact-removal`, then running the CSD pipeline + srq1_benchmark from the main repo folder. Tasks 1–7 are done but UNCOMMITTED."
-focus_detail: "All 8 tasks executed in worktree p0035-grain-artifact-removal (branch chore/p0035-grain-artifact-removal), changes UNCOMMITTED pending review. Task 8's regression gate is STATIC ONLY — the real pipeline run was blocked by gitignored data absent from the worktree (findings F11). Remaining before this can be marked complete: (1) human re-runs the CSD pipeline + srq1_benchmark from the main folder, (2) decide F13 (the brand-vs-bymonth tag-name split, a silent-fallback trap)."
+updated: 2026-08-19 09:00:00
+status: complete
+completed: 2026-08-19 09:00:00
+outcome_summary: "Grain-artifact removal merged and verified. The regression gate that blocked it (a real pipeline run + srq1_benchmark from the main folder, impossible from the worktree because inputs are gitignored) was executed on 2026-08-18: pipeline 8/8 clean across 4 categories x 2 horizons, benchmark green on all four."
+
+focus_detail: "Grain-artifact removal merged and verified. The regression gate that blocked it (a real pipeline run + srq1_benchmark from the main folder, impossible from the worktree because inputs are gitignored) was executed on 2026-08-18: pipeline 8/8 clean across 4 categories x 2 horizons, benchmark green on all four."
 ---
 
 > **Execution status (2026-08-01):** tasks 1–8 done, changes left in the working
@@ -91,3 +93,27 @@ exists, and results files that report numbers from a grain the thesis no longer 
 - `harness/thesis_tasks.json` — DEC-GRAIN; B02 dropped as a consequence
 - P0026 — the earlier brand×region×period grain work this supersedes
 - P0034 — the prose-side counterpart
+
+---
+
+## Closed 2026-08-19
+
+**Complete — the blocking regression gate has now been run.**
+
+Tasks 1-7 were executed in a worktree and are on main (`git rev-list main..
+chore/p0035-grain-artifact-removal` returns **0**). Task 8's gate could not run there
+because the pipeline's `.parquet` inputs and `.env` are gitignored and exist only in
+the main folder (F11).
+
+That gate ran on 2026-08-18 from the main folder, as part of P0038:
+
+| Check | Result |
+|-------|--------|
+| Full pipeline, 4 categories x 2 horizons | **8/8 clean** |
+| `srq1_benchmark` | green on all four categories |
+| `bychain` references in live code | none (only explanatory comments in `PATHS.py`) |
+
+**Still open, and deliberately not closed here**: F13, the brand-vs-bymonth tag-name
+split described as a silent-fallback trap. It is a naming hazard rather than an
+artifact of the grain removal, so it does not block this plan. Carried forward as a
+note rather than left holding a completed plan open.

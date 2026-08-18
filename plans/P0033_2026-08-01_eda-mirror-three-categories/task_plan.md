@@ -1,10 +1,12 @@
 ---
 pid: P0033
 created: 2026-08-01 00:00:00
-updated: 2026-08-11 16:08:00
-status: blocked
+updated: 2026-08-19 09:00:00
+status: cancelled
+completed: 2026-08-19 09:00:00
+outcome_summary: "OBSOLETE — the goal was achieved by a better route. P0038 replaced the CSD notebook with a shared pipeline that runs all four categories from one codebase, so there is no notebook left to mirror. All 4 categories now produce EDA + contract + matrix + split at two horizons."
 blocked_by: P0036
-focus_detail: "BLOCKED by P0036 (2026-08-11). Still the top priority once unblocked, but mirroring the CSD notebook in its current state would propagate a market-filter defect — it filters to 9 region children of DVH EXCL. HD instead of parent 1256338, yielding all-zero promo columns — to all four categories. Fix CSD first (P0036), then mirror."
+focus_detail: "OBSOLETE — the goal was achieved by a better route. P0038 replaced the CSD notebook with a shared pipeline that runs all four categories from one codebase, so there is no notebook left to mirror. All 4 categories now produce EDA + contract + matrix + split at two horizons."
 ---
 
 # P0033 — Mirror CSD EDA to Danskvand / Energidrikke / RTD
@@ -83,3 +85,28 @@ P0032 changes `_shared_modules/engineer_features.py`, which all four categories 
 - `harness/thesis_tasks.json` — B03 (`blocked_brian`), the harness's name for this work
 - P0030 / P0031 — CSD notebook consolidation + remaining gaps (the template this mirrors)
 - `_notes/eda-improvement-candidates.md` — deferred enrichments, explicitly not in scope
+
+---
+
+## Closed 2026-08-19
+
+**Cancelled — the objective was met by a different and better route.**
+
+The plan was "mirror the CSD notebook to the three remaining categories", blocked
+because mirroring in its then-current state would have propagated the market-filter
+defect to all four.
+
+P0038 dissolved the premise. Rather than copying a notebook three more times — the
+duplication that caused the defect to survive in the first place — the notebook was
+decomposed into shared step scripts that take `--category`. All four categories now
+run from **one** codebase:
+
+| Category | EDA | contract | matrix | split |
+|----------|-----|----------|--------|-------|
+| CSD | yes | h1 + h3 | 95 brands | 32/7/7 |
+| Danskvand | yes | h1 + h3 | 29 brands | 29/6/6 |
+| Energidrikke | yes | h1 + h3 | 44 brands | 30/6/7 |
+| RTD | yes | h1 + h3 | 62 brands | 29/6/6 |
+
+There is no notebook left to mirror, and a fix now reaches all four categories by
+construction. Nothing from this plan is outstanding.

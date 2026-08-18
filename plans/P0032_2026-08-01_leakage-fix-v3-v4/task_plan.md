@@ -1,10 +1,12 @@
 ---
 pid: P0032
 created: 2026-08-01 00:00:00
-updated: 2026-08-06 00:00:00
-status: blocked
-blocked_reason: "SUPERSEDED 2026-08-11 by P0036. The F10 premise (promo all-zero, so no measurable before/after) was an artifact of the region-child market filter, not a property of the data — parent market 1256338 carries 119,010 nonzero promo rows (see F12). The V3/V4 fixes are correct and become measurable under DEC-SCOPE. Remaining blocker F11 (stale SRQ1 baseline) is unchanged. Unblocking work now lives in P0036 tasks 1-3."
-focus_detail: "Phase 2 done (tasks 2,3,4,5,9). F10.5 is resolved — DEC-SCOPE adopts parent market 1256338 (a scope choice, not a grain change; DEC-GRAIN untouched). Next action is P0036 task 1: commit the V3/V4 fixes off the locked worktree before they are lost."
+updated: 2026-08-19 09:00:00
+status: cancelled
+completed: 2026-08-19 09:00:00
+outcome_summary: "SUPERSEDED by P0036/P0038. Its premise (promo all-zero) was an artifact of the region-child market filter, corrected by DEC-SCOPE. The V3/V4 leakage fixes it existed to deliver are on main and verified by P0038's parity gate (F68)."
+
+focus_detail: "SUPERSEDED by P0036/P0038. Its premise (promo all-zero) was an artifact of the region-child market filter, corrected by DEC-SCOPE. The V3/V4 leakage fixes it existed to deliver are on main and verified by P0038's parity gate (F68)."
 ---
 
 # P0032 — Leakage Fix (V3) + Market-Scope Assert (V4)
@@ -100,3 +102,24 @@ assumption. If confirmed fixed, record and move on — do not re-fix.
 - `harness/thesis_tasks.json` — V2/V3/V4/S01 entries (status `ready`)
 - P0034 — consumes the before/after numbers
 - V2 (mean-MAPE suppression) is **already reflected** in Ch6 §6.5.1 prose; it belongs to the S01 retrain, not this plan.
+
+---
+
+## Closed 2026-08-19
+
+**Cancelled — superseded, work delivered elsewhere.**
+
+This plan self-identified as superseded on 2026-08-11 and was never reopened. Closing
+it formally.
+
+Its premise was that promo columns were all-zero and so the V3/V4 leakage fixes could
+not be measured. That premise was an **artifact of the market filter**, not a property
+of the data: at parent market 1256338 the promo family is populated (P0036 F12).
+
+The V3/V4 fixes themselves landed via P0036 task 1 and are on main. They were
+independently exercised by P0038's parity gate (F68), which confirmed no future
+leakage in the engineered matrix — rolling windows exclude the current month (100%),
+`promo_intensity` uses t-1 (99.97%), splits strictly ordered.
+
+Its remaining blocker (F11, stale SRQ1 baseline) is also resolved: the SRQ1 baselines
+were re-run on 2026-08-18 against the H=3 pipeline matrices.

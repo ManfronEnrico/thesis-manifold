@@ -1,9 +1,10 @@
 ---
 pid: P0036
 created: 2026-08-11 16:08:00
-updated: 2026-08-18 23:30:00
-status: in_progress
-focus_detail: "P0038 COMPLETE, unblocking everything here. Task 9 CLOSED (its own measurement refutes the single-brand premise: 3,392 pooled rows vs 44). Task 4 half delivered (has_promo recorded, DEC-NO-PROMO-FILL); the all-zero assertion is still missing and two 2026-08-18 failures would have been caught by it. Tasks 7 and 11 unblocked; 11 still needs defining. See the 2026-08-18 status refresh at the foot of this file."
+updated: 2026-08-19 09:15:00
+status: complete
+completed: 2026-08-19 09:15:00
+focus_detail: "COMPLETE. Tasks 4, 7, 9 delivered 2026-08-18/19; task 11 cancelled with reasoning recorded (product attributes barely vary within a brand, so they add nothing at the brand x month grain). Tasks 12/14/15 were absorbed by P0038, which is also complete."
 ---
 
 # P0036 — Fix CSD Before Mirroring
@@ -80,7 +81,7 @@ children (6.41× redundancy) without adding information at the modelling grain.
 | 7 | Resolve sales_value/sales_liters redundancy (P0031 task 4) | 4 | P0038 t8 | **complete** |
 | 8 | Decide MIN_PERIODS threshold | 4 | — | **complete** |
 | 9 | Measure single-brand vs pooled training cost | 4 | P0038 t8 | **complete** |
-| 11 | Recover product-dimension features as brand-month signals | 4 | P0038 t8 | pending |
+| 11 | Recover product-dimension features as brand-month signals | 4 | P0038 t8 | **cancelled — see below** |
 | 12 | Per-notebook feature engineering for capability tiers | — | — | → **moved to P0038 task 5** |
 | 14 | Decide shared-vs-CSD-specific seam | — | — | → **answered by P0038 DEC-SHARED-SEAM** |
 | 15 | Dynamic proportional split cutoffs | — | — | shared module **done**; notebook half → **P0038 task 4** |
@@ -342,3 +343,49 @@ they would become. As written it is a title, not a task.
 - **F75** (P0038): `mean MAPE` reaches 10^15% for *SeasonalNaive* in the
   benchmark table; the column is uninterpretable and should be dropped.
 - **P0037 DEC-HORIZON** remains open per this plan's frontmatter.
+
+---
+
+## Task 11 — CANCELLED 2026-08-19, with the reasoning recorded
+
+Brian could not recall what this task meant. Traced its origin and answered it, so
+the decision is on the record rather than left as an undefined title.
+
+**Where it came from**: F21 established that `dim_product` is a filtered whitelist of
+genuine SKUs (2,130 rows, 23 columns) used to discard Nielsen's precomputed rollup
+rows. Having found the dimension useful for *filtering*, the open question was whether
+its descriptive columns could also become *features*.
+
+**What is actually in it**: `type` (COLA, LEMON/LIME...), `regular_light`, `organic`,
+`private_label`, `price_category`, `manufacturer`, `packaging`, plus identifiers.
+
+**Why it is being cancelled** — the modelling grain settles it. DEC-GRAIN fixes the
+grain at **brand × month**. A product attribute is only usable if it varies *within*
+a brand; otherwise it is a constant per brand, which is a brand label in disguise and
+tells a pooled model nothing it cannot already infer from the series itself.
+
+Measured on CSD's 150 brands:
+
+| Attribute | Varies within a brand |
+|-----------|----------------------:|
+| `private_label` | **0.0%** |
+| `manufacturer` | 2.0% |
+| `price_category` | 2.0% |
+| `organic` | 6.0% |
+| `regular_light` | 22.0% |
+| `packaging` | 22.7% |
+| `type` | 47.3% |
+
+The two that vary most (`type`, `packaging`) do so because a brand spans several
+flavours and pack formats — so at brand × month they would have to be aggregated to a
+mode or a share, which mostly reconstructs the brand identity the model already has
+from its own history.
+
+**Cost/benefit against the deadline**: this is exploratory feature engineering with a
+weak prior, on a project with under a month left and a 120-page write-up outstanding.
+The thesis premise — whether model availability improves LLM responses — does not
+depend on it.
+
+**If it is ever revisited**, the honest version is a grain change (product × month or
+brand × type × month), not a feature addition. That is a much larger piece of work and
+would reopen DEC-GRAIN.
