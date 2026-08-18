@@ -1,7 +1,7 @@
 ## Peak & Valley Analysis
 
-- Highest and lowest months of the seasonal profile, with the ratio between them as a one-number measure of seasonal amplitude.
-- A large peak-to-valley ratio justifies month-of-year features; a flat profile argues they would add parameters without signal.
+- Highest and lowest months of the seasonal profile, with their ratio as a single-figure measure of seasonal amplitude.
+- A large peak-to-trough ratio supports the inclusion of month-of-year features; a flat profile indicates such features would add parameters without explanatory value.
 
 | Category                  | Months     | % of Sales   |
 |:--------------------------|:-----------|:-------------|

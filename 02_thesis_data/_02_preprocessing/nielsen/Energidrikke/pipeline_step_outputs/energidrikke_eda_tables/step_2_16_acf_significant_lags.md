@@ -1,10 +1,10 @@
 ## Significant ACF Lags per Brand
 
-- Lags whose autocorrelation exceeds the 95% band (+/-1.96/sqrt(n)) under the null of no autocorrelation -- the standard Box-Jenkins reading of an ACF plot (Box & Jenkins, 1970).
-- Lags significant in at least half of the top 5 brands: [1, 2, 3, 6, 9, 10, 12, 15, 18]. A lag clearing the band for one brand is noise; one clearing it across the majority is structure worth a feature.
-- A spike at lag 12 indicates annual seasonality; spikes at 1-3 indicate short-run momentum. Both are what the lag features exist to capture.
-- Computed on log1p(target) so these lags describe the series the model is actually fitted to.
-- Evidence only -- LAGS is derived in step 3 (DEC-EDA-SPLIT). This figure is the justification for whatever that step selects.
+- Lags at which the sample autocorrelation exceeds the 95 per cent confidence band of plus or minus 1.96 divided by the square root of the sample size, the standard criterion for identifying significant autocorrelation (Box and Jenkins, 1970).
+- Lags significant across a majority of the leading brands indicate category-level temporal structure, whereas a lag significant for a single brand is more plausibly sampling variation.
+- Significance at lag 12 indicates annual seasonality; significance at lags 1 to 3 indicates short-run persistence. Both motivate the inclusion of lagged sales as predictors.
+- Autocorrelations are computed on the logarithmic transformation of the target, so the reported lags describe the series in the form in which it is modelled.
+- The confidence band assumes a stationary series; where the stationarity tests are inconclusive, significance at long lags may reflect trend rather than genuine seasonal dependence.
 
 | brand              |   n_periods |   conf_band | significant_lags                                    |
 |:-------------------|------------:|------------:|:----------------------------------------------------|

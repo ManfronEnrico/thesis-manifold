@@ -1,7 +1,7 @@
 ## Brands' Peak Sales Month
 
-- Each brand's own peak month, showing whether brands share the category's seasonal pattern or carry individual ones.
-- If peaks cluster, a single shared seasonal feature suffices. If they scatter, brand-specific seasonality is what the model needs, which is an argument for brand identity interacting with month.
+- The calendar month of peak sales for each brand, indicating whether brands share the category-level seasonal pattern or exhibit individual ones.
+- Clustering of peaks supports a single shared seasonal feature. Dispersed peaks indicate brand-specific seasonality, which requires seasonal terms that vary by brand rather than a single category-wide profile.
 
 | Month   |   Brands Peaking |
 |:--------|-----------------:|

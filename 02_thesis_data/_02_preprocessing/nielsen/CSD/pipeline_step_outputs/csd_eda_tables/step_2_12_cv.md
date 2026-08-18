@@ -1,8 +1,8 @@
 ## Sales CV (std/mean) across 137 brands
 
-- Coefficient of variation (std / mean) per brand: volatility normalised by level, so brands of different sizes are comparable.
-- High CV means an inherently harder series. Reporting the spread of CV across brands is what justifies expecting heterogeneous accuracy rather than treating one aggregate error as representative.
-- Undefined for a brand with mean zero, and unstable for near-zero means -- read the extreme values alongside 3.07.
+- Coefficient of variation per brand, defined as the standard deviation divided by the mean, which normalises volatility by scale and so permits comparison across brands of different sizes.
+- A high coefficient identifies an intrinsically harder series. The dispersion of this statistic across brands is the basis for expecting heterogeneous accuracy rather than treating a single aggregate error as representative of all brands.
+- The statistic is undefined for a brand with zero mean and unstable for near-zero means, so extreme values should be read alongside the zero-sales characterisation.
 
 | Statistic   |     CV |
 |:------------|-------:|

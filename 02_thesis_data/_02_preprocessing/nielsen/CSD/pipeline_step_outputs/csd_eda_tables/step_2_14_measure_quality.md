@@ -1,9 +1,9 @@
 ## Measure-Column Quality Scan
 
-- Per-column scan for the two defects that silently corrupt aggregation: impossible negatives, and rate columns mistakenly treated as additive.
-- Negative counts and negative shares are impossible by definition, so any listed here are delivery defects. Reported and left uncorrected (F42): clipping would manufacture a plausible-looking value and hide the problem, and none of the affected columns is the target.
-- The in_0_100 flag answers F39. A column bounded within [0, 100] behaves as a rate and must be averaged when aggregating -- summing two 70% distribution figures into 140% is the specific error this check exists to prevent.
-- The additive/intensive split it implies is what step 1's aggregation already applies; this table is the evidence that the classification matches the data.
+- Per-measure scan for two data-quality conditions: values that are impossible given the measure's definition, and rate measures that would be corrupted by summation.
+- Counts and shares cannot be negative by definition, so any negative values reported here indicate defects in the delivered data. They are reported rather than adjusted, since imputing a substitute value would present a fabricated figure as an observation.
+- Measures observed entirely within the interval [0, 100] behave as rates rather than counts and must be averaged when aggregating across records. Summing two distribution figures of 70 per cent into 140 per cent is the specific error this check identifies.
+- The resulting classification of measures as additive or intensive determines the aggregation function applied to each when constructing the brand-month panel.
 
 | column                                       |        min |            max |         mean |   nulls |   zeros |   negatives |   neg_pct | in_0_100   |
 |:---------------------------------------------|-----------:|---------------:|-------------:|--------:|--------:|------------:|----------:|:-----------|

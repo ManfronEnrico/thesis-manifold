@@ -1,7 +1,7 @@
 ## Missing Value Analysis
 
-- Nulls per column. In this panel a null is an unreported measure for an observed brand-month, which is distinct from a brand-month that does not appear at all.
-- Matters for feature engineering because a lag or rolling window computed across a null propagates it forward into every window that spans the gap.
+- Unreported values per measure. In this panel an unreported value denotes a measure Nielsen did not supply for an observed brand-month, which is distinct from a brand-month that does not appear at all.
+- The distinction matters for time-series construction: lagged and rolling features computed across an unreported value propagate it into every window spanning the gap.
 
 | Column                              |   Missing |   Missing % |
 |:------------------------------------|----------:|------------:|

@@ -1,8 +1,8 @@
 ## Top 5 Brands by Total Sales
 
-- The largest brands by cumulative target volume, with their series plotted in the companion figure.
-- These brands dominate any pooled error metric: a model can score well overall while failing on the long tail. Relevant to the pooled-versus-specialised question (P0036 task 9).
-- Volume ranking, not forecastability ranking -- a large brand is not necessarily a stable or predictable one.
+- Brands ranked by cumulative sales volume over the observation window.
+- These brands dominate any volume-weighted error metric, so a model may report strong aggregate accuracy while performing poorly across the remaining brands. Disaggregated reporting is therefore necessary to characterise performance.
+- The ranking reflects volume, not predictability. A high-volume brand is not necessarily a stable or readily forecastable one.
 
 |   Rank | Brand       |   Total Sales |
 |-------:|:------------|--------------:|

@@ -1,10 +1,10 @@
 ## Correlation with sales_units
 
-- Pearson measures linear association; Spearman measures monotone association on ranks. Reporting both is what makes the comparison in the next bullet possible.
-- abs_delta above 0.1 flags a relationship that is monotone but not linear -- a candidate for transformation rather than a raw feature. 16 column(s) flagged here.
-- Spearman is the more trustworthy of the two on this data: the target is right-skewed (see 3.02 and 3.15) and Pearson is sensitive to the resulting outliers.
-- These correlations are contemporaneous, not predictive: the columns are measured in the same month as the target, so a high value does not by itself establish forecasting value at t+1.
-- Descriptive only. No feature is selected or dropped here; the contract is step 3's output (DEC-EDA-SPLIT).
+- Pearson and Spearman correlation of each measure with the forecast target. Pearson quantifies linear association; Spearman quantifies monotone association between ranks.
+- A large absolute difference between the two coefficients indicates a relationship that is monotone but not linear, identifying measures for which a transformation is more appropriate than inclusion in raw form.
+- The rank-based coefficient is the more robust of the two for this data, since the target is right-skewed and the product-moment correlation is sensitive to the resulting extreme values.
+- These correlations are contemporaneous. The measures are observed in the same month as the target, so a high coefficient does not establish predictive value at a one-month forecast horizon.
+- Association reported here is descriptive and does not identify a causal relationship between any measure and sales.
 
 | column                                       |   pearson_r |   spearman_r |   abs_delta | non_linear   |
 |:---------------------------------------------|------------:|-------------:|------------:|:-------------|

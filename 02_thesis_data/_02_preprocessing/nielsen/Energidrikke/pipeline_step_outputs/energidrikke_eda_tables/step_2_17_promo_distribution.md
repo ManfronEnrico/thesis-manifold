@@ -1,10 +1,9 @@
 ## Promo Intensity Distribution Summary
 
-- Promo intensity = promo_units / max(sales_units, 1). The clip avoids zero-division without the +1 bias that would inflate the ratio for low-volume brands.
-- promo_units is a subset of sales_units in Nielsen's model, so an intensity above 1 is a delivery defect: 0 such row(s) here, reported and left uncorrected (F42).
-- The boxplot compares the target's level between promoted and unpromoted brand-months. A visible shift motivates promo features; overlapping boxes argue they add little.
-- Descriptive, not causal: promotions are placed on brands already expected to sell, so this gap is confounded by selection and cannot be read as promotional uplift.
-- Complements 3.13, which ranks brands by intensity; this section characterises the distribution's shape.
+- Distribution of promotional intensity, defined as promoted units divided by total units, together with the sales distribution of promoted and unpromoted brand-months.
+- Promoted units are a subset of total units in the Nielsen measurement model, so an intensity exceeding one is not interpretable and indicates a defect in the delivered data.
+- The boxplot compares the level of sales between promoted and unpromoted brand-months. A pronounced difference in location motivates promotional features; substantially overlapping distributions indicate limited explanatory value.
+- The comparison is descriptive and cannot be read as promotional uplift. Promotions are allocated to brands and periods on commercial grounds, so the observed difference reflects selection into promotion as well as any effect of it.
 
 | metric                        |      value |
 |:------------------------------|-----------:|

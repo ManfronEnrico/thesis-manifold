@@ -1,7 +1,7 @@
 ## Columns & Data Quality
 
-- Every column step 1 produced, with its dtype and null count. Discovered, not enumerated (DEC-OPEN-WORLD): a category carrying a column no other category has still appears here.
-- Column counts differ by category by design -- the four categories sit at different Nielsen capability tiers, and a column absent here was never delivered rather than lost in processing.
+- Each measure delivered for this category, with its storage type and the count of unreported values.
+- The number of measures differs across categories because Nielsen reports different measure sets per category. A measure absent here was not supplied in the delivery rather than lost in processing.
 
 | Column                                       | Data Type   |   Non-Null |   Missing |   Missing % |
 |:---------------------------------------------|:------------|-----------:|----------:|------------:|

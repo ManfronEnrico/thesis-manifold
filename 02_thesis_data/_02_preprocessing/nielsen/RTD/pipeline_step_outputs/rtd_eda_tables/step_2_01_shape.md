@@ -1,7 +1,7 @@
 ## Data Shape
 
-- Panel dimensions after step 1: the brand x month grain locked by DEC-GRAIN (2026-07-12), scoped to the DVH EXCL. HD parent market (DEC-SCOPE) rather than its nine region children.
-- Row count is brands x observed months, not a complete grid -- brands enter and leave the panel, so absent brand-months are genuinely absent rather than null.
+- Dimensions of the analysis panel: one observation per brand per calendar month, aggregated across the retail universe covered by the Nielsen delivery.
+- The panel is unbalanced. Brands enter and exit the market over the observation window, so the row count is the number of observed brand-months rather than the product of brands and months.
 
 | Metric        |   Value |
 |:--------------|--------:|

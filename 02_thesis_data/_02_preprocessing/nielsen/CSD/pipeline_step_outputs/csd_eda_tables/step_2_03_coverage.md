@@ -1,7 +1,7 @@
 ## Coverage
 
-- Observed span and completeness of the panel. Total months is the distinct period count, which bounds every window-based feature: a 12-month rolling mean is undefined in a panel shorter than 12.
-- Also bounds the split. Train/validation/test cutoffs are derived proportionally from this span rather than hardcoded, after the hardcoded dates drifted to a 24-27% test share (F25).
+- Observed temporal span of the panel. The count of distinct months bounds every window-based feature: a twelve-month rolling statistic is undefined in a series shorter than twelve months.
+- The span also bounds the train-validation-test partition, since each split must retain enough history for the lag structure to be computable within it.
 
 | Metric         | Value              |
 |:---------------|:-------------------|

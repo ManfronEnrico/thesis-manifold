@@ -199,12 +199,13 @@ def s01_preview(ctx: EdaContext) -> None:
 		})
 		ctx.save(shape_df, "step_2_01_shape", "Data Shape",
 			notes=[
-				"Panel dimensions after step 1: the brand x month grain locked "
-				"by DEC-GRAIN (2026-07-12), scoped to the DVH EXCL. HD parent "
-				"market (DEC-SCOPE) rather than its nine region children.",
-				"Row count is brands x observed months, not a complete grid -- "
-				"brands enter and leave the panel, so absent brand-months are "
-				"genuinely absent rather than null.",
+				"Dimensions of the analysis panel: one observation per brand "
+				"per calendar month, aggregated across the retail universe "
+				"covered by the Nielsen delivery.",
+				"The panel is unbalanced. Brands enter and exit the market over "
+				"the observation window, so the row count is the number of "
+				"observed brand-months rather than the product of brands and "
+				"months.",
 			],
 		)
 
@@ -217,13 +218,12 @@ def s01_preview(ctx: EdaContext) -> None:
 		}).reset_index(drop=True)
 		ctx.save(cols_info, "step_2_01_columns", "Columns & Data Quality",
 			notes=[
-				"Every column step 1 produced, with its dtype and null count. "
-				"Discovered, not enumerated (DEC-OPEN-WORLD): a category "
-				"carrying a column no other category has still appears here.",
-				"Column counts differ by category by design -- the four "
-				"categories sit at different Nielsen capability tiers, and a "
-				"column absent here was never delivered rather than lost in "
-				"processing.",
+				"Each measure delivered for this category, with its storage "
+				"type and the count of unreported values.",
+				"The number of measures differs across categories because "
+				"Nielsen reports different measure sets per category. A measure "
+				"absent here was not supplied in the delivery rather than lost "
+				"in processing.",
 			],
 		)
 
@@ -233,12 +233,13 @@ def s01_preview(ctx: EdaContext) -> None:
 		if len(missing_df) > 0:
 			ctx.save(missing_df, "step_2_01_missing", "Missing Value Analysis",
 				notes=[
-					"Nulls per column. In this panel a null is an unreported "
-					"measure for an observed brand-month, which is distinct from a "
-					"brand-month that does not appear at all.",
-					"Matters for feature engineering because a lag or rolling "
-					"window computed across a null propagates it forward into every "
-					"window that spans the gap.",
+					"Unreported values per measure. In this panel an unreported "
+					"value denotes a measure Nielsen did not supply for an observed "
+					"brand-month, which is distinct from a brand-month that does "
+					"not appear at all.",
+					"The distinction matters for time-series construction: lagged "
+					"and rolling features computed across an unreported value "
+					"propagate it into every window spanning the gap.",
 				],
 			)
 		else:
@@ -304,18 +305,18 @@ def s02_distributions(ctx: EdaContext) -> None:
 		ctx.savefig(plt, "01_distribution_histograms")
 		ctx.save(pd.DataFrame(rows), "step_2_02_skewness", "Skewness Analysis",
 			notes=[
-				"Fisher-Pearson skewness per numeric column. Zero is symmetric; "
-				"positive means a long right tail.",
-				"Thresholds follow Kim (2013): |skew| > 2 indicates substantial "
-				"departure from normality, 0.5-2 moderate. These bands are the "
-				"stated basis for the log-transform recommendation, not an "
-				"eyeball judgement.",
-				"The forecast target's skewness is the empirical case for "
-				"LOG_TRANSFORM_TARGET; see 3.15 for the same evidence as a "
-				"distribution curve.",
-				"Skewness is a property of the marginal distribution and says "
-				"nothing about the time-series structure -- 3.05 and 3.16 cover "
-				"that.",
+				"Fisher-Pearson skewness coefficient per measure. A value of "
+				"zero indicates a symmetric distribution; positive values "
+				"indicate a long right tail.",
+				"Interpretation follows Kim (2013): absolute skewness above 2 "
+				"indicates substantial departure from normality, and values "
+				"between 0.5 and 2 moderate departure.",
+				"Skewness in the forecast target is the empirical basis for "
+				"applying a logarithmic transformation before modelling.",
+				"This coefficient describes the marginal distribution only. It "
+				"carries no information about temporal dependence, which is "
+				"characterised separately by the stationarity and "
+				"autocorrelation analyses.",
 			],
 		)
 
@@ -346,14 +347,13 @@ def s03_date_range(ctx: EdaContext) -> None:
 		})
 		ctx.save(coverage_df, "step_2_03_coverage", "Coverage",
 			notes=[
-				"Observed span and completeness of the panel. Total months is "
-				"the distinct period count, which bounds every window-based "
-				"feature: a 12-month rolling mean is undefined in a panel "
-				"shorter than 12.",
-				"Also bounds the split. Train/validation/test cutoffs are "
-				"derived proportionally from this span rather than hardcoded, "
-				"after the hardcoded dates drifted to a 24-27% test share "
-				"(F25).",
+				"Observed temporal span of the panel. The count of distinct "
+				"months bounds every window-based feature: a twelve-month "
+				"rolling statistic is undefined in a series shorter than twelve "
+				"months.",
+				"The span also bounds the train-validation-test partition, "
+				"since each split must retain enough history for the lag "
+				"structure to be computable within it.",
 			],
 		)
 
@@ -369,15 +369,14 @@ def s03_date_range(ctx: EdaContext) -> None:
 		ctx.save(dist_df, "step_2_03_rows_per_brand",
 				 "Rows per Brand Distribution",
 			notes=[
-				"Distribution of observation counts per brand -- how much "
-				"history each brand actually has.",
-				"Directly relevant to MIN_PERIODS: a brand with few "
-				"observations cannot support lag-12 features and contributes "
-				"mostly warmup rows. The threshold decision is step 3's (P0036 "
-				"task 8 open); this table is its evidence.",
-				"A long left tail means the panel is dominated by short-lived "
-				"brands, which is a case for filtering rather than pooling them "
-				"in.",
+				"Distribution of observation counts across brands, showing how "
+				"much history each brand contributes.",
+				"Brands with short histories cannot support long lags: a brand "
+				"observed for fewer months than the longest lag yields no "
+				"usable training rows once the warm-up period is discarded.",
+				"A pronounced left tail indicates a panel dominated by "
+				"short-lived brands, which bears on whether such brands are "
+				"retained for modelling.",
 			],
 		)
 		ctx.derived["total_months"] = int(total_months)
@@ -453,16 +452,19 @@ def s04_structural_break(ctx: EdaContext) -> None:
 				 "step_2_04_structural_break",
 				 "Top 3 Break Candidates by Chow F-statistic",
 			notes=[
-				"Chow test for a structural break in the aggregate series: the "
-				"null is that the same relationship holds before and after the "
-				"candidate date (Chow, 1960).",
-				"A low p-value indicates the series mean/variance shifts at "
-				"that point. That matters for the split, because a break inside "
-				"the test window means the test period is not drawn from the "
-				"training regime.",
-				"Reported as the three strongest candidates rather than one "
-				"verdict: with a single series and many candidate dates this is "
-				"exploratory, and the multiple-comparisons problem is real.",
+				"Chow test for a structural break in the aggregate series. The "
+				"null hypothesis is that the same relationship holds before and "
+				"after the candidate break date (Chow, 1960).",
+				"A low p-value indicates that the mean or variance of the "
+				"series shifts at that date. This bears directly on the "
+				"validity of the temporal split, since a break inside the "
+				"evaluation window means the held-out period is not drawn from "
+				"the same regime as the training period.",
+				"The three strongest candidates are reported rather than a "
+				"single verdict. With one series and many candidate dates, the "
+				"procedure is exploratory and subject to multiple-comparisons "
+				"inflation, so these p-values are not adjusted significance "
+				"levels.",
 			],
 		)
 
@@ -537,16 +539,18 @@ def s05_stationarity(ctx: EdaContext) -> None:
 		ctx.save(adf_df, "step_2_05_adf_per_brand",
 				 "ADF Test per Brand (top brands by volume)",
 			notes=[
-				"Augmented Dickey-Fuller test per brand. Null hypothesis is a "
-				"unit root, i.e. non-stationarity; p < 0.05 rejects it and "
-				"indicates a stationary series (Dickey & Fuller, 1979).",
-				"Failing to reject is weak evidence -- ADF has low power on "
-				"short series, and these brands have at most ~46 monthly "
-				"observations. Read a non-rejection as inconclusive, not as "
-				"proof of a unit root.",
-				"Non-stationary brands are the argument for differencing or for "
-				"lag features that let the model absorb the trend rather than "
-				"extrapolate it.",
+				"Augmented Dickey-Fuller test per brand. The null hypothesis is "
+				"the presence of a unit root, that is, non-stationarity; a "
+				"p-value below 0.05 rejects it in favour of stationarity "
+				"(Dickey and Fuller, 1979).",
+				"Failure to reject is weak evidence. The test has low power "
+				"against near-unit-root alternatives in short samples, and "
+				"these series span at most 46 monthly observations, so a "
+				"non-rejection should be read as inconclusive rather than as "
+				"evidence of a unit root.",
+				"Non-stationary series motivate either differencing or the "
+				"inclusion of lagged terms that allow the model to absorb the "
+				"trend rather than extrapolate it.",
 			],
 		)
 
@@ -608,17 +612,17 @@ def s06_brand_stability(ctx: EdaContext) -> None:
 		ctx.save(pd.DataFrame(rows), "step_2_06_brand_retention",
 				 "Brand Retention at Different MIN_PERIODS Thresholds",
 			notes=[
-				"How many brands survive each candidate minimum-observation "
-				"threshold -- the retention curve for MIN_PERIODS.",
-				"Thresholds are generated from the panel's own maximum span "
-				"rather than the notebook's fixed 20-43 ladder, which had been "
-				"written against CSD's 43-month history and produced empty rows "
-				"elsewhere.",
-				"The trade-off is explicit: a higher threshold buys longer, "
-				"cleaner series at the cost of brand coverage. Look for the "
-				"knee where retention falls sharply.",
-				"Evidence only -- MIN_PERIODS is decided in step 3 (P0036 task "
-				"8).",
+				"Number of brands retained at each candidate "
+				"minimum-observation threshold, expressed as both a count and a "
+				"share of the full brand set.",
+				"Candidate thresholds are generated from the observed span of "
+				"this panel, so the ladder is comparable across categories with "
+				"different histories.",
+				"The trade-off is explicit: a higher threshold yields longer "
+				"and more complete series at the cost of brand coverage, "
+				"narrowing the population to which results generalise.",
+				"The point at which retention falls sharply identifies where "
+				"the panel's usable history is concentrated.",
 			],
 		)
 
@@ -685,16 +689,18 @@ def s07_zero_sales(ctx: EdaContext) -> None:
 		ctx.save(type_counts, "step_2_07_zero_types",
 				 f"Zero-Sales Characterisation across {len(zero_df)} brands",
 			notes=[
-				"Brands classified by where zero-sales months occur: leading "
-				"zeros (not yet launched), trailing (delisted), intermittent "
-				"(genuinely sporadic demand), or none.",
-				"The distinction drives treatment. Leading and trailing zeros "
-				"are structural absence and should be trimmed; intermittent "
-				"zeros are real demand behaviour and must be kept, since "
-				"removing them would bias the target upward.",
-				"Intermittent demand also breaks the usual accuracy metrics -- "
-				"MAPE is undefined at zero, which constrains metric choice "
-				"downstream.",
+				"Brands classified by the position of zero-sales months in "
+				"their series: leading zeros preceding market entry, trailing "
+				"zeros following exit, intermittent zeros interspersed through "
+				"an active period, or none.",
+				"The distinction is substantive. Leading and trailing zeros "
+				"denote periods in which the brand was not on the market, "
+				"whereas intermittent zeros are realised demand of zero and are "
+				"part of the process being modelled; discarding the latter "
+				"would bias the target distribution upward.",
+				"Intermittent demand also constrains the choice of accuracy "
+				"metric, since percentage-error measures are undefined when the "
+				"actual value is zero (Hyndman and Koehler, 2006).",
 			],
 		)
 
@@ -746,13 +752,15 @@ def s08_seasonality(ctx: EdaContext) -> None:
 		ctx.save(pd.DataFrame(rows), "step_2_08_monthly_distribution",
 				 "Monthly Sales Distribution (Full Year)",
 			notes=[
-				"Total target by calendar month, aggregated across all years "
-				"and brands -- the seasonal profile of the category.",
-				"Confounded with trend: a category growing over the observation "
-				"window inflates whichever months its later years cover most. "
-				"Read alongside 3.10, where decomposition separates the two.",
-				"The empirical basis for HOLIDAY_MONTHS, reported here but not "
-				"persisted anywhere step 3 could read (DEC-EDA-SPLIT).",
+				"Total sales by calendar month, aggregated across all years and "
+				"brands, describing the seasonal profile of the category.",
+				"This profile is confounded with trend: a category growing over "
+				"the observation window inflates whichever calendar months its "
+				"later years cover more heavily. The decomposition analysis "
+				"separates the two components.",
+				"Months of elevated demand identified here provide the "
+				"empirical basis for calendar features representing seasonal "
+				"peaks.",
 			],
 		)
 
@@ -774,12 +782,11 @@ def s08_seasonality(ctx: EdaContext) -> None:
 		})
 		ctx.save(peak_valley, "step_2_08_peak_valley", "Peak & Valley Analysis",
 			notes=[
-				"Highest and lowest months of the seasonal profile, with the "
-				"ratio between them as a one-number measure of seasonal "
-				"amplitude.",
-				"A large peak-to-valley ratio justifies month-of-year features; "
-				"a flat profile argues they would add parameters without "
-				"signal.",
+				"Highest and lowest months of the seasonal profile, with their "
+				"ratio as a single-figure measure of seasonal amplitude.",
+				"A large peak-to-trough ratio supports the inclusion of "
+				"month-of-year features; a flat profile indicates such features "
+				"would add parameters without explanatory value.",
 			],
 		)
 
@@ -945,13 +952,14 @@ def s11_top_brands(ctx: EdaContext) -> None:
 		}), "step_2_11_top_brands",
 			f"Top {len(top_brands)} Brands by Total Sales",
 			notes=[
-				"The largest brands by cumulative target volume, with their "
-				"series plotted in the companion figure.",
-				"These brands dominate any pooled error metric: a model can "
-				"score well overall while failing on the long tail. Relevant to "
-				"the pooled-versus-specialised question (P0036 task 9).",
-				"Volume ranking, not forecastability ranking -- a large brand "
-				"is not necessarily a stable or predictable one.",
+				"Brands ranked by cumulative sales volume over the observation "
+				"window.",
+				"These brands dominate any volume-weighted error metric, so a "
+				"model may report strong aggregate accuracy while performing "
+				"poorly across the remaining brands. Disaggregated reporting is "
+				"therefore necessary to characterise performance.",
+				"The ranking reflects volume, not predictability. A high-volume "
+				"brand is not necessarily a stable or readily forecastable one.",
 			],
 		)
 
@@ -1003,15 +1011,17 @@ def s12_heterogeneity(ctx: EdaContext) -> None:
 				   f"{stats['cv'].max():.3f}"],
 		}), "step_2_12_cv", f"Sales CV (std/mean) across {len(stats)} brands",
 			notes=[
-				"Coefficient of variation (std / mean) per brand: volatility "
-				"normalised by level, so brands of different sizes are "
-				"comparable.",
-				"High CV means an inherently harder series. Reporting the "
-				"spread of CV across brands is what justifies expecting "
-				"heterogeneous accuracy rather than treating one aggregate "
-				"error as representative.",
-				"Undefined for a brand with mean zero, and unstable for "
-				"near-zero means -- read the extreme values alongside 3.07.",
+				"Coefficient of variation per brand, defined as the standard "
+				"deviation divided by the mean, which normalises volatility by "
+				"scale and so permits comparison across brands of different "
+				"sizes.",
+				"A high coefficient identifies an intrinsically harder series. "
+				"The dispersion of this statistic across brands is the basis "
+				"for expecting heterogeneous accuracy rather than treating a "
+				"single aggregate error as representative of all brands.",
+				"The statistic is undefined for a brand with zero mean and "
+				"unstable for near-zero means, so extreme values should be read "
+				"alongside the zero-sales characterisation.",
 			],
 		)
 
@@ -1034,12 +1044,13 @@ def s12_heterogeneity(ctx: EdaContext) -> None:
 			"Brands Peaking": peak_dist.values,
 		}), "step_2_12_peak_months", "Brands' Peak Sales Month",
 			notes=[
-				"Each brand's own peak month, showing whether brands share the "
-				"category's seasonal pattern or carry individual ones.",
-				"If peaks cluster, a single shared seasonal feature suffices. "
-				"If they scatter, brand-specific seasonality is what the model "
-				"needs, which is an argument for brand identity interacting "
-				"with month.",
+				"The calendar month of peak sales for each brand, indicating "
+				"whether brands share the category-level seasonal pattern or "
+				"exhibit individual ones.",
+				"Clustering of peaks supports a single shared seasonal feature. "
+				"Dispersed peaks indicate brand-specific seasonality, which "
+				"requires seasonal terms that vary by brand rather than a "
+				"single category-wide profile.",
 			],
 		)
 
@@ -1098,17 +1109,15 @@ def s13_promo_intensity(ctx: EdaContext) -> None:
 		}), "step_2_13_promo_intensity",
 			"Promo Intensity per Brand (where promo > 0)",
 			notes=[
-				"Brands ranked by promotional intensity (promo units as a share "
-				"of total units).",
-				"Identifies which brands rely on promotion. Only meaningful for "
-				"categories where Nielsen delivered promo columns -- this "
-				"section is skipped entirely elsewhere rather than reported as "
-				"zero.",
-				"Descriptive, not causal: intensity reflects commercial "
-				"strategy, and promoted brands differ systematically from "
-				"unpromoted ones.",
-				"See 3.17 for the distribution's shape rather than the brand "
-				"ranking.",
+				"Brands ranked by promotional intensity, defined as promoted "
+				"units as a share of total units sold.",
+				"The measure identifies which brands rely on promotional "
+				"activity. It is reported only for categories in which Nielsen "
+				"supplied promotional measures.",
+				"The comparison is descriptive rather than causal. Promotional "
+				"intensity reflects commercial strategy, and promoted brands "
+				"differ systematically from unpromoted ones in ways not "
+				"captured here.",
 			],
 		)
 
@@ -1171,21 +1180,22 @@ def s14_measure_quality(ctx: EdaContext) -> None:
 		ctx.save(quality, "step_2_14_measure_quality",
 				 "Measure-Column Quality Scan",
 			notes=[
-				"Per-column scan for the two defects that silently corrupt "
-				"aggregation: impossible negatives, and rate columns mistakenly "
-				"treated as additive.",
-				"Negative counts and negative shares are impossible by "
-				"definition, so any listed here are delivery defects. Reported "
-				"and left uncorrected (F42): clipping would manufacture a "
-				"plausible-looking value and hide the problem, and none of the "
-				"affected columns is the target.",
-				"The in_0_100 flag answers F39. A column bounded within [0, "
-				"100] behaves as a rate and must be averaged when aggregating "
-				"-- summing two 70% distribution figures into 140% is the "
-				"specific error this check exists to prevent.",
-				"The additive/intensive split it implies is what step 1's "
-				"aggregation already applies; this table is the evidence that "
-				"the classification matches the data.",
+				"Per-measure scan for two data-quality conditions: values that "
+				"are impossible given the measure's definition, and rate "
+				"measures that would be corrupted by summation.",
+				"Counts and shares cannot be negative by definition, so any "
+				"negative values reported here indicate defects in the "
+				"delivered data. They are reported rather than adjusted, since "
+				"imputing a substitute value would present a fabricated figure "
+				"as an observation.",
+				"Measures observed entirely within the interval [0, 100] behave "
+				"as rates rather than counts and must be averaged when "
+				"aggregating across records. Summing two distribution figures "
+				"of 70 per cent into 140 per cent is the specific error this "
+				"check identifies.",
+				"The resulting classification of measures as additive or "
+				"intensive determines the aggregation function applied to each "
+				"when constructing the brand-month panel.",
 			],
 		)
 
@@ -1283,19 +1293,20 @@ def s15_ecdf(ctx: EdaContext) -> None:
 			q_df, "step_2_15_ecdf_quantiles",
 			f"Target Distribution Quantiles ({TARGET_COL})",
 			notes=[
-				f"Cumulative share of brand-months at or below each "
-				f"{TARGET_COL} value; shows the spread without the "
-				f"bin-width dependence a histogram introduces.",
-				f"p50 = {quantiles[0.50]:,.0f} against p90 = "
-				f"{quantiles[0.90]:,.0f}: the gap between them is the "
-				f"concentration this panel has to forecast across.",
-				"A long right tail here is the empirical case for "
-				"LOG_TRANSFORM_TARGET. The second panel shows the same data "
-				"after log1p, where an approximately straight curve "
-				"indicates the transform has done its job.",
-				"Companion to 3.02 (skewness): that figure states the "
-				"asymmetry as a single number, this one shows where in the "
-				"distribution it sits.",
+				"Cumulative share of brand-months at or below each value of the "
+				"forecast target, describing the distribution without the "
+				"bin-width dependence inherent in a histogram.",
+				"The interval between the median and the upper decile measures "
+				"the concentration of sales volume that the model must "
+				"accommodate.",
+				"A pronounced right tail is the empirical basis for a "
+				"logarithmic transformation of the target. The second panel of "
+				"the accompanying figure shows the transformed distribution, in "
+				"which an approximately linear curve indicates the "
+				"transformation has achieved approximate symmetry.",
+				"This presentation complements the skewness coefficient, which "
+				"summarises asymmetry as a single number, by showing where in "
+				"the distribution that asymmetry arises.",
 			],
 		)
 
@@ -1396,23 +1407,24 @@ def s16_acf_pacf(ctx: EdaContext) -> None:
 				sig_df, "step_2_16_acf_significant_lags",
 				"Significant ACF Lags per Brand",
 				notes=[
-					"Lags whose autocorrelation exceeds the 95% band "
-					"(+/-1.96/sqrt(n)) under the null of no autocorrelation "
-					"-- the standard Box-Jenkins reading of an ACF plot "
-					"(Box & Jenkins, 1970).",
-					f"Lags significant in at least half of the top "
-					f"{len(rows)} brands: "
-					f"{consensus if consensus else 'none'}. A lag clearing "
-					f"the band for one brand is noise; one clearing it "
-					f"across the majority is structure worth a feature.",
-					"A spike at lag 12 indicates annual seasonality; spikes "
-					"at 1-3 indicate short-run momentum. Both are what the "
-					"lag features exist to capture.",
-					"Computed on log1p(target) so these lags describe the "
-					"series the model is actually fitted to.",
-					"Evidence only -- LAGS is derived in step 3 "
-					"(DEC-EDA-SPLIT). This figure is the justification for "
-					"whatever that step selects.",
+					"Lags at which the sample autocorrelation exceeds the 95 per "
+					"cent confidence band of plus or minus 1.96 divided by the "
+					"square root of the sample size, the standard criterion for "
+					"identifying significant autocorrelation (Box and Jenkins, "
+					"1970).",
+					"Lags significant across a majority of the leading brands "
+					"indicate category-level temporal structure, whereas a lag "
+					"significant for a single brand is more plausibly sampling "
+					"variation.",
+					"Significance at lag 12 indicates annual seasonality; "
+					"significance at lags 1 to 3 indicates short-run persistence. "
+					"Both motivate the inclusion of lagged sales as predictors.",
+					"Autocorrelations are computed on the logarithmic "
+					"transformation of the target, so the reported lags describe "
+					"the series in the form in which it is modelled.",
+					"The confidence band assumes a stationary series; where the "
+					"stationarity tests are inconclusive, significance at long lags "
+					"may reflect trend rather than genuine seasonal dependence.",
 				],
 			)
 
@@ -1501,20 +1513,20 @@ def s17_promo_distribution(ctx: EdaContext) -> None:
 			summary, "step_2_17_promo_distribution",
 			"Promo Intensity Distribution Summary",
 			notes=[
-				"Promo intensity = promo_units / max(sales_units, 1). The "
-				"clip avoids zero-division without the +1 bias that would "
-				"inflate the ratio for low-volume brands.",
-				f"promo_units is a subset of sales_units in Nielsen's model, "
-				f"so an intensity above 1 is a delivery defect: {invalid} "
-				f"such row(s) here, reported and left uncorrected (F42).",
-				"The boxplot compares the target's level between promoted "
-				"and unpromoted brand-months. A visible shift motivates "
-				"promo features; overlapping boxes argue they add little.",
-				"Descriptive, not causal: promotions are placed on brands "
-				"already expected to sell, so this gap is confounded by "
-				"selection and cannot be read as promotional uplift.",
-				"Complements 3.13, which ranks brands by intensity; this "
-				"section characterises the distribution's shape.",
+				"Distribution of promotional intensity, defined as promoted "
+				"units divided by total units, together with the sales "
+				"distribution of promoted and unpromoted brand-months.",
+				"Promoted units are a subset of total units in the Nielsen "
+				"measurement model, so an intensity exceeding one is not "
+				"interpretable and indicates a defect in the delivered data.",
+				"The boxplot compares the level of sales between promoted and "
+				"unpromoted brand-months. A pronounced difference in location "
+				"motivates promotional features; substantially overlapping "
+				"distributions indicate limited explanatory value.",
+				"The comparison is descriptive and cannot be read as "
+				"promotional uplift. Promotions are allocated to brands and "
+				"periods on commercial grounds, so the observed difference "
+				"reflects selection into promotion as well as any effect of it.",
 			],
 		)
 
@@ -1599,21 +1611,23 @@ def s18_correlation(ctx: EdaContext) -> None:
 			corr_df, "step_2_18_target_correlations",
 			f"Correlation with {TARGET_COL}",
 			notes=[
-				"Pearson measures linear association; Spearman measures "
-				"monotone association on ranks. Reporting both is what makes "
-				"the comparison in the next bullet possible.",
-				f"abs_delta above 0.1 flags a relationship that is monotone "
-				f"but not linear -- a candidate for transformation rather "
-				f"than a raw feature. {n_nonlinear} column(s) flagged here.",
-				"Spearman is the more trustworthy of the two on this data: "
-				"the target is right-skewed (see 3.02 and 3.15) and Pearson "
-				"is sensitive to the resulting outliers.",
-				"These correlations are contemporaneous, not predictive: "
-				"the columns are measured in the same month as the target, "
-				"so a high value does not by itself establish forecasting "
-				"value at t+1.",
-				"Descriptive only. No feature is selected or dropped here; "
-				"the contract is step 3's output (DEC-EDA-SPLIT).",
+				"Pearson and Spearman correlation of each measure with the "
+				"forecast target. Pearson quantifies linear association; "
+				"Spearman quantifies monotone association between ranks.",
+				"A large absolute difference between the two coefficients "
+				"indicates a relationship that is monotone but not linear, "
+				"identifying measures for which a transformation is more "
+				"appropriate than inclusion in raw form.",
+				"The rank-based coefficient is the more robust of the two for "
+				"this data, since the target is right-skewed and the "
+				"product-moment correlation is sensitive to the resulting "
+				"extreme values.",
+				"These correlations are contemporaneous. The measures are "
+				"observed in the same month as the target, so a high "
+				"coefficient does not establish predictive value at a one-month "
+				"forecast horizon.",
+				"Association reported here is descriptive and does not identify "
+				"a causal relationship between any measure and sales.",
 			],
 		)
 
@@ -1636,18 +1650,19 @@ def s18_correlation(ctx: EdaContext) -> None:
 				red_df, "step_2_18_redundant_pairs",
 				"Near-Duplicate Column Pairs (|r| > 0.9)",
 				notes=[
-					"Column pairs correlating above 0.9 carry substantially "
-					"the same information; keeping both adds collinearity "
-					"without adding signal.",
-					"The 0.9 threshold is conventional for near-duplicate "
-					"detection and is deliberately stricter than the 0.756 "
-					"weighted_dist correlation P0036 F7 tracks -- pairs "
-					"listed here are a stronger claim than that one.",
-					"Collinearity inflates coefficient variance in linear "
-					"models. Tree ensembles tolerate it but split their "
-					"importance across the duplicates, which makes the "
-					"resulting importance ranking misleading.",
-					"Listed for step 3 to act on, not pruned here.",
+					"Pairs of measures whose absolute Pearson correlation exceeds "
+					"0.9, the conventional threshold for treating two variables as "
+					"carrying substantially equivalent information.",
+					"Retaining both members of such a pair introduces collinearity "
+					"without adding explanatory content.",
+					"Collinearity inflates the sampling variance of coefficient "
+					"estimates in linear models. Tree-based ensembles are robust to "
+					"it in terms of predictive accuracy, but distribute split "
+					"importance across the correlated measures, which renders "
+					"variable-importance rankings unreliable.",
+					"High correlation between two measures does not by itself "
+					"determine which of them to retain; that requires their "
+					"definitions and their individual association with the target.",
 				],
 			)
 		else:

@@ -1,9 +1,9 @@
 ## Target Distribution Quantiles (sales_units)
 
-- Cumulative share of brand-months at or below each sales_units value; shows the spread without the bin-width dependence a histogram introduces.
-- p50 = 7,901 against p90 = 322,775: the gap between them is the concentration this panel has to forecast across.
-- A long right tail here is the empirical case for LOG_TRANSFORM_TARGET. The second panel shows the same data after log1p, where an approximately straight curve indicates the transform has done its job.
-- Companion to 3.02 (skewness): that figure states the asymmetry as a single number, this one shows where in the distribution it sits.
+- Cumulative share of brand-months at or below each value of the forecast target, describing the distribution without the bin-width dependence inherent in a histogram.
+- The interval between the median and the upper decile measures the concentration of sales volume that the model must accommodate.
+- A pronounced right tail is the empirical basis for a logarithmic transformation of the target. The second panel of the accompanying figure shows the transformed distribution, in which an approximately linear curve indicates the transformation has achieved approximate symmetry.
+- This presentation complements the skewness coefficient, which summarises asymmetry as a single number, by showing where in the distribution that asymmetry arises.
 
 | quantile   |       value |
 |:-----------|------------:|

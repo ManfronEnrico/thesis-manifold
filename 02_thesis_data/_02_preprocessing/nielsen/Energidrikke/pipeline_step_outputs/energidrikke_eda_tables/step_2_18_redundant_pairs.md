@@ -1,9 +1,9 @@
 ## Near-Duplicate Column Pairs (|r| > 0.9)
 
-- Column pairs correlating above 0.9 carry substantially the same information; keeping both adds collinearity without adding signal.
-- The 0.9 threshold is conventional for near-duplicate detection and is deliberately stricter than the 0.756 weighted_dist correlation P0036 F7 tracks -- pairs listed here are a stronger claim than that one.
-- Collinearity inflates coefficient variance in linear models. Tree ensembles tolerate it but split their importance across the duplicates, which makes the resulting importance ranking misleading.
-- Listed for step 3 to act on, not pruned here.
+- Pairs of measures whose absolute Pearson correlation exceeds 0.9, the conventional threshold for treating two variables as carrying substantially equivalent information.
+- Retaining both members of such a pair introduces collinearity without adding explanatory content.
+- Collinearity inflates the sampling variance of coefficient estimates in linear models. Tree-based ensembles are robust to it in terms of predictive accuracy, but distribute split importance across the correlated measures, which renders variable-importance rankings unreliable.
+- High correlation between two measures does not by itself determine which of them to retain; that requires their definitions and their individual association with the target.
 
 | column_a                                     | column_b                                     |   pearson_r |
 |:---------------------------------------------|:---------------------------------------------|------------:|

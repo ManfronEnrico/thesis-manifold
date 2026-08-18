@@ -1,8 +1,8 @@
 ## Monthly Sales Distribution (Full Year)
 
-- Total target by calendar month, aggregated across all years and brands -- the seasonal profile of the category.
-- Confounded with trend: a category growing over the observation window inflates whichever months its later years cover most. Read alongside 3.10, where decomposition separates the two.
-- The empirical basis for HOLIDAY_MONTHS, reported here but not persisted anywhere step 3 could read (DEC-EDA-SPLIT).
+- Total sales by calendar month, aggregated across all years and brands, describing the seasonal profile of the category.
+- This profile is confounded with trend: a category growing over the observation window inflates whichever calendar months its later years cover more heavily. The decomposition analysis separates the two components.
+- Months of elevated demand identified here provide the empirical basis for calendar features representing seasonal peaks.
 
 |   Month | Month Name   |   Sales Units | % of Total   | Classification   |
 |--------:|:-------------|--------------:|:-------------|:-----------------|

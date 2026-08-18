@@ -1,8 +1,8 @@
 ## Rows per Brand Distribution
 
-- Distribution of observation counts per brand -- how much history each brand actually has.
-- Directly relevant to MIN_PERIODS: a brand with few observations cannot support lag-12 features and contributes mostly warmup rows. The threshold decision is step 3's (P0036 task 8 open); this table is its evidence.
-- A long left tail means the panel is dominated by short-lived brands, which is a case for filtering rather than pooling them in.
+- Distribution of observation counts across brands, showing how much history each brand contributes.
+- Brands with short histories cannot support long lags: a brand observed for fewer months than the longest lag yields no usable training rows once the warm-up period is discarded.
+- A pronounced left tail indicates a panel dominated by short-lived brands, which bears on whether such brands are retained for modelling.
 
 | Statistic   |   Rows/Brand |
 |:------------|-------------:|

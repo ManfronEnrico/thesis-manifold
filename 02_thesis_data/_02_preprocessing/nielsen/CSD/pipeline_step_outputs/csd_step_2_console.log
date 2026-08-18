@@ -17,8 +17,8 @@ Rebuilding the analysis panel via step 1...
 
 Data Shape
 ----------------------------------------
-  - Panel dimensions after step 1: the brand x month grain locked by DEC-GRAIN (2026-07-12), scoped to the DVH EXCL. HD parent market (DEC-SCOPE) rather than its nine region children.
-  - Row count is brands x observed months, not a complete grid -- brands enter and leave the panel, so absent brand-months are genuinely absent rather than null.
+  - Dimensions of the analysis panel: one observation per brand per calendar month, aggregated across the retail universe covered by the Nielsen delivery.
+  - The panel is unbalanced. Brands enter and exit the market over the observation window, so the row count is the number of observed brand-months rather than the product of brands and months.
 
        Metric Value
    Total Rows 4,209
@@ -27,8 +27,8 @@ Unique Brands   142
 
 Columns & Data Quality
 ----------------------------------------
-  - Every column step 1 produced, with its dtype and null count. Discovered, not enumerated (DEC-OPEN-WORLD): a category carrying a column no other category has still appears here.
-  - Column counts differ by category by design -- the four categories sit at different Nielsen capability tiers, and a column absent here was never delivered rather than lost in processing.
+  - Each measure delivered for this category, with its storage type and the count of unreported values.
+  - The number of measures differs across categories because Nielsen reports different measure sets per category. A measure absent here was not supplied in the delivery rather than lost in processing.
 
                                       Column Data Type  Non-Null  Missing  Missing %
                                        brand    object      4209        0        0.0
@@ -66,8 +66,8 @@ total_weighted_distribution_points_tdp_reach   float64      4209        0       
 
 Missing Value Analysis
 ----------------------------------------
-  - Nulls per column. In this panel a null is an unreported measure for an observed brand-month, which is distinct from a brand-month that does not appear at all.
-  - Matters for feature engineering because a lag or rolling window computed across a null propagates it forward into every window that spans the gap.
+  - Unreported values per measure. In this panel an unreported value denotes a measure Nielsen did not supply for an observed brand-month, which is distinct from a brand-month that does not appear at all.
+  - The distinction matters for time-series construction: lagged and rolling features computed across an unreported value propagate it into every window spanning the gap.
 
                              Column  Missing  Missing %
     weighted_distribution_any_promo     1236       29.4
@@ -97,10 +97,10 @@ brand  period_year  period_month  sales_value  sales_liters  sales_units  sales_
 
 Skewness Analysis
 ----------------------------------------
-  - Fisher-Pearson skewness per numeric column. Zero is symmetric; positive means a long right tail.
-  - Thresholds follow Kim (2013): |skew| > 2 indicates substantial departure from normality, 0.5-2 moderate. These bands are the stated basis for the log-transform recommendation, not an eyeball judgement.
-  - The forecast target's skewness is the empirical case for LOG_TRANSFORM_TARGET; see 3.15 for the same evidence as a distribution curve.
-  - Skewness is a property of the marginal distribution and says nothing about the time-series structure -- 3.05 and 3.16 cover that.
+  - Fisher-Pearson skewness coefficient per measure. A value of zero indicates a symmetric distribution; positive values indicate a long right tail.
+  - Interpretation follows Kim (2013): absolute skewness above 2 indicates substantial departure from normality, and values between 0.5 and 2 moderate departure.
+  - Skewness in the forecast target is the empirical basis for applying a logarithmic transformation before modelling.
+  - This coefficient describes the marginal distribution only. It carries no information about temporal dependence, which is characterised separately by the stationarity and autocorrelation analyses.
 
                                      feature  skewness                                                                          interpretation
                                  sales_value     5.355 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
@@ -139,8 +139,8 @@ total_weighted_distribution_points_tdp_reach     1.796                          
 
 Coverage
 ----------------------------------------
-  - Observed span and completeness of the panel. Total months is the distinct period count, which bounds every window-based feature: a 12-month rolling mean is undefined in a panel shorter than 12.
-  - Also bounds the split. Train/validation/test cutoffs are derived proportionally from this span rather than hardcoded, after the hardcoded dates drifted to a 24-27% test share (F25).
+  - Observed temporal span of the panel. The count of distinct months bounds every window-based feature: a twelve-month rolling statistic is undefined in a series shorter than twelve months.
+  - The span also bounds the train-validation-test partition, since each split must retain enough history for the lag structure to be computable within it.
 
         Metric              Value
     Date Range 2022-10 to 2026-07
@@ -151,9 +151,9 @@ Avg Rows/Brand               29.6
 
 Rows per Brand Distribution
 ----------------------------------------
-  - Distribution of observation counts per brand -- how much history each brand actually has.
-  - Directly relevant to MIN_PERIODS: a brand with few observations cannot support lag-12 features and contributes mostly warmup rows. The threshold decision is step 3's (P0036 task 8 open); this table is its evidence.
-  - A long left tail means the panel is dominated by short-lived brands, which is a case for filtering rather than pooling them in.
+  - Distribution of observation counts across brands, showing how much history each brand contributes.
+  - Brands with short histories cannot support long lags: a brand observed for fewer months than the longest lag yields no usable training rows once the warm-up period is discarded.
+  - A pronounced left tail indicates a panel dominated by short-lived brands, which bears on whether such brands are retained for modelling.
 
 Statistic Rows/Brand
       Min          1
@@ -170,9 +170,9 @@ Statistic Rows/Brand
 
 Top 3 Break Candidates by Chow F-statistic
 ------------------------------------------
-  - Chow test for a structural break in the aggregate series: the null is that the same relationship holds before and after the candidate date (Chow, 1960).
-  - A low p-value indicates the series mean/variance shifts at that point. That matters for the split, because a break inside the test window means the test period is not drawn from the training regime.
-  - Reported as the three strongest candidates rather than one verdict: with a single series and many candidate dates this is exploratory, and the multiple-comparisons problem is real.
+  - Chow test for a structural break in the aggregate series. The null hypothesis is that the same relationship holds before and after the candidate break date (Chow, 1960).
+  - A low p-value indicates that the mean or variance of the series shifts at that date. This bears directly on the validity of the temporal split, since a break inside the evaluation window means the held-out period is not drawn from the same regime as the training period.
+  - The three strongest candidates are reported rather than a single verdict. With one series and many candidate dates, the procedure is exploratory and subject to multiple-comparisons inflation, so these p-values are not adjusted significance levels.
 
    date  chow_f  chow_p  mean_ratio  std_ratio
 2025-03   9.031  0.0044       1.186      0.823
@@ -192,9 +192,9 @@ Top 3 Break Candidates by Chow F-statistic
 
 ADF Test per Brand (top brands by volume)
 -----------------------------------------
-  - Augmented Dickey-Fuller test per brand. Null hypothesis is a unit root, i.e. non-stationarity; p < 0.05 rejects it and indicates a stationary series (Dickey & Fuller, 1979).
-  - Failing to reject is weak evidence -- ADF has low power on short series, and these brands have at most ~46 monthly observations. Read a non-rejection as inconclusive, not as proof of a unit root.
-  - Non-stationary brands are the argument for differencing or for lag features that let the model absorb the trend rather than extrapolate it.
+  - Augmented Dickey-Fuller test per brand. The null hypothesis is the presence of a unit root, that is, non-stationarity; a p-value below 0.05 rejects it in favour of stationarity (Dickey and Fuller, 1979).
+  - Failure to reject is weak evidence. The test has low power against near-unit-root alternatives in short samples, and these series span at most 46 monthly observations, so a non-rejection should be read as inconclusive rather than as evidence of a unit root.
+  - Non-stationary series motivate either differencing or the inclusion of lagged terms that allow the model to absorb the trend rather than extrapolate it.
 
             brand  n  p_raw  p_log  p_diff recommendation
            HARBOE 46  0.995  0.993   0.000     log1p+diff
@@ -235,10 +235,10 @@ THE PERFECT MIXER 46  0.867  1.000   0.004     log1p+diff
 
 Brand Retention at Different MIN_PERIODS Thresholds
 ---------------------------------------------------
-  - How many brands survive each candidate minimum-observation threshold -- the retention curve for MIN_PERIODS.
-  - Thresholds are generated from the panel's own maximum span rather than the notebook's fixed 20-43 ladder, which had been written against CSD's 43-month history and produced empty rows elsewhere.
-  - The trade-off is explicit: a higher threshold buys longer, cleaner series at the cost of brand coverage. Look for the knee where retention falls sharply.
-  - Evidence only -- MIN_PERIODS is decided in step 3 (P0036 task 8).
+  - Number of brands retained at each candidate minimum-observation threshold, expressed as both a count and a share of the full brand set.
+  - Candidate thresholds are generated from the observed span of this panel, so the ladder is comparable across categories with different histories.
+  - The trade-off is explicit: a higher threshold yields longer and more complete series at the cost of brand coverage, narrowing the population to which results generalise.
+  - The point at which retention falls sharply identifies where the panel's usable history is concentrated.
 
  Min Periods  Brands Retained % of Total Data Quality
            5              130      91.5%          Low
@@ -261,9 +261,9 @@ Brand Retention at Different MIN_PERIODS Thresholds
 
 Zero-Sales Characterisation across 142 brands
 ---------------------------------------------
-  - Brands classified by where zero-sales months occur: leading zeros (not yet launched), trailing (delisted), intermittent (genuinely sporadic demand), or none.
-  - The distinction drives treatment. Leading and trailing zeros are structural absence and should be trimmed; intermittent zeros are real demand behaviour and must be kept, since removing them would bias the target upward.
-  - Intermittent demand also breaks the usual accuracy metrics -- MAPE is undefined at zero, which constrains metric choice downstream.
+  - Brands classified by the position of zero-sales months in their series: leading zeros preceding market entry, trailing zeros following exit, intermittent zeros interspersed through an active period, or none.
+  - The distinction is substantive. Leading and trailing zeros denote periods in which the brand was not on the market, whereas intermittent zeros are realised demand of zero and are part of the process being modelled; discarding the latter would bias the target distribution upward.
+  - Intermittent demand also constrains the choice of accuracy metric, since percentage-error measures are undefined when the actual value is zero (Hyndman and Koehler, 2006).
 
     type  brands
 no zeros     142
@@ -281,9 +281,9 @@ no zeros     142
 
 Monthly Sales Distribution (Full Year)
 ----------------------------------------
-  - Total target by calendar month, aggregated across all years and brands -- the seasonal profile of the category.
-  - Confounded with trend: a category growing over the observation window inflates whichever months its later years cover most. Read alongside 3.10, where decomposition separates the two.
-  - The empirical basis for HOLIDAY_MONTHS, reported here but not persisted anywhere step 3 could read (DEC-EDA-SPLIT).
+  - Total sales by calendar month, aggregated across all years and brands, describing the seasonal profile of the category.
+  - This profile is confounded with trend: a category growing over the observation window inflates whichever calendar months its later years cover more heavily. The decomposition analysis separates the two components.
+  - Months of elevated demand identified here provide the empirical basis for calendar features representing seasonal peaks.
 
  Month Month Name Sales Units % of Total Classification
      1        Jan  59,827,806       6.2%         Valley
@@ -301,8 +301,8 @@ Monthly Sales Distribution (Full Year)
 
 Peak & Valley Analysis
 ----------------------------------------
-  - Highest and lowest months of the seasonal profile, with the ratio between them as a one-number measure of seasonal amplitude.
-  - A large peak-to-valley ratio justifies month-of-year features; a flat profile argues they would add parameters without signal.
+  - Highest and lowest months of the seasonal profile, with their ratio as a single-figure measure of seasonal amplitude.
+  - A large peak-to-trough ratio supports the inclusion of month-of-year features; a flat profile indicates such features would add parameters without explanatory value.
 
                  Category     Months % of Sales
              Top 3 Months [12, 6, 3]      32.5%
@@ -335,9 +335,9 @@ Holiday Months (75th pct) [3, 6, 12]      32.5%
 
 Top 5 Brands by Total Sales
 ----------------------------------------
-  - The largest brands by cumulative target volume, with their series plotted in the companion figure.
-  - These brands dominate any pooled error metric: a model can score well overall while failing on the long tail. Relevant to the pooled-versus-specialised question (P0036 task 9).
-  - Volume ranking, not forecastability ranking -- a large brand is not necessarily a stable or predictable one.
+  - Brands ranked by cumulative sales volume over the observation window.
+  - These brands dominate any volume-weighted error metric, so a model may report strong aggregate accuracy while performing poorly across the remaining brands. Disaggregated reporting is therefore necessary to characterise performance.
+  - The ranking reflects volume, not predictability. A high-volume brand is not necessarily a stable or readily forecastable one.
 
  Rank      Brand Total Sales
     1     HARBOE 237,169,352
@@ -352,9 +352,9 @@ Top 5 Brands by Total Sales
 
 Sales CV (std/mean) across 137 brands
 ----------------------------------------
-  - Coefficient of variation (std / mean) per brand: volatility normalised by level, so brands of different sizes are comparable.
-  - High CV means an inherently harder series. Reporting the spread of CV across brands is what justifies expecting heterogeneous accuracy rather than treating one aggregate error as representative.
-  - Undefined for a brand with mean zero, and unstable for near-zero means -- read the extreme values alongside 3.07.
+  - Coefficient of variation per brand, defined as the standard deviation divided by the mean, which normalises volatility by scale and so permits comparison across brands of different sizes.
+  - A high coefficient identifies an intrinsically harder series. The dispersion of this statistic across brands is the basis for expecting heterogeneous accuracy rather than treating a single aggregate error as representative of all brands.
+  - The statistic is undefined for a brand with zero mean and unstable for near-zero means, so extreme values should be read alongside the zero-sales characterisation.
 
 Statistic    CV
       Min 0.000
@@ -382,8 +382,8 @@ Statistic    CV
 
 Brands' Peak Sales Month
 ----------------------------------------
-  - Each brand's own peak month, showing whether brands share the category's seasonal pattern or carry individual ones.
-  - If peaks cluster, a single shared seasonal feature suffices. If they scatter, brand-specific seasonality is what the model needs, which is an argument for brand identity interacting with month.
+  - The calendar month of peak sales for each brand, indicating whether brands share the category-level seasonal pattern or exhibit individual ones.
+  - Clustering of peaks supports a single shared seasonal feature. Dispersed peaks indicate brand-specific seasonality, which requires seasonal terms that vary by brand rather than a single category-wide profile.
 
 Month  Brands Peaking
   Jan               5
@@ -412,10 +412,9 @@ Month  Brands Peaking
 
 Promo Intensity per Brand (where promo > 0)
 -------------------------------------------
-  - Brands ranked by promotional intensity (promo units as a share of total units).
-  - Identifies which brands rely on promotion. Only meaningful for categories where Nielsen delivered promo columns -- this section is skipped entirely elsewhere rather than reported as zero.
-  - Descriptive, not causal: intensity reflects commercial strategy, and promoted brands differ systematically from unpromoted ones.
-  - See 3.17 for the distribution's shape rather than the brand ranking.
+  - Brands ranked by promotional intensity, defined as promoted units as a share of total units sold.
+  - The measure identifies which brands rely on promotional activity. It is reported only for categories in which Nielsen supplied promotional measures.
+  - The comparison is descriptive rather than causal. Promotional intensity reflects commercial strategy, and promoted brands differ systematically from unpromoted ones in ways not captured here.
 
 Statistic Promo Intensity
       Min           0.026
@@ -433,10 +432,10 @@ Statistic Promo Intensity
 
 Measure-Column Quality Scan
 ----------------------------------------
-  - Per-column scan for the two defects that silently corrupt aggregation: impossible negatives, and rate columns mistakenly treated as additive.
-  - Negative counts and negative shares are impossible by definition, so any listed here are delivery defects. Reported and left uncorrected (F42): clipping would manufacture a plausible-looking value and hide the problem, and none of the affected columns is the target.
-  - The in_0_100 flag answers F39. A column bounded within [0, 100] behaves as a rate and must be averaged when aggregating -- summing two 70% distribution figures into 140% is the specific error this check exists to prevent.
-  - The additive/intensive split it implies is what step 1's aggregation already applies; this table is the evidence that the classification matches the data.
+  - Per-measure scan for two data-quality conditions: values that are impossible given the measure's definition, and rate measures that would be corrupted by summation.
+  - Counts and shares cannot be negative by definition, so any negative values reported here indicate defects in the delivered data. They are reported rather than adjusted, since imputing a substitute value would present a fabricated figure as an observation.
+  - Measures observed entirely within the interval [0, 100] behave as rates rather than counts and must be averaged when aggregating across records. Summing two distribution figures of 70 per cent into 140 per cent is the specific error this check identifies.
+  - The resulting classification of measures as additive or intensive determines the aggregation function applied to each when constructing the brand-month panel.
 
                                       column          min          max         mean  nulls  zeros  negatives  neg_pct  in_0_100
                                  sales_value     1.000000 1.287334e+08 3.572723e+06      0      0          0    0.000     False
@@ -499,10 +498,10 @@ total_weighted_distribution_points_tdp_reach     0.000029 7.402267e-01 8.025148e
 
 Target Distribution Quantiles (sales_units)
 -------------------------------------------
-  - Cumulative share of brand-months at or below each sales_units value; shows the spread without the bin-width dependence a histogram introduces.
-  - p50 = 2,416 against p90 = 197,084: the gap between them is the concentration this panel has to forecast across.
-  - A long right tail here is the empirical case for LOG_TRANSFORM_TARGET. The second panel shows the same data after log1p, where an approximately straight curve indicates the transform has done its job.
-  - Companion to 3.02 (skewness): that figure states the asymmetry as a single number, this one shows where in the distribution it sits.
+  - Cumulative share of brand-months at or below each value of the forecast target, describing the distribution without the bin-width dependence inherent in a histogram.
+  - The interval between the median and the upper decile measures the concentration of sales volume that the model must accommodate.
+  - A pronounced right tail is the empirical basis for a logarithmic transformation of the target. The second panel of the accompanying figure shows the transformed distribution, in which an approximately linear curve indicates the transformation has achieved approximate symmetry.
+  - This presentation complements the skewness coefficient, which summarises asymmetry as a single number, by showing where in the distribution that asymmetry arises.
 
 quantile       value
      p25    145.0000
@@ -516,11 +515,11 @@ quantile       value
 
 Significant ACF Lags per Brand
 ----------------------------------------
-  - Lags whose autocorrelation exceeds the 95% band (+/-1.96/sqrt(n)) under the null of no autocorrelation -- the standard Box-Jenkins reading of an ACF plot (Box & Jenkins, 1970).
-  - Lags significant in at least half of the top 5 brands: [1, 2, 3, 6, 9, 11, 12, 14, 15]. A lag clearing the band for one brand is noise; one clearing it across the majority is structure worth a feature.
-  - A spike at lag 12 indicates annual seasonality; spikes at 1-3 indicate short-run momentum. Both are what the lag features exist to capture.
-  - Computed on log1p(target) so these lags describe the series the model is actually fitted to.
-  - Evidence only -- LAGS is derived in step 3 (DEC-EDA-SPLIT). This figure is the justification for whatever that step selects.
+  - Lags at which the sample autocorrelation exceeds the 95 per cent confidence band of plus or minus 1.96 divided by the square root of the sample size, the standard criterion for identifying significant autocorrelation (Box and Jenkins, 1970).
+  - Lags significant across a majority of the leading brands indicate category-level temporal structure, whereas a lag significant for a single brand is more plausibly sampling variation.
+  - Significance at lag 12 indicates annual seasonality; significance at lags 1 to 3 indicates short-run persistence. Both motivate the inclusion of lagged sales as predictors.
+  - Autocorrelations are computed on the logarithmic transformation of the target, so the reported lags describe the series in the form in which it is modelled.
+  - The confidence band assumes a stationary series; where the stationarity tests are inconclusive, significance at long lags may reflect trend rather than genuine seasonal dependence.
 
      brand  n_periods  conf_band                                    significant_lags
     HARBOE         46      0.289                                [1, 2, 3, 9, 12, 15]
@@ -536,11 +535,10 @@ FAXE KONDI         46      0.289           [3, 6, 9, 11, 12, 14, 15, 17, 18, 20,
 
 Promo Intensity Distribution Summary
 ----------------------------------------
-  - Promo intensity = promo_units / max(sales_units, 1). The clip avoids zero-division without the +1 bias that would inflate the ratio for low-volume brands.
-  - promo_units is a subset of sales_units in Nielsen's model, so an intensity above 1 is a delivery defect: 1 such row(s) here, reported and left uncorrected (F42).
-  - The boxplot compares the target's level between promoted and unpromoted brand-months. A visible shift motivates promo features; overlapping boxes argue they add little.
-  - Descriptive, not causal: promotions are placed on brands already expected to sell, so this gap is confounded by selection and cannot be read as promotional uplift.
-  - Complements 3.13, which ranks brands by intensity; this section characterises the distribution's shape.
+  - Distribution of promotional intensity, defined as promoted units divided by total units, together with the sales distribution of promoted and unpromoted brand-months.
+  - Promoted units are a subset of total units in the Nielsen measurement model, so an intensity exceeding one is not interpretable and indicates a defect in the delivered data.
+  - The boxplot compares the level of sales between promoted and unpromoted brand-months. A pronounced difference in location motivates promotional features; substantially overlapping distributions indicate limited explanatory value.
+  - The comparison is descriptive and cannot be read as promotional uplift. Promotions are allocated to brands and periods on commercial grounds, so the observed difference reflects selection into promotion as well as any effect of it.
 
                        metric      value
                mean intensity     0.3007
@@ -558,11 +556,11 @@ median sales_units (no promo)    36.4786
 
 Correlation with sales_units
 ----------------------------------------
-  - Pearson measures linear association; Spearman measures monotone association on ranks. Reporting both is what makes the comparison in the next bullet possible.
-  - abs_delta above 0.1 flags a relationship that is monotone but not linear -- a candidate for transformation rather than a raw feature. 14 column(s) flagged here.
-  - Spearman is the more trustworthy of the two on this data: the target is right-skewed (see 3.02 and 3.15) and Pearson is sensitive to the resulting outliers.
-  - These correlations are contemporaneous, not predictive: the columns are measured in the same month as the target, so a high value does not by itself establish forecasting value at t+1.
-  - Descriptive only. No feature is selected or dropped here; the contract is step 3's output (DEC-EDA-SPLIT).
+  - Pearson and Spearman correlation of each measure with the forecast target. Pearson quantifies linear association; Spearman quantifies monotone association between ranks.
+  - A large absolute difference between the two coefficients indicates a relationship that is monotone but not linear, identifying measures for which a transformation is more appropriate than inclusion in raw form.
+  - The rank-based coefficient is the more robust of the two for this data, since the target is right-skewed and the product-moment correlation is sensitive to the resulting extreme values.
+  - These correlations are contemporaneous. The measures are observed in the same month as the target, so a high coefficient does not establish predictive value at a one-month forecast horizon.
+  - Association reported here is descriptive and does not identify a causal relationship between any measure and sales.
 
                                       column  pearson_r  spearman_r  abs_delta  non_linear
                     baseline_sales_in_liters     0.9741      0.9839     0.0098       False
@@ -596,10 +594,10 @@ total_weighted_distribution_points_tdp_reach     0.3857      0.8919     0.5062  
 
 Near-Duplicate Column Pairs (|r| > 0.9)
 ----------------------------------------
-  - Column pairs correlating above 0.9 carry substantially the same information; keeping both adds collinearity without adding signal.
-  - The 0.9 threshold is conventional for near-duplicate detection and is deliberately stricter than the 0.756 weighted_dist correlation P0036 F7 tracks -- pairs listed here are a stronger claim than that one.
-  - Collinearity inflates coefficient variance in linear models. Tree ensembles tolerate it but split their importance across the duplicates, which makes the resulting importance ranking misleading.
-  - Listed for step 3 to act on, not pruned here.
+  - Pairs of measures whose absolute Pearson correlation exceeds 0.9, the conventional threshold for treating two variables as carrying substantially equivalent information.
+  - Retaining both members of such a pair introduces collinearity without adding explanatory content.
+  - Collinearity inflates the sampling variance of coefficient estimates in linear models. Tree-based ensembles are robust to it in terms of predictive accuracy, but distribute split importance across the correlated measures, which renders variable-importance rankings unreliable.
+  - High correlation between two measures does not by itself determine which of them to retain; that requires their definitions and their individual association with the target.
 
                                     column_a                                     column_b  pearson_r
                  weighted_distribution_reach total_weighted_distribution_points_tdp_reach     1.0000
