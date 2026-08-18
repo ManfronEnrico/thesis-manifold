@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T20:01:28+00:00",
+  "generated_utc": "2026-08-18T20:59:38+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "Danskvand",
   "forecast_horizon": 1,
@@ -36,7 +36,7 @@
     "rows": 1230,
     "columns": 33,
     "brands": 30,
-    "n_features": 25
+    "n_features": 23
   },
   "features": [
     "avg_no_of_items_per_store_reach",
@@ -56,8 +56,6 @@
     "rolling_mean_13",
     "rolling_mean_4",
     "rolling_std_4",
-    "sales_liters",
-    "sales_value",
     "total_weighted_distribution_points_tdp_reach",
     "universe_number_of_stores",
     "weighted_dist",

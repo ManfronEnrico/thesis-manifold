@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T20:01:51+00:00",
+  "generated_utc": "2026-08-18T20:59:38+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "RTD",
   "forecast_horizon": 1,
@@ -35,17 +35,11 @@
     "rows": 2952,
     "columns": 49,
     "brands": 72,
-    "n_features": 41
+    "n_features": 30
   },
   "features": [
     "avg_no_of_items_per_store_reach",
     "avg_number_of_stores_selling_reach",
-    "baseline_sales_in_liters",
-    "baseline_sales_in_liters_any_promo",
-    "baseline_sales_units",
-    "baseline_sales_units_any_promo",
-    "baseline_sales_value",
-    "baseline_sales_value_any_promo",
     "lag_1",
     "lag_13",
     "lag_2",
@@ -61,11 +55,6 @@
     "rolling_mean_13",
     "rolling_mean_4",
     "rolling_std_4",
-    "sales_in_liters_any_promo",
-    "sales_liters",
-    "sales_units_any_tpr",
-    "sales_value",
-    "sales_value_any_promo",
     "total_weighted_distribution_points_tdp_reach",
     "universe_number_of_stores",
     "weighted_dist",

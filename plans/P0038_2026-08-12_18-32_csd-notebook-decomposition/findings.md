@@ -1960,3 +1960,102 @@ against 301k actual. What changed is that the reported metric no longer lets one
 series set a category's number. Capping the trend remains available and remains
 Brian's call.
 
+---
+
+## F78 — P0036 task 7: `weighted_dist` is exonerated, but it does not earn its place
+
+**The suspicion was leakage. It is not leakage.**
+
+P0032 flagged `weighted_dist` correlating with the target at 0.756, above
+`lag_1`'s 0.585 — backwards for a supposedly exogenous variable. Re-measured on
+the current matrix: **0.674**, still above every lag (~0.445). So the pattern is
+real and survived the scope fix.
+
+**Tested rather than assumed.** `weighted_dist` is never lagged in
+`engineer_features.py` — it enters as month t's own value, unlike
+`promo_intensity`. That makes it a leakage candidate. But:
+
+| Test | Result | Reading |
+|------|--------|---------|
+| corr(wd[t], target[t]) vs corr(wd[t], target[t-1]) | 0.6732 vs 0.6634 | no same-month spike |
+| corr(wd[t], wd[t-1]) | **0.9764** | highly persistent |
+| corr(wd[t], wd[t+3]) | **0.9459** | still knowable 3 months out |
+| median month-on-month change | **0.00114** (0-1 scale) | structural, not volatile |
+
+It is a "how widely is this brand stocked" variable that barely moves. Using
+t's value as a proxy for t+3 is defensible because it *is* essentially t+3's
+value. **Not leakage.**
+
+### But the sensitivity check says drop it anyway
+
+The task asked for a fit-with/without comparison. LightGBM, 300 trees, three
+seeds (identical results — deterministic here, so no seed variance to hide in):
+
+| Category | base | +wd[t] | +wd[t-1] | verdict |
+|----------|-----:|-------:|---------:|---------|
+| CSD | **17.20%** | 18.24% | 18.32% | hurts |
+| Danskvand | 33.39% | 34.36% | **32.89%** | hurts unlagged, helps lagged |
+| Energidrikke | 17.40% | 16.94% | **16.86%** | helps |
+| RTD | **31.83%** | 32.54% | 31.26% | hurts unlagged |
+
+**Hurts in 3 of 4 categories.** Where it helps, the lagged form helps more — so
+if it is kept it should be lagged, which also removes the timing objection
+entirely.
+
+**Recommendation (Brian's call)**: drop `weighted_dist` from the models' FEATURES
+list, or replace it with a lagged variant. Keeping it unlagged is the one option
+the evidence does not support. Not changed here — it alters reported model
+results, which is a thesis decision rather than a pipeline fix.
+
+---
+
+## F79 — the redundancy half found something worse: same-month measures in the feature list
+
+The task's premise was multicollinearity: `sales_value` / `sales_liters` /
+`sales_units` are the same quantity in different units. Confirmed — pairwise
+correlations **0.90 to 0.997** across all four categories.
+
+**But the real problem is timing, not duplication.**
+
+`sales_value` and `sales_liters` sit in the **manifest's `features` list**, and
+they are **contemporaneous**: they describe the same month as the target, with no
+shift applied (each equals its own t-1 value on only ~12% of rows). They are the
+same trading activity measured in kroner and litres.
+
+**Ruled out the stronger charge first.** No feature is a copy of the current
+month's sales — tested by matching every manifest feature against
+`sales_units` shifted 0..4 periods: `lag_1..lag_4` match their own stated shift
+at **100.0%**, and **nothing** matches shift 0. The lags are exactly what they
+claim. Raw correlation alone could not have shown this, since sales are
+autocorrelated and a correct lag also correlates ~0.94.
+
+**Measured the cost of the exposure** (CSD H=3, LightGBM):
+
+| Feature set | WMAPE |
+|-------------|------:|
+| base (what models train on today) | 17.20% |
+| base + `sales_value` + `sales_liters` | **15.02%** |
+
+A **2.2pp "improvement" bought by reading the month being forecast.**
+
+**Why this mattered now**: nothing trained on them only because the modelling
+scripts carried a hardcoded FEATURES list — and F74 made that list open-world
+earlier in this same session. A maintainer selecting "all manifest features"
+would have picked them up and got a flattering, wrong result.
+
+### Fixed at the definition, not the call site
+
+Added `CONTEMPORANEOUS_COLS` to `step_6_save_outputs.py`, excluded from the
+manifest's `features`. Feature counts drop 43 → 31 (CSD/Energidrikke), 25 → 23
+(Danskvand), 41 → 30 (RTD).
+
+**The columns remain in the matrix.** `sales_units` is the target's source and
+the rest are legitimate EDA material; they are simply no longer *advertised* as
+model inputs. A lagged version of any of them would be a fair feature and should
+be built in `engineer_features.py` like `promo_intensity` — not smuggled in
+unshifted.
+
+**Verified**: benchmark re-run gives identical results (CSD 17.5%, Danskvand
+34.4%, Energidrikke 14.8%, RTD 33.1%), confirming current models never used
+them. This closes a future hazard rather than changing a present finding.
+

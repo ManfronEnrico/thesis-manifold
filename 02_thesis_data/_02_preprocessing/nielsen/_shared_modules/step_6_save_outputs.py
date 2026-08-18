@@ -74,6 +74,37 @@ NON_FEATURE_COLS = frozenset({
 	"sales_units", "log_sales_units",
 })
 
+# Same-month measures: present in the matrix, never offered as model inputs.
+#
+# These are not copies of the target -- no feature equals sales_units[t]
+# (verified: each lag_k matches its own shift at 100%). They are different
+# MEASUREMENTS of the same month's trading: the same sales expressed in kroner
+# and litres, the promoted-unit count, and Nielsen's own baseline estimates.
+#
+# The problem is timing, not duplication. A forecast made at origin t predicts
+# t+H; none of these is observable for t+H at origin t. Handing them to a model
+# lets it read the month it is supposed to forecast.
+#
+# Measured on CSD H=3 (LightGBM, 300 trees):
+#     base features                     WMAPE 17.20%
+#     base + sales_value + sales_liters WMAPE 15.02%
+# A 2.2pp gain bought by leakage.
+#
+# They stay in the matrix deliberately: sales_units is the target's source, and
+# the rest are legitimate EDA material. Excluded from `features` so that a
+# consumer selecting "everything the manifest lists" gets a defensible set.
+# A LAGGED version of any of these would be a fair feature and should be built
+# in engineer_features.py like promo_intensity, not smuggled in unshifted.
+CONTEMPORANEOUS_COLS = frozenset({
+	"sales_value", "sales_liters", "promo_units",
+	"baseline_sales_units", "baseline_sales_value",
+	"baseline_sales_in_liters",
+	"baseline_sales_units_any_promo", "baseline_sales_value_any_promo",
+	"baseline_sales_in_liters_any_promo",
+	"sales_units_any_tpr", "sales_value_any_promo",
+	"sales_in_liters_any_promo",
+})
+
 
 def add_period_index(df: pd.DataFrame) -> pd.DataFrame:
 	"""Add a monotonic integer period counter, shared across all brands.
@@ -133,7 +164,10 @@ def read_back_split_dates(df: pd.DataFrame) -> dict:
 def build_manifest(df: pd.DataFrame, contract: dict, horizon: int,
 				   split_dates: dict, files: dict) -> dict:
 	"""Record everything needed to interpret these artifacts without guessing."""
-	features = sorted(c for c in df.columns if c not in NON_FEATURE_COLS)
+	features = sorted(
+		c for c in df.columns
+		if c not in NON_FEATURE_COLS and c not in CONTEMPORANEOUS_COLS
+	)
 	return {
 		"generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
 		"generated_by": "step_6_save_outputs.py",
