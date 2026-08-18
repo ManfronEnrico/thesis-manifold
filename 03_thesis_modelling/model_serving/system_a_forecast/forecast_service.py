@@ -17,6 +17,7 @@ Usage: .venv/bin/python scripts/forecast_service.py        # builds the lookup
 """
 import json, sys, warnings
 from pathlib import Path
+from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
@@ -55,6 +56,11 @@ LAGS = (1, 2, 3, 4, 8, 13); PEAK = {3, 6, 12}
 #
 # Worse in 3 of 4. The column REMAINS in the feature matrix for EDA; this removes
 # it only from model inputs. If reintroduced, use the LAGGED form.
+# Bumped when the served artifact changes in a way that alters outputs.
+# Recorded in every tool return so a forecast can be tied to the code
+# that produced it (SRQ2 traceability).
+SERVICE_VERSION = "1.1.0-h3-2026-08-19"
+
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity"]
@@ -105,11 +111,51 @@ def build_service():
         d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
         if len(d) < 30:
             continue
+        feats = available_features(fm)
+
+        # Split conformal, done properly (P0037 task 7, fixed 2026-08-19).
+        #
+        # Previously this fitted on ALL of `d` (train+val+test) and then took the
+        # 90th percentile of |residual| on the TEST rows. Both halves were wrong
+        # and they compounded: the residuals were in-sample, because the model had
+        # already seen those rows during fitting, so the interval was calibrated
+        # against data the model had memorised -- and it was calibrated on the
+        # split reserved for reporting accuracy.
+        #
+        # Split conformal requires a calibration set the model has NEVER seen.
+        # Fit on train, calibrate on val, leave test untouched for evaluation.
+        # This widens the intervals, which is the honest direction: the old ones
+        # were narrow because they measured how well the model recalled its own
+        # training data, not how well it generalises.
+        tr = d[d.split == "train"]
+        va = d[d.split == "val"]
+
+        m_cal = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1,
+                             **params.get(f"{pk}/{cat}/XGBoost", {}))
+        m_cal.fit(tr[feats].fillna(0.0), tr["log_sales_units"].values)
+        if len(va):
+            resid = np.abs(va["log_sales_units"].values
+                           - m_cal.predict(va[feats].fillna(0.0)))
+            q90 = float(np.quantile(resid, 0.90))
+        else:
+            # No validation rows means no honest calibration is possible. 0.5 in
+            # log space is deliberately wide rather than deliberately confident.
+            q90 = 0.5
+
+        # The SERVED model still trains on everything available at serving time --
+        # withholding val/test from the deployed model would waste data for no
+        # gain. Only the CALIBRATION must be out-of-sample, and it is, above.
         m = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params.get(f"{pk}/{cat}/XGBoost", {}))
-        m.fit(d[available_features(fm)].fillna(0.0), d["log_sales_units"].values)
-        # conformal half-width on the held-out test residuals (log space), 90%
-        te = fm[fm.split == "test"].dropna(subset=["log_sales_units", "lag_1", "lag_13"])
-        q90 = float(np.quantile(np.abs(te["log_sales_units"].values - m.predict(te[available_features(fm)].fillna(0.0))), 0.90)) if len(te) else 0.5
+        m.fit(d[feats].fillna(0.0), d["log_sales_units"].values)
+
+        # The newest month any training row covers. This is what "trained
+        # through" honestly means -- the served model fits on all splits, so it
+        # is the panel's last observed month, not the train split's end.
+        _tt = fm.dropna(subset=["sales_units"])
+        _trained_through = (f"{int(_tt.period_year.max())}-"
+                            f"{int(_tt[_tt.period_year == _tt.period_year.max()].period_month.max()):02d}"
+                            if len(_tt) else None)
+        _generated_utc = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
         full = fm.copy().sort_values(keys + ["period_index"])
         for kv, g in full.groupby(keys):
@@ -132,8 +178,13 @@ def build_service():
             feat["rolling_mean_13"] = np.nanmean(past[-13:]) if len(past) else np.nan
             feat["month"] = nm; feat["quarter"] = (nm - 1) // 3 + 1; feat["peak_month"] = int(nm in PEAK)
             feat["promo_intensity"] = float(obs.iloc[-1].get("promo_intensity", 0) or 0)
-            feat["weighted_distribution"] = float(obs.iloc[-1].get("weighted_distribution", np.nan))
-            X = pd.DataFrame([{f: feat.get(f, np.nan) for f in FEATURES}]).fillna(0.0)
+            # Build X from the list the model was ACTUALLY fitted on, not from the
+            # module-level FEATURES. They diverge whenever a category lacks a
+            # capability: Danskvand and RTD have no promo_intensity, so
+            # available_features() drops it at fit time while a hardcoded list
+            # still constructs it here -- XGBoost then rejects the frame on a
+            # feature_names mismatch. Serving must mirror training exactly.
+            X = pd.DataFrame([{c: feat.get(c, np.nan) for c in feats}]).fillna(0.0)
             yhat = float(np.clip(np.expm1(m.predict(X)[0]), 0, None))
             lo, hi = float(np.expm1(np.log(max(yhat, 1e-9)) - q90)), float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
             rel = (hi - lo) / max(yhat, 1e-9)
@@ -141,10 +192,21 @@ def build_service():
             kv_t = kv if isinstance(kv, tuple) else (kv,)
             brand = kv_t[0]
             chain = kv_t[1] if len(kv_t) > 1 else ""
+            # Provenance recorded per series, not per service: brands differ in
+            # how much history they have, so "what did the model see" is a
+            # per-series fact. Answering it globally would be a comforting
+            # average rather than the truth for this brand.
+            _obs = obs["period_index"].max() if len(obs) else None
             rows.append(dict(category=cat, brand=brand, chain=chain,
                              forecast_month=f"month_{nm:02d}", forecast=round(yhat, 1),
                              lower90=round(lo, 1), upper90=round(hi, 1),
-                             confidence=round(conf, 1), tier=_tier(conf), model="XGBoost(tuned)"))
+                             confidence=round(conf, 1), tier=_tier(conf), model="XGBoost(tuned)",
+                             trained_through=_trained_through,
+                             observed_through=(f"{int(obs.iloc[-1].period_year)}-"
+                                               f"{int(obs.iloc[-1].period_month):02d}"
+                                               if len(obs) else None),
+                             n_features=len(feats),
+                             generated_utc=_generated_utc))
     df = pd.DataFrame(rows)
     df.to_csv(OUT / "forecasts.csv", index=False)
     print(f"Built forecast lookup: {len(df)} series across {df.category.nunique()} categories")
@@ -165,10 +227,33 @@ def forecast_demand(category: str, brand: str, chain: str | None = None) -> dict
         return {"status": "not_found", "message": f"No forecast for {category}/{brand}" + (f"/{chain}" if chain else "")}
     r = q.iloc[0]
     chain_val = r.chain if (isinstance(r.chain, str) and r.chain.strip()) else None
+    # SRQ2 defines traceability as "a recorded mapping from tool call -> forecast
+    # value -> recommendation". Without the provenance block below, a consumer
+    # (or a thesis reader) cannot say WHICH model produced a number, WHAT data it
+    # had, or WHEN the training window ended -- so the number cannot be audited
+    # after the fact, and the SRQ2 property is claimed but not delivered.
+    #
+    # Each field answers one question a decision-maker would actually ask:
+    #   model_id / model_version -> which artifact do I re-run to reproduce this?
+    #   trained_through          -> what is the newest month it could have learned?
+    #   observed_through         -> what is the newest month it actually saw?
+    #   calibration_split        -> what were the intervals calibrated on?
+    #   generated_utc            -> how stale is this answer?
+    trace = {
+        "model_id": r.model,
+        "model_version": SERVICE_VERSION,
+        "trained_through": getattr(r, "trained_through", None),
+        "observed_through": getattr(r, "observed_through", None),
+        "calibration_split": "val",   # split conformal; see build_service()
+        "interval_method": "split_conformal_90",
+        "feature_count": getattr(r, "n_features", None),
+        "generated_utc": getattr(r, "generated_utc", None),
+    }
     return {"status": "ok", "category": r.category, "brand": r.brand, "chain": chain_val,
             "forecast_units": r.forecast, "interval_90": [r.lower90, r.upper90],
             "confidence": r.confidence, "tier": r.tier, "model": r.model,
-            "horizon": "next month"}
+            "horizon": "next month",
+            "trace": trace}
 
 
 if __name__ == "__main__":

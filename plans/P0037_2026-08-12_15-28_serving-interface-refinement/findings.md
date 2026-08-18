@@ -235,3 +235,95 @@ ChatGPT analysis proposes as if new:
   train+val/test split for fairness
 - `_tar()` implements a cited total-agreement-rate consistency metric (Atil et al. 2025)
 - Deployment mode vs evaluation mode is a real and correct distinction (F3)
+
+---
+
+## F10 — conformal intervals were 4.4x too narrow (task 7 FIXED)
+
+Worse than the plan recorded. `build_service` fitted on **all** of `d`
+(train+val+test) and then measured residuals on the **test** rows. Both halves were
+wrong and they compounded: the residuals were **in-sample**, because the model had
+already seen those rows while fitting.
+
+So the interval measured how well the model recalled its own training data, not how
+well it generalises — and it did so on the split reserved for reporting accuracy.
+
+**Fixed**: fit a calibration model on **train**, take the 90th percentile of
+|residual| on **val**, leave test untouched. The served model still trains on
+everything (withholding data from the deployed model would waste it for no gain);
+only the calibration is out-of-sample.
+
+**Measured effect on CSD:**
+
+| | q90 (log units) | a 10,000-unit forecast becomes |
+|--|---:|---|
+| old (fit-all, calib-test) | 0.2739 | [7,604 .. 13,151] |
+| **new (fit-train, calib-val)** | **1.2032** | **[3,002 .. 33,309]** |
+
+**4.4x wider.** Anyone acting on the old interval was badly overconfident.
+
+## F11 — the honest intervals are very wide, and that is a result
+
+With calibration fixed, **all 230 series report `Low` confidence**, and the median
+90% interval spans **3.0x the forecast** (Danskvand 11.6x, Energidrikke 5.5x, RTD
+2.8x).
+
+This is not a bug to tune away. It is the truthful uncertainty of monthly brand-level
+demand forecasting on 29-46 months of history, and the old numbers only looked
+respectable because they were calibrated against memorised data.
+
+**It matters for SRQ4.** If System A's headline contribution is "a dedicated model
+gives you a number plus a trustworthy interval", the interval being 3x the forecast
+is part of the honest answer. It also gives System B a fairer fight: an LLM writing
+its own code is not competing against a precision the dedicated model does not have.
+
+Worth stating plainly in the results chapter rather than buried — a reviewer who
+finds wide intervals reported openly trusts the rest more, not less.
+
+## F12 — traceability implemented (task 4)
+
+SRQ2 defines traceability as "a recorded mapping from tool call -> forecast value ->
+recommendation" and the tool returned none of it. Every `forecast_demand()` response
+now carries a `trace` block:
+
+| Field | Question it answers |
+|-------|---------------------|
+| `model_id`, `model_version` | which artifact do I re-run to reproduce this? |
+| `trained_through` | newest month it could have learned from |
+| `observed_through` | newest month this brand actually has |
+| `calibration_split` | what were the intervals calibrated on? (`val`) |
+| `interval_method` | `split_conformal_90` |
+| `feature_count` | how many features this category supports |
+| `generated_utc` | how stale is this answer? |
+
+Provenance is recorded **per series**, not per service: brands differ in history
+depth, so "what did the model see" is a per-brand fact. A service-level answer would
+be a comforting average rather than the truth for the brand asked about.
+
+**Terminology, for the write-up** (Brian asked; his colleague's usage was correct):
+
+| Term | Question | Status |
+|------|----------|--------|
+| **traceability** | where did this number come from? | **now implemented** — SRQ2's actual claim |
+| **transparency / interpretability** | *why* this number? | XGBoost is a black box; SHAP approximates it |
+| **determinism** | same input -> same output? | already true (fixed seed, temp 0) |
+
+## F13 — serving and training disagreed on the feature list (found by running it)
+
+`build_service` fitted with `available_features()` (13 columns for CSD) but built the
+prediction frame from the module-level hardcoded `FEATURES`. XGBoost rejected it:
+`feature_names mismatch ... training data did not have the following fields:
+promo_intensity`.
+
+The divergence appears precisely where a category lacks a capability — Danskvand and
+RTD have no `promo_intensity`, so `available_features()` drops it at fit time while
+the hardcoded list still constructs it at predict time.
+
+Also removed a stale `feat["weighted_distribution"] = ...` line: that column does not
+exist (it is `weighted_dist`) and was dropped from model inputs on 2026-08-19.
+
+**Serving now mirrors training exactly.** `build_service()` runs end to end: **230
+forecasts across 4 categories** (CSD 95, Danskvand 29, Energidrikke 44, RTD 62).
+
+Tasks 3, 4 and 7 are delivered. The remaining blocker is the missing `.env`.
+
