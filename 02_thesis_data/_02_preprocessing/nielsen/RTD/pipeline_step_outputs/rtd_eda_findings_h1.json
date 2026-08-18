@@ -1,0 +1,81 @@
+{
+  "contract_version": "1.0",
+  "category": "RTD",
+  "generated_utc": "2026-08-18T12:21:12+00:00",
+  "generated_by": "step_3_derive_params.py",
+  "target_col": "sales_units",
+  "forecast_horizon": 1,
+  "log_transform_target": true,
+  "lags": [
+    1,
+    2,
+    3,
+    4,
+    8,
+    13
+  ],
+  "rolling_windows": [
+    4,
+    13
+  ],
+  "warmup_periods": 13,
+  "min_periods": 15,
+  "holiday_months": [
+    5,
+    6,
+    12
+  ],
+  "split": {
+    "train_end": [
+      2025,
+      7
+    ],
+    "val_end": [
+      2026,
+      1
+    ],
+    "train_frac": 0.7,
+    "val_frac": 0.15,
+    "n_periods": 41,
+    "n_train_months": 29,
+    "n_val_months": 6,
+    "n_test_months": 6,
+    "n_test_origins": 6,
+    "horizon_evaluable": true
+  },
+  "retention": {
+    "brands_total": 101,
+    "brands_retained": 72,
+    "brands_dropped": 29,
+    "training_rows_retained": 1309,
+    "training_rows_total": 1309,
+    "training_row_retention_pct": 100.0
+  },
+  "provenance": {
+    "lags": "modelling decision; the lag-12 term is retained because the autocorrelation analysis (step 2, section 3.16) finds it significant across the majority of leading brands",
+    "warmup_periods": "max(max(lags), max(rolling_windows))",
+    "min_periods": "DERIVED: warmup(13) + horizon(1) + 1 = 15. A brand with fewer months contributes zero usable training rows, so the threshold excludes what is unrepresentable under this feature specification rather than what is judged low quality",
+    "holiday_months": "months whose mean sales_units exceeds the overall mean by more than 10%; measured on this category's own data rather than inherited",
+    "holiday_months_uplift": {
+      "1": 0.0965,
+      "2": -0.5857,
+      "3": -0.3008,
+      "4": -0.3256,
+      "5": 0.4155,
+      "6": 0.7079,
+      "7": 0.02,
+      "8": -0.1844,
+      "9": -0.1617,
+      "10": -0.4636,
+      "11": -0.4307,
+      "12": 0.9403
+    },
+    "log_transform_target": "modelling default from configuration (True); this category's evidence supports it -- skewness 6.29 untransformed against 0.35 after log1p",
+    "skew_raw": 6.2864,
+    "skew_log1p": 0.3525,
+    "adf_pvalue_log": 9.3e-05,
+    "adf_stationary_at_5pct": true,
+    "split": "proportional 70%/15%/remainder over distinct periods, derived from the panel rather than fixed dates, so the ratio holds as the panel grows and categories starting at different dates stay comparable",
+    "n_test_origins": "n_test_months(6) - horizon(1) + 1. A forecast origin counts only when its target month falls inside the test window"
+  }
+}

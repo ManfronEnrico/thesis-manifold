@@ -357,3 +357,37 @@ prevent.
 
 **Now building step 3** with `--horizon` as a parameter.
 
+---
+
+## Session 2026-08-18 (cont.) — step 3 shipped, and it found a real defect
+
+Built `_shared_modules/step_3_derive_params.py` (task 4 / session task 19). Verified across
+all four categories at both reported horizons: 4/4 succeed at H=3 and at H=1,
+`min_periods` correctly tracks the horizon (15 / 17), training-row retention is 100.0%
+everywhere, and the two horizons write separate contracts with no collision.
+
+**Plan correction**: the plan listed the TRAIN_END/VAL_END proportional fix as step 3 work.
+It was already done — `resolve_split_cutoffs()` in engineer_features implements it, from
+task 15. Step 3 calls it rather than reimplementing it. CSD now splits 32/7/7 of 46 months
+(15.2% test) against the 24-27% the hardcoded dates had drifted to. F25/F28 confirmed closed.
+
+**The defect it found (F55).** Deriving holiday months from the data gives CSD
+`[3, 6, 9, 12]`. The notebook hardcoded `{1, 4, 6, 10, 12}` — and three of those five
+months are **below-average**: January is the weakest month in the year at -26.6%, October
+-16.0%, April -9.2%. The `is_holiday_month` feature was telling the model that the three
+weakest months were high season. Only June and December were right.
+
+**Why this validates the shared-script design (F56).** Per category the derived months are
+CSD [3,6,9,12], Danskvand [6,7,8,9], Energidrikke [3,6,9], RTD [5,6,12] — four genuinely
+different and commercially plausible profiles (Danskvand peaks in summer, the opposite shape
+from CSD). Copying the notebook per category would have imposed CSD's incorrect set on all
+four. The duplication was not just a maintenance cost; it was propagating a wrong feature
+into three categories nobody had checked.
+
+### State
+
+- Task 19 complete. Tasks 1, 2, 3, 4 of the plan complete.
+- NEXT: task 20 — `step_4_engineer_csd.py` reading the contract. It must validate
+  `contract_version` and refuse an unknown one (DEC-NO-FALLBACK); the field is written but
+  the check belongs in the consumer.
+

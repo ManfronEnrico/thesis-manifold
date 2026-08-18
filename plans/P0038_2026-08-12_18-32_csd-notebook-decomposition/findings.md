@@ -891,3 +891,97 @@ additionally verify at the horizon where measurement is sharpest" is a stronger 
 than "we forecast one month because that is what the data supported". The first is a design
 choice, the second is a concession.
 
+---
+
+## F55 — the notebook's hardcoded HOLIDAY_MONTHS flagged troughs as peaks
+
+Step 3 derives holiday months as those whose mean target exceeds the overall mean by more
+than 10%, per category. For CSD it returns `[3, 6, 9, 12]`. The notebook hardcoded
+`{1, 4, 6, 10, 12}`.
+
+Measured CSD uplift against the overall mean:
+
+| Month | Uplift | Notebook | Derived |
+|------:|-------:|:--------:|:-------:|
+| 1 | **-26.6%** | yes | no |
+| 3 | +14.7% | no | yes |
+| 4 | **-9.2%** | yes | no |
+| 6 | +22.3% | yes | yes |
+| 9 | +16.9% | no | yes |
+| 10 | **-16.0%** | yes | no |
+| 12 | +34.2% | yes | yes |
+
+Three of the notebook's five months (1, 4, 10) are **below-average** months — January is
+the weakest month in the year at -26.6%. Only 6 and 12 were correct.
+
+So the feature was not merely stale: it was inverted for the majority of its values. A
+binary `is_holiday_month` flag set on January, April and October was telling the model that
+the three weakest months were high-season.
+
+The derived set is also interpretable in a way the hardcoded one was not: `[3, 6, 9, 12]`
+are the **quarter-end months**, consistent with retail trade loading around quarterly
+commercial cycles.
+
+---
+
+## F56 — seasonality is category-specific, and the notebook would have imposed CSD's on all four
+
+Derived holiday months per category (H=3 run, 2026-08-18):
+
+| Category | Holiday months | Commercial reading |
+|----------|----------------|--------------------|
+| CSD | 3, 6, 9, 12 | quarter-end trade loading |
+| Danskvand | 6, 7, 8, 9 | summer — bottled water demand |
+| Energidrikke | 3, 6, 9 | quarter-end, no December peak |
+| RTD | 5, 6, 12 | early summer plus December |
+
+These are four genuinely different seasonal profiles, and each is commercially plausible for
+its category. Danskvand's summer peak in particular is the opposite shape from CSD's.
+
+Had the four categories been ported by copying the notebook — which is exactly what the
+per-category script duplication was doing — all four would have carried CSD's (incorrect)
+`{1, 4, 6, 10, 12}`. This is the clearest single justification for the shared-script,
+derive-per-category design (DEC-OPEN-WORLD): the duplication was not just a maintenance
+cost, it was propagating a wrong feature into three categories that had never been checked.
+
+---
+
+## F57 — step 3 shipped; F25/F28 confirmed already fixed upstream, not re-implemented
+
+`_shared_modules/step_3_derive_params.py` built and verified across all four categories at
+both reported horizons.
+
+**Correction to the earlier plan.** The plan listed "fix the TRAIN_END/VAL_END proportional
+derivation" as step 3 work. On inspection `engineer_features.resolve_split_cutoffs()`
+already implements it correctly — F25/F28 was fixed when task 15 landed. Step 3 therefore
+*calls* it rather than reimplementing the logic, which would have recreated the drift it
+removed. Verified: CSD now splits 32/7/7 of 46 months, a 15.2% test share against the
+24-27% the hardcoded dates had drifted to.
+
+**Verified behaviour**:
+
+| Check | Result |
+|-------|--------|
+| All four categories, H=3 | 4/4 succeed |
+| All four categories, H=1 | 4/4 succeed |
+| `min_periods` tracks horizon | 15 at H=1, 17 at H=3, in every category |
+| Training-row retention | **100.0%** in all four categories, both horizons |
+| Contract collision | none — filenames carry the horizon |
+| H=12 evaluability guard | fires; reports 0 test origins and warns step 5 will refuse |
+
+**Design points worth keeping**:
+
+- The contract carries `n_test_origins` and `horizon_evaluable`, so an unevaluable split is
+  caught at derivation rather than discovered when results turn out unreportable.
+- Every parameter carries a `provenance` string, so the contract answers "why this value"
+  without anyone reading the script. This is what makes the JSON reviewable evidence rather
+  than opaque configuration.
+- Retention is recorded in **both** brands and training rows, so the brand-count framing
+  (which makes the threshold look expensive) cannot be quoted without the row count (which
+  shows it costs nothing). Guards against re-litigating F47.
+- Period arithmetic goes through `period_index()` / `to_date_frame()` only, since the panel
+  has no date column — the trap that produced the 4-months-per-category error in F52.
+
+**Not yet done**: step 4 must validate `contract_version` and refuse an unknown one
+(DEC-NO-FALLBACK). The field is written; the check belongs in the consumer.
+
