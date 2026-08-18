@@ -1,9 +1,9 @@
 ---
 pid: P0037
 created: 2026-08-12 15:28:00
-updated: 2026-08-12 15:28:00
+updated: 2026-08-19 10:15:00
 status: in_progress
-focus_detail: "Findings written (F1-F9). Blocked on DEC-HORIZON — Brian must choose the horizon strategy before tasks 4-6 can start. Tasks 1-3 are unblocked."
+focus_detail: "UNBLOCKED and now the critical path. DEC-HORIZON resolved 2026-08-18: H=3 primary, and the modelling layer was repointed to the H=3 matrices. forecast_service.py imports cleanly. The remaining blocker on SRQ4 is NOT code -- it is a missing 03_thesis_modelling/.env carrying ANTHROPIC_API_KEY and E2B_API_KEY. This plan now gates the thesis premise, so its tasks outrank all remaining EDA work."
 ---
 
 # P0037 — Refining the Model Serving Approach
@@ -94,3 +94,38 @@ worked example in the thesis that the artefact cannot execute.
 - `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md` §6, §9
 - `.claude/rules/repo-tier-structure.md` — train-vs-serve placement test
 - `plans/P0036_2026-08-11_16-08_csd-fixes-before-mirror/` — active sibling plan
+
+---
+
+## Status refresh 2026-08-19 — unblocked, and now the critical path
+
+**DEC-HORIZON is resolved** (2026-08-18): H=3 is primary, and all 13 downstream call
+sites were repointed to the `_h3` matrices. Tasks 4-6, blocked on that decision, can
+start.
+
+### Re-verified against the code today
+
+| Task | Claim when written | State now |
+|------|--------------------|-----------|
+| 1 | `srq4_experiment.py` cannot import `forecast_service` at all | **`forecast_service` imports cleanly.** `srq4_experiment` still fails, but on `FileNotFoundError: 03_thesis_modelling/.env` — credentials, not code |
+| 5 | Resolve horizon | **Decided**: H=3 (DEC-HORIZON), modelling layer repointed |
+| 6 | Unify duplicated FEATURES/category maps | **Partly done**: `available_features()` added to all 9 scripts (F74); the category maps remain duplicated |
+
+### The actual blocker
+
+`srq4_experiment.py` reads `ROOT/.env` for **`ANTHROPIC_API_KEY`** and
+**`E2B_API_KEY`**. The file is gitignored and absent from this machine. Nothing in
+the harness can run until it exists.
+
+This is the single highest-value unblock in the repo: SRQ4 *is* the thesis premise
+— System A (a dedicated model exposed as a `forecast_demand` tool) versus System B
+(code-as-action in an E2B sandbox), same model, same prompts, measuring whether model
+availability improves the answer.
+
+### Priority against the deadline
+
+With under a month left and 120 pages outstanding, these tasks outrank every
+remaining EDA refinement. Task 7 (conformal calibration using test rather than val
+residuals) is the one that carries a correctness cost — it undercuts the leakage
+discipline the rest of the pipeline now demonstrates, so it should not ship into a
+results chapter uncorrected.

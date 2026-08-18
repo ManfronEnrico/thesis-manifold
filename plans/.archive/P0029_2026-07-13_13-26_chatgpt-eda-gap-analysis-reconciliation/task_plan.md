@@ -1,9 +1,11 @@
 ---
 pid: P0029
 created: 2026-07-13 13:26:00
-updated: 2026-07-13 13:35:00
-status: in_progress
-focus_detail: "Phases 1-3 complete. Dominant finding: pre_csd_1.5_eda.py is currently non-functional (reads a filename that no longer exists after P0027's Phase 4a-ii Step 1 rewrite). Most of ChatGPT's dramatic grain-corruption claims resolve automatically once that one-line path fix lands, since the correct-grain file already exists. Several independent, grain-unrelated methodological gaps also confirmed (model-selection leakage, missing-period audit, decomposition model-selection stat error, and smaller items). Full claim-by-claim table in findings.md. No code changed yet — awaiting Brian's direction on which fixes to apply and whether/how this feeds back into P0027's paused Phase 5 decision."
+updated: 2026-08-19 10:00:00
+status: cancelled
+completed: 2026-08-19 10:00:00
+outcome_summary: "OBSOLETE. Its dominant finding was that pre_csd_1.5_eda.py reads a filename that no longer exists. That script is now archived and the notebook it belonged to is retired -- P0038 replaced both with shared step scripts that run all four categories. The grain-corruption claims it was reconciling are moot at the locked brand x month grain."
+focus_detail: "OBSOLETE. Its dominant finding was that pre_csd_1.5_eda.py reads a filename that no longer exists. That script is now archived and the notebook it belonged to is retired -- P0038 replaced both with shared step scripts that run all four categories. The grain-corruption claims it was reconciling are moot at the locked brand x month grain."
 ---
 
 # P0029 — ChatGPT EDA Gap Analysis Reconciliation
@@ -65,3 +67,25 @@ This plan's job is to take that raw analysis and reconcile it claim-by-claim aga
 ## Errors Encountered
 
 (none yet)
+
+---
+
+## Closed 2026-08-19
+
+**Cancelled — the artifact under review no longer exists.**
+
+The plan reconciled a ChatGPT gap analysis of `pre_csd_1.5_eda.py`. Its own dominant
+finding was that the script was already non-functional, reading a filename removed by
+P0027.
+
+That script now lives only in
+`CSD/.archive/2026_07_13-16_02 - Previous Modularized Step Scripts/`, and the notebook
+it supported was retired by P0038. EDA is now `step_2_eda_descriptive.py`, which runs
+for every category from one codebase.
+
+The grain-corruption claims it was assessing are moot: DEC-GRAIN locks brand x month,
+and the pipeline derives its parameters per category from that grain with recorded
+provenance.
+
+**Nothing actionable survives.** Any residual methodological concern is better raised
+against the current `step_2`/`step_3` than against an archived script.

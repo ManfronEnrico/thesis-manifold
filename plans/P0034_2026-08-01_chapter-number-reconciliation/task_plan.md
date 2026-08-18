@@ -1,8 +1,9 @@
 ---
 pid: P0034
 created: 2026-08-01 00:00:00
-updated: 2026-08-01 00:00:00
-status: in_progress
+updated: 2026-08-19 10:20:00
+status: paused
+paused_reason: "Deliberately parked by Brian 2026-08-19 until the EDA, model-training and serving pipelines are locked. Chapter numbers cannot be reconciled while the numbers they cite are still moving -- and they moved again on 2026-08-18/19 (H=3 repoint, weighted_dist drop, metric changes)."
 focus_detail: "Inventory every hard-coded metric in the chapter drafts that the S01 retrain will invalidate; drop Totalbeer from prose with a documented compute-constraint justification. Prepare-only — no prose lands without Enrico approval."
 ---
 
@@ -117,3 +118,30 @@ energidrikke past 15% — inverting a sentence that may not have a source in the
 - `harness/thesis_tasks.json` — T19 (`ready`, walled `enrico`)
 - P0032 — produces the corrected numbers
 - Enrico handover §5 Q2 (leakage vs hard-coded numbers) and Q3 (4 vs 5 categories)
+
+---
+
+## Paused 2026-08-19 — by design, not by blocker
+
+Brian's call: chapter reconciliation waits until EDA, model training and serving are
+locked.
+
+That is the right sequencing, and this session proves why. Every headline number this
+plan would reconcile **changed again** on 2026-08-18/19:
+
+| Change | Effect on chapter numbers |
+|--------|---------------------------|
+| Repoint to H=3 matrices | 95 brands, not 58; split 70/15/15, not 57/14/29 |
+| `weighted_dist` dropped from models | CSD WMAPE 17.5% -> 17.1%; RTD medMAPE 41.9% -> 28.6% |
+| Prophet installed + medMAPE headline | statistical baseline table replaced outright |
+| `mean MAPE` dropped | a reported column removed |
+
+Reconciling prose against numbers that move weekly wastes the scarcest resource left.
+
+**Resume when**: SRQ4 has run (P0037) and the SRQ1 results are final. At that point
+every figure the chapters cite is fixed, and reconciliation is a single pass rather
+than a repeated one.
+
+**Note for whoever resumes**: its task 3 lists P0032 and P0035 as gates. Both were
+closed on 2026-08-19 — P0032 cancelled as superseded, P0035 complete — so that
+dependency is discharged.

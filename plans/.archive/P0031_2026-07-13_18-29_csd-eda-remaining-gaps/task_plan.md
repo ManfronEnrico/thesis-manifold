@@ -1,9 +1,11 @@
 ---
 pid: P0031
 created: 2026-07-13 18:29:00
-updated: 2026-07-13 18:29:00
-status: in_progress
-focus_detail: "6 tasks created from a post-P0030 EDA review. Starting with Task 4 (sales_value/sales_liters redundancy) per Brian's priority ranking -- real modeling risk (multicollinear features silently entering the model) vs. the other tasks' documentation/cosmetic nature."
+updated: 2026-08-19 10:00:00
+status: complete
+completed: 2026-08-19 10:00:00
+outcome_summary: "Delivered by the P0038 pipeline rather than by patching the notebook. Tasks 1, 2, 4 are satisfied by the step 3 contract (lags with provenance, has_promo capability, CONTEMPORANEOUS_COLS). Task 5 is moot (notebook retired). Task 3 (heterogeneity forwarding) is the one genuine gap and is recorded as a known limitation rather than left open."
+focus_detail: "Delivered by the P0038 pipeline rather than by patching the notebook. Tasks 1, 2, 4 are satisfied by the step 3 contract (lags with provenance, has_promo capability, CONTEMPORANEOUS_COLS). Task 5 is moot (notebook retired). Task 3 (heterogeneity forwarding) is the one genuine gap and is recorded as a known limitation rather than left open."
 ---
 
 # P0031 — CSD Notebook: Remaining EDA Gaps
@@ -50,3 +52,36 @@ Full task descriptions (file paths, exact cell references, verification steps) a
 ## Errors Encountered
 
 (none yet — plan just created)
+
+---
+
+## Closed 2026-08-19
+
+**Complete — delivered by the pipeline, not by the patches this plan proposed.**
+
+The plan listed six fixes to the CSD EDA notebook. That notebook is retired; the
+equivalent work landed in the shared pipeline. Task by task:
+
+| # | Task | Outcome |
+|---|------|---------|
+| 1 | Wire ACF/PACF lag consensus into LAGS | **Delivered** — contract carries `lags: [1,2,3,4,8,13]` with a `provenance` entry stating why lag-13 is retained |
+| 2 | Flag CSD's zero promo signal | **Delivered differently, and better** — the zero-promo signal was a market-scope artifact (DEC-SCOPE), not a property of CSD. Capability is now recorded per category as `has_promo`, and a degenerate-feature guard fails loudly on any all-zero column (F76) |
+| 3 | Forward heterogeneity verdict into findings JSON | **NOT delivered** — see limitation below |
+| 4 | Resolve sales_value/sales_liters redundancy | **Delivered** — F79: they are contemporaneous measures of the target, now excluded from the manifest's feature list via `CONTEMPORANEOUS_COLS` |
+| 5 | Fix stale CELL-N print headers | **Moot** — notebook retired |
+| 6 | End-to-end re-verification | **Delivered** — 8/8 clean runs, 4 categories x 2 horizons, plus the F68 parity gate |
+
+### Known limitation carried forward (task 3)
+
+The contract records `peak_months` but **not** a per-category heterogeneity verdict
+(coefficient of variation across brands, concentration of volume in peak months).
+
+Consequence: the pipeline treats every category's brand panel as equally poolable. If
+one category's brands are far more heterogeneous than another's, a pooled model is a
+weaker fit there and nothing in the artifacts says so.
+
+**Not fixed, deliberately.** It is a reporting gap rather than a correctness one — no
+number is wrong because of it — and with under a month to submission the thesis is
+better served by writing than by extending the contract schema. It belongs in the
+limitations section: *parameters are derived per category, but cross-brand
+heterogeneity within a category is not quantified in the artifacts.*
