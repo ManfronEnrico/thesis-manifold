@@ -1,9 +1,9 @@
 ---
 pid: P0037
 created: 2026-08-12 15:28:00
-updated: 2026-08-19 10:15:00
+updated: 2026-08-19 01:50:00
 status: in_progress
-focus_detail: "UNBLOCKED and now the critical path. DEC-HORIZON resolved 2026-08-18: H=3 primary, and the modelling layer was repointed to the H=3 matrices. forecast_service.py imports cleanly. The remaining blocker on SRQ4 is NOT code -- it is a missing 03_thesis_modelling/.env carrying ANTHROPIC_API_KEY and E2B_API_KEY. This plan now gates the thesis premise, so its tasks outrank all remaining EDA work."
+focus_detail: "Tasks 3, 4 and 7 DELIVERED 2026-08-19 -- build_service() runs end to end (230 forecasts, 4 categories), every response carries a trace block, and conformal calibration moved off test residuals (intervals were 4.4x too narrow). The SRQ4 experiment itself moved to P0039, which is now the focus. Remaining here is cleanup: tasks 2, 6, 8, 9."
 ---
 
 # P0037 — Refining the Model Serving Approach
@@ -129,3 +129,34 @@ remaining EDA refinement. Task 7 (conformal calibration using test rather than v
 residuals) is the one that carries a correctness cost — it undercuts the leakage
 discipline the rest of the pipeline now demonstrates, so it should not ship into a
 results chapter uncorrected.
+
+---
+
+## 2026-08-19 — tasks 3, 4, 7 delivered; the experiment moved to P0039
+
+| Task | Outcome |
+|------|---------|
+| 3 | **Done.** `build_service()` runs end to end: 230 forecasts across 4 categories |
+| 4 | **Done.** Every `forecast_demand()` response carries a `trace` block (F12) |
+| 7 | **Done.** Conformal calibration fits on train, calibrates on val (F10) |
+
+Task 7 was worse than recorded: the model fitted on train+val+test and then measured
+residuals on **test** rows it had already seen. Intervals were **4.4x too narrow**.
+
+Found while running it (F13): serving built its prediction frame from the hardcoded
+module-level `FEATURES` while the model was fitted via `available_features()`, so
+XGBoost rejected the frame wherever a category lacked a capability. Fixed.
+
+**The SRQ4 experiment moved to its own plan, P0039** — it is the thesis premise and
+deserves a plan rather than a task row. This plan retains the serving-interface
+cleanup:
+
+| Task | Still open |
+|------|-----------|
+| 2 | move serving-side code into `model_serving/` |
+| 6 | unify duplicated FEATURES/category maps behind one `fit_scope` (partly done — `available_features()` landed) |
+| 8 | write the serving-time feature taxonomy into the rationale note |
+| 9 | reconcile the rationale note §6 with the shipped contract |
+
+None blocks P0039. Under the deadline, they are documentation-quality work that should
+yield to the experiment and the write-up.

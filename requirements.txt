@@ -50,3 +50,15 @@ traitlets==5.15.0
 typing_extensions==4.15.0
 urllib3==2.7.0
 wcwidth==0.7.0
+
+# --- modelling + baselines (added 2026-08-19) --------------------------------
+# These were installed ad hoc during the 2026-08-18/19 session and were missing
+# here, so a fresh clone could run the preprocessing pipeline but NOT the
+# modelling layer: srq1_benchmark reported "ERR" for every ML row (the error was
+# swallowed into the results table rather than raised) and Prophet reported
+# n_series=0 with nan metrics.
+scikit-learn==1.9.0
+xgboost==3.4.1
+lightgbm==4.7.0
+prophet==1.4.0
+

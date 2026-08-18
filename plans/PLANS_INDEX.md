@@ -4,7 +4,7 @@
 > New plans: `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`
 > Archived plans: `plans/.archive/`
 > Status tracked in plan frontmatter only — no outcome files, no folder movement on status change.
-> Next available P-ID: **P0039**
+> Next available P-ID: **P0040**
 
 ---
 
@@ -14,6 +14,7 @@
 
 | P-ID | Folder | Status | Detail |
 |------|--------|--------|--------|
+| **P0039** | `P0039_2026-08-19_01-45_srq4-system-a-vs-b/` | **focus** | **THE THESIS PREMISE.** Does exposing a trained model as a tool improve an LLM's answers, versus letting it write its own forecasting code? System A calls `forecast_demand` (trained XGBoost); System B writes and runs its own code in an E2B sandbox. Same model, same prompts, one variable. The harness already exists and is sound (F1) — the only blocker is a missing `03_thesis_modelling/.env` (F2). Open: **DEC-VENDOR**, which LLM is primary; the current `claude-sonnet-4-6` is a hardcoded default with no recorded justification (F4), and Brian favours GPT on ecological-validity grounds (the "cheaper and weaker" argument was rejected as indefensible). Settled: **DEC-SCOPE-SRQ4** — CSD primary because it has the most brands, one category as robustness. Key reframing (F6): honest interval calibration made System A's intervals wide, so its defensible claim is not "more accurate" but "a number **plus** calibrated uncertainty **plus** provenance" — neither of which self-written code can produce. |
 | **P0038** | `P0038_2026-08-12_18-32_csd-notebook-decomposition/` | in_progress | **CURRENT FOCUS. Gates P0036 task 6 and therefore P0033.** Decompose the 57.8k-token CSD notebook into **6 shared step scripts (`--category`) + 1 per-category feature-engineering script = 11 files replacing 32.** Decisive finding (F30): `CSD/preprocessing_csd.py` invokes step scripts P0030 deleted — CSD's orchestrator is **broken today**, so this repairs a dead entry point rather than adding one. F31: the 3 working orchestrators are 184 lines each and differ *only* in the category name. Brian's correction (2026-08-12) reframed the drift argument: drift comes from *copying*, not *splitting*, so shared+parameterised removes the surface P0027/P0029/P0030 fought. Contract between EDA and feature engineering is `{category}_eda_findings.json`, which **already exists and is already written — it is simply never read back** (F27); only 6 params cross the boundary (F26). Two contract fields look derived but are not (F28): TRAIN_END/VAL_END (absolute counts) and MIN_PERIODS (literal `40` with a derived-*sounding* rationale). Also corrects P0036 F25: CSD's real split is **52/13/35**, not 63/13/24 — it runs a different pathway (F29). Other 3 categories gain EDA for free, which is most of P0033. 9 tasks. |
 | **P0037** | `P0037_2026-08-12_15-28_serving-interface-refinement/` | in_progress | Model serving + LLM query-interpretation interface design (worked in a parallel session). **Open decision: DEC-HORIZON** — one-step vs recursive multi-step forecasting, options A–D, recommendation D falling back to A. Brian's decision required. |
 | **P0036** | `P0036_2026-08-11_16-08_csd-fixes-before-mirror/` | in_progress (partly superseded by P0038) | **GATES P0033 — do this first.** Fix every defect in the CSD notebook + shared modules before mirroring multiplies them by four. Headline finding: **promo-zero was an artifact of the market filter, not the data.** The notebook filters to 9 *region children* of DVH EXCL. HD instead of the parent market `1256338`; parent carries 119,010 nonzero promo rows, children carry 0. DEC-SCOPE (Brian 2026-08-11) switches to the parent per Nielsen's own metadata — strictly better at brand×month (3,917 vs 3,641 brand-month rows; 85 vs 74 brands @ MIN_PERIODS>=24), reversing P0026's region choice. Also: commit P0032's at-risk uncommitted V3/V4 fixes, fix `make_calendar` bfill leakage (shared module), resolve sales_value/sales_liters redundancy, decide MIN_PERIODS (140→58 brands is a 59% cull), and measure single-brand vs pooled training. **2026-08-12: tasks 6, 12, 14, 15 moved to or answered by P0038** — task 6 (parity check) is now P0038 task 8 since it must run against the decomposed scripts; task 14's seam question is answered by DEC-SHARED-SEAM; task 15's shared-module half is done on disk. Remaining here: 4, 7, 8, 9, 11. |
@@ -64,7 +65,7 @@ See `plans/.archive/README.md` for the full list. Archived: P0006, P0007, P0008,
 
 ## How to Create a New Plan
 
-1. Next P-ID: **P0039**
+1. Next P-ID: **P0040**
 2. Create folder: `plans/P0023_YYYY-MM-DD_HH-mm_<slug>/`
 3. Create files: `task_plan.md`, `findings.md`, `progress.md` (use `/planning-with-files` skill)
 4. Add to this index
@@ -76,4 +77,4 @@ Move entire folder to `plans/.archive/` and update this index.
 
 ---
 
-**Last updated**: 2026-08-12 (P0038 added — CSD notebook decomposition, now the focus and gating P0033 via P0036 task 6; P0037 added retroactively; P0036 partly superseded)
+**Last updated**: 2026-08-19 (P0039 added — SRQ4 System A vs B, now the focus and the last technical work the thesis requires. P0026/P0029/P0031/P0032/P0033/P0035/P0036/P0038 all closed and archived; P0034 paused until numbers are final; P0037 delivered tasks 3, 4, 7 and its remainder folds into P0039.)
