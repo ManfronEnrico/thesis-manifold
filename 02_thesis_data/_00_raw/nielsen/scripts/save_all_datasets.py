@@ -1,15 +1,32 @@
 """
-Save all Nielsen Fabric datasets to local JSONL files.
-Usage: python save_all_datasets.py
-Output: thesis/data/raw/nielsen/data_jsonl/
+Save Nielsen Fabric datasets to local JSONL files.
+
+DEFAULT (what you almost always want): views + metadata only, ~10 minutes.
+The preprocessing pipeline reads ONLY the views -- it never touches the raw
+tables -- so the default is the complete input for everything downstream.
+
+    python save_all_datasets.py --only CSD Danskvand Energidrikke RTD
+
+Totalbeer is out of scope for the thesis (dropped from the prose on
+compute-constraint grounds, P0034), so exclude it with --only rather than
+pulling five categories and ignoring one.
+
+--download-raw additionally pulls the underlying source tables (~2 hours). It
+exists so a data question can be settled below view level if one ever arises.
+Nothing in the pipeline consumes them, so do not pass it as a matter of course.
+
+Output: 02_thesis_data/_00_raw/nielsen/data_jsonl/{Category}/{views,metadata}/
+Credentials: RU_* in a .env at the repo root (see nielsen_connector.py).
 """
 
 # ============================================================================
 # CONFIGURATION FLAGS
 # ============================================================================
 
-# Default: download views + metadata only
-# Override via command line: python save_all_datasets.py --download-raw
+# Views + metadata only. This is the complete input for the preprocessing
+# pipeline, which never reads the raw tables. Overriding via --download-raw adds
+# ~2 hours for data nothing downstream consumes -- it exists as an escape hatch
+# for source-level data questions, not as a routine option.
 DOWNLOAD_RAW_DATA = False
 
 # %%
@@ -421,7 +438,8 @@ Examples:
   python save_all_datasets.py              # All categories, sequential (~15 min)
   python save_all_datasets.py --only CSD  # CSD only (~3 min)
   python save_all_datasets.py --parallel  # All categories in parallel, one connection each (~3 min)
-  python save_all_datasets.py --download-raw  # Include raw tables (~2 hours total)
+  python save_all_datasets.py --only CSD Danskvand Energidrikke RTD  # thesis scope
+  python save_all_datasets.py --download-raw  # RARE: adds source tables, ~2 hours
         """
     )
     parser.add_argument(

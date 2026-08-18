@@ -5,7 +5,7 @@ category: reference
 applies-to: [02_thesis_data, 03_thesis_modelling, 04_thesis_results]
 triggers: [handover, regenerate eda, run pipeline, enrico]
 created: 2026_08_19-01_30
-updated: 2026_08_19-02_20
+updated: 2026_08_19-02_35
 ---
 
 # Handover — preprocessing pipeline rebuilt (2026-08-18/19)
@@ -50,38 +50,42 @@ that here — you would inherit whatever staleness Brian's machine has.
 **Run the full chain yourself**, so you know your data is current. The latest month
 should be **2026-07**; anything ending earlier means the pull did not refresh.
 
-#### Step A — credentials for the warehouse
+#### Step A — credentials (you should already have these)
 
-The pull reads `RU_*` credentials from a **`.env` at the repo root** (note: this is a
-*different* `.env` from `03_thesis_modelling/.env`, which holds the LLM keys):
+The pull reads `RU_*` credentials from a **`.env` at the repo root** —
+`RU_SERVER_STRING`, `RU_DATABASE`, `RU_CLIENT_ID`, `RU_TENANT_ID`,
+`RU_CLIENT_SECRET`. You have pulled before, so this is almost certainly already in
+place; it is listed only so a failure here is immediately recognisable rather than
+mysterious.
 
-```
-RU_SERVER_STRING=...
-RU_DATABASE=...
-RU_CLIENT_ID=...
-RU_TENANT_ID=...
-RU_CLIENT_SECRET=...
-```
+Note it is a **different** `.env` from `03_thesis_modelling/.env`, which holds the LLM
+keys for SRQ4. Two files, two purposes.
 
-Also needs `pyodbc` with an ODBC driver installed, plus `azure-identity`.
+Also needs `pyodbc` with an ODBC driver, plus `azure-identity`.
 
 #### Step B — pull the raw JSONL (excluding Totalbeer)
 
 ```bash
-python 02_thesis_data/_00_raw/nielsen/scripts/save_all_datasets.py     --only CSD Danskvand Energidrikke RTD
+python 02_thesis_data/_00_raw/nielsen/scripts/save_all_datasets.py --only CSD Danskvand Energidrikke RTD --parallel
 ```
 
-**Totalbeer is deliberately excluded** — it is out of scope for the thesis and was
-dropped from the prose on compute-constraint grounds (P0034).
+**Views + metadata only** — that is the default, and it is the complete input for
+everything downstream. The pipeline reads only the views and never touches the raw
+source tables. `--parallel` opens one connection per category (~3 min rather than
+~15).
 
-The default pulls **views + metadata only**, which is what the pipeline needs and takes
-minutes. Do **not** pass `--download-raw` unless you specifically want the underlying
-tables; that pulls ~2 hours of data the pipeline never reads.
+**Do not pass `--download-raw`.** It adds ~2 hours pulling source tables that nothing
+in the pipeline consumes. The flag exists as an escape hatch for settling a data
+question below view level, not as a routine option; the script's docstring now says so
+explicitly.
+
+**Totalbeer is excluded on purpose** — out of scope for the thesis, dropped from the
+prose on compute-constraint grounds (P0034).
 
 #### Step C — convert JSONL to parquet (same exclusion)
 
 ```bash
-python 02_thesis_data/_01_converted/nielsen/jsonl_to_parquet_script/run_all_conversions.py     --only CSD Danskvand Energidrikke RTD
+python 02_thesis_data/_01_converted/nielsen/jsonl_to_parquet_script/run_all_conversions.py --only CSD Danskvand Energidrikke RTD
 ```
 
 Idempotent (skip-if-newer), so it is safe to re-run. Conversion only makes sense
