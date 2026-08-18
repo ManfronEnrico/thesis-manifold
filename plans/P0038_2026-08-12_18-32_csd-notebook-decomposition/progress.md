@@ -459,3 +459,51 @@ no stale copy of the holiday constant remains outside .archive.
 **Effect on task 24**: partially pre-done. What remains there is deleting the archives
 and retiring the notebook, once parity passes.
 
+---
+
+## Session 2026-08-18 (cont.) — step 4 shipped, and it found the promo gap
+
+Built `_shared_modules/step_4_engineer_features.py` (task 5 / session task 20). It
+reads the step 3 contract and derives nothing. 8/8 runs succeed: four categories at
+H=3 and H=1. CSD H=3 keeps 95 of 142 brands, matching the contract's retention
+figure exactly.
+
+**Renamed from the planned `step_4_engineer_csd.py`.** Naming a shared step after
+one category is how the per-category duplication started; there is nothing
+CSD-specific in it.
+
+**What it found (F59).** Danskvand and RTD have **no `promo_units` column at all** —
+Nielsen does not report promotion for those categories. `make_calendar()` and
+`engineer_features()` both enumerated a fixed measure list, so they had only ever
+worked on CSD and Energidrikke. Same shape of defect as the holiday months: a CSD
+assumption sitting in shared code where it reads as general.
+
+Fixed at three sites in `engineer_features.py` by discovering the columns present.
+**Where promo is absent the feature is omitted, not zero-filled** — a zero column
+would assert "no promotion ran", which the data does not support and a model would
+learn from. Consequence: the four categories do not share a feature space (47 / 29 /
+47 / 45 columns), and that has to be stated wherever results are compared across
+categories. The sidecar records `has_promo` per run so it is never silent.
+
+**Also fixed (F61).** `make_calendar()` dropped `period_year`/`period_month`.
+Harmless in itself (`apply_split` uses `date`) but the integer pair is the panel's
+canonical period representation everywhere else. Both are rebuilt from `date` after
+the fill.
+
+**The verification worth keeping (F60).** Step 4 asserts on the OUTPUT, not just the
+input: `holiday_month` must be set on exactly the contracted months and no others.
+Steps 3 and 4 could otherwise agree on paper while the matrix on disk disagreed with
+both, since `engineer_features()` accepts any parameter and runs. Six refusal paths
+tested, all raising `ContractError` rather than defaulting — including the
+`contract_version` check that F58 left open.
+
+### State
+
+- Task 20 complete. Plan tasks 1-5 complete.
+- NEXT: task 21 — generalise `step_5_apply_split.py` and `step_6_save_outputs.py`
+  to `--category` / `--horizon`. Step 5 must refuse a split where the contract
+  reports `horizon_evaluable: false`; step 4 currently only warns.
+- Open question for step 6: the per-category feature spaces now differ (F59), so a
+  pooled output has to either intersect the columns or record the difference. Not
+  step 4's call, but it must not be discovered silently.
+

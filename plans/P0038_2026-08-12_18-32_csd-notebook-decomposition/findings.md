@@ -1066,3 +1066,99 @@ patched individually — patching them would preserve the duplication this refac
 to remove. **Do not run the `pre_{category}_4_engineer_features.py` scripts in the
 meantime.**
 
+---
+
+## F59 — two categories have NO promo data, and the shared code assumed they did
+
+`make_calendar()` and `engineer_features()` both enumerated a fixed measure list
+(`sales_units, sales_value, sales_liters, promo_units`). Step 4 raised `KeyError:
+['promo_units'] not in index` on the first non-CSD category it touched.
+
+Measured across all four categories (2026-08-18):
+
+| Category | Panel columns | `promo_units` |
+|----------|--------------:|:-------------:|
+| CSD | 32 | yes |
+| Energidrikke | 32 | yes |
+| Danskvand | 15 | **no** |
+| RTD | 31 | **no** |
+
+Nielsen does not report promotion for Danskvand or RTD. So the shared modules
+worked on exactly the two categories they had been exercised against — the same
+shape of defect as the holiday months, a CSD assumption living in shared code
+where it reads as general.
+
+**Fix**: three sites in `engineer_features.py` now discover rather than assume —
+the calendar zero-fill list, the `weighted_dist` ffill, and the `promo_intensity`
+construction.
+
+**The decision that matters**: where `promo_units` is absent, `promo_intensity` is
+**omitted, not zero-filled**. A constant-zero column asserts "no promotion ran",
+which is a factual claim the data does not support and which a model would learn
+from. An absent feature is honest; a fabricated one is not. The consequence is
+that the four categories do **not** share a feature space — CSD/Energidrikke get
+45-47 columns, Danskvand 27, RTD 43 — and this must be stated wherever results are
+compared across categories. The step 4 sidecar records `has_promo` per run so the
+difference is never silent.
+
+---
+
+## F60 — step 4 shipped; the contract is now enforced on the OUTPUT, not just the input
+
+`_shared_modules/step_4_engineer_features.py` built and verified: **8/8 runs**
+succeed (4 categories x H=1 and H=3).
+
+| Category | H=3 rows / brands | H=1 rows / brands | Cols | Holiday months | promo |
+|----------|------------------:|------------------:|-----:|----------------|:-----:|
+| CSD | 4,370 / 95 | 4,876 / 106 | 47 | 3, 6, 9, 12 | yes |
+| Danskvand | 1,189 / 29 | 1,230 / 30 | 29 | 6, 7, 8, 9 | no |
+| Energidrikke | 1,892 / 44 | 2,150 / 50 | 47 | 3, 6, 9 | yes |
+| RTD | 2,542 / 62 | 2,952 / 72 | 45 | 5, 6, 12 | no |
+
+CSD H=3 retention (95 of 142 brands) matches the step 3 contract exactly, which is
+the cheap end-to-end check that step 3 and step 4 agree.
+
+**This file contains no parameter values.** Every number comes from the contract.
+That is the whole point: the archived `pre_csd_4_engineer_features.py` carried
+`CSD_HOLIDAY_MONTHS = {3, 6, 12}` privately, and the three non-CSD scripts each
+carried `{1, 4, 6, 10, 12}` — four scripts with four private opinions about one
+parameter.
+
+**DEC-NO-FALLBACK, verified firing.** Six refusal paths tested, all raise
+`ContractError` rather than defaulting:
+
+| Condition | Refused |
+|-----------|:-------:|
+| Contract file absent | yes |
+| `contract_version` unknown (`9.9`) | yes |
+| `contract_version` field missing | yes |
+| Body horizon disagrees with filename | yes |
+| Required field dropped (`min_periods`) | yes |
+| Matrix contradicts contract (holiday months) | yes |
+
+The last one is the addition worth keeping. Steps 3 and 4 could previously agree on
+paper while the matrix on disk disagreed with both, because `engineer_features()`
+accepts any parameter and runs. Verifying the **output** — that `holiday_month` is
+set on exactly the contracted months and no others — is what makes the contract
+enforceable rather than merely documented. It is also the check that would have
+caught the original defect years earlier.
+
+**Provenance sidecar**: each run writes `step_4_log_h{N}.json` recording which
+contract produced the matrix, the parameters applied, and `has_promo`. Without it a
+parquet is unattributable — you can read its columns but not the thresholds behind
+them, which is the position every previous notebook run left its outputs in.
+
+---
+
+## F61 — make_calendar silently dropped the panel's canonical period columns
+
+`make_calendar()` drops `period_year`/`period_month` before merging (it keys on
+`date`), and never restored them. Nothing was broken — `apply_split()` reads `date`
+— but steps 1-3 and every contract express a period as the integer pair, so the
+matrix stopped speaking the pipeline's own language and each consumer would have had
+to re-derive it.
+
+Both are now rebuilt from `date` after the fill. Rebuilt rather than merged back,
+so calendar-filled rows (which have no source row) also carry correct values.
+Verified consistent with `date` on every row.
+

@@ -316,7 +316,18 @@ def make_calendar(
         on=group_keys + ["date"], how="left",
     )
 
-    sales_cols = ["sales_units", "sales_value", "sales_liters", "promo_units"]
+    # Only the columns actually present are filled. An earlier version listed
+    # these four unconditionally and raised KeyError on any category lacking
+    # one -- Danskvand and RTD have no promo_units at all, because Nielsen does
+    # not report promotion for them, so this function worked on exactly the two
+    # categories it had been tested against (P0038, 2026-08-18).
+    #
+    # Zero-fill is correct for every column named here on the same grounds as
+    # the ffill note below: in a month with no observation the brand recorded no
+    # sales, no value, no volume and no promoted units. That is a measurement,
+    # not a gap to be imputed.
+    CANDIDATE_SALES_COLS = ["sales_units", "sales_value", "sales_liters", "promo_units"]
+    sales_cols = [c for c in CANDIDATE_SALES_COLS if c in full.columns]
     full[sales_cols] = full[sales_cols].fillna(0)
     # ffill only -- NO bfill. bfill would pull a FUTURE distribution value
     # backward into a leading gap, encoding information that did not exist at
@@ -324,13 +335,23 @@ def make_calendar(
     # with 0, which is also the truthful value: the brand was not distributed.
     # Measured on CSD at parent scope: bfill contaminated 1,176 rows (19.1% of
     # the calendar) across 51 brands, every one of them a leading gap.
-    full["weighted_dist"] = (
-        full.groupby(group_keys)["weighted_dist"]
-        .transform(lambda s: s.replace(0, np.nan).ffill().fillna(0))
-    )
+    if "weighted_dist" in full.columns:
+        full["weighted_dist"] = (
+            full.groupby(group_keys)["weighted_dist"]
+            .transform(lambda s: s.replace(0, np.nan).ffill().fillna(0))
+        )
 
     for c in sales_cols:
         full[c] = full[c].clip(lower=0)
+
+    # Restore the panel's canonical period columns. They are dropped above so
+    # the merge keys on `date` alone, but steps 1-3 and every contract express
+    # a period as (period_year, period_month), and a downstream consumer should
+    # not have to re-derive from `date` what the panel already had. Rebuilt
+    # from `date` rather than merged back, so calendar-filled rows -- which had
+    # no source row -- also carry correct values.
+    full["period_year"] = full["date"].dt.year
+    full["period_month"] = full["date"].dt.month
 
     full = full.sort_values(group_keys + ["date"]).reset_index(drop=True)
     return full, all_dates
@@ -426,17 +447,28 @@ def engineer_features(
     #
     # The first observation of each series is NaN, exactly as for lag_1;
     # downstream consumers already fillna(0.0) at feature-selection time.
-    _promo_intensity_t = pd.Series(
-        np.where(
-            df["sales_units"] > 0,
-            df["promo_units"] / df["sales_units"].clip(lower=1),
-            0,
-        ).clip(0, 1),
-        index=df.index,
-    )
-    df["promo_intensity"] = _promo_intensity_t.groupby(
-        [df[k] for k in group_keys]
-    ).shift(1)
+    # promo_units is a CATEGORY CAPABILITY, not a guaranteed column: Nielsen
+    # reports promotion for CSD and Energidrikke but not for Danskvand or RTD.
+    # Where it is absent the feature is OMITTED rather than zero-filled -- a
+    # zero column would assert "no promotion ran", which is a factual claim the
+    # data does not support and which a model would happily learn from. An
+    # absent feature is honest; a constant-zero feature is a fabrication.
+    #
+    # Downstream consumers must therefore select features from what the matrix
+    # contains rather than from a fixed list. This is the same open-world rule
+    # the pipeline applies to measures generally (DEC-OPEN-WORLD).
+    if "promo_units" in df.columns:
+        _promo_intensity_t = pd.Series(
+            np.where(
+                df["sales_units"] > 0,
+                df["promo_units"] / df["sales_units"].clip(lower=1),
+                0,
+            ).clip(0, 1),
+            index=df.index,
+        )
+        df["promo_intensity"] = _promo_intensity_t.groupby(
+            [df[k] for k in group_keys]
+        ).shift(1)
 
     # Log-transformed target
     df["log_sales_units"] = np.log1p(df["sales_units"])
