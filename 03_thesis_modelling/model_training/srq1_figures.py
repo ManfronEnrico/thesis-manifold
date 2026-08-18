@@ -63,9 +63,33 @@ fig.tight_layout(); fig.savefig(FIG / "fig1_model_ladder.png", dpi=150); plt.clo
 
 # ---- Fig 3: forecast overlay (top CSD brand, brand×month, XGBoost) ----
 from xgboost import XGBRegressor
+# weighted_distribution / weighted_dist is deliberately ABSENT (P0036 task 7,
+# 2026-08-19).
+#
+# Note these scripts previously named "weighted_distribution", a column that does
+# not exist in the matrix (it is "weighted_dist" after step 1's RENAMES). They
+# were therefore already training without it -- silently, since
+# available_features() drops unknown names. This makes that state deliberate and
+# documented rather than accidental.
+#
+# It was tested for leakage and CLEARED: never lagged, but structural and nearly
+# static -- corr(wd[t], wd[t-1]) = 0.976, corr(wd[t], wd[t+3]) = 0.946, median
+# month-on-month change 0.00114 on a 0-1 scale.
+#
+# It is absent because it does not improve out-of-sample accuracy. LightGBM, 300
+# trees, seeds 42/7/2024 (identical -- deterministic):
+#
+#     category        without    with     lagged
+#     CSD              17.20%   18.24%   18.32%
+#     Danskvand        33.39%   34.36%   32.89%
+#     Energidrikke     17.40%   16.94%   16.86%
+#     RTD              31.83%   32.54%   31.26%
+#
+# Worse in 3 of 4. The column REMAINS in the feature matrix for EDA; this removes
+# it only from model inputs. If reintroduced, use the LAGGED form.
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
+            "month", "quarter", "peak_month", "promo_intensity"]
 
 def available_features(fm, wanted=None):
 	"""Return the wanted features that this matrix actually contains.

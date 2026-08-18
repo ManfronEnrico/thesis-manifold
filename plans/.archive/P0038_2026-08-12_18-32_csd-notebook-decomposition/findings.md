@@ -2059,3 +2059,83 @@ unshifted.
 34.4%, Energidrikke 14.8%, RTD 33.1%), confirming current models never used
 them. This closes a future hazard rather than changing a present finding.
 
+---
+
+## F80 — `weighted_dist` dropped from model inputs; repo folders made symmetric
+
+Brian approved dropping `weighted_dist` on condition the reasoning is documented
+and academically sound. Recorded inline at every FEATURES list, not only here.
+
+### The argument, in the order it should be defended
+
+1. **It was tested for leakage and CLEARED.** It is never lagged, which made it a
+   candidate, but it is structural and nearly static: corr(wd[t], wd[t-1]) =
+   **0.976**, corr(wd[t], wd[t+3]) = **0.946**, median month-on-month change
+   **0.00114** on a 0-1 scale. Month t's value is a sound proxy for t+3 because it
+   essentially *is* t+3's value. **This is not a removal made to hide a defect** —
+   an important distinction if anyone asks why a feature disappeared.
+
+2. **It fails the only test that matters.** Fit with and without, LightGBM 300
+   trees, seeds 42/7/2024 (identical — deterministic, so no seed-luck): worse in
+   **3 of 4** categories.
+
+3. **Removing it is conservative under uncertainty.** Keeping an unlagged
+   contemporaneous measure that does not improve accuracy means carrying a
+   defensibility burden — "why does your feature read the month it predicts?" —
+   for no measured benefit.
+
+**The column stays in the matrix.** Distribution is descriptively important and
+belongs in the data chapter; only the model inputs changed.
+
+### A latent bug found while doing it
+
+Eight of the nine scripts named **`weighted_distribution`** — a column that does
+not exist (it is `weighted_dist` after step 1's `RENAMES`). They were therefore
+**already training without it**, silently, because `available_features()` (F74)
+drops unknown names. Before that fix they would have raised `KeyError`.
+
+So the drop was already in force everywhere; it was accidental rather than
+decided. It is now deliberate and documented.
+
+### Effect on results — improved, as predicted
+
+| Category | WMAPE before | after | medMAPE before | after |
+|----------|-------------:|------:|---------------:|------:|
+| CSD | 17.5% | **17.1%** | 37.1% | **36.3%** |
+| Danskvand | 34.4% | **32.6%** | 46.7% | **46.2%** |
+| Energidrikke | 14.8% | 14.9% | 59.4% | **43.9%** |
+| RTD | 33.1% | **31.8%** | 41.9% | **28.6%** |
+
+Better in 3 of 4 on WMAPE and **all four** on medMAPE, matching the sensitivity
+projection. XGBoost now wins every category.
+
+### Repo symmetry (Brian's observation)
+
+Two strays, both per-category-era leftovers P0038 made redundant:
+
+- **`CSD/pipeline_step_scripts/`** — empty but for `__pycache__` and `.archive/`,
+  and not mirrored in Danskvand or Energidrikke. The retired notebook and old
+  step scripts inside it were moved up to `CSD/.archive/` so they stay reachable,
+  then the folder was removed.
+- **`RTD/engineered/`** — not mirrored anywhere. Four July files, superseded by
+  the h1/h3 artifacts in `_03_engineered/bymonth/RTD/`, and demonstrably stale:
+  its split ends **2026-03**, before the re-pull that brought data to 2026-07.
+  Deleted.
+
+All four category folders now hold exactly `.archive/` + `pipeline_step_outputs/`.
+
+**The live scripts live in one place**: `_02_preprocessing/nielsen/_shared_modules/`
+— 16 files, 7 numbered steps plus `run_preprocessing.py` and shared helpers. The
+category folders hold **outputs only**.
+
+### Plans archived
+
+P0032, P0033, P0035, P0036, P0038 moved to `plans/.archive/`.
+
+### dim_product / task 11 — the grain answers it
+
+Brian's read is correct: since DEC-GRAIN is not changing, `dim_product` attributes
+have nowhere to live. They vary within a brand in 0-47% of cases (private_label
+0.0%, manufacturer 2.0%), so at brand × month they are mostly a brand label in
+disguise. Using them honestly requires a grain change, not a feature addition.
+

@@ -46,10 +46,35 @@ DATASETS = {
 }
 DEFAULT_GRAINS = ["bymonth"]
 
+# weighted_dist is deliberately ABSENT from this list (P0036 task 7, 2026-08-19).
+#
+# Not because it leaks -- it was tested and cleared. It is never lagged, which
+# made it a candidate, but it is structural and barely moves: corr(wd[t], wd[t-1])
+# = 0.976, corr(wd[t], wd[t+3]) = 0.946, median month-on-month change 0.00114 on a
+# 0-1 scale. Month t's value is a sound proxy for t+3 because it essentially is
+# t+3's value.
+#
+# It is absent because it does not improve out-of-sample accuracy. Fit with and
+# without (LightGBM, 300 trees, seeds 42/7/2024 -- identical, deterministic):
+#
+#     category        without    with     lagged
+#     CSD              17.20%   18.24%   18.32%
+#     Danskvand        33.39%   34.36%   32.89%
+#     Energidrikke     17.40%   16.94%   16.86%
+#     RTD              31.83%   32.54%   31.26%
+#
+# Worse in 3 of 4 categories. Carrying an unlagged contemporaneous measure that
+# does not help means defending "why does your feature read the month it
+# predicts?" for no measured benefit.
+#
+# The column REMAINS in the feature matrix -- distribution is descriptively
+# important and appears in the data chapter. This removes it only from what the
+# models consume. If reintroduced, use the LAGGED form, which was better in 3 of
+# 4 and removes the timing objection entirely.
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month",
-            "promo_intensity", "weighted_dist"]
+            "promo_intensity"]
 
 def available_features(fm, wanted=None):
 	"""Return the wanted features that this matrix actually contains.
