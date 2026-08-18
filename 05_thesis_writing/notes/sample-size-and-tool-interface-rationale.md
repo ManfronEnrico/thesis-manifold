@@ -812,3 +812,105 @@ merely asserting.
 **Ch7 / Ch10 note:** the proportion of brands falling below the threshold is the honest
 measure of this coverage gap — 25% of CSD brands, 45% of Danskvand brands (see §11).
 Reporting it is more defensible than reporting only the brands the system *can* serve.
+
+---
+
+## 13. The forecast horizon is one month, and the test window is what decides it (Ch4 + Ch5 + Ch10)
+
+**Anticipated question:** *"A one-month forecast is of limited commercial value. Why not
+forecast a quarter or a year ahead, which is what planning actually requires?"*
+
+**Answer: the evaluation window makes longer horizons unmeasurable on this extract. The
+constraint is the length of the observed period, not a modelling preference.**
+
+Three separate constraints bind on the horizon, and they must be reported together, because
+each alone looks survivable.
+
+### Constraint 1 — training rows
+
+Horizon enters the row budget twice: each step of `H` costs one usable row per brand, and
+the final `H` months of every brand yield no target at all. Measured 2026-08-18 across all
+four categories:
+
+| Horizon | MIN_PERIODS | Brands retained | Training rows | Share of H=1 |
+|--------:|------------:|----------------:|--------------:|-------------:|
+| 1 month | 15 | 258 / 366 | 5,332 | 100.0% |
+| 3 months | 17 | 230 / 366 | 4,832 | 90.6% |
+| 6 months | 20 | 211 / 366 | 4,159 | 78.0% |
+| 12 months | 26 | 196 / 366 | 2,942 | **55.2%** |
+
+An annual horizon discards **45% of the training data** before any modelling begins.
+
+### Constraint 2 — predictability decays with horizon
+
+Row loss alone would be tolerable if the longer-horizon task were equally learnable. It is
+not. The within-brand correlation between log sales at *t* and at *t+H*, pooled across
+brands, measures the persistence signal available at each horizon:
+
+| Horizon | Mean corr(y_t, y_t+H) | Naive-persistence RMSE (log scale) |
+|--------:|----------------------:|-----------------------------------:|
+| 1 month | 0.962 | 0.96 |
+| 3 months | 0.924 | 1.34 |
+| 6 months | 0.891 | 1.61 |
+| 12 months | 0.838 | 1.98 |
+
+The error floor roughly **doubles** from H=1 to H=12. So the longer horizon simultaneously
+offers fewer training examples and a harder target — the two effects compound rather than
+offset.
+
+Category heterogeneity is worth noting: Energidrikke decays fastest (0.949 → 0.750),
+Danskvand slowest (0.958 → 0.920), consistent with the volatility asymmetry documented in
+§9.
+
+### Constraint 3 — the decisive one: no evaluable test origin
+
+With a 70/15/15 chronological split, the test window is 6–7 months:
+
+| Category | Months | Test window | Evaluable origins at H=1 | at H=3 | at H=6 | at H=12 |
+|----------|-------:|------------:|-------------------------:|-------:|-------:|--------:|
+| CSD | 46 | 7 | 7 | 5 | 2 | **0** |
+| Danskvand | 41 | 6 | 6 | 4 | 1 | **0** |
+| Energidrikke | 43 | 6 | 6 | 4 | 1 | **0** |
+| RTD | 41 | 6 | 6 | 4 | 1 | **0** |
+
+A forecast origin is only evaluable if its target month falls inside the test window. At
+H=12 **no origin qualifies in any category** — the horizon exceeds the entire window. At
+H=6 only CSD retains more than one, and a single origin yields a point estimate of error
+with no distribution behind it, so no confidence interval and no significance test.
+
+Reporting a 12-month horizon would require enlarging the test share to roughly 30%, which
+would take a further large bite out of an already modest training set, and would still leave
+only a handful of origins.
+
+### The decision
+
+**H = 1 month.** It is the only horizon on this extract that yields a test window with
+enough forecast origins to report an error distribution rather than a single number. H=3
+remains defensible (4–5 origins) and is the natural robustness check; H=6 and H=12 are not
+evaluable on 41–46 months of history.
+
+### The limitation to state (Ch10)
+
+> The forecast horizon is restricted to one month by the length of the observed period.
+> With 41–46 months per category and a chronological 70/15/15 split, the test window spans
+> six to seven months, which admits no evaluable forecast origin at a twelve-month horizon
+> and only one at six months. Longer horizons are therefore a question of data depth rather
+> than of method: the same feature specification and the same pipeline would support them
+> given a longer extract, and the horizon is a single parameter in the preprocessing
+> contract. Since planning applications typically require quarterly or annual horizons, this
+> restricts the immediate practical applicability of the forecasting artefact, and
+> extending the extract backwards is the most direct route to addressing it.
+
+### Why this is the right framing for the thesis
+
+The horizon is **not** a hyperparameter tuned for accuracy. It is the largest value at which
+the evaluation remains statistically reportable on the available data. Framing it that way
+converts an apparent weakness into a measured constraint with a stated remedy, and it makes
+the number reproducible: another researcher with the same extract would arrive at the same
+horizon by the same argument.
+
+It also matters for the SRQ2 comparison specifically. Both the tool-calling system and the
+code-as-action baseline forecast at the same horizon, so the horizon does not confound the
+interface comparison — it bounds the absolute accuracy both systems can reach, not the
+difference between them, which is what the research question actually measures.
+

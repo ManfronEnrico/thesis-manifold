@@ -53,6 +53,25 @@ def normalise_category(category: str) -> str:
 # do NOT belong in the per-category EDA contract JSON.
 
 TARGET_COL: str = "sales_units"      # raw column in the dataset
+# DEC-HORIZON (2026-08-18): H=1 is not a modelling preference -- it is the
+# largest horizon this extract can EVALUATE. At a 70/15/15 chronological split
+# the test window is 6-7 months, and a forecast origin only counts if its target
+# month lands inside that window (n_origins = n_test - H + 1). Measured across
+# all four categories:
+#
+#     H=1  -> 6-7 origins   (reportable error distribution)
+#     H=3  -> 4-5 origins   (retained as the robustness check)
+#     H=6  -> 1-2 origins   (a point estimate, no CI, no significance test)
+#     H=12 -> 0 origins in EVERY category
+#
+# Longer horizons also cost training rows (H=12 keeps 55.2% of H=1's 5,332 rows)
+# and face a harder target (mean within-brand corr(y_t, y_t+H) falls 0.962 ->
+# 0.838; the naive error floor roughly doubles). Those two effects compound, but
+# the test window is what actually rules H=6 and H=12 out.
+#
+# So this is a data-depth limitation, not a method limitation: the same pipeline
+# supports longer horizons given a longer extract. Do NOT raise this value
+# without re-checking n_test_origins for every category first.
 FORECAST_HORIZON: int = 1            # H=1: predict t+1 from features at t
 LOG_TRANSFORM_TARGET: bool = True    # Y = log1p(sales_units_{t+H}); ADF-confirmed
 

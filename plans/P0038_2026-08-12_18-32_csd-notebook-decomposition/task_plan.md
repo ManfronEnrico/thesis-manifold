@@ -3,7 +3,7 @@ pid: P0038
 created: 2026-08-12 18:32:00
 updated: 2026-08-18 00:00:00
 status: in_progress
-focus_detail: "Steps 0/1/2 shipped and verified across all four categories; EDA table bullets rewritten to submission-ready academic voice. DEC-MINPERIODS settled 2026-08-18: MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15, derived from the feature spec, costs 0.0% of training rows (the old 40 cost 20-41%). NEXT: task 4 (step_3_derive_params.py + contract JSON) -- MIN_PERIODS is now settled, so the remaining open defect is the TRAIN_END/VAL_END drift (F25/F28). Blocks P0036 task 6 (CSD parity check), which is the P0033 gate."
+focus_detail: "Steps 0/1/2 shipped and verified across all four categories. DEC-MINPERIODS settled (MIN_PERIODS = MAX_LAG + HORIZON + 1 = 15, costs 0.0% of training rows). DEC-HORIZON settled 2026-08-18: H=1 confirmed against measured evidence -- H=12 leaves ZERO evaluable test origins in a 6-7 month test window, H=6 leaves one outside CSD. NEXT: task 4 (step_3_derive_params.py + contract JSON); the remaining open defect is the TRAIN_END/VAL_END drift (F25/F28), and the contract should carry n_test_origins so step 5 can assert horizon evaluability. Blocks task 23 (CSD parity check), which is the P0033 gate."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -52,6 +52,7 @@ working orchestrators are **184 lines each and differ only in the category name*
 | **DEC-EDA-SPLIT** | Descriptive EDA and parameter-deriving EDA are separate steps | Re-deriving params must not require regenerating ~20 plots; keeps thesis-figure code out of the pipeline's dependency path |
 | **DEC-NO-FALLBACK** | Step 4 fails loudly if the contract JSON is missing/incomplete | Silent in-code defaults are exactly what let the split and MIN_PERIODS rot unnoticed |
 | **DEC-MINPERIODS** | `MIN_PERIODS = MAX_LAG + HORIZON + 1` (= 15), derived not chosen | Brian, 2026-08-18. A brand with fewer months contributes **zero** usable training rows, so the threshold excludes what is unrepresentable rather than what is judged low-quality. Measured to cost **0.0% of training rows** in all four categories, against 20-41% lost at the previous hardcoded 40. Generalises: yields 9 at lag-6, 6 at lag-3 |
+| **DEC-HORIZON** | `FORECAST_HORIZON = 1` month, confirmed against three measured constraints | Brian asked 2026-08-18 whether 3/6/12 would be better. Measured: H=12 costs 45% of training rows, doubles the naive-error floor, and leaves **zero evaluable test origins** in a 6-7 month test window. H=1 is the largest horizon that yields a reportable error distribution on 41-46 months. H=3 kept as the robustness check |
 | **DEC-OPEN-WORLD** | Shared steps **discover** columns; they never enumerate them | Brian, 2026-08-12. A hardcoded list is category-*dependent* by construction — it silently drops whatever it does not name. The notebook's 5-column `agg_dict` discarded 24 of 29 available measures (F39) and could not express per-category spelling variants. Only the forecast target is named, and for its **role**, not its category |
 
 ## Evidence base
@@ -293,6 +294,65 @@ being conflated.
 
 **Written up**: `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md` §11
 (derivation, measurements, the Ch10 limitation) and §12 (warm-up versus serving).
+
+## DEC-HORIZON — one month, bounded by the test window (2026-08-18)
+
+**Decision**: `FORECAST_HORIZON = 1`. Unchanged in value, but now *derived from evidence*
+rather than inherited from the notebook — which is the part that was missing.
+
+Brian asked whether 3, 6 or 12 months would train a better model, noting his earlier
+3-month suggestion had been a guess rather than a finding. Measured all four horizons
+across all four categories (`horizon_tradeoff.py`, `horizon_signal.py`,
+`horizon_testwindow.py`).
+
+**Three constraints bind, and they compound rather than offset.**
+
+**1. Training rows** — horizon costs rows twice (one usable row per brand per step of H,
+plus the final H months yield no target):
+
+| H | MIN_PERIODS | Brands kept | Training rows | vs H=1 |
+|--:|------------:|------------:|--------------:|-------:|
+| 1 | 15 | 258/366 | 5,332 | 100.0% |
+| 3 | 17 | 230/366 | 4,832 | 90.6% |
+| 6 | 20 | 211/366 | 4,159 | 78.0% |
+| 12 | 26 | 196/366 | 2,942 | **55.2%** |
+
+**2. Predictability** — mean within-brand corr(y_t, y_{t+H}) and the naive-persistence
+error floor:
+
+| H | corr | naive RMSE (log) |
+|--:|-----:|-----------------:|
+| 1 | 0.962 | 0.96 |
+| 3 | 0.924 | 1.34 |
+| 6 | 0.891 | 1.61 |
+| 12 | 0.838 | 1.98 |
+
+Fewer rows AND a harder target. Energidrikke decays fastest (0.949→0.750), Danskvand
+slowest (0.958→0.920).
+
+**3. Evaluable test origins — the decisive constraint.** At 70/15/15 the test window is
+6-7 months. An origin is evaluable only if its target lands inside it:
+
+| Category | Months | Test | H=1 | H=3 | H=6 | H=12 |
+|----------|-------:|-----:|----:|----:|----:|-----:|
+| CSD | 46 | 7 | 7 | 5 | 2 | **0** |
+| Danskvand | 41 | 6 | 6 | 4 | 1 | **0** |
+| Energidrikke | 43 | 6 | 6 | 4 | 1 | **0** |
+| RTD | 41 | 6 | 6 | 4 | 1 | **0** |
+
+**H=12 is not evaluable in any category.** H=6 gives one origin outside CSD — a point
+estimate with no error distribution, so no CI and no significance test.
+
+**Consequence for step 3**: `FORECAST_HORIZON` stays a config constant (identical across
+categories, a modelling decision) and does NOT enter the per-category contract. But the
+contract SHOULD carry `n_test_origins` so the step-5 split can assert the horizon is
+evaluable rather than silently producing an unreportable test set.
+
+**H=3 retained as the robustness check** (4-5 origins). Pairs with the lag-3 sensitivity
+analysis from DEC-MINPERIODS — both are one-line changes under the contract.
+
+**Written up**: `05_thesis_writing/notes/sample-size-and-tool-interface-rationale.md` §13,
+including the Ch10 limitation paragraph.
 
 ## Task detail
 

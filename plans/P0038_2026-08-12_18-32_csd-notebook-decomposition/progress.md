@@ -264,3 +264,39 @@ and measurements in task_plan.md; evidence in F47/F48.
 - MIN_PERIODS no longer blocks task 4. Remaining open defect for the contract:
   TRAIN_END/VAL_END proportional derivation (F25/F28).
 
+---
+
+## Session 2026-08-18 (cont.) — DEC-HORIZON
+
+Brian asked whether the horizon should be 3, 6 or 12 months, noting his earlier 3-month
+suggestion was a guess rather than a finding, and asked how it would change training
+quality and data requirements.
+
+Measured rather than argued. Three scripts, all four categories, four horizons:
+
+- `horizon_tradeoff.py` — training rows and brand retention per horizon (F50)
+- `horizon_signal.py` — persistence correlation and naive error floor per horizon (F51)
+- `horizon_testwindow.py` — evaluable test origins per horizon (F52)
+
+**Result: H=1 confirmed, now on evidence rather than inheritance.** H=12 costs 45% of
+training rows, doubles the naive error floor, and leaves **zero** evaluable test origins in
+a 6-7 month test window. H=6 leaves one origin outside CSD, which is a point estimate with
+no error distribution. H=3 retained as the robustness check.
+
+The horizon was previously a notebook constant with no stated basis. It now has one, and
+the Ch10 limitation is written as quotable text.
+
+**Written to thesis notes**: §13 — the three constraints with their tables, the
+decision, the Ch10 limitation paragraph, and why the horizon does not confound the SRQ2
+interface comparison (both systems forecast at the same horizon, so it bounds absolute
+accuracy, not the difference the RQ measures).
+
+**Carried into step 3**: the contract should expose `n_test_origins` so step 5 can assert
+horizon evaluability.
+
+### State
+
+- Tasks 1, 2, 3 complete. Task 4 (`step_3_derive_params.py`) in progress.
+- Both MIN_PERIODS and HORIZON now settled and documented. Remaining open defect for the
+  contract: TRAIN_END/VAL_END proportional derivation (F25/F28).
+

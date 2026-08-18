@@ -728,3 +728,79 @@ the reliability claim and is demonstrable rather than merely assertable.
 Coverage gap to report (Ch7/Ch10): 25% of CSD brands, 45% of Danskvand brands fall below
 the threshold.
 
+---
+
+## F50 — forecast horizon costs training rows twice, not once
+
+Horizon enters the row budget through two independent channels, and only the first is
+obvious:
+
+1. `usable_rows(brand) = n_months - MAX_LAG - H` — one row lost per brand per step of H.
+2. The target is `y_{t+H}`, so the final H months of every brand have no target at all.
+
+Measured across all four categories (`horizon_tradeoff.py`, 2026-08-18):
+
+| H | Training rows | vs H=1 | Brands kept |
+|--:|--------------:|-------:|------------:|
+| 1 | 5,332 | 100.0% | 258/366 |
+| 3 | 4,832 | 90.6% | 230/366 |
+| 6 | 4,159 | 78.0% | 211/366 |
+| 12 | 2,942 | **55.2%** | 196/366 |
+
+An annual horizon discards 45% of training data before modelling starts.
+
+---
+
+## F51 — predictability decays with horizon, so row loss and task difficulty compound
+
+Row loss would be tolerable if the longer-horizon task were equally learnable. Measured
+within-brand corr(y_t, y_{t+H}) and the naive-persistence RMSE in log space
+(`horizon_signal.py`):
+
+| H | Mean corr | Naive RMSE | CSD | Danskvand | Energidrikke | RTD |
+|--:|----------:|-----------:|----:|----------:|-------------:|----:|
+| 1 | 0.962 | 0.96 | 0.972 | 0.958 | 0.949 | 0.968 |
+| 3 | 0.924 | 1.34 | 0.943 | 0.940 | 0.892 | 0.923 |
+| 6 | 0.891 | 1.61 | 0.913 | 0.933 | 0.846 | 0.872 |
+| 12 | 0.838 | 1.98 | 0.867 | 0.920 | 0.750 | 0.814 |
+
+The error floor roughly doubles from H=1 to H=12. Fewer examples AND a harder target —
+the effects compound.
+
+Energidrikke decays fastest and Danskvand slowest, consistent with the volatility asymmetry
+already documented. A single horizon choice is therefore not equally costly across
+categories, though H=1 is optimal for all four.
+
+---
+
+## F52 — the binding constraint on horizon is the test window, not accuracy
+
+The decisive measurement (`horizon_testwindow.py`). At 70/15/15 the test window is 6-7
+months. A forecast origin is evaluable only if its target month falls inside that window,
+giving `n_origins = n_test - H + 1`:
+
+| Category | Months | Test | H=1 | H=3 | H=6 | H=12 |
+|----------|-------:|-----:|----:|----:|----:|-----:|
+| CSD | 46 | 7 | 7 | 5 | 2 | **0** |
+| Danskvand | 41 | 6 | 6 | 4 | 1 | **0** |
+| Energidrikke | 43 | 6 | 6 | 4 | 1 | **0** |
+| RTD | 41 | 6 | 6 | 4 | 1 | **0** |
+
+**H=12 has no evaluable origin in any category** — the horizon exceeds the whole test
+window. H=6 leaves exactly one outside CSD: a point estimate of error with no distribution,
+hence no confidence interval and no significance test.
+
+This reframes the horizon question entirely. It is not "which horizon trains the best
+model" but "which horizon can be *measured* on this extract". H=1 is the answer, and H=3 is
+the robustness check.
+
+**Implication for step 3**: the contract should carry `n_test_origins` so step 5 asserts
+horizon evaluability instead of silently emitting an unreportable test set. This is the
+same class of defect as the TRAIN_END/VAL_END drift (F25/F28) — a split that looks fine
+and is quietly unusable.
+
+**Method note**: the first run of this measurement picked a spurious date column and
+reported 4-5 months per category (epoch-1970 artifact). The step-1 panel keys on
+`period_year`/`period_month` and carries no date column. Any future analysis over this
+panel must construct the period index from those two integer columns.
+
