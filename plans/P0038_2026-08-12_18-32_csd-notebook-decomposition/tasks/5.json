@@ -1,14 +1,10 @@
 {
   "id": "5",
   "session_id": "20",
-  "subject": "Build step_4_engineer_csd.py reading the contract",
+  "subject": "Fix make_calendar bfill future-leakage",
   "description": "Port notebook cells 56-60 (calendar, filter series, engineer features) to CSD/step_4_engineer_csd.py. ~8.7k chars; largest single cell is 4,800.\n\nTHIS IS THE ONE PER-CATEGORY SCRIPT. Capability tiers genuinely differ: CSD 32 cols/7 promo, Energidrikke 32/7 (renamed), RTD 31/6 (no sales_units_any_promo), Danskvand 15/0.\n\nDEC-NO-FALLBACK: reads {category}_eda_findings.json and RAISES on a missing file or any missing field. No in-code default to silently fall back to -- silent defaults are exactly what let the split and MIN_PERIODS rot unnoticed for months.\n\nUses shared engineer_features.py (make_calendar, filter_series, engineer_features), which already carry the P0036 fixes: V3 promo_intensity target-leakage fix, V4 market_id assert, and the make_calendar ffill-only fix (bfill pulled FUTURE distribution values backward into leading gaps; measured 1,176 rows / 19.1% / 51 brands).\n\nScope: the other three categories' step 4 scripts are P0033's work, NOT this plan's. This task establishes the pattern only.\n\nVerify: raises clearly on absent/truncated contract; feature matrix column set matches the last notebook run.",
   "activeForm": "Building CSD feature engineering step",
-  "status": "pending",
-  "blocks": [
-    "6"
-  ],
-  "blockedBy": [
-    "4"
-  ]
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
 }

@@ -24,7 +24,7 @@ constant, and records HOW each was obtained.
 DEC-OPEN-WORLD
 --------------
 Never names a category, never enumerates a column. Parameters that depend on
-category capability (holiday months, log transform) are measured from the data
+category capability (peak months, log transform) are measured from the data
 present; parameters that are modelling decisions (lags, horizon) are recorded
 with their basis so the contract explains itself.
 
@@ -85,18 +85,36 @@ from step_1_load_and_aggregate import load_and_aggregate, load_merged  # noqa: E
 
 # Contract schema version. Bump when a field is added, removed or re-typed;
 # step 4 refuses a version it does not know rather than guessing.
-CONTRACT_VERSION = "1.0"
+#
+# 1.0 -> 1.1 (2026-08-18): holiday_months renamed to peak_months, and
+# provenance.holiday_months_uplift to peak_months_uplift. A 1.0 contract is
+# therefore refused rather than read with the renamed field silently missing --
+# which is precisely the failure the version field exists to prevent.
+CONTRACT_VERSION = "1.1"
 
 BRAND_COL = "brand"
 YEAR_COL = "period_year"
 MONTH_COL = "period_month"
 
-# Seasonality: a month counts as a holiday month if its mean target exceeds the
+# Seasonality: a month counts as a PEAK month if its mean target exceeds the
 # overall mean by this margin. The notebook hardcoded the RESULT ({1,4,6,10,12})
 # rather than the rule, so every other category would have inherited CSD's
 # seasonal profile. 10% is the notebook's implied threshold, now stated
 # explicitly and applied per category.
-HOLIDAY_UPLIFT_THRESHOLD = 0.10
+#
+# NAMING (2026-08-18): this was `holiday_month(s)` until the rename. The rule
+# consults no holiday calendar -- there is no such input anywhere in the
+# pipeline -- so the old name asserted a cause the computation never
+# established, and the evidence frequently contradicts it: CSD peaks at
+# quarter-ends (trade loading), Danskvand in summer (weather), Energidrikke at
+# quarter-ends with no December peak at all.
+#
+# The name is also how the original defect survived review. A hardcoded
+# {1,4,6,10,12} reads as a plausible list of holidays; read as "peak months for
+# soft drinks" it is obviously wrong, since January is the weakest month of the
+# year at -26.6%. A feature name should describe what was measured, not
+# hypothesise why.
+PEAK_UPLIFT_THRESHOLD = 0.10
 
 # Augmented Dickey-Fuller: reject non-stationarity below this p-value.
 ADF_ALPHA = 0.05
@@ -176,7 +194,7 @@ def derive_lag_structure(horizon: int) -> tuple[dict, dict]:
 	return params, provenance
 
 
-def derive_holiday_months(df: pd.DataFrame) -> tuple[list[int], dict]:
+def derive_peak_months(df: pd.DataFrame) -> tuple[list[int], dict]:
 	"""Months whose mean target exceeds the overall mean by the threshold.
 
 	The notebook hardcoded {1, 4, 6, 10, 12} -- the RESULT for CSD -- so every
@@ -186,15 +204,15 @@ def derive_holiday_months(df: pd.DataFrame) -> tuple[list[int], dict]:
 	monthly = df.groupby(MONTH_COL)[TARGET_COL].mean()
 	overall = df[TARGET_COL].mean()
 	uplift = (monthly - overall) / overall
-	months = sorted(int(m) for m in uplift[uplift > HOLIDAY_UPLIFT_THRESHOLD].index)
+	months = sorted(int(m) for m in uplift[uplift > PEAK_UPLIFT_THRESHOLD].index)
 
 	provenance = {
-		"holiday_months": (
+		"peak_months": (
 			f"months whose mean {TARGET_COL} exceeds the overall mean by more "
-			f"than {HOLIDAY_UPLIFT_THRESHOLD:.0%}; measured on this category's "
+			f"than {PEAK_UPLIFT_THRESHOLD:.0%}; measured on this category's "
 			f"own data rather than inherited"
 		),
-		"holiday_months_uplift": {
+		"peak_months_uplift": {
 			str(int(m)): round(float(uplift.loc[m]), 4) for m in uplift.index
 		},
 	}
@@ -336,7 +354,7 @@ def measure_retention(df: pd.DataFrame, min_periods: int, horizon: int,
 def build_contract(category: str, df: pd.DataFrame, horizon: int) -> dict:
 	"""Assemble every parameter step 4 needs, each with its provenance."""
 	lag_params, lag_prov = derive_lag_structure(horizon)
-	holiday_months, holiday_prov = derive_holiday_months(df)
+	peak_months, peak_prov = derive_peak_months(df)
 	log_transform, log_prov = derive_log_transform(df)
 	split_params, split_prov = derive_split(df, horizon)
 	retention = measure_retention(
@@ -344,7 +362,7 @@ def build_contract(category: str, df: pd.DataFrame, horizon: int) -> dict:
 	)
 
 	provenance: dict = {}
-	for block in (lag_prov, holiday_prov, log_prov, split_prov):
+	for block in (lag_prov, peak_prov, log_prov, split_prov):
 		provenance.update(block)
 
 	return {
@@ -361,7 +379,7 @@ def build_contract(category: str, df: pd.DataFrame, horizon: int) -> dict:
 		"rolling_windows": lag_params["rolling_windows"],
 		"warmup_periods": lag_params["warmup_periods"],
 		"min_periods": lag_params["min_periods"],
-		"holiday_months": holiday_months,
+		"peak_months": peak_months,
 		"split": split_params,
 
 		# --- evidence; not consumed, but the record of how the above arose --
@@ -412,7 +430,7 @@ def _report(c: dict) -> None:
 	print(f"  warmup_periods        = {c['warmup_periods']}")
 	print(f"  min_periods           = {c['min_periods']}  "
 		  f"(= warmup + horizon + 1, derived)")
-	print(f"  holiday_months        = {c['holiday_months']}")
+	print(f"  peak_months        = {c['peak_months']}")
 
 	print("\nSPLIT")
 	print(f"  train_end             = {tuple(s['train_end'])}")
@@ -456,7 +474,7 @@ def _persist(contract: dict, paths: dict, horizon: int) -> None:
 		("warmup_periods", contract["warmup_periods"]),
 		("lags", str(contract["lags"])),
 		("rolling_windows", str(contract["rolling_windows"])),
-		("holiday_months", str(contract["holiday_months"])),
+		("peak_months", str(contract["peak_months"])),
 		("log_transform_target", contract["log_transform_target"]),
 		("train_end", str(tuple(contract["split"]["train_end"]))),
 		("val_end", str(tuple(contract["split"]["val_end"]))),

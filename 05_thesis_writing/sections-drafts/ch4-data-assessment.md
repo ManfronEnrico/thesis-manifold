@@ -84,7 +84,10 @@ CSD is the worked category. The structural counts and the stationarity, seasonal
 ### 4.3.3 Seasonality
 
 - **Peak months (share of annual units, DVH EXCL. HD)**: December (12.8%), March (10.9%), June (8.9%); September is next at 8.5%.
-- **Holiday indicator**: `HOLIDAY_MONTHS = {3, 6, 12}` (months above the ~75th sales percentile) — **confirmed** at the corrected scope: December/March/June remain the top three. Recomputed locally, and it matches Brian's all-markets ranking, so seasonality is robust to market scope. Whether the same months peak in the other categories is still to be verified.
+- **Peak-month indicator**: `PEAK_MONTHS` — months whose mean `sales_units` exceeds the category's overall mean by more than 10%, measured per category. For CSD this gives {3, 6, 9, 12}.
+  - Renamed from `HOLIDAY_MONTHS` (2026-08-18). No holiday calendar is an input to the pipeline, so the former name asserted a cause the computation never established. The evidence often contradicts it: CSD's peaks are the quarter-end months, consistent with retail trade loading rather than holidays.
+  - **Now verified per category**, resolving the open question: CSD {3, 6, 9, 12}; Danskvand {6, 7, 8, 9} (summer — bottled water); Energidrikke {3, 6, 9} (quarter-ends, **no December peak**); RTD {5, 6, 12}. Four distinct seasonal profiles, each commercially plausible for its category.
+  - The earlier `{3, 6, 12}` came from a top-quartile rule on monthly *totals*, which is confounded by how many brands were active in a month. The current rule uses means, which is not — the panel is unbalanced by construction. September enters CSD's set under the corrected rule.
 
 ### 4.3.4 Autocorrelation and Lag Structure
 
@@ -99,7 +102,7 @@ CSD is the worked category. The structural counts and the stationarity, seasonal
 | `MIN_PERIODS` | 30 (global) | feasibility (other cats have 37–39 periods) + quality | adopted |
 | `LAGS` | 1, 2, 3, 4, 8, 13 | ACF/PACF inspection | empirical; needs prose justification |
 | `ROLLING_WINDOWS` | 4, 13 | 4-month + annual cycle | empirical |
-| `HOLIDAY_MONTHS` | 3, 6, 12 | >75th sales percentile | confirmed under DVH EXCL. HD |
+| `PEAK_MONTHS` | per category: CSD 3,6,9,12; Danskvand 6,7,8,9; Energidrikke 3,6,9; RTD 5,6,12 | mean monthly units >10% above the category mean | derived per category (renamed from `HOLIDAY_MONTHS`) |
 | log transform | applied to `sales_units` | variance stabilisation; series is I(1), diff-stationary (ADF p<0.001) | confirmed |
 | Train / Val / Test | 24 / 6 / 12 months | forward-chaining (Section 4.5) | confirmed |
 
@@ -119,7 +122,7 @@ The three proof-of-concept categories were taken through the identical pipeline 
 | energidrikke | r = 0.988 | March | RED BULL | p = 0.901 | non-stationary, I(1) | +0.71 / +0.39 |
 | RTD | none (promo-zero) | December | BREEZER | p = 0.000 | stationary in level | +0.82 / +0.58 |
 
-Three of the four category-level series are difference-stationary (I(1)); RTD is already stationary in log level. All show strong positive short-horizon autocorrelation (lag-1 +0.55…+0.82), supporting the shared lag/rolling feature set, with near-zero lag-13 carry. Seasonality is category-appropriate (water peaks in summer, the others in autumn/spring). danskvand and RTD carry no promotional signal — the unmeasured-variable limitation already noted. These findings confirm the CSD-derived parameter defaults (`MIN_PERIODS`, `LAGS`, `HOLIDAY_MONTHS`) transfer reasonably across categories; per-series lag structure is brand-dependent and not separately optimised (a stated scope bound).
+Three of the four category-level series are difference-stationary (I(1)); RTD is already stationary in log level. All show strong positive short-horizon autocorrelation (lag-1 +0.55…+0.82), supporting the shared lag/rolling feature set, with near-zero lag-13 carry. Seasonality is category-appropriate (water peaks in summer, the others in autumn/spring). danskvand and RTD carry no promotional signal — the unmeasured-variable limitation already noted. `MIN_PERIODS` and `LAGS` transfer reasonably across categories. `PEAK_MONTHS` does **not** and is no longer treated as a transferable default: it is derived per category, and the four profiles differ materially (water peaks in summer, Energidrikke has no December peak). Per-series lag structure is brand-dependent and not separately optimised (a stated scope bound).
 
 ---
 
@@ -132,7 +135,7 @@ The forecasting substrate uses features derived from the Nielsen facts table at 
 | `lag_1`, `lag_2`, `lag_3`, `lag_4`, `lag_8`, `lag_13` | Lagged `sales_units` (short, medium, seasonal) | LightGBM, XGBoost, Ridge |
 | `rolling_mean_4`, `rolling_std_4` | 4-month rolling mean and standard deviation | LightGBM, XGBoost, Ridge |
 | `rolling_mean_13` | Trailing annual average | LightGBM, XGBoost, Ridge |
-| `month`, `quarter`, `holiday_month` | Calendar features (`holiday_month` = month in {3,6,12}) | LightGBM, XGBoost, Ridge |
+| `month`, `quarter`, `peak_month` | Calendar features (`peak_month` = month in the category's derived `PEAK_MONTHS`) | LightGBM, XGBoost, Ridge |
 | `promo_intensity` | Promotional share of units (clipped 0–1) | LightGBM, XGBoost, Ridge |
 | `weighted_distribution` | Nielsen weighted-distribution availability proxy | LightGBM, XGBoost, Ridge |
 
@@ -165,9 +168,9 @@ The per-category boundaries, taken from the locked split files (`<cat>_split_dat
 
 - **Figures verified (resolved).** All structural, data-quality, and EDA figures in this chapter are recomputed locally from the `data/raw` parquets under the DVH EXCL. HD scope (2026-06-27), superseding the earlier P0023 audit values; no placeholders remain. Residual dependence is only on Brian's final harmonised pipeline, against which the local figures are expected to reconcile.
 - **Market scope (resolved).** Confirmed locally that the inherited "All Markets" aggregation double-counts (6.16× inflation for CSD; 14–17× for the other three categories, which expose 86 market levels). Resolved by scoping all four categories to the single `DVH EXCL. HD` market level; feature matrices regenerated accordingly (2026-06-23) under DVH EXCL. HD + MIN_PERIODS=30.
-- **Per-category EDA (resolved).** All four categories now have a dedicated EDA recomputed under DVH EXCL. HD (§4.3.6): stationarity (three of four series I(1), RTD stationary in level), short-horizon autocorrelation (lag-1 +0.55…+0.82), seasonality, and promo correlation. The CSD-derived parameter defaults (`MIN_PERIODS`, `LAGS`, `HOLIDAY_MONTHS`) are confirmed to transfer reasonably across categories; per-brand lag optimisation remains a stated scope bound.
+- **Per-category EDA (resolved).** All four categories now have a dedicated EDA recomputed under DVH EXCL. HD (§4.3.6): stationarity (three of four series I(1), RTD stationary in level), short-horizon autocorrelation (lag-1 +0.55…+0.82), seasonality, and promo correlation. `MIN_PERIODS` and `LAGS` transfer reasonably across categories; `PEAK_MONTHS` is derived per category rather than inherited, since the four seasonal profiles differ materially. Per-brand lag optimisation remains a stated scope bound.
 - **Thin training windows (danskvand, RTD).** Both have only 23 training months, marginally below the ~24-period ARIMA rule of thumb, and danskvand has just 24 retained brands. Mitigation: these three categories are framed as parallel proofs of concept rather than primary evidence; CSD (42 periods, 77 brands) is the worked category carrying the main claims, and the short-window caveat is restated in the discussion.
-- **Empirical parameters.** `MIN_PERIODS`, `LAGS`, `ROLLING_WINDOWS`, and `HOLIDAY_MONTHS` are EDA-driven, not theory-first. Mitigation: justified post hoc in the modelling chapter and stated as a limitation.
+- **Empirical parameters.** `MIN_PERIODS`, `LAGS`, `ROLLING_WINDOWS`, and `PEAK_MONTHS` are EDA-driven, not theory-first. Mitigation: justified post hoc in the modelling chapter and stated as a limitation.
 - **Promotional coverage (danskvand, RTD).** Promo-zero categories lack the promotional signal (an unmeasured-variable limitation). Mitigation: promotional features are disabled for these categories and the limitation is stated in the discussion.
 - **Weighted-distribution imputation.** Median imputation ignores within-period time variation (moderate risk for niche brands, low for high-coverage brands). Mitigation: documented; sensitivity noted.
 - **Commercial access / confidentiality.** Raw data cannot be redistributed and must stay local; full external reproducibility is limited to processed features, code, and protocol.

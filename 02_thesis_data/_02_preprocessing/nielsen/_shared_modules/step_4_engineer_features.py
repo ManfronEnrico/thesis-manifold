@@ -71,7 +71,7 @@ from step_1_load_and_aggregate import load_and_aggregate, load_merged  # noqa: E
 
 # Contract schema versions this file knows how to read. A version outside this
 # set is refused rather than parsed optimistically -- see load_contract().
-SUPPORTED_CONTRACT_VERSIONS = frozenset({"1.0"})
+SUPPORTED_CONTRACT_VERSIONS = frozenset({"1.1"})
 
 BRAND_COL = "brand"
 GROUP_KEYS = [BRAND_COL]
@@ -171,7 +171,7 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 	min_periods = require(contract, "min_periods", path)
 	lags = require(contract, "lags", path)
 	rolling_windows = require(contract, "rolling_windows", path)
-	holiday_months = require(contract, "holiday_months", path)
+	peak_months = require(contract, "peak_months", path)
 
 	stats = {"rows_in": len(df), "brands_in": int(df[BRAND_COL].nunique())}
 
@@ -201,7 +201,7 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 		lags=lags,
 		rolling_windows=rolling_windows,
 		group_keys=GROUP_KEYS,
-		holiday_months=holiday_months,
+		peak_months=peak_months,
 	)
 	stats["rows_out"] = len(out)
 	stats["cols_out"] = len(out.columns)
@@ -221,7 +221,7 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 def _verify(df: pd.DataFrame, contract: dict, stats: dict) -> None:
 	"""Confirm the matrix actually carries what the contract asked for.
 
-	Cheap, and it catches the failure mode that produced the wrong holiday
+	Cheap, and it catches the failure mode that produced the wrong peak-month
 	feature in the first place: engineer_features accepted the parameter and
 	the pipeline ran, so nothing surfaced until someone read the constant. An
 	assertion on the OUTPUT rather than the input is what makes the contract
@@ -229,7 +229,7 @@ def _verify(df: pd.DataFrame, contract: dict, stats: dict) -> None:
 	"""
 	expected = {f"lag_{lag}" for lag in contract["lags"]}
 	expected |= {f"rolling_mean_{w}" for w in contract["rolling_windows"]}
-	expected |= {"month", "quarter", "holiday_month"}
+	expected |= {"month", "quarter", "peak_month"}
 
 	# promo_intensity is required exactly where its source column exists.
 	# Asserting it unconditionally would fail the categories Nielsen reports no
@@ -246,15 +246,15 @@ def _verify(df: pd.DataFrame, contract: dict, stats: dict) -> None:
 		)
 
 	# The flag must be set on exactly the contracted months and no others.
-	flagged = sorted(int(m) for m in df.loc[df["holiday_month"] == 1, "month"].unique())
-	contracted = sorted(int(m) for m in contract["holiday_months"])
+	flagged = sorted(int(m) for m in df.loc[df["peak_month"] == 1, "month"].unique())
+	contracted = sorted(int(m) for m in contract["peak_months"])
 	if flagged != contracted:
 		raise ContractError(
-			f"holiday_month flag disagrees with the contract.\n"
+			f"peak_month flag disagrees with the contract.\n"
 			f"  Contract: {contracted}\n"
 			f"  Flagged:  {flagged}"
 		)
-	stats["holiday_months_verified"] = contracted
+	stats["peak_months_verified"] = contracted
 
 	if contract["log_transform_target"] and "log_sales_units" not in df.columns:
 		raise ContractError(
@@ -307,7 +307,7 @@ def _report_contract(c: dict) -> None:
 	print(f"  min_periods           = {c['min_periods']}")
 	print(f"  lags                  = {c['lags']}")
 	print(f"  rolling_windows       = {c['rolling_windows']}")
-	print(f"  holiday_months        = {c['holiday_months']}")
+	print(f"  peak_months        = {c['peak_months']}")
 	print(f"  log_transform_target  = {c['log_transform_target']}")
 
 
@@ -321,7 +321,7 @@ def _report_stats(s: dict) -> None:
 		  f"({s['brands_in'] - s['brands_filtered']} dropped)")
 	print(f"  engineered            = {s['rows_out']:,} rows x "
 		  f"{s['cols_out']} columns")
-	print(f"  holiday flag set on   = {s['holiday_months_verified']} "
+	print(f"  peak flag set on      = {s['peak_months_verified']} "
 		  f"(matches contract)")
 	print(f"  promo_intensity       = "
 		  f"{'built' if s.get('has_promo') else 'OMITTED (category has no promo_units)'}")
@@ -357,7 +357,7 @@ def _persist(df: pd.DataFrame, stats: dict, contract: dict,
 			"min_periods": contract["min_periods"],
 			"lags": contract["lags"],
 			"rolling_windows": contract["rolling_windows"],
-			"holiday_months": contract["holiday_months"],
+			"peak_months": contract["peak_months"],
 		},
 		"result": stats,
 		"output_parquet": out.name,
@@ -373,7 +373,7 @@ def _persist(df: pd.DataFrame, stats: dict, contract: dict,
 		("rows_engineered", stats["rows_out"]),
 		("columns_engineered", stats["cols_out"]),
 		("min_periods_applied", contract["min_periods"]),
-		("holiday_months_applied", str(contract["holiday_months"])),
+		("peak_months_applied", str(contract["peak_months"])),
 	]
 	save_table(
 		pd.DataFrame(rows, columns=["quantity", "value"]),

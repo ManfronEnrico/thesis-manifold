@@ -39,7 +39,7 @@ OUT = THESIS_RESULTS_SRQ2_DIR; OUT.mkdir(parents=True, exist_ok=True)
 SEED = 42
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "holiday_month", "promo_intensity", "weighted_distribution"]
+            "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
 # Ch6 §6.5.6 selected (model fixed to the ladder; granularity per category)
 # GRAIN (P0035, 2026-08-01): DEC-GRAIN (2026-07-12) locked the thesis to
 # brand x month. danskvand was previously pinned to the 'bychain' grain here;

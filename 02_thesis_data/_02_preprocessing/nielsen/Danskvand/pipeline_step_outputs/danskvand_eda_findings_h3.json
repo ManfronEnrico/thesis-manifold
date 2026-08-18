@@ -1,7 +1,7 @@
 {
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "category": "Danskvand",
-  "generated_utc": "2026-08-18T12:47:07+00:00",
+  "generated_utc": "2026-08-18T13:31:41+00:00",
   "generated_by": "step_3_derive_params.py",
   "target_col": "sales_units",
   "forecast_horizon": 3,
@@ -20,7 +20,7 @@
   ],
   "warmup_periods": 13,
   "min_periods": 17,
-  "holiday_months": [
+  "peak_months": [
     6,
     7,
     8,
@@ -56,8 +56,8 @@
     "lags": "modelling decision; the lag-12 term is retained because the autocorrelation analysis (step 2, section 3.16) finds it significant across the majority of leading brands",
     "warmup_periods": "max(max(lags), max(rolling_windows))",
     "min_periods": "DERIVED: warmup(13) + horizon(3) + 1 = 17. A brand with fewer months contributes zero usable training rows, so the threshold excludes what is unrepresentable under this feature specification rather than what is judged low quality",
-    "holiday_months": "months whose mean sales_units exceeds the overall mean by more than 10%; measured on this category's own data rather than inherited",
-    "holiday_months_uplift": {
+    "peak_months": "months whose mean sales_units exceeds the overall mean by more than 10%; measured on this category's own data rather than inherited",
+    "peak_months_uplift": {
       "1": -0.2445,
       "2": -0.2606,
       "3": -0.0641,

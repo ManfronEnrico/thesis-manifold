@@ -1,12 +1,12 @@
 {
   "id": "3",
   "session_id": "18",
-  "subject": "Build shared step_2_eda_descriptive.py (plots + tables)",
+  "subject": "Switch CSD market filter to parent 1256338",
   "description": "DONE 2026-08-18. _shared_modules/step_2_eda_descriptive.py, 18 sections. CSD 18/18 (22 tables, 8 plots), Energidrikke 18/18, Danskvand 16/18, RTD 16/18. Zero failures. Skips are driven by column discovery (promo_units absent), never keyed on a category name. Also fixed ArrowMemoryError in step 1 via predicate pushdown (10.3M -> 223k rows), switched tables to Markdown with interpretation bullets, and recovered 4 orphaned notebook plots as sections 3.15-3.18.",
   "activeForm": "Building shared step 2 descriptive EDA",
   "status": "completed",
-  "blocks": [],
-  "blockedBy": [
-    "2"
-  ]
+  "blocks": [
+    "4"
+  ],
+  "blockedBy": []
 }

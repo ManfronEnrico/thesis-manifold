@@ -65,7 +65,7 @@ fig.tight_layout(); fig.savefig(FIG / "fig1_model_ladder.png", dpi=150); plt.clo
 from xgboost import XGBRegressor
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "holiday_month", "promo_intensity", "weighted_distribution"]
+            "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
 fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix.parquet")
 d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
 top = d.groupby("brand")["sales_units"].sum().idxmax()

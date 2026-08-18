@@ -1,12 +1,10 @@
 {
   "id": "9",
   "session_id": "24",
-  "subject": "Retire notebook, old step scripts and four orchestrators",
+  "subject": "Measure single-brand vs pooled training cost",
   "description": "ONLY AFTER task 8 PASSES.\n\nBuild the new tree ALONGSIDE the old; delete nothing until parity is confirmed. Slightly messier mid-flight, but nothing is lost if the parity check surfaces a discrepancy.\n\nRemove once green:\n  CSD/pipeline_step_scripts/pre_processing_notebook_csd.ipynb (57,814 tokens)\n  CSD/pipeline_step_scripts/pre_processing_notebook_csd.py (the export)\n  {Danskvand,Energidrikke,RTD}/pre_{cat}_{0..6}_*.py (21 files)\n  {CSD,Danskvand,Energidrikke,RTD}/preprocessing_{cat}.py (4 orchestrators)\n\nNet: 32 files -> 11.\n\nARCHIVE rather than delete anything carrying decision evidence -- follow the P0035 precedent (.archive/grain_artifacts_p0035_2026-08/ with a README explaining why). The notebook holds the EDA reasoning that justified several parameter choices; archive it with a pointer to the plan rather than dropping it.\n\nKEEP: _shared_modules/base_preprocessing.py (F32 -- utility library, no orchestration, no conflict), engineer_features.py, terminal_utils.py, timing_utils.py.\n\nAlso update: user-docs/contributing/repository_map.md, user-docs/architecture/feature_engineering_design.md (cites DEFAULT_TRAIN_END/DEFAULT_VAL_END at line 81 -- now LEGACY_*), and any handover docs referencing pre_{cat}_N_*.py paths.",
   "activeForm": "Retiring the old pipeline tree",
   "status": "pending",
   "blocks": [],
-  "blockedBy": [
-    "8"
-  ]
+  "blockedBy": []
 }

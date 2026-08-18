@@ -12,7 +12,7 @@ from step 3 (which derives the feature-engineering contract). If a number
 computed here is needed by a later step, it is recomputed there deliberately
 rather than smuggled across via a JSON file.
 
-Several cells printed a "recommendation" (MIN_PERIODS = 40, HOLIDAY_MONTHS =
+Several cells printed a "recommendation" (MIN_PERIODS = 40, PEAK_MONTHS =
 {...}). Those are reproduced as printed evidence, exactly as the notebook had
 them, and are NOT written anywhere a later step could pick them up. The real
 values are step 3's job.
@@ -99,7 +99,7 @@ class EdaContext:
 	"""Carries state shared between sections, plus the run's bookkeeping.
 
 	The notebook got this for free: every cell shared one namespace, so cell 33
-	could read `holiday_months` and `monthly_sales` computed back in cell 31.
+	could read `peak_months` and `monthly_sales` computed back in cell 31.
 	Scripts do not share a namespace, so that coupling is made explicit here --
 	a section writes what later sections need into `ctx.derived`.
 	"""
@@ -724,11 +724,11 @@ def s07_zero_sales(ctx: EdaContext) -> None:
 
 
 # ============================================================================
-# 3.08 -- SEASONAL PATTERN ANALYSIS (HOLIDAY EFFECT)
+# 3.08 -- SEASONAL PATTERN ANALYSIS (PEAK-MONTH EFFECT)
 # ============================================================================
 
 def s08_seasonality(ctx: EdaContext) -> None:
-	@section(ctx, "3.08  SEASONAL PATTERN ANALYSIS (HOLIDAY EFFECT)",
+	@section(ctx, "3.08  SEASONAL PATTERN ANALYSIS (PEAK-MONTH EFFECT)",
 			 requires=(TARGET_COL,))
 	def _run():
 		df = ctx.df
@@ -767,17 +767,17 @@ def s08_seasonality(ctx: EdaContext) -> None:
 		top_3 = monthly_sales.nlargest(3).index.tolist()
 		bottom_3 = monthly_sales.nsmallest(3).index.tolist()
 		q75 = monthly_sales.quantile(0.75)
-		holiday_months = sorted(m for m in monthly_sales.index
+		peak_months = sorted(m for m in monthly_sales.index
 								if monthly_sales[m] >= q75)
 
 		peak_valley = pd.DataFrame({
 			"Category": ["Top 3 Months", "Bottom 3 Months",
-						 "Holiday Months (75th pct)"],
-			"Months": [str(top_3), str(bottom_3), str(holiday_months)],
+						 "Peak Months (75th pct)"],
+			"Months": [str(top_3), str(bottom_3), str(peak_months)],
 			"% of Sales": [
 				f"{100 * monthly_sales[top_3].sum() / total:.1f}%",
 				f"{100 * monthly_sales[bottom_3].sum() / total:.1f}%",
-				f"{100 * monthly_sales[holiday_months].sum() / total:.1f}%",
+				f"{100 * monthly_sales[peak_months].sum() / total:.1f}%",
 			],
 		})
 		ctx.save(peak_valley, "step_2_08_peak_valley", "Peak & Valley Analysis",
@@ -792,11 +792,11 @@ def s08_seasonality(ctx: EdaContext) -> None:
 
 		# Reported as evidence only. Step 3 derives the contract value; this
 		# number is deliberately not persisted anywhere a later step reads.
-		print(f"\n  Observed holiday months (top quartile, each >= "
-			  f"{q75:,.0f} units): {holiday_months}")
+		print(f"\n  Observed peak months (top quartile, each >= "
+			  f"{q75:,.0f} units): {peak_months}")
 
 		ctx.derived["monthly_sales"] = monthly_sales
-		ctx.derived["holiday_months"] = holiday_months
+		ctx.derived["peak_months"] = peak_months
 		ctx.derived["q75"] = float(q75)
 		ctx.derived["bottom_3_months"] = bottom_3
 
@@ -818,13 +818,13 @@ def s09_monthly_barplot(ctx: EdaContext) -> None:
 			return
 
 		monthly_sales = ctx.derived["monthly_sales"]
-		holiday_months = ctx.derived["holiday_months"]
+		peak_months = ctx.derived["peak_months"]
 		q75 = ctx.derived["q75"]
 
 		fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
 		months = list(range(1, 13))
 		values = [monthly_sales.get(m, 0) for m in months]
-		colors = [PLOT_COLOR if m in holiday_months else "#A9A9A9"
+		colors = [PLOT_COLOR if m in peak_months else "#A9A9A9"
 				  for m in months]
 
 		bars = ax.bar(MONTH_NAMES, values, color=colors, edgecolor="black",
@@ -847,7 +847,7 @@ def s09_monthly_barplot(ctx: EdaContext) -> None:
 		plt.tight_layout()
 		ctx.savefig(plt, "03_monthly_sales_distribution")
 
-		print(f"  Peak months (highlighted): {holiday_months}")
+		print(f"  Peak months (highlighted): {peak_months}")
 		print(f"  Valley months: {ctx.derived['bottom_3_months']}")
 
 
@@ -924,9 +924,9 @@ def s10_decomposition(ctx: EdaContext) -> None:
 		peaks = seasonal_by_month.nlargest(3).index.tolist()
 		print(f"\n  Trend over the observed window: {direction}")
 		print(f"  Seasonal peaks (top 3 months): {peaks}")
-		if "holiday_months" in ctx.derived:
+		if "peak_months" in ctx.derived:
 			print(f"  Compare with 3.08 top-quartile months: "
-				  f"{ctx.derived['holiday_months']}")
+				  f"{ctx.derived['peak_months']}")
 
 
 # ============================================================================

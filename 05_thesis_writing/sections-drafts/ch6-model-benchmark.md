@@ -66,10 +66,31 @@
 - Rolling-window cross-validation for hyperparameter selection (Prophet: built-in; LightGBM/XGBoost: custom)
 
 ### 6.3.2 Feature engineering
+
+> **NEEDS REVIEW (2026-08-18).** The bullets below describe a WEEKLY grain and a
+> holiday-calendar input, neither of which matches the implemented pipeline. The
+> locked grain is brand x month (DEC-GRAIN) and no holiday calendar is an input.
+> Corrected list follows; the original is retained beneath it for comparison
+> until Brian confirms the change.
+
+- Lag features: t-1, t-2, t-3, t-4, t-8, t-13 months
+- Rolling statistics: 4-month and 13-month rolling mean; 4-month rolling std
+- Calendar: month, quarter, and a binary `peak_month` flag derived from the
+  category's own seasonal profile (months whose mean units exceed the category
+  mean by >10%). **No holiday calendar is used** -- the flag is measured from
+  the sales distribution, not from calendar dates.
+- Promotional: `promo_intensity` (promotional share of units, clipped 0-1,
+  lagged one period). **Available for CSD and Energidrikke only** -- Nielsen
+  reports no promotional measure for Danskvand or RTD, so the feature is omitted
+  rather than zero-filled for those categories, and the four categories do not
+  share an identical feature space.
+
+<!-- SUPERSEDED, pending review:
 - Lag features: t-1, t-2, t-4, t-8, t-52 weeks (seasonal lag)
 - Rolling statistics: 4-week, 8-week, 13-week rolling mean/std
 - Calendar: week of year, month, quarter, Danish public holidays
 - Promotional: price discount flag, display/feature flag (if available in Nielsen data)
+-->
 
 ### 6.3.3 Execution protocol
 - Sequential model execution: load → fit → predict → unload → gc.collect()

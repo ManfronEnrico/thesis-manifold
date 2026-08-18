@@ -1,9 +1,9 @@
 ---
 pid: P0038
 created: 2026-08-12 18:32:00
-updated: 2026-08-18 00:00:00
+updated: 2026-08-18 23:00:00
 status: in_progress
-focus_detail: "Steps 0/1/2 shipped and verified across all four categories. DEC-MINPERIODS settled (MIN_PERIODS = MAX_LAG + HORIZON + 1, derived). DEC-HORIZON CLOSED 2026-08-18: H=3 headline (quarter = budget-authorisation period), H=1 reported alongside as measurement anchor, H=6/H=12 excluded as unevaluable. Both open questions answered by Brian. NEXT: task 4 (step_3_derive_params.py + contract JSON) -- must take --horizon as a parameter and emit MIN_PERIODS + n_test_origins per horizon, so step 5 can assert evaluability. Remaining open defect: TRAIN_END/VAL_END drift (F25/F28). Blocks task 23 (CSD parity check), the P0033 gate."
+focus_detail: "Steps 0/1/2/3/4 shipped and verified across all four categories at both reported horizons (8/8 runs). DEC-HORIZON closed (H=3 headline, H=1 anchor). DEC-MINPERIODS closed. F25/F28 confirmed already fixed by task 15. DEC-PEAKNAME 2026-08-18: holiday_month(s) renamed to peak_month(s) throughout code, contracts and thesis prose -- no holiday calendar is an input, so the old name asserted an unestablished cause; contract schema bumped 1.0 -> 1.1 so stale contracts are refused. F59: Danskvand and RTD have NO promo_units, so promo_intensity is omitted (not zero-filled) there and the four categories do not share a feature space -- must be stated wherever results are compared. NEXT: task 6 (generalise steps 5 and 6 to --category/--horizon); step 5 must REFUSE a split where the contract reports horizon_evaluable: false. Blocks task 23 (CSD parity check), the P0033 gate."
 ---
 
 # P0038 — Decompose the CSD Notebook into Shared Step Scripts
@@ -47,12 +47,14 @@ working orchestrators are **184 lines each and differ only in the category name*
 | ID | Decision | Basis |
 |----|----------|-------|
 | **DEC-SPLIT-FORMAT** | Script-based, not notebook | Broken orchestrator; 57.8k-token edit wall; scriptable/repeatable pipeline; per-category re-runs |
-| **DEC-SHARED-SEAM** | Shared = steps 0,1,2,3,5,6; per-category = step 4 only | Capability tiers (32/32/31/15 cols, 7/7/6/0 promo) differ *only* at feature engineering |
-| **DEC-CONTRACT** | `{category}_eda_findings.json` is the step 3 → step 4 interface | The JSON already exists and already carries all six params + rationale; it is simply never read back |
+| **DEC-SHARED-SEAM** | ~~Shared = steps 0,1,2,3,5,6; per-category = step 4 only~~ **SUPERSEDED 2026-08-18: ALL steps are shared, including step 4** | The capability tiers that motivated a per-category step 4 turned out to be expressible as *data*, not as code: differences arrive through the step 3 contract (peak months, min_periods) and through column discovery (F59: Danskvand/RTD have no promo_units). A per-category step 4 would have reintroduced the duplication this plan exists to remove. Shipped as `step_4_engineer_features.py` — deliberately not named after CSD |
+| **DEC-CONTRACT** | `{category}_eda_findings_h{N}.json` is the step 3 → step 4 interface | The JSON already exists and already carries all six params + rationale; it was simply never read back. Filename carries the horizon because H=1 and H=3 disagree on `min_periods` (15 vs 17), so one run would otherwise overwrite the other's contract. Carries `contract_version`; step 4 refuses a version it does not know |
 | **DEC-EDA-SPLIT** | Descriptive EDA and parameter-deriving EDA are separate steps | Re-deriving params must not require regenerating ~20 plots; keeps thesis-figure code out of the pipeline's dependency path |
 | **DEC-NO-FALLBACK** | Step 4 fails loudly if the contract JSON is missing/incomplete | Silent in-code defaults are exactly what let the split and MIN_PERIODS rot unnoticed |
 | **DEC-MINPERIODS** | `MIN_PERIODS = MAX_LAG + HORIZON + 1` (= 15), derived not chosen | Brian, 2026-08-18. A brand with fewer months contributes **zero** usable training rows, so the threshold excludes what is unrepresentable rather than what is judged low-quality. Measured to cost **0.0% of training rows** in all four categories, against 20-41% lost at the previous hardcoded 40. Generalises: yields 9 at lag-6, 6 at lag-3 |
 | **DEC-HORIZON** | **H=3 primary (headline), H=1 reported alongside as measurement anchor.** H=6/H=12 excluded | Revised 2026-08-18 after Brian challenged an earlier H=1-only conclusion on domain grounds. Horizon is set by the decision it must support (the quarter is the budget-authorisation period) and bounded by what the extract can evaluate (H=12 has **zero** evaluable test origins; H=3 has 17 pooled across the four categories, ~250 brands each). H=1 retained because only it can separate "interfaces perform alike" from "test lacked power" if H=3 is inconclusive. Step 3 takes `--horizon`; `FORECAST_HORIZON` is a default, not the source of truth |
+| **DEC-PEAKNAME** | `holiday_month(s)` renamed to `peak_month(s)` everywhere; contract schema 1.0 → 1.1 | Brian, 2026-08-18. The rule is "mean monthly units exceed the category mean by >10%" — **no holiday calendar is an input anywhere in the pipeline**, so the old name asserted a cause the computation never established, and the evidence often contradicts it (CSD peaks at quarter-ends = trade loading; Danskvand in summer = weather; Energidrikke has *no* December peak). The name is also how the original defect survived review: a hardcoded `{1,4,6,10,12}` reads as a plausible holiday list, but as "peak months for soft drinks" it is obviously wrong — January is the year's weakest month at −26.6%. Also corrected the thesis prose, which claimed "a binary indicator for Danish public holidays" as an input (Ch1, Ch4, Ch6 §6.3.2) |
+| **DEC-NO-PROMO-FILL** | Where `promo_units` is absent, `promo_intensity` is **omitted, not zero-filled** | F59, 2026-08-18. Nielsen reports no promotion for Danskvand or RTD. A constant-zero column asserts "no promotion ran", which the data does not support and a model would learn from. An absent feature is honest; a fabricated one is not. Consequence: the four categories do **not** share a feature space (47/29/47/45 cols), which must be stated wherever results are compared across categories. Step 4 records `has_promo` per run so it is never silent |
 | **DEC-OPEN-WORLD** | Shared steps **discover** columns; they never enumerate them | Brian, 2026-08-12. A hardcoded list is category-*dependent* by construction — it silently drops whatever it does not name. The notebook's 5-column `agg_dict` discarded 24 of 29 available measures (F39) and could not express per-category spelling variants. Only the forecast target is named, and for its **role**, not its category |
 
 ## Evidence base
@@ -138,8 +140,8 @@ gets produced.
 | 1 | Build shared `step_0_validate_cache.py` + console/table capture utils | 1 | — | **complete** |
 | 2 | Build shared `step_1_load_and_aggregate.py` (carries DEC-SCOPE) | 1 | 1 | **complete** |
 | 3 | Build shared `step_2_eda_descriptive.py` (plots + tables) | 2 | 2 | **complete** |
-| 4 | Build shared `step_3_derive_params.py` + contract JSON schema | 2 | 2 | pending |
-| 5 | Build `step_4_engineer_csd.py` reading the contract | 3 | 4 | pending |
+| 4 | Build shared `step_3_derive_params.py` + contract JSON schema | 2 | 2 | **complete** |
+| 5 | Build shared `step_4_engineer_features.py` reading the contract (renamed: nothing in it is CSD-specific) | 3 | 4 | **complete** |
 | 6 | Generalise `step_5_apply_split.py` + `step_6_save_outputs.py` to `--category` | 4 | 5 | pending |
 | 7 | Build shared `run_preprocessing.py` orchestrator | 4 | 6 | pending |
 | 8 | Run CSD end-to-end + parity-check vs last notebook run | 5 | 7 | pending |

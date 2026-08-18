@@ -507,3 +507,45 @@ tested, all raising `ContractError` rather than defaulting — including the
   pooled output has to either intersect the columns or record the difference. Not
   step 4's call, but it must not be discovered silently.
 
+---
+
+## Session 2026-08-18 (cont.) — DEC-PEAKNAME, and the task list resynced
+
+Brian challenged the `holiday_month` feature name on review: it is a peak-month rate,
+not a holiday indicator. He was right, and the problem was larger than naming — the
+claim had reached approved thesis prose. Ch1 tells the reader the exogenous predictors
+include *"a binary indicator for Danish public holidays"*, and Ch6 §6.3.2 lists Danish
+public holidays among the engineered features. **No holiday calendar is an input
+anywhere in the pipeline.** Both corrected (F62).
+
+Renamed across 13 code files and 3 thesis chapters. Contract schema bumped 1.0 → 1.1
+so stale contracts are refused rather than misread — verified firing before
+regenerating. Re-ran steps 3 and 4: 8/8 succeed, row counts identical. Names changed,
+values did not.
+
+Deliberately left intact: Ch6 §6.2.2's claim that Prophet handles the Danish holiday
+calendar. That is a genuine capability of Prophet (`add_country_holidays('DK')`), not a
+description of the engineered feature.
+
+Flagged, not fixed: Ch6 §6.3.2 also describes a weekly grain that predates DEC-GRAIN.
+Corrected list written with the original kept in a comment and a NEEDS REVIEW marker,
+since it may reflect a deliberate earlier decision.
+
+**Task list resynced.** The persisted `tasks/` folder held only 1–9 while the session
+list had 24 — the missing 15 would have been lost at session end. All 24 now written
+with current status (16 complete, 8 open) plus dependency edges. `tasks/4.json`
+annotated with the partial answer F59 gave it: the promo-degeneracy assertion must
+treat an ABSENT column as legitimate category capability rather than as a failure.
+
+### State
+
+- Tasks 1–5 of the plan complete (session tasks 16–20).
+- Two decision rows in task_plan.md were stale and are corrected: DEC-SHARED-SEAM
+  (step 4 is shared, not per-category — the capability differences turned out to be
+  expressible as data) and DEC-CONTRACT (filename now carries the horizon).
+- NEXT: task 6 — generalise `step_5_apply_split.py` and `step_6_save_outputs.py` to
+  `--category` / `--horizon`. **Step 5 must REFUSE a split where the contract reports
+  `horizon_evaluable: false`**; step 4 only warns.
+- Carry into step 6: the four categories no longer share a feature space (F59), so a
+  pooled output must either intersect columns or record the difference explicitly.
+

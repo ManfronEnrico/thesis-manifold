@@ -30,10 +30,10 @@ warnings.filterwarnings("ignore")
 RES5 = THESIS_RESULTS_SRQ1_DIR
 OUT = THESIS_MODELLING_SERVING_SYSTEM_A_DIR; OUT.mkdir(parents=True, exist_ok=True)
 SEED = 42
-LAGS = (1, 2, 3, 4, 8, 13); HOL = {3, 6, 12}
+LAGS = (1, 2, 3, 4, 8, 13); PEAK = {3, 6, 12}
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "holiday_month", "promo_intensity", "weighted_distribution"]
+            "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
 # Ch6 §6.5.6 selected (model = tuned XGBoost; granularity per category)
 # GRAIN (P0035, 2026-08-01): DEC-GRAIN (2026-07-12) locked the thesis to
 # brand x month. danskvand was previously pinned to the 'bychain' grain here;
@@ -86,7 +86,7 @@ def build_service():
             feat["rolling_mean_4"] = np.nanmean(past[-4:]) if len(past) else np.nan
             feat["rolling_std_4"] = np.nanstd(past[-4:]) if len(past) >= 2 else np.nan
             feat["rolling_mean_13"] = np.nanmean(past[-13:]) if len(past) else np.nan
-            feat["month"] = nm; feat["quarter"] = (nm - 1) // 3 + 1; feat["holiday_month"] = int(nm in HOL)
+            feat["month"] = nm; feat["quarter"] = (nm - 1) // 3 + 1; feat["peak_month"] = int(nm in PEAK)
             feat["promo_intensity"] = float(obs.iloc[-1].get("promo_intensity", 0) or 0)
             feat["weighted_distribution"] = float(obs.iloc[-1].get("weighted_distribution", np.nan))
             X = pd.DataFrame([{f: feat.get(f, np.nan) for f in FEATURES}]).fillna(0.0)

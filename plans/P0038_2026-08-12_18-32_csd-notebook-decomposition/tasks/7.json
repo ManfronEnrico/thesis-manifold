@@ -1,14 +1,10 @@
 {
   "id": "7",
   "session_id": "22",
-  "subject": "Build shared run_preprocessing.py orchestrator",
+  "subject": "Resolve feature redundancy and weighted_dist suspicion",
   "description": "One shared orchestrator in _shared_modules/ replacing all four per-category orchestrators.\n\nF31: the three working orchestrators are 184 lines each and diff returns ONLY the category constant, the four parquet filenames, and usage strings echoing the script's own filename. Zero logic differences. CSD's (210 lines) is broken -- it invokes step scripts P0030 deleted (F30).\n\nCLI, preserving the existing flag vocabulary so muscle memory carries over:\n  --category CSD|Danskvand|Energidrikke|RTD  (required; consider --all)\n  --run-step N     run only step N\n  --from-step N    resume from step N\n  --grain bymonth  DEC-GRAIN locked; other values raise NotImplementedError\n\nSteps: 0 validate cache, 1 load+aggregate, 2 descriptive EDA, 3 derive params, 4 engineer (per-category), 5 split, 6 save outputs.\n\nDispatches to CSD/step_4_engineer_csd.py by category for step 4 only; every other step resolves to the shared script.\n\nVerify: --run-step 4 alone works given prior outputs on disk; a bad --grain raises; a missing category errors clearly.",
   "activeForm": "Building shared orchestrator",
   "status": "pending",
-  "blocks": [
-    "8"
-  ],
-  "blockedBy": [
-    "6"
-  ]
+  "blocks": [],
+  "blockedBy": []
 }

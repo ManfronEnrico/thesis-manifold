@@ -45,7 +45,7 @@ DEFAULT_ROLLING_WINDOWS: tuple[int, ...] = (4, 13)
 # summer (June-September); its script claimed January.
 #
 # There is no correct default, because seasonality is a property of the
-# category, so `holiday_months` is now a REQUIRED argument. Step 3 measures it
+# category, so `peak_months` is now a REQUIRED argument. Step 3 measures it
 # per category and writes it to the contract; step 4 passes it through.
 DEFAULT_TARGET_MARKET: str = "DVH EXCL. HD"
 # REMOVED 2026-08-18: there was a DEFAULT_MIN_PERIODS = 30 here. It was a THIRD
@@ -383,13 +383,13 @@ def engineer_features(
     rolling_windows: Iterable[int] = DEFAULT_ROLLING_WINDOWS,
     group_keys: list[str] = ["brand"],
     *,
-    holiday_months: Iterable[int],
+    peak_months: Iterable[int],
 ) -> pd.DataFrame:
     """
     Add time-series features per group (default: per brand):
       - autoregressive lags
       - rolling mean/std (with shift(1) — no look-ahead)
-      - calendar (month, quarter, holiday_month)
+      - calendar (month, quarter, peak_month)
       - promo intensity
       - log target
 
@@ -411,7 +411,7 @@ def engineer_features(
         df[f"lag_{lag}"] = g[target_col].shift(lag)
 
     # Rolling statistics on shifted series (avoids leakage of t into t)
-    holiday_set = set(holiday_months)
+    peak_set = set(peak_months)
     for w in rolling_windows:
         df[f"rolling_mean_{w}"] = (
             g[target_col]
@@ -428,7 +428,7 @@ def engineer_features(
     # Calendar features
     df["month"] = df["date"].dt.month
     df["quarter"] = df["date"].dt.quarter
-    df["holiday_month"] = df["month"].isin(holiday_set).astype(int)
+    df["peak_month"] = df["month"].isin(peak_set).astype(int)
 
     # Promo intensity (clip to [0, 1]), lagged one period.
     #
@@ -630,7 +630,7 @@ class FeatureEngineer:
     # notes at the top of this module for why a default is wrong for each.
     # kw_only so they can stay required despite following defaulted fields --
     # and so callers must name them at the call site.
-    holiday_months: frozenset[int] = field(kw_only=True)
+    peak_months: frozenset[int] = field(kw_only=True)
     min_periods: int = field(kw_only=True)
     # None -> apply_split derives cutoffs proportionally from the data. Set both
     # to (year, month) tuples only to reproduce a previously published split.
@@ -669,7 +669,7 @@ class FeatureEngineer:
             target_col=self.target_col,
             lags=self.lags,
             rolling_windows=self.rolling_windows,
-            holiday_months=self.holiday_months,
+            peak_months=self.peak_months,
             group_keys=group_keys,
         )
         df = apply_split(

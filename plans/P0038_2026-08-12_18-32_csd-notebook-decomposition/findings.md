@@ -1162,3 +1162,63 @@ Both are now rebuilt from `date` after the fill. Rebuilt rather than merged back
 so calendar-filled rows (which have no source row) also carry correct values.
 Verified consistent with `date` on every row.
 
+---
+
+## F62 — the feature was never a holiday indicator, and the thesis said it was
+
+Brian, reviewing the step 4 output: *"why is it called holiday? technically it's just
+the peak month rate."* Correct, and the consequence reached further than the codebase.
+
+**What the feature actually is.** A month qualifies when its mean `sales_units` exceeds
+the category's overall mean by more than 10%. That is a statement about the sales
+distribution. **No holiday calendar is an input anywhere in the pipeline** — no Danish
+public holidays, no Easter dates, no school terms.
+
+**The evidence contradicts the holiday reading in three of four categories:**
+
+| Category | Peak months | Most plausible driver |
+|----------|-------------|----------------------|
+| CSD | 3, 6, 9, 12 | quarter-ends — retail **trade loading** |
+| Danskvand | 6, 7, 8, 9 | summer heat — **weather** |
+| Energidrikke | 3, 6, 9 | quarter-ends, and **no December peak at all** |
+| RTD | 5, 6, 12 | early summer + December |
+
+Energidrikke is the clearest refutation: it peaks at quarter-ends while skipping
+December, close to the opposite of what "holiday month" predicts. Danskvand's August
+peak is bottled water in warm weather; calling it a holiday month is simply wrong.
+
+**The name is also how the original defect survived review.** A hardcoded
+`{1, 4, 6, 10, 12}` reads as a plausible list of holidays. Read as *"peak months for
+soft drinks"* it is obviously wrong — January is the year's **weakest** month at
+−26.6%. A name that describes what was measured invites the check; a name that
+hypothesises why deflects it.
+
+**Where it had already propagated — the serious part.** The claim had reached
+approved thesis prose as a statement of fact about the data:
+
+| Location | Claim | Status |
+|----------|-------|--------|
+| Ch1 §intro footnote | exogenous predictors include *"a binary indicator for Danish public holidays"* | **factually wrong**, corrected |
+| Ch4 §4.3.3, §4.3.4 tables | `HOLIDAY_MONTHS = {3,6,12}`, "Holiday indicator" | corrected, now per-category |
+| Ch6 §6.3.2 | *"Calendar: week of year, month, quarter, Danish public holidays"* | **factually wrong**, corrected |
+| Ch6 §6.2.2 | Prophet *"handles Danish holiday calendar"* | **left intact** — legitimate; Prophet genuinely supports `add_country_holidays('DK')`. This is a model capability, not a description of the engineered feature |
+
+An examiner reading Ch1 would reasonably conclude a holiday calendar was an input. It
+was not. This is the kind of claim that is hard to defend in a viva precisely because
+it is not a modelling judgement — it is a description of the data that does not match
+the data.
+
+**Renamed throughout** (13 code files, 3 thesis chapters): `holiday_month(s)` →
+`peak_month(s)`, `HOLIDAY_MONTHS` → `PEAK_MONTHS`, plus console labels, EDA section
+headings and table captions. Contract schema bumped **1.0 → 1.1**, so a stale contract
+is refused rather than read with the renamed field silently absent — verified firing.
+
+Re-ran steps 3 and 4 for all four categories at both horizons: **8/8 succeed, with row
+counts identical to before.** The rename changed names, not values.
+
+**Also found while correcting Ch6 §6.3.2**: it describes a *weekly* grain (t-52 weeks,
+4/8/13-week windows) that no longer matches the locked brand×month grain (DEC-GRAIN).
+Corrected list written in place with the original retained in an HTML comment and a
+NEEDS REVIEW flag — not silently rewritten, since it may reflect an earlier deliberate
+design decision.
+

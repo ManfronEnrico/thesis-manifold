@@ -14,4 +14,4 @@
 | rows_engineered          | 4370          |
 | columns_engineered       | 47            |
 | min_periods_applied      | 17            |
-| holiday_months_applied   | [3, 6, 9, 12] |
+| peak_months_applied      | [3, 6, 9, 12] |

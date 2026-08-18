@@ -48,7 +48,7 @@ DEFAULT_GRAINS = ["bymonth"]
 
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "holiday_month",
+            "month", "quarter", "peak_month",
             "promo_intensity", "weighted_dist"]
 
 # series key per dataset

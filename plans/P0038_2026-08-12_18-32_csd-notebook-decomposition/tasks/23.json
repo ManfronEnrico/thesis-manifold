@@ -1,0 +1,13 @@
+{
+  "id": "23",
+  "description": "",
+  "activeForm": "Run CSD end-to-end and parity-check vs last notebook run",
+  "subject": "Run CSD end-to-end and parity-check vs last notebook run",
+  "status": "pending",
+  "blockedBy": [
+    "22"
+  ],
+  "blocks": [
+    "24"
+  ]
+}

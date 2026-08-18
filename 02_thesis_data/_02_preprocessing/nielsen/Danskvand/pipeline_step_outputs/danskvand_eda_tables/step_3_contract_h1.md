@@ -12,7 +12,7 @@
 | warmup_periods             | 13                  |
 | lags                       | [1, 2, 3, 4, 8, 13] |
 | rolling_windows            | [4, 13]             |
-| holiday_months             | [6, 7, 8, 9]        |
+| peak_months                | [6, 7, 8, 9]        |
 | log_transform_target       | True                |
 | train_end                  | (2025, 7)           |
 | val_end                    | (2026, 1)           |
