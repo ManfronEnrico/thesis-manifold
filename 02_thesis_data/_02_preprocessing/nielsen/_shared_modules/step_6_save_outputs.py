@@ -70,9 +70,31 @@ SPLITS = ("train", "val", "test")
 # in the matrix is a feature. Derived by exclusion so a newly engineered column
 # is picked up automatically -- an allow-list would silently omit it.
 NON_FEATURE_COLS = frozenset({
-	"brand", "date", "period_year", "period_month", "split",
+	"brand", "date", "period_index", "period_year", "period_month", "split",
 	"sales_units", "log_sales_units",
 })
+
+
+def add_period_index(df: pd.DataFrame) -> pd.DataFrame:
+	"""Add a monotonic integer period counter, shared across all brands.
+
+	Downstream consumers sort panels and index plot axes by period. `date` can
+	do that, but an integer counter is what a panel model expects and what the
+	serving path uses to find "the period after the last observed one".
+
+	Computed from the calendar, NOT from row order: two brands observed in the
+	same month must receive the same index, or a pooled model would place them
+	at different points on the same axis. Anchored at the panel's first month so
+	the value is stable for a given category+horizon.
+
+	It is a NON_FEATURE_COL by construction -- a monotonic counter correlates
+	with any trending target, so handing it to a model as a feature teaches it
+	"later means bigger", which does not transfer beyond the observed window.
+	"""
+	d = df.copy()
+	periods = d["date"].dt.year * 12 + d["date"].dt.month
+	d["period_index"] = (periods - periods.min()).astype("int32")
+	return d
 
 
 def load_split(paths: dict, horizon: int) -> tuple[pd.DataFrame, Path]:
@@ -158,6 +180,7 @@ def run(category: str, horizon: int) -> dict:
 
 	contract, cpath = load_contract(paths, horizon)
 	df, spath = load_split(paths, horizon)
+	df = add_period_index(df)
 	print(f"\nContract: {cpath.name}")
 	print(f"Split:    {spath.name} -- {len(df):,} rows x {len(df.columns)} columns")
 

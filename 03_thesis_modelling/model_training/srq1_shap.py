@@ -39,7 +39,7 @@ rows = []
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 for ax, (cat, slug) in zip(axes.ravel(), CATS.items()):
     sub = "CSD" if cat == "CSD" else cat
-    fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix.parquet")
+    fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     trval = d[d.split.isin(["train", "val"])]
     te = d[d.split == "test"]

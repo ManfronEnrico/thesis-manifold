@@ -689,3 +689,47 @@ correct clip of a 1.365 raw ratio. **No future leakage.**
   brands, pre-re-pull, pre-DEC-SCOPE) — they are notebook-era, not current
   output, and could be misread as such.
 
+---
+
+## Session 2026-08-18 (cont.) — stale-file inventory, repoint, period_index
+
+**Stale-file inventory written** (`2026-08-18_DOC-stale-file-inventory.md`) at
+Brian's request: built while running the pipeline so the evidence for each call
+is recorded when observed. 42 files / 3.4 MB across 6 groups, each with a
+disposition and the evidence behind it.
+
+The rule that separates live from stale turned out to be non-obvious, and a
+date-based sweep would have got it wrong: steps 0 and 1 legitimately write
+un-suffixed `step_N_log.json` (they are horizon-independent), while steps 2-6 do
+not write that filename at all any more. **Corrected F68 in the process** — I had
+called all `*_bymonth.parquet` files stale, but `step_1_aggregate_bymonth.parquet`
+is LIVE in all four categories; its suffix comes from GRAIN, not the notebook.
+
+**Repointed the 12 consumers to H=3** (F69), Brian's choice, matching
+DEC-HORIZON. 13 call sites across 11 files, including the System A serving path.
+Same columns, different row population: 95 brands at h3 vs 58 in the notebook's
+matrix.
+
+**Found and fixed pre-existing breakage** (F70). Running a repointed consumer
+rather than trusting the rename raised `KeyError: 'period_index'` — a column no
+feature matrix has ever had, referenced by five consumers. They were already
+dead before P0038 touched them. Fixed in step 6 (one definition, cannot drift)
+rather than in five call sites; computed from the calendar so brands share an
+axis; registered NON_FEATURE_COLS so a monotonic counter cannot be learned as
+"later means bigger". Feature count stays 41.
+
+**Flagged, not fixed** (F71): Prophet is not installed, so its baseline rows
+report n_series=0 / nan in all four categories while ARIMA reports normally. The
+per-series exception handler aggregates the failure into nan rather than raising.
+Pre-existing and unrelated to P0038, but it means any Prophet row in the results
+is empty rather than poor — which overstates the ladder Ch6 claims. Brian's call
+whether to install it or state the absence.
+
+### State
+
+- Tasks 1-8 complete. Task 9 (retire) in progress: consumers repointed, stale
+  inventory written, deletions not yet executed.
+- NEXT: execute the inventory's dispositions — archive the notebook, delete
+  groups 1-5 (group 5 only now that the repoint is done), preserving
+  `csd_feature_matrix.parquet` as the F68 parity baseline first.
+

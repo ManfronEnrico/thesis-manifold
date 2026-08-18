@@ -58,7 +58,7 @@ def _all_metrics(y, yhat):
 
 def _load(ds, cat, slug):
     sub = "CSD" if cat == "CSD" else cat
-    fm = pd.read_parquet(DATASETS[ds] / sub / f"{slug}_feature_matrix.parquet")
+    fm = pd.read_parquet(DATASETS[ds] / sub / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     parts = {s: d[d.split == s] for s in ("train", "val", "test")}
     return parts

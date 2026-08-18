@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T18:24:56+00:00",
+  "generated_utc": "2026-08-18T19:03:50+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "Energidrikke",
   "forecast_horizon": 3,
@@ -33,7 +33,7 @@
   },
   "shape": {
     "rows": 1892,
-    "columns": 48,
+    "columns": 49,
     "brands": 44,
     "n_features": 41
   },

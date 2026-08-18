@@ -57,7 +57,7 @@ def build_service():
     for cat, (slug, ds_tag, sub, keys) in SELECTED.items():
         pk = "brand"
         eng_dir = get_category_engineered_bymonth_dir(sub)
-        fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix.parquet")
+        fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix_h3.parquet")
         d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
         if len(d) < 30:
             continue

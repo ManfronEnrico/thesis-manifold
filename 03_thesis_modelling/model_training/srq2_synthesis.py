@@ -75,7 +75,7 @@ def tier(score):
 rows = []
 for cat, (slug, ds_tag, sub) in SELECTED.items():
     eng_dir = get_category_engineered_bymonth_dir(sub)
-    fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix.parquet")
+    fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix_h3.parquet")
     keys = ["brand", "chain"] if "chain" in fm.columns else ["brand"]
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     tr, va, te = (d[d.split == s] for s in ("train", "val", "test"))

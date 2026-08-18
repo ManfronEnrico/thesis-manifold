@@ -40,7 +40,7 @@ PROMPTS_FILE = THESIS_RESULTS_SRQ4_DIR / "tier2_prompts.json"
 def _matrix(category):
     slug, tag, sub = srq4.CAT_FILE[category]
     eng_dir = get_category_engineered_bymonth_dir(sub)
-    return pd.read_parquet(eng_dir / f"{slug}_feature_matrix.parquet")
+    return pd.read_parquet(eng_dir / f"{slug}_feature_matrix_h3.parquet")
 
 
 def _test_actual(category, brand):

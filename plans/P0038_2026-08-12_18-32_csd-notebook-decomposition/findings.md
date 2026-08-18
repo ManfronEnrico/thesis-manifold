@@ -1539,10 +1539,136 @@ The notebook's split was genuinely broken; the pipeline's is not.
 
 **P0033 is unblocked.**
 
-### Caveat carried forward
+### Caveat carried forward — CORRECTED
 
-The `*_bymonth.parquet` intermediates in `pipeline_step_outputs/` are stale
-notebook-era artifacts (142 brands, pre-re-pull, pre-DEC-SCOPE). They are not
-the current pipeline's output and must not be read as such — they are removed in
-task 9.
+I first wrote that the `*_bymonth.parquet` intermediates are all stale
+notebook-era artifacts. **That was too broad.**
 
+`step_1_aggregate_bymonth.parquet` is **LIVE** in all four categories, written
+today by the current step 1. Its `bymonth` suffix comes from `GRAIN` — the
+brand × month modelling grain fixed by DEC-GRAIN — not from the notebook.
+Every future run rewrites it.
+
+Genuinely stale: the four **CSD steps 2-5** files
+(`step_{2,3,4,5}_*_bymonth.parquet`, dated 2026-07-13, 140/58 brands,
+pre-re-pull and pre-DEC-SCOPE). Those are notebook-era and must not be read as
+current output.
+
+The distinction matters because a date-based sweep would have deleted a live
+pipeline output. Full disposition list in
+`2026-08-18_DOC-stale-file-inventory.md`.
+
+---
+
+## F69 — the 12 downstream consumers repointed to H=3
+
+All **13 call sites across 11 files** now read
+`{slug}_feature_matrix_h3.parquet` instead of the notebook's un-suffixed file.
+
+**H=3 chosen by Brian (2026-08-18)**, matching DEC-HORIZON: a quarter is the
+budget-authorisation period, so H=3 is the primary reported horizon.
+
+Repointing was mechanically a one-line change per site — h1 and h3 carry
+**identical columns** — but it is not cosmetic. The row populations differ,
+because h3's higher `MIN_PERIODS` (17 vs 15) retains fewer brands:
+
+| Matrix | rows | brands | train/val/test |
+|--------|-----:|-------:|----------------|
+| notebook (old) | 2,552 | 58 | 1450/348/754 |
+| h1 | 4,876 | 106 | 3392/742/742 |
+| **h3 (chosen)** | 4,370 | **95** | 3040/665/665 |
+
+Every downstream result therefore moves — onto the split the pipeline actually
+validates, and onto 95 brands rather than 58.
+
+Includes `model_serving/system_a_forecast/forecast_service.py`, which is the
+serving path rather than a training script. Worth naming: the repoint changes
+what System A serves, not only what the thesis reports.
+
+---
+
+## F70 — `period_index` was missing from every matrix, and 5 consumers needed it
+
+Running a repointed consumer (rather than assuming the rename sufficed)
+immediately raised `KeyError: 'period_index'`.
+
+**This is pre-existing breakage, not damage from the repoint.** Verified two
+ways: the committed version of the script references `period_index` against the
+notebook matrix, and **no feature matrix has ever contained that column** —
+neither the notebook's nor the pipeline's. Five consumers were already dead:
+
+```
+srq1_baselines_stat  srq1_figures  srq1_profiling  srq4_experiment
+system_a_forecast/forecast_service
+```
+
+Every use is a temporal sort key or a plot axis.
+
+**Fixed in step 6 rather than in the five call sites.** It is a genuine property
+of the panel (which period is this, on a scale shared across brands), so it
+belongs where the panel is written — one definition that cannot drift between
+consumers.
+
+Computed **from the calendar, not from row order**: two brands observed in the
+same month must receive the same index, or a pooled model places them at
+different points on the same axis. Verified: 0 months carry more than one
+distinct index; values run 0..45 across 46 months; strictly monotonic with date.
+
+**Registered in `NON_FEATURE_COLS`.** A monotonic counter correlates with any
+trending target, so a model handed it as a feature learns "later means bigger" —
+scoring well in-sample while learning nothing that transfers past the observed
+window. Confirmed: feature count stays **41**, `period_index` absent from the
+manifest's feature list.
+
+`--from-step 6 --to-step 6` regenerated all 8 artifacts in ~1s total, which is
+the step-range flag earning its place.
+
+**Verified working**: `srq1_baselines_stat` now runs to completion and reports
+series counts matching the H=3 matrices exactly — CSD 95, Danskvand 29,
+Energidrikke 44, RTD 62.
+
+---
+
+## F71 — Prophet: absent here, and diverged when it did run
+
+Surfaced while verifying the repoint. `srq1_baselines_stat` reports
+**n_series=0 / WMAPE=nan for Prophet in all four categories**, while ARIMA
+reports normally.
+
+**Immediate cause**: `prophet` is not installed in this environment. The import
+sits inside `run_prophet()` and the per-series loop catches the exception, so
+every series fails identically and the failure aggregates into `nan` rather than
+raising.
+
+**Correcting my first reading of this.** I initially wrote that Prophet's rows
+are empty and always have been. The committed `04_thesis_results/srq1/stat_baselines.md`
+shows otherwise — it ran in some earlier environment and produced numbers. But
+those numbers are not usable:
+
+| Category | Prophet WMAPE (committed) |
+|----------|--------------------------:|
+| CSD | **1,715,701,549,531,750,912 %** |
+| energidrikke | **14,858,220,394.7 %** |
+| danskvand | 16.9 % |
+| RTD | 45.4 % |
+
+Two of four are diverged fits — 1.7 x 10^18 % is not a poor forecast, it is a
+model that blew up, most likely exponentiating a runaway trend back from log
+space. So the ladder Ch6 describes has never had four working Prophet baselines;
+it had two plausible ones and two failures being carried in a results table.
+
+**Not fixed here**, and deliberately so: installing a package changes the
+environment, and which baselines the thesis claims is Brian's call. The options
+are to install `prophet` and re-run (then handle the divergence, which will
+recur), or to drop Prophet and say so. What should not happen is either number
+reaching a thesis table — `nan` or 10^18 % both misrepresent the comparison the
+ML models are being judged against.
+
+**`04_thesis_results/srq1/stat_baselines.md` was deliberately NOT committed** by
+this session's re-run. Two reasons: the ARIMA figures legitimately changed (95
+brands at H=3 vs 77 before, which is the repoint working as intended), but the
+script also rewrote the file with mangled encoding — `—` became `�` — so the
+regenerated file is worse than the committed one regardless of its numbers. The
+script writes without specifying an encoding and inherits cp1252 on Windows.
+That is a real bug in `srq1_baselines_stat.py`, filed here rather than fixed
+mid-cleanup.

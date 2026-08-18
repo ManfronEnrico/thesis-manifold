@@ -34,7 +34,7 @@ params = json.loads((RES / "tuned_params.json").read_text())
 rows = []
 for cat, slug in CATS.items():
     sub = "CSD" if cat == "CSD" else cat
-    fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix.parquet")
+    fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     tr, va, te = (d[d.split == s] for s in ("train", "val", "test"))
     if len(tr) < 30 or len(va) == 0 or len(te) == 0:

@@ -57,7 +57,7 @@ KEYS = {"bymonth": ["brand"]}
 
 def _load(ds: str, cat: str, slug: str) -> pd.DataFrame | None:
     sub = "CSD" if (cat == "CSD") else cat
-    p = DATASETS[ds] / sub / f"{slug}_feature_matrix.parquet"
+    p = DATASETS[ds] / sub / f"{slug}_feature_matrix_h3.parquet"
     if not p.exists():
         return None
     return pd.read_parquet(p)

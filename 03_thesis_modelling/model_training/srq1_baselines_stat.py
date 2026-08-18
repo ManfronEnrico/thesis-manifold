@@ -63,7 +63,7 @@ def main():
     rows = []
     for cat, slug in CATS.items():
         sub = "CSD" if cat == "CSD" else cat
-        fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix.parquet")
+        fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix_h3.parquet")
         d = fm.dropna(subset=["sales_units"]).copy()
         d["ds"] = [_date(y, m) for y, m in zip(d.period_year, d.period_month)]
         acc = {"ARIMA": [0.0, 0.0, []], "Prophet": [0.0, 0.0, []]}

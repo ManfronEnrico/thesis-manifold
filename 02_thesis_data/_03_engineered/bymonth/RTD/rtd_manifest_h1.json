@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T18:25:43+00:00",
+  "generated_utc": "2026-08-18T19:03:50+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "RTD",
   "forecast_horizon": 1,
@@ -33,7 +33,7 @@
   },
   "shape": {
     "rows": 2952,
-    "columns": 46,
+    "columns": 47,
     "brands": 72,
     "n_features": 39
   },

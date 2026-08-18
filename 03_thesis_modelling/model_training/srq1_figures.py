@@ -66,7 +66,7 @@ from xgboost import XGBRegressor
 FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
             "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
             "month", "quarter", "peak_month", "promo_intensity", "weighted_distribution"]
-fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix.parquet")
+fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix_h3.parquet")
 d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
 top = d.groupby("brand")["sales_units"].sum().idxmax()
 db = d[d.brand == top].sort_values("period_index")

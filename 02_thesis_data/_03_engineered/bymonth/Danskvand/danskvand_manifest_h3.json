@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T18:24:08+00:00",
+  "generated_utc": "2026-08-18T19:03:50+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "Danskvand",
   "forecast_horizon": 3,
@@ -34,7 +34,7 @@
   },
   "shape": {
     "rows": 1189,
-    "columns": 30,
+    "columns": 31,
     "brands": 29,
     "n_features": 23
   },

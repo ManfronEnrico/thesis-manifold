@@ -37,7 +37,7 @@ def _profile(fn):
 def main():
     # P0035: was get_category_engineered_bychain_dir; the chain grain and its data
     # directory are gone (DEC-GRAIN 2026-07-12). Profiling now runs on brand x month.
-    fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix.parquet")
+    fm = pd.read_parquet(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     trval = d[d.split.isin(["train", "val"])]
     te = d[d.split == "test"]

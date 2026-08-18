@@ -62,7 +62,7 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
 def _brand_history(category, brand):
     """Monthly observed series for a brand (train+val), and the test actual (next month)."""
     slug, tag, sub = CAT_FILE[category]
-    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix.parquet")
+    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
     g = fm[(fm.brand.str.upper() == brand.upper())].sort_values("period_index")
     test = g[g.split == "test"].dropna(subset=["sales_units"])
     actual = float(test.iloc[0]["sales_units"]) if len(test) else None
@@ -80,7 +80,7 @@ def _eval_forecast(category, brand):
     slug, tag, sub = CAT_FILE[category]
     params = _json.loads((THESIS_RESULTS_SRQ1_DIR / "tuned_params.json").read_text())
     pk = "brand"
-    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix.parquet")
+    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"])
     trval = d[d.split.isin(["train", "val"])]
     m = XGBRegressor(random_state=42, verbosity=0, n_jobs=-1, **params.get(f"{pk}/{category}/XGBoost", {}))
@@ -201,7 +201,7 @@ def _select_brands(per_cat=(4, 4, 4, 3)):
     """Top brands by volume that have a held-out test actual, balanced across categories."""
     picks = []
     for (cat, (slug, tag, sub)), k in zip(CAT_FILE.items(), per_cat):
-        fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix.parquet")
+        fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
         has_test = set(fm[fm.split == "test"].dropna(subset=["sales_units"]).brand.str.upper())
         vol = (fm.dropna(subset=["sales_units"]).groupby("brand").sales_units.sum().sort_values(ascending=False))
         chosen = [b for b in vol.index if str(b).upper() in has_test][:k]
