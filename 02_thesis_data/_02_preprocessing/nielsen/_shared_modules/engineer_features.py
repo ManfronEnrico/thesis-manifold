@@ -32,19 +32,31 @@ import pandas as pd
 DEFAULT_TARGET_COL: str = "sales_units"
 DEFAULT_LAGS: tuple[int, ...] = (1, 2, 3, 4, 8, 13)
 DEFAULT_ROLLING_WINDOWS: tuple[int, ...] = (4, 13)
-DEFAULT_HOLIDAY_MONTHS: frozenset[int] = frozenset({1, 4, 6, 10, 12})
-DEFAULT_TARGET_MARKET: str = "DVH EXCL. HD"
-# SUPERSEDED by DEC-MINPERIODS (2026-08-18). This default is a THIRD value --
-# the notebook used 40, this module used 30, and neither was derived. The
-# authoritative value is pipeline_config.MIN_PERIODS (= WARMUP_PERIODS +
-# FORECAST_HORIZON + 1 = 15), and step 4 must take it from the parameter
-# contract rather than from this constant (DEC-CONTRACT / DEC-NO-FALLBACK).
+# REMOVED 2026-08-18: there was a DEFAULT_HOLIDAY_MONTHS = {1, 4, 6, 10, 12}
+# here. It was measured on an early CSD extract and never revisited, and on the
+# current data three of its five months are BELOW average for CSD (January
+# -26.6%, October -16.0%, April -9.2%) -- it flagged the weakest months of the
+# year as high season.
 #
-# Left in place, not deleted: it is still the fallback for direct callers of
-# this module that pass no min_periods. Removing it would break them silently,
-# which is the opposite of what DEC-NO-FALLBACK asks for. It should be removed
-# once step 4 is wired to the contract and no caller relies on the default.
-DEFAULT_MIN_PERIODS: int = 30
+# Worse, it had been copied verbatim into all three non-CSD per-category
+# scripts under category-prefixed names (Danskvand_HOLIDAY_MONTHS,
+# Energidrikke_HOLIDAY_MONTHS, RTD_HOLIDAY_MONTHS), which made an inherited
+# constant look like a per-category measurement. Danskvand actually peaks in
+# summer (June-September); its script claimed January.
+#
+# There is no correct default, because seasonality is a property of the
+# category, so `holiday_months` is now a REQUIRED argument. Step 3 measures it
+# per category and writes it to the contract; step 4 passes it through.
+DEFAULT_TARGET_MARKET: str = "DVH EXCL. HD"
+# REMOVED 2026-08-18: there was a DEFAULT_MIN_PERIODS = 30 here. It was a THIRD
+# live value for the same threshold -- the notebook used 40, this module 30 --
+# and none was derived. MIN_PERIODS is not a free parameter: it follows from the
+# feature specification as warmup + horizon + 1, so it is 15 at horizon 1 and 17
+# at horizon 3. Any fixed default is therefore wrong at one of the two horizons
+# this project reports.
+#
+# `min_periods` is now a REQUIRED argument of filter_series(). Step 3 derives it
+# per horizon and writes it to the contract (DEC-MINPERIODS / DEC-CONTRACT).
 
 # Split sizing is PROPORTIONAL, not calendar-fixed. Each category's panel
 # starts at a different month and grows every time the warehouse is refreshed,
@@ -326,7 +338,7 @@ def make_calendar(
 
 def filter_series(
     df: pd.DataFrame,
-    min_periods: int = DEFAULT_MIN_PERIODS,
+    min_periods: int,
     target_col: str = DEFAULT_TARGET_COL,
     group_keys: list[str] = ["brand"],
 ) -> pd.DataFrame:
@@ -348,8 +360,9 @@ def engineer_features(
     target_col: str = DEFAULT_TARGET_COL,
     lags: Iterable[int] = DEFAULT_LAGS,
     rolling_windows: Iterable[int] = DEFAULT_ROLLING_WINDOWS,
-    holiday_months: Iterable[int] = DEFAULT_HOLIDAY_MONTHS,
     group_keys: list[str] = ["brand"],
+    *,
+    holiday_months: Iterable[int],
 ) -> pd.DataFrame:
     """
     Add time-series features per group (default: per brand):
@@ -581,8 +594,12 @@ class FeatureEngineer:
     target_col: str = DEFAULT_TARGET_COL
     lags: tuple[int, ...] = DEFAULT_LAGS
     rolling_windows: tuple[int, ...] = DEFAULT_ROLLING_WINDOWS
-    holiday_months: frozenset[int] = DEFAULT_HOLIDAY_MONTHS
-    min_periods: int = DEFAULT_MIN_PERIODS
+    # No defaults: both are contract values (DEC-CONTRACT). See the removal
+    # notes at the top of this module for why a default is wrong for each.
+    # kw_only so they can stay required despite following defaulted fields --
+    # and so callers must name them at the call site.
+    holiday_months: frozenset[int] = field(kw_only=True)
+    min_periods: int = field(kw_only=True)
     # None -> apply_split derives cutoffs proportionally from the data. Set both
     # to (year, month) tuples only to reproduce a previously published split.
     train_end: tuple[int, int] | None = None

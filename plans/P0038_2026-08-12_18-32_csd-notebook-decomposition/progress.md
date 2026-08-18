@@ -391,3 +391,44 @@ into three categories nobody had checked.
   `contract_version` and refuse an unknown one (DEC-NO-FALLBACK); the field is written but
   the check belongs in the consumer.
 
+---
+
+## Session 2026-08-18 (cont.) — correction, and the defaults actually removed
+
+Brian asked what had been *implemented* to fix the holiday-months problem, and pushed back
+on recording observations as comments instead of addressing them. Both points were right,
+and one of them exposed an error in my own reporting.
+
+**Correction to F55.** I claimed the notebook hardcoded `{1, 4, 6, 10, 12}`. It does not —
+it derives holiday months at line 878 from a top-quartile rule, giving `[3, 6, 12]` for CSD.
+The stale set lives in `engineer_features.DEFAULT_HOLIDAY_MONTHS`. I found it in the
+codebase, saw it was wrong, and attributed it to the wrong source. F55 and F56 are corrected
+in place with the misattribution called out rather than quietly edited.
+
+The notebook-vs-step-3 difference is a methodological choice (sums confounded by active
+brand count, versus means that are not), not a defect. It should be argued as a choice.
+
+**What was genuinely wrong, and is now fixed.** All three non-CSD scripts hardcode the stale
+set under category-prefixed names — `Danskvand_HOLIDAY_MONTHS = {1, 4, 6, 10, 12}` and
+so on — which makes an inherited constant look like a measured one. Danskvand peaks in
+summer; its script asserts January.
+
+`DEFAULT_HOLIDAY_MONTHS` and `DEFAULT_MIN_PERIODS` are now **removed**, not annotated. Both
+parameters are required; `holiday_months` is keyword-only. Verified that omitting either
+raises TypeError, that neither constant still exists, and that the real CSD panel still
+processes correctly when the contract values are passed (95 brands, 3,782 rows, flag set on
+exactly [3, 6, 9, 12]).
+
+**Process note for the rest of this plan**: flagging a defect in a comment and moving on is
+not a fix. Where the correct value is knowable, change it; where it is not, make the
+parameter required so the caller must supply it. Comments are for explaining a decision, not
+for deferring one.
+
+### State
+
+- Task 19 complete; `engineer_features.py` no longer carries a wrong default.
+- NEXT: task 20 — `step_4_engineer_csd.py`, which reads the contract and passes these
+  now-required values through. It must also validate `contract_version`.
+- The three `pre_{category}_4_engineer_features.py` scripts still hold the stale constants
+  and are retired wholesale in task 24. Do not run them meanwhile.
+

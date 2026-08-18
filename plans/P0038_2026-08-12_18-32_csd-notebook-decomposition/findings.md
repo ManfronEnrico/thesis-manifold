@@ -893,11 +893,35 @@ choice, the second is a concession.
 
 ---
 
-## F55 — the notebook's hardcoded HOLIDAY_MONTHS flagged troughs as peaks
+## F55 — CORRECTED: the stale holiday months were in the shared module and the
+## three non-CSD scripts, NOT in the notebook
+
+> **This finding was first written with the wrong attribution and is corrected here.**
+> The original text claimed the notebook hardcoded `{1, 4, 6, 10, 12}`. It did not: the
+> notebook derives holiday months from data at line 878 using a top-quartile rule, which
+> yields `[3, 6, 12]` for CSD on current data. The `{1, 4, 6, 10, 12}` set lives in
+> `engineer_features.DEFAULT_HOLIDAY_MONTHS` and was copied into the three non-CSD
+> per-category scripts. The corrected account follows; the uplift measurements below are
+> unaffected and stand.
 
 Step 3 derives holiday months as those whose mean target exceeds the overall mean by more
-than 10%, per category. For CSD it returns `[3, 6, 9, 12]`. The notebook hardcoded
-`{1, 4, 6, 10, 12}`.
+than 10%, per category. For CSD it returns `[3, 6, 9, 12]`.
+
+**Three different values were in play**, which is why the attribution took a second pass:
+
+| Source | CSD value | Assessment |
+|--------|-----------|------------|
+| `engineer_features.DEFAULT_HOLIDAY_MONTHS` | `{1, 4, 6, 10, 12}` | **Wrong.** Stale, undated, includes the year's three weakest months |
+| Notebook line 878 (top-quartile of monthly totals) | `[3, 6, 12]` | Defensible; sums totals |
+| Step 3 (mean uplift > 10%) | `[3, 6, 9, 12]` | Preferred; see the methodological note below |
+
+The notebook-versus-step-3 difference is a **methodological choice, not a defect**. The
+notebook sums monthly totals, which is confounded by how many brands happened to be active
+that month; step 3 averages, which is not. Averaging is the better rule here because the
+panel is unbalanced by construction (brands enter and exit), but this should be presented
+as a reasoned choice rather than as a correction.
+
+The genuine defect is the first row of that table, and where it had spread.
 
 Measured CSD uplift against the overall mean:
 
@@ -914,9 +938,9 @@ Measured CSD uplift against the overall mean:
 Three of the notebook's five months (1, 4, 10) are **below-average** months — January is
 the weakest month in the year at -26.6%. Only 6 and 12 were correct.
 
-So the feature was not merely stale: it was inverted for the majority of its values. A
-binary `is_holiday_month` flag set on January, April and October was telling the model that
-the three weakest months were high-season.
+So `DEFAULT_HOLIDAY_MONTHS` was not merely stale: it was inverted for the majority of its
+values. A binary `holiday_month` flag set on January, April and October tells the model
+that the three weakest months of the year are high season.
 
 The derived set is also interpretable in a way the hardcoded one was not: `[3, 6, 9, 12]`
 are the **quarter-end months**, consistent with retail trade loading around quarterly
@@ -938,11 +962,24 @@ Derived holiday months per category (H=3 run, 2026-08-18):
 These are four genuinely different seasonal profiles, and each is commercially plausible for
 its category. Danskvand's summer peak in particular is the opposite shape from CSD's.
 
-Had the four categories been ported by copying the notebook — which is exactly what the
-per-category script duplication was doing — all four would have carried CSD's (incorrect)
-`{1, 4, 6, 10, 12}`. This is the clearest single justification for the shared-script,
-derive-per-category design (DEC-OPEN-WORLD): the duplication was not just a maintenance
-cost, it was propagating a wrong feature into three categories that had never been checked.
+**And this had already happened.** Verified 2026-08-18: all three non-CSD per-category
+scripts hardcode the stale set, under category-prefixed names that make an inherited
+constant look like a per-category measurement:
+
+    Danskvand/pre_danskvand_4_engineer_features.py:86
+        Danskvand_HOLIDAY_MONTHS = {1, 4, 6, 10, 12}
+    Energidrikke/pre_energidrikke_4_engineer_features.py:86
+        Energidrikke_HOLIDAY_MONTHS = {1, 4, 6, 10, 12}
+    RTD/pre_rtd_4_engineer_features.py:86
+        RTD_HOLIDAY_MONTHS = {1, 4, 6, 10, 12}
+
+Identical values, three different category prefixes. Danskvand peaks in **summer**
+(June-September); its script asserts January. The naming is what makes this hard to spot in
+review — `Danskvand_HOLIDAY_MONTHS` reads as a measured, category-specific constant.
+
+This is the clearest single justification for the shared-script, derive-per-category design
+(DEC-OPEN-WORLD): the duplication was not merely a maintenance cost, it had already
+propagated a wrong feature into three categories nobody had checked.
 
 ---
 
@@ -984,4 +1021,48 @@ removed. Verified: CSD now splits 32/7/7 of 46 months, a 15.2% test share agains
 
 **Not yet done**: step 4 must validate `contract_version` and refuse an unknown one
 (DEC-NO-FALLBACK). The field is written; the check belongs in the consumer.
+
+---
+
+## F58 — the two stale defaults are removed, not annotated
+
+Both had previously been flagged in comments and left in place. A comment does not stop a
+caller from silently receiving a wrong value, so this closes them properly.
+
+**Removed from `engineer_features.py`:**
+
+| Constant | Was | Why removed |
+|----------|-----|-------------|
+| `DEFAULT_HOLIDAY_MONTHS` | `{1, 4, 6, 10, 12}` | No correct default exists — seasonality is a property of the category |
+| `DEFAULT_MIN_PERIODS` | `30` | No correct default exists — the value is horizon-dependent (15 at H=1, 17 at H=3) |
+
+Both parameters are now **required**. `holiday_months` is keyword-only, so callers must
+name it at the call site; `min_periods` was already positional and required.
+
+The dataclass fields use `field(kw_only=True)` so they can stay required despite following
+defaulted fields.
+
+**Verified 2026-08-18:**
+
+    engineer_features() without holiday_months -> TypeError
+    filter_series() without min_periods        -> TypeError
+    DEFAULT_HOLIDAY_MONTHS                     -> no longer exists
+    DEFAULT_MIN_PERIODS                        -> no longer exists
+
+    Real CSD panel, contract values passed:
+      filter_series(min_periods=17)          -> 95 brands, 3,782 rows
+      engineer_features(holiday={3,6,9,12})  -> 3,782 rows, 47 cols
+      holiday_month flag set on              -> [3, 6, 9, 12]
+
+**This is what DEC-NO-FALLBACK means in practice.** A missing contract value now fails at
+the call site with a named argument in the error, rather than silently substituting a
+constant that was measured on a different category three months earlier.
+
+**Still open** (task 24 territory, not fixed here): the three per-category
+`{Category}_HOLIDAY_MONTHS` constants still hold the stale set. They are now dead in the
+sense that the shared pipeline does not read them, but the per-category scripts that do read
+them are still on disk and still runnable. They are retired wholesale in task 24 rather than
+patched individually — patching them would preserve the duplication this refactor exists
+to remove. **Do not run the `pre_{category}_4_engineer_features.py` scripts in the
+meantime.**
 
