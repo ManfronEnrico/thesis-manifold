@@ -1,0 +1,9 @@
+## Top 5 Brands by Total Sales
+
+|   Rank | Brand                |   Total Sales |
+|-------:|:---------------------|--------------:|
+|      1 | BREEZER              |    37,765,591 |
+|      2 | SHAKER               |    27,903,978 |
+|      3 | SMIRNOFF ICE/TWISTED |    25,102,530 |
+|      4 | SOMERSBY             |    10,850,148 |
+|      5 | MOKAÏ                |     3,960,037 |

@@ -113,13 +113,18 @@ def save_table(
 	index: bool = False,
 	float_format: str = "%.4f",
 ) -> tuple[Path, Path]:
-	"""Persist a DataFrame as both CSV and a fixed-width TXT rendering.
+	"""Persist a DataFrame as both CSV and a Markdown table.
 
 	Two formats because they serve different readers:
 	  - .csv  : re-loadable, feeds Ch4 tables and any downstream comparison
-	  - .txt  : what the notebook cell used to show, readable in a diff without
-	            a spreadsheet. This is the artifact that replaces the notebook's
-	            stored output.
+	  - .md   : the human/appendix artifact. Markdown rather than the
+	            fixed-width TXT this used to write: these tables are destined
+	            for thesis appendices, and monospace alignment is lost the
+	            moment it is pasted into Word or Docs, which reflows it in a
+	            proportional font. A Markdown table survives that paste,
+	            renders as a real table in any previewer, and screenshots
+	            cleanly -- while still diffing line-by-line, which is why it
+	            can replace the notebook's stored output.
 
 	Args:
 		df: frame to persist.
@@ -132,29 +137,38 @@ def save_table(
 		float_format: applied to both outputs so CSV and TXT agree.
 
 	Returns:
-		(csv_path, txt_path)
+		(csv_path, md_path)
 	"""
 	output_dir = Path(output_dir)
 	output_dir.mkdir(parents=True, exist_ok=True)
 
 	csv_path = output_dir / f"{name}.csv"
-	txt_path = output_dir / f"{name}.txt"
+	md_path = output_dir / f"{name}.md"
 
 	df.to_csv(csv_path, index=index, float_format=float_format, encoding="utf-8")
 
-	# to_string() rather than to_markdown(): no tabulate dependency, and it is
-	# the same renderer pandas uses when a frame is printed, so the TXT matches
-	# what the notebook cell displayed.
-	rendered = df.to_string(index=index, float_format=lambda v: float_format % v)
+	# to_markdown() needs tabulate. It is a hard dependency of this function
+	# rather than an optional nicety, so fail loudly with the fix rather than
+	# silently degrading to to_string() -- a silent fallback would write a
+	# fixed-width body into a .md file, and the appendix would look broken for
+	# a reason nobody could see from the output.
+	try:
+		rendered = df.to_markdown(index=index, floatfmt=float_format.lstrip("%"))
+	except ImportError as exc:  # pragma: no cover
+		raise ImportError(
+			"save_table() writes Markdown tables and needs `tabulate`. "
+			"Install it with: python -m pip install tabulate"
+		) from exc
 
-	with txt_path.open("w", encoding="utf-8") as fh:
+	with md_path.open("w", encoding="utf-8") as fh:
 		if caption:
-			fh.write(f"{caption}\n")
-			fh.write("=" * max(len(caption), 40) + "\n\n")
+			# H2, not H1: these files are appendix fragments pasted under a
+			# thesis heading, so they should not claim the top level.
+			fh.write(f"## {caption}\n\n")
 		fh.write(rendered)
 		fh.write("\n")
 
-	return csv_path, txt_path
+	return csv_path, md_path
 
 
 def print_and_save_table(
@@ -169,7 +183,7 @@ def print_and_save_table(
 
 	The notebook printed full frames; a terminal-run script printing 140 brands
 	buries the surrounding narrative. So the console gets `max_rows`, while the
-	CSV/TXT on disk always get the complete frame.
+	CSV/Markdown on disk always get the complete frame.
 	"""
 	if caption:
 		print(f"\n{caption}")

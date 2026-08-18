@@ -1,0 +1,5 @@
+## Zero-Sales Characterisation across 101 brands
+
+| type     |   brands |
+|:---------|---------:|
+| no zeros |      101 |

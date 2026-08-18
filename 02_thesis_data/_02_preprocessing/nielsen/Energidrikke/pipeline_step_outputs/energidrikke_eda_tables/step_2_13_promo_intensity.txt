@@ -1,9 +1,0 @@
-Promo Intensity per Brand (where promo > 0)
-===========================================
-
-Statistic Promo Intensity
-      Min           0.126
-      P25           0.370
-   Median           0.528
-      P75           0.620
-      Max           0.945

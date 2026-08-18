@@ -1,0 +1,33 @@
+## Measure-Column Quality Scan
+
+| column                                       |       min |            max |         mean |   nulls |   zeros |   negatives |   neg_pct | in_0_100   |
+|:---------------------------------------------|----------:|---------------:|-------------:|--------:|--------:|------------:|----------:|:-----------|
+| sales_value                                  |    5.0000 |  57493355.7915 | 2954004.4915 |       0 |       0 |           0 |    0.0000 | False      |
+| sales_liters                                 |    0.0400 |   2185646.5931 |   94309.1056 |       0 |       0 |           0 |    0.0000 | False      |
+| sales_units                                  |    1.0000 |   3561737.4215 |  203673.8368 |       0 |       0 |           0 |    0.0000 | False      |
+| sales_value_any_promo                        |    0.0000 |  35595153.5236 | 1608761.0661 |       0 |     333 |           0 |    0.0000 | False      |
+| sales_in_liters_any_promo                    |    0.0000 |   1388970.3700 |   54334.5871 |       0 |     333 |           0 |    0.0000 | False      |
+| promo_units                                  |    0.0000 |   2461377.6517 |  120278.3456 |       0 |     333 |           0 |    0.0000 | False      |
+| sales_units_any_tpr                          |   -5.0000 |   1692843.5977 |   76196.0803 |       0 |     380 |           1 |    0.0590 | False      |
+| numeric_distribution                         |    0.0001 |         0.7113 |       0.0815 |       0 |       0 |           0 |    0.0000 | True       |
+| numeric_distribution_reach                   |    0.0004 |         0.8730 |       0.1147 |       0 |       0 |           0 |    0.0000 | True       |
+| weighted_dist                                |    0.0000 |         0.7887 |       0.1088 |       0 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_reach                  |    0.0000 |         0.9349 |       0.1472 |       0 |       0 |           0 |    0.0000 | True       |
+| total_weighted_distribution_points_tdp_reach |    0.0000 |         0.9349 |       0.1472 |       0 |       0 |           0 |    0.0000 | True       |
+| number_of_items_reach                        |    1.0000 |      2201.8293 |     289.7872 |       0 |       0 |           0 |    0.0000 | False      |
+| avg_number_of_stores_selling_reach           |    1.0000 |      2199.7459 |     289.3026 |       0 |       0 |           0 |    0.0000 | False      |
+| universe_number_of_stores                    | 2468.0000 |      2556.0000 |    2523.3564 |       0 |       0 |           0 |    0.0000 | False      |
+| avg_no_of_items_per_store_reach              |    0.9837 |         2.0000 |       1.0026 |       0 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_any_promo              |    0.0000 |         0.4855 |       0.0800 |     332 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_disp_feat              |    0.0002 |         0.0917 |       0.0210 |    1190 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_disp_wo_feat           |    0.0001 |         0.3346 |       0.0413 |     503 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_feat_wo_disp           |    0.0005 |         0.1669 |       0.0366 |    1141 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_total_feat             |    0.0002 |         0.2586 |       0.0535 |    1139 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_any_disp               |    0.0001 |         0.3629 |       0.0477 |     503 |       0 |           0 |    0.0000 | True       |
+| weighted_distribution_any_tpr                |    0.0000 |         0.4048 |       0.0512 |     380 |       0 |           0 |    0.0000 | True       |
+| baseline_sales_value                         |    1.0323 | 595224333.5083 | 2902023.4459 |       0 |       0 |           0 |    0.0000 | False      |
+| baseline_sales_in_liters                     |    0.0255 |   1961831.8015 |   78951.2230 |       0 |       0 |           0 |    0.0000 | False      |
+| baseline_sales_units                         |    0.0860 |   2890565.2121 |  159761.9732 |       0 |       0 |           0 |    0.0000 | False      |
+| baseline_sales_value_any_promo               |    0.0000 |  25043063.9909 | 1045445.2148 |       0 |     363 |           0 |    0.0000 | False      |
+| baseline_sales_in_liters_any_promo           |    0.0000 |    890261.1051 |   30296.6284 |       0 |     363 |           0 |    0.0000 | False      |
+| baseline_sales_units_any_promo               |    0.0000 |   1485081.9597 |   67575.5933 |       0 |     363 |           0 |    0.0000 | False      |

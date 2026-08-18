@@ -1,9 +1,0 @@
-Coverage
-========================================
-
-        Metric              Value
-    Date Range 2022-10 to 2026-07
-  Total Months                 46
-    Total Rows              4,209
- Unique Brands                142
-Avg Rows/Brand               29.6
