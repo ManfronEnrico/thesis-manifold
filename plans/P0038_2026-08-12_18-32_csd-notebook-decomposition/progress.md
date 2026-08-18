@@ -432,3 +432,30 @@ for deferring one.
 - The three `pre_{category}_4_engineer_features.py` scripts still hold the stale constants
   and are retired wholesale in task 24. Do not run them meanwhile.
 
+---
+
+## Session 2026-08-18 (cont.) — old scripts archived, not deleted
+
+Brian asked for the superseded per-category scripts to be moved into a .archive/
+subfolder in place rather than deleted, so they stay available as reference while the
+new pipeline is being finished, and can be deleted once it is proven.
+
+Moved 31 files into per-category
+`.archive/2026-08-18_superseded_by_shared_pipeline/` folders: the 7 step scripts plus
+orchestrator for Danskvand, Energidrikke and RTD, CSD's orchestrator, and the stale
+preprocessing reports. Git recorded all 31 as renames, so history follows them.
+
+Each archive folder carries a README stating why the scripts were replaced (the
+duplication, the promo_units column-vs-rows defect, the copied holiday months), which
+shared modules supersede them, that they still hold the stale constants and must not be
+run, and that they survive until the task 23 parity check passes.
+
+**The CSD notebook was deliberately left in place** — task 23 needs it as the parity
+baseline, and it is not one of the duplicated per-category scripts.
+
+Verified after the move: step 3 still succeeds 4/4 with correct per-category months, and
+no stale copy of the holiday constant remains outside .archive.
+
+**Effect on task 24**: partially pre-done. What remains there is deleting the archives
+and retiring the notebook, once parity passes.
+
