@@ -246,12 +246,24 @@ E2B_API_KEY=...
 E2B is a disposable cloud sandbox where System B's self-written code executes. System A
 does not need it; that asymmetry is the experiment.
 
-**Open question for you and Brian**: the harness is currently hardcoded to
-`claude-sonnet-4-6` and **no justification is recorded anywhere**. Brian favours GPT on
-the grounds that it is what firms actually deploy — a genuine ecological-validity
-argument. Note that "cheaper and weaker makes our result look better" is *not* a
-defensible reason and should not appear in the write-up. The harness is written against
-Anthropic's API shape, so a GPT run needs a small adapter for the two call sites.
+**Open question for you and Brian (DEC-VENDOR)**: the harness is hardcoded to
+`claude-sonnet-4-6` and **no justification is recorded anywhere in the thesis**. Brian
+favours GPT because it is what firms actually deploy — a genuine ecological-validity
+argument, and the one to decide on.
+
+Cost is a real constraint (the API is paid out of pocket, ~50 prompts per system are
+planned for a stable estimate) but it turns out not to separate the vendors: roughly
+**$7 on Claude vs $4 on GPT** for 50 runs per system. Even at 10x that is tens of
+euros. So budget governs **how many runs are affordable** — a sample-size decision that
+belongs in the methodology — rather than which vendor to use.
+
+System B costs ~6x System A per run, since it loops through several tool rounds
+carrying the brand's history in context. If the run count grows, that is the line item
+to watch.
+
+The harness is written against Anthropic's API shape, so a GPT run needs an adapter at
+the two call sites. **If the vendor changes, update `PRICE_IN_PER_M` /
+`PRICE_OUT_PER_M` too** — every reported cost is computed from them.
 
 ### Suggested order
 

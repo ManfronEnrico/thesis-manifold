@@ -1,7 +1,7 @@
 ---
 pid: P0039
 created: 2026-08-19 01:45:00
-updated: 2026-08-19 01:45:00
+updated: 2026-08-19 02:05:00
 ---
 
 # P0039 Findings
@@ -59,9 +59,10 @@ and **no argued basis anywhere**.
 This is a genuine gap: a reviewer asking "why this model?" currently has no answer in
 the thesis.
 
-See DEC-VENDOR in `task_plan.md` for the options and which arguments hold up. The short
-version: ecological validity ("this is what firms deploy") is defensible; "cheaper and
-weaker flatters our result" is not, and must not reach the write-up.
+See DEC-VENDOR in `task_plan.md` for the options. The short version: decide on
+**ecological validity** ("this is what firms deploy"), which is both defensible and
+reportable. Budget is a real constraint but governs *sample size*, not vendor choice —
+see F7, which measures it and corrects the framing here.
 
 ## F5 — terminology: traceability vs transparency vs determinism
 
@@ -93,3 +94,38 @@ produce.
 
 This also makes the comparison fairer — System B is no longer competing against a
 precision System A does not actually have.
+
+## F7 — API cost is not the deciding factor at this scale (corrects F4's framing)
+
+Brian clarified (2026-08-19) that the cost point was an **internal budget constraint**,
+not a reported argument — the API is paid out of pocket, and ~50 prompts are planned
+per system to get a stable estimate from non-deterministic responses.
+
+That is a legitimate constraint and normal to disclose. It is also a different claim
+from "pick a weaker model so the result looks better", which was never the intent.
+F4's framing conflated the two.
+
+**Measured, the constraint turns out to be small.** Order-of-magnitude from the
+harness' own token structure, 50 runs per system (100 conversations):
+
+| Model | System A | System B | Total |
+|-------|---------:|---------:|------:|
+| claude-sonnet-4-6 | $1.05 | $6.38 | **~$7** |
+| GPT-5.x class | $0.59 | $3.50 | **~$4** |
+| GPT-5-mini class | $0.12 | $0.70 | **~$1** |
+
+Even at 10x, the vendor difference is tens of euros. **So cost should not decide
+DEC-VENDOR** — ecological validity should. Cost governs a different question: how many
+runs are affordable, which is a sample-size decision and belongs in the methodology as
+a stated limit.
+
+**Where the money actually goes**: System B costs ~6x System A per run. It loops
+through several tool-use rounds carrying the brand's history in context and re-installs
+statsmodels per sandbox, where System A makes a single tool call. If the design grows,
+System B is the line item to watch — and an E2B template with packages pre-installed
+is the first optimisation.
+
+Real per-run figures come from `--demo` (task 1). The harness already computes cost
+per run via `PRICE_IN_PER_M` / `PRICE_OUT_PER_M`, so if the vendor changes, **update
+those constants** or every reported cost will be wrong.
+

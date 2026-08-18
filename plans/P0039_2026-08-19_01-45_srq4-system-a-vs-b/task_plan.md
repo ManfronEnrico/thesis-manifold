@@ -1,9 +1,9 @@
 ---
 pid: P0039
 created: 2026-08-19 01:45:00
-updated: 2026-08-19 01:45:00
+updated: 2026-08-19 02:05:00
 status: focus
-focus_detail: "THE THESIS PREMISE. Does exposing a trained model as a tool improve an LLM's answers, versus letting it write its own forecasting code? Harness exists and is sound; blocked only on 03_thesis_modelling/.env (LLM key + E2B_API_KEY). Open decision DEC-VENDOR: which LLM is primary, and on what stated grounds. Under a month to submission with 120 pages outstanding, so scope is deliberately narrow: CSD primary, one category as robustness."
+focus_detail: "THE THESIS PREMISE. Does exposing a trained model as a tool improve an LLM's answers, versus letting it write its own forecasting code? Harness exists and is sound; blocked only on 03_thesis_modelling/.env (LLM key + E2B_API_KEY). Open decision DEC-VENDOR: decide on ecological validity, not cost -- 50 runs per system is roughly $7 on Claude vs $4 on GPT, so vendor cost is not the deciding factor at this scale. Scope settled: CSD primary, one category as robustness."
 ---
 
 # P0039 — SRQ4: dedicated model vs code-as-action
@@ -53,12 +53,34 @@ The harness hardcodes `claude-sonnet-4-6` (line 36) and **no justification is re
 anywhere in the thesis docs**. That is an unargued default, and unargued defaults are
 what reviewers probe.
 
-Brian favours GPT. Two of his reasons are not equally strong:
+Brian favours GPT. Three distinct arguments, which need separating because they
+have different standing:
 
-| Argument | Verdict |
-|----------|---------|
-| "GPT is what most firms actually deploy" | **Strong.** Ecological validity. If the thesis advises firms to expose models as tools, it matters that the finding holds for the LLM they use. |
-| "GPT is cheaper and less accurate, which improves our results" | **Do not use.** Choosing a weaker comparator so the intervention looks better is the same move as capping Prophet, which was rejected on 2026-08-18. It discredits the comparison if spotted. |
+| Argument | Standing |
+|----------|----------|
+| "GPT is what most firms actually deploy" | **Strong, and reportable.** Ecological validity: if the thesis advises firms to expose models as tools, it matters that the finding holds for the LLM they use. |
+| "We pay for the API out of pocket" | **Legitimate, and normal to disclose.** A budget constraint on how much can be run is an ordinary feature of empirical work, not a weakness. It belongs in the methodology as a stated limit on sample size. |
+| "A weaker model makes our intervention look better" | **Not a selection criterion.** Choosing a comparator *because* it is weak is the same move as capping Prophet, rejected 2026-08-18. Brian's clarification (2026-08-19) is that this was never intended as a reported argument — it is an internal observation, and it should stay out of the selection rationale entirely. |
+
+**The cost argument turns out to be nearly moot at this scale.** Order-of-magnitude
+estimate for 50 runs per system (100 LLM conversations total), from the harness'
+own token structure:
+
+| Model | System A | System B | Total |
+|-------|---------:|---------:|------:|
+| claude-sonnet-4-6 | $1.05 | $6.38 | **~$7** |
+| GPT-5.x class | $0.59 | $3.50 | **~$4** |
+| GPT-5-mini class | $0.12 | $0.70 | **~$1** |
+
+Even at 10x these figures the difference between vendors is tens of euros, not
+hundreds. **Cost should therefore not decide this** — it only would if the design grew
+to thousands of runs. Decide on ecological validity instead, and treat the real
+per-run cost from `--demo` (task 1) as the check on whether the *sample size* is
+affordable, which is the question cost genuinely governs.
+
+System B costs roughly 6x System A per run, because it loops through several tool
+rounds carrying the brand's history in context while System A makes one call. Budget
+accordingly if the run count grows.
 
 **A stronger framing exists**: the premise is about *model availability*, not about any
 vendor. If it holds only for one, it is a vendor finding, not a thesis. Running the

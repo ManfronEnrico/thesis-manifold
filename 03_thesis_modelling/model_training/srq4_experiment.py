@@ -34,7 +34,11 @@ _spec = importlib.util.spec_from_file_location("fs", Path(__file__).resolve().pa
 fs = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(fs)
 
 MODEL = "claude-sonnet-4-6"
-PRICE_IN_PER_M, PRICE_OUT_PER_M = 3.00, 15.00  # USD per 1M tokens, claude-sonnet-4-6 (verified 2026-07-01)
+# USD per 1M tokens. MUST be updated together with MODEL above -- the cost
+# column in every SRQ4 result table is computed from these two constants, so a
+# vendor switch without updating them reports the old vendor's prices against
+# the new vendor's token counts (P0039 F7).
+PRICE_IN_PER_M, PRICE_OUT_PER_M = 3.00, 15.00  # claude-sonnet-4-6 (verified 2026-07-01)
 
 
 def _cost_usd(tok_in, tok_out):
