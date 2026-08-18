@@ -5,7 +5,7 @@ category: reference
 applies-to: [02_thesis_data, 03_thesis_modelling, 04_thesis_results]
 triggers: [handover, regenerate eda, run pipeline, enrico]
 created: 2026_08_19-01_30
-updated: 2026_08_19-01_30
+updated: 2026_08_19-02_20
 ---
 
 # Handover — preprocessing pipeline rebuilt (2026-08-18/19)
@@ -32,34 +32,69 @@ Three things changed that affect numbers you may already have quoted:
 
 Any figure produced before 2026-08-18 should be re-derived.
 
+**Before you regenerate anything**: pull the raw data fresh (section 1.1). No data
+comes through git, and the latest month should be **2026-07** — if your run ends
+earlier, the pull did not refresh and every downstream number will be wrong.
+
 ---
 
 ## 1. How to regenerate the EDA pipeline on your machine
 
-### 1.1 The data is NOT in git — this is the part that will trip you up
+### 1.1 Start from the warehouse, not from a copied folder
 
-`.gitignore` excludes `*.parquet` and `*.jsonl`. A fresh clone gives you **all the
-code and none of the data**, and the pipeline will fail at step 0 with a missing-cache
-error.
+**Nothing data-related comes through git.** `.gitignore` excludes `*.parquet`,
+`*.jsonl` and `*.csv`, so a fresh clone gives you all the code and none of the data.
+Copying folders between machines would work as a plain file transfer, but do not do
+that here — you would inherit whatever staleness Brian's machine has.
 
-You need the **converted parquet views**, not the raw export:
+**Run the full chain yourself**, so you know your data is current. The latest month
+should be **2026-07**; anything ending earlier means the pull did not refresh.
 
-| Tree | Size | Do you need it? |
-|------|-----:|-----------------|
-| `02_thesis_data/_00_raw/nielsen/` | **38 GB** | **No** — only if re-converting from source |
-| `02_thesis_data/_01_converted/nielsen/parquet_nielsen/*/views/` | **1.3 GB** | **Yes** — this is what the pipeline reads |
+#### Step A — credentials for the warehouse
 
-Copy just the `views/` folders (CSD 735 MB, Energidrikke 266 MB, RTD 153 MB,
-Danskvand 75 MB) into the same relative paths. Each category needs its four view
-files: facts, `dim_product`, `dim_period`, `dim_market`.
+The pull reads `RU_*` credentials from a **`.env` at the repo root** (note: this is a
+*different* `.env` from `03_thesis_modelling/.env`, which holds the LLM keys):
 
-If you ever do need to rebuild from raw:
-
-```bash
-python 02_thesis_data/_01_converted/nielsen/jsonl_to_parquet_script/run_all_conversions.py
+```
+RU_SERVER_STRING=...
+RU_DATABASE=...
+RU_CLIENT_ID=...
+RU_TENANT_ID=...
+RU_CLIENT_SECRET=...
 ```
 
-It is idempotent (skip-if-newer), so it is safe to re-run.
+Also needs `pyodbc` with an ODBC driver installed, plus `azure-identity`.
+
+#### Step B — pull the raw JSONL (excluding Totalbeer)
+
+```bash
+python 02_thesis_data/_00_raw/nielsen/scripts/save_all_datasets.py     --only CSD Danskvand Energidrikke RTD
+```
+
+**Totalbeer is deliberately excluded** — it is out of scope for the thesis and was
+dropped from the prose on compute-constraint grounds (P0034).
+
+The default pulls **views + metadata only**, which is what the pipeline needs and takes
+minutes. Do **not** pass `--download-raw` unless you specifically want the underlying
+tables; that pulls ~2 hours of data the pipeline never reads.
+
+#### Step C — convert JSONL to parquet (same exclusion)
+
+```bash
+python 02_thesis_data/_01_converted/nielsen/jsonl_to_parquet_script/run_all_conversions.py     --only CSD Danskvand Energidrikke RTD
+```
+
+Idempotent (skip-if-newer), so it is safe to re-run. Conversion only makes sense
+**after** step B — converting stale JSONL just produces stale parquet.
+
+Result: ~1.3 GB of parquet views under
+`02_thesis_data/_01_converted/nielsen/parquet_nielsen/{Category}/views/`, four files
+per category (facts, `dim_product`, `dim_period`, `dim_market`).
+
+> **Note on `MANIFEST.json`**: the copy on Brian's machine is timestamped 2026-06-30
+> and its `output_dir` still points at the pre-restructure `thesis/data/...` path, so
+> it predates both the re-pull and the P0028 restructure. Treat it as unreliable
+> provenance — your own pull is the authority on how current your data is.
 
 ### 1.2 Dependencies
 
@@ -246,24 +281,29 @@ E2B_API_KEY=...
 E2B is a disposable cloud sandbox where System B's self-written code executes. System A
 does not need it; that asymmetry is the experiment.
 
-**Open question for you and Brian (DEC-VENDOR)**: the harness is hardcoded to
-`claude-sonnet-4-6` and **no justification is recorded anywhere in the thesis**. Brian
-favours GPT because it is what firms actually deploy — a genuine ecological-validity
-argument, and the one to decide on.
+**On the LLM choice (DEC-VENDOR)** — you likely already have an
+`ANTHROPIC_API_KEY` in place from building System B, so the harness should run for you
+as-is. That is the fastest path to a first `--demo`, and worth doing before changing
+anything.
 
-Cost is a real constraint (the API is paid out of pocket, ~50 prompts per system are
-planned for a stable estimate) but it turns out not to separate the vendors: roughly
-**$7 on Claude vs $4 on GPT** for 50 runs per system. Even at 10x that is tens of
-euros. So budget governs **how many runs are affordable** — a sample-size decision that
-belongs in the methodology — rather than which vendor to use.
+The open question is whether Claude should be the **reported** model. The harness
+hardcodes `claude-sonnet-4-6` (line 36) and **no justification is recorded anywhere in
+the thesis** — a reviewer asking "why this model?" currently has no answer. Brian
+leans toward GPT on ecological-validity grounds: it is what most firms actually deploy,
+so a finding that holds there generalises better to the thesis' own recommendation.
 
-System B costs ~6x System A per run, since it loops through several tool rounds
-carrying the brand's history in context. If the run count grows, that is the line item
-to watch.
+Worth noting the premise is about **model availability**, not about any vendor. If the
+effect only holds for one, it is a vendor finding rather than a thesis — so a full run
+on one model plus a smaller cross-check on the other is the stronger design.
 
-The harness is written against Anthropic's API shape, so a GPT run needs an adapter at
-the two call sites. **If the vendor changes, update `PRICE_IN_PER_M` /
-`PRICE_OUT_PER_M` too** — every reported cost is computed from them.
+Cost does not separate them at this scale: roughly **$7 on Claude vs $4 on GPT** for 50
+runs per system. Budget governs *how many runs* are affordable — a sample-size
+decision for the methodology — not which vendor to use.
+
+Two practical notes if the vendor does change: the harness is written against
+Anthropic's API shape, so the two call sites need an adapter; and
+`PRICE_IN_PER_M` / `PRICE_OUT_PER_M` must be updated, since every reported cost figure
+is computed from them.
 
 ### Suggested order
 
