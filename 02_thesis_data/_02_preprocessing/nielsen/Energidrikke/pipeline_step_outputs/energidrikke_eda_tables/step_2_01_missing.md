@@ -1,5 +1,8 @@
 ## Missing Value Analysis
 
+- Nulls per column. In this panel a null is an unreported measure for an observed brand-month, which is distinct from a brand-month that does not appear at all.
+- Matters for feature engineering because a lag or rolling window computed across a null propagates it forward into every window that spans the gap.
+
 | Column                             |   Missing |   Missing % |
 |:-----------------------------------|----------:|------------:|
 | weighted_distribution_any_promo    |       332 |     19.5000 |

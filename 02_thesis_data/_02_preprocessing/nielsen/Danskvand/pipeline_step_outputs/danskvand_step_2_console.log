@@ -17,6 +17,9 @@ Rebuilding the analysis panel via step 1...
 
 Data Shape
 ----------------------------------------
+  - Panel dimensions after step 1: the brand x month grain locked by DEC-GRAIN (2026-07-12), scoped to the DVH EXCL. HD parent market (DEC-SCOPE) rather than its nine region children.
+  - Row count is brands x observed months, not a complete grid -- brands enter and leave the panel, so absent brand-months are genuinely absent rather than null.
+
        Metric Value
    Total Rows 1,225
 Unique Brands    55
@@ -24,6 +27,9 @@ Unique Brands    55
 
 Columns & Data Quality
 ----------------------------------------
+  - Every column step 1 produced, with its dtype and null count. Discovered, not enumerated (DEC-OPEN-WORLD): a category carrying a column no other category has still appears here.
+  - Column counts differ by category by design -- the four categories sit at different Nielsen capability tiers, and a column absent here was never delivered rather than lost in processing.
+
                                       Column Data Type  Non-Null  Missing  Missing %
                                        brand    object      1225        0        0.0
                                  period_year     int64      1225        0        0.0
@@ -62,6 +68,11 @@ ACQUA PANNA         2023            12      1048.50          36.0         72.0  
 
 Skewness Analysis
 ----------------------------------------
+  - Fisher-Pearson skewness per numeric column. Zero is symmetric; positive means a long right tail.
+  - Thresholds follow Kim (2013): |skew| > 2 indicates substantial departure from normality, 0.5-2 moderate. These bands are the stated basis for the log-transform recommendation, not an eyeball judgement.
+  - The forecast target's skewness is the empirical case for LOG_TRANSFORM_TARGET; see 3.15 for the same evidence as a distribution curve.
+  - Skewness is a property of the marginal distribution and says nothing about the time-series structure -- 3.05 and 3.16 cover that.
+
                                      feature  skewness                                                                          interpretation
                                  sales_value     2.966 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
                                 sales_liters     4.917 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
@@ -82,6 +93,9 @@ total_weighted_distribution_points_tdp_reach     1.623                          
 
 Coverage
 ----------------------------------------
+  - Observed span and completeness of the panel. Total months is the distinct period count, which bounds every window-based feature: a 12-month rolling mean is undefined in a panel shorter than 12.
+  - Also bounds the split. Train/validation/test cutoffs are derived proportionally from this span rather than hardcoded, after the hardcoded dates drifted to a 24-27% test share (F25).
+
         Metric              Value
     Date Range 2023-03 to 2026-07
   Total Months                 41
@@ -91,6 +105,10 @@ Avg Rows/Brand               22.3
 
 Rows per Brand Distribution
 ----------------------------------------
+  - Distribution of observation counts per brand -- how much history each brand actually has.
+  - Directly relevant to MIN_PERIODS: a brand with few observations cannot support lag-12 features and contributes mostly warmup rows. The threshold decision is step 3's (P0036 task 8 open); this table is its evidence.
+  - A long left tail means the panel is dominated by short-lived brands, which is a case for filtering rather than pooling them in.
+
 Statistic Rows/Brand
       Min          1
       Max         41
@@ -106,6 +124,10 @@ Statistic Rows/Brand
 
 Top 3 Break Candidates by Chow F-statistic
 ------------------------------------------
+  - Chow test for a structural break in the aggregate series: the null is that the same relationship holds before and after the candidate date (Chow, 1960).
+  - A low p-value indicates the series mean/variance shifts at that point. That matters for the split, because a break inside the test window means the test period is not drawn from the training regime.
+  - Reported as the three strongest candidates rather than one verdict: with a single series and many candidate dates this is exploratory, and the multiple-comparisons problem is real.
+
    date  chow_f  chow_p  mean_ratio  std_ratio
 2025-06  13.892  0.0006       1.327      1.287
 2025-05  12.621  0.0010       1.311      1.255
@@ -124,6 +146,10 @@ Top 3 Break Candidates by Chow F-statistic
 
 ADF Test per Brand (top brands by volume)
 -----------------------------------------
+  - Augmented Dickey-Fuller test per brand. Null hypothesis is a unit root, i.e. non-stationarity; p < 0.05 rejects it and indicates a stationary series (Dickey & Fuller, 1979).
+  - Failing to reject is weak evidence -- ADF has low power on short series, and these brands have at most ~46 monthly observations. Read a non-rejection as inconclusive, not as proof of a unit root.
+  - Non-stationary brands are the argument for differencing or for lag features that let the model absorb the trend rather than extrapolate it.
+
             brand  n  p_raw  p_log  p_diff recommendation
            HARBOE 41  0.999  0.996   0.000     log1p+diff
         BLUE KELD 41  0.071  0.001   0.000          log1p
@@ -163,6 +189,11 @@ CARLSBERG KURVAND 41  0.197  0.271   0.000     log1p+diff
 
 Brand Retention at Different MIN_PERIODS Thresholds
 ---------------------------------------------------
+  - How many brands survive each candidate minimum-observation threshold -- the retention curve for MIN_PERIODS.
+  - Thresholds are generated from the panel's own maximum span rather than the notebook's fixed 20-43 ladder, which had been written against CSD's 43-month history and produced empty rows elsewhere.
+  - The trade-off is explicit: a higher threshold buys longer, cleaner series at the cost of brand coverage. Look for the knee where retention falls sharply.
+  - Evidence only -- MIN_PERIODS is decided in step 3 (P0036 task 8).
+
  Min Periods  Brands Retained % of Total Data Quality
            5               43      78.2%          Low
           10               33      60.0%          Low
@@ -183,6 +214,10 @@ Brand Retention at Different MIN_PERIODS Thresholds
 
 Zero-Sales Characterisation across 55 brands
 --------------------------------------------
+  - Brands classified by where zero-sales months occur: leading zeros (not yet launched), trailing (delisted), intermittent (genuinely sporadic demand), or none.
+  - The distinction drives treatment. Leading and trailing zeros are structural absence and should be trimmed; intermittent zeros are real demand behaviour and must be kept, since removing them would bias the target upward.
+  - Intermittent demand also breaks the usual accuracy metrics -- MAPE is undefined at zero, which constrains metric choice downstream.
+
     type  brands
 no zeros      55
 
@@ -199,6 +234,10 @@ no zeros      55
 
 Monthly Sales Distribution (Full Year)
 ----------------------------------------
+  - Total target by calendar month, aggregated across all years and brands -- the seasonal profile of the category.
+  - Confounded with trend: a category growing over the observation window inflates whichever months its later years cover most. Read alongside 3.10, where decomposition separates the two.
+  - The empirical basis for HOLIDAY_MONTHS, reported here but not persisted anywhere step 3 could read (DEC-EDA-SPLIT).
+
  Month Month Name Sales Units % of Total Classification
      1        Jan   8,686,690       5.4%         Valley
      2        Feb   8,211,296       5.1%         Valley
@@ -215,6 +254,9 @@ Monthly Sales Distribution (Full Year)
 
 Peak & Valley Analysis
 ----------------------------------------
+  - Highest and lowest months of the seasonal profile, with the ratio between them as a one-number measure of seasonal amplitude.
+  - A large peak-to-valley ratio justifies month-of-year features; a flat profile argues they would add parameters without signal.
+
                  Category     Months % of Sales
              Top 3 Months  [6, 7, 5]      36.5%
           Bottom 3 Months [2, 1, 11]      16.1%
@@ -246,6 +288,10 @@ Holiday Months (75th pct)  [5, 6, 7]      36.5%
 
 Top 5 Brands by Total Sales
 ----------------------------------------
+  - The largest brands by cumulative target volume, with their series plotted in the companion figure.
+  - These brands dominate any pooled error metric: a model can score well overall while failing on the long tail. Relevant to the pooled-versus-specialised question (P0036 task 9).
+  - Volume ranking, not forecastability ranking -- a large brand is not necessarily a stable or predictable one.
+
  Rank       Brand Total Sales
     1      HARBOE  73,560,373
     2   BLUE KELD  25,136,770
@@ -259,6 +305,10 @@ Top 5 Brands by Total Sales
 
 Sales CV (std/mean) across 50 brands
 ----------------------------------------
+  - Coefficient of variation (std / mean) per brand: volatility normalised by level, so brands of different sizes are comparable.
+  - High CV means an inherently harder series. Reporting the spread of CV across brands is what justifies expecting heterogeneous accuracy rather than treating one aggregate error as representative.
+  - Undefined for a brand with mean zero, and unstable for near-zero means -- read the extreme values alongside 3.07.
+
 Statistic    CV
       Min 0.000
       P25 0.395
@@ -284,6 +334,9 @@ Statistic    CV
 
 Brands' Peak Sales Month
 ----------------------------------------
+  - Each brand's own peak month, showing whether brands share the category's seasonal pattern or carry individual ones.
+  - If peaks cluster, a single shared seasonal feature suffices. If they scatter, brand-specific seasonality is what the model needs, which is an argument for brand identity interacting with month.
+
 Month  Brands Peaking
   Jan               1
   Feb               1
@@ -316,6 +369,11 @@ Month  Brands Peaking
 
 Measure-Column Quality Scan
 ----------------------------------------
+  - Per-column scan for the two defects that silently corrupt aggregation: impossible negatives, and rate columns mistakenly treated as additive.
+  - Negative counts and negative shares are impossible by definition, so any listed here are delivery defects. Reported and left uncorrected (F42): clipping would manufacture a plausible-looking value and hide the problem, and none of the affected columns is the target.
+  - The in_0_100 flag answers F39. A column bounded within [0, 100] behaves as a rate and must be averaged when aggregating -- summing two 70% distribution figures into 140% is the specific error this check exists to prevent.
+  - The additive/intensive split it implies is what step 1's aggregation already applies; this table is the evidence that the classification matches the data.
+
                                       column         min          max         mean  nulls  zeros  negatives  neg_pct  in_0_100
                                  sales_value    1.000000 1.891327e+07 1.061231e+06      0      0          0      0.0     False
                                 sales_liters    0.200000 4.621588e+06 1.538316e+05      0      0          0      0.0     False
@@ -342,14 +400,116 @@ total_weighted_distribution_points_tdp_reach    0.000031 3.420857e-01 5.566720e-
   Relevant to F39: such columns must be averaged, not summed, when aggregating (70% + 70% != 140%).
 
 ================================================================================
+3.15  EMPIRICAL CDF OF THE FORECAST TARGET
+================================================================================
+
+Target Distribution Quantiles (sales_units)
+-------------------------------------------
+  - Cumulative share of brand-months at or below each sales_units value; shows the spread without the bin-width dependence a histogram introduces.
+  - p50 = 2,122 against p90 = 362,045: the gap between them is the concentration this panel has to forecast across.
+  - A long right tail here is the empirical case for LOG_TRANSFORM_TARGET. The second panel shows the same data after log1p, where an approximately straight curve indicates the transform has done its job.
+  - Companion to 3.02 (skewness): that figure states the asymmetry as a single number, this one shows where in the distribution it sits.
+
+quantile       value
+     p25    183.0000
+     p50   2122.1568
+     p75 105615.4320
+     p90 362044.6819
+
+================================================================================
+3.16  AUTOCORRELATION STRUCTURE (ACF / PACF)
+================================================================================
+
+Significant ACF Lags per Brand
+----------------------------------------
+  - Lags whose autocorrelation exceeds the 95% band (+/-1.96/sqrt(n)) under the null of no autocorrelation -- the standard Box-Jenkins reading of an ACF plot (Box & Jenkins, 1970).
+  - Lags significant in at least half of the top 5 brands: [1, 2, 4, 6, 7, 10, 11, 12, 13, 15]. A lag clearing the band for one brand is noise; one clearing it across the majority is structure worth a feature.
+  - A spike at lag 12 indicates annual seasonality; spikes at 1-3 indicate short-run momentum. Both are what the lag features exist to capture.
+  - Computed on log1p(target) so these lags describe the series the model is actually fitted to.
+  - Evidence only -- LAGS is derived in step 3 (DEC-EDA-SPLIT). This figure is the justification for whatever that step selects.
+
+      brand  n_periods  conf_band                                      significant_lags
+     HARBOE         41     0.3061                [1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 15]
+  BLUE KELD         41     0.3061                                           [3, 12, 15]
+FIRST PRICE         41     0.3061 [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 16, 17, 18, 19]
+  AQUA D'OR         41     0.3061                     [1, 2, 7, 11, 12, 13, 14, 15, 19]
+  KILDEVÆLD         41     0.3061 [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 16, 17, 18]
+
+================================================================================
+3.17  PROMO INTENSITY DISTRIBUTION
+================================================================================
+  SKIPPED -- this category has no promo_units column(s).
+  Not an error: the analysis is undefined without them, so there is nothing to report.
+
+================================================================================
+3.18  CORRELATION STRUCTURE (PEARSON vs SPEARMAN)
+================================================================================
+
+Correlation with sales_units
+----------------------------------------
+  - Pearson measures linear association; Spearman measures monotone association on ranks. Reporting both is what makes the comparison in the next bullet possible.
+  - abs_delta above 0.1 flags a relationship that is monotone but not linear -- a candidate for transformation rather than a raw feature. 8 column(s) flagged here.
+  - Spearman is the more trustworthy of the two on this data: the target is right-skewed (see 3.02 and 3.15) and Pearson is sensitive to the resulting outliers.
+  - These correlations are contemporaneous, not predictive: the columns are measured in the same month as the target, so a high value does not by itself establish forecasting value at t+1.
+  - Descriptive only. No feature is selected or dropped here; the contract is step 3's output (DEC-EDA-SPLIT).
+
+                                      column  pearson_r  spearman_r  abs_delta  non_linear
+                                sales_liters     0.9799      0.9894     0.0095       False
+                                 sales_value     0.9162      0.9811     0.0649       False
+                        numeric_distribution     0.8042      0.9088     0.1045        True
+                               weighted_dist     0.7722      0.8911     0.1189        True
+                       number_of_items_reach     0.7634      0.8911     0.1276        True
+          avg_number_of_stores_selling_reach     0.7632      0.8910     0.1278        True
+                  numeric_distribution_reach     0.7623      0.8903     0.1279        True
+total_weighted_distribution_points_tdp_reach     0.7316      0.8704     0.1389        True
+                 weighted_distribution_reach     0.7316      0.8704     0.1389        True
+                   universe_number_of_stores     0.0313      0.0360     0.0047       False
+             avg_no_of_items_per_store_reach     0.0080      0.6442     0.6362        True
+
+Near-Duplicate Column Pairs (|r| > 0.9)
+----------------------------------------
+  - Column pairs correlating above 0.9 carry substantially the same information; keeping both adds collinearity without adding signal.
+  - The 0.9 threshold is conventional for near-duplicate detection and is deliberately stricter than the 0.756 weighted_dist correlation P0036 F7 tracks -- pairs listed here are a stronger claim than that one.
+  - Collinearity inflates coefficient variance in linear models. Tree ensembles tolerate it but split their importance across the duplicates, which makes the resulting importance ranking misleading.
+  - Listed for step 3 to act on, not pruned here.
+
+                                    column_a                                     column_b  pearson_r
+                 weighted_distribution_reach total_weighted_distribution_points_tdp_reach     1.0000
+                       number_of_items_reach           avg_number_of_stores_selling_reach     1.0000
+                  numeric_distribution_reach                        number_of_items_reach     0.9999
+                  numeric_distribution_reach           avg_number_of_stores_selling_reach     0.9999
+                               weighted_dist                  weighted_distribution_reach     0.9883
+                               weighted_dist total_weighted_distribution_points_tdp_reach     0.9883
+                        numeric_distribution                   numeric_distribution_reach     0.9856
+                        numeric_distribution                        number_of_items_reach     0.9855
+                        numeric_distribution           avg_number_of_stores_selling_reach     0.9854
+                  numeric_distribution_reach                  weighted_distribution_reach     0.9851
+                  numeric_distribution_reach total_weighted_distribution_points_tdp_reach     0.9851
+                        numeric_distribution                                weighted_dist     0.9850
+total_weighted_distribution_points_tdp_reach           avg_number_of_stores_selling_reach     0.9846
+total_weighted_distribution_points_tdp_reach                        number_of_items_reach     0.9846
+                 weighted_distribution_reach           avg_number_of_stores_selling_reach     0.9846
+                 weighted_distribution_reach                        number_of_items_reach     0.9846
+                  numeric_distribution_reach                                weighted_dist     0.9809
+                               weighted_dist                        number_of_items_reach     0.9805
+                               weighted_dist           avg_number_of_stores_selling_reach     0.9804
+                                sales_liters                                  sales_units     0.9799
+                        numeric_distribution total_weighted_distribution_points_tdp_reach     0.9640
+                        numeric_distribution                  weighted_distribution_reach     0.9640
+                                 sales_value                                  sales_units     0.9162
+                                 sales_value                                 sales_liters     0.9074
+
+================================================================================
 STEP 2 SUMMARY -- Danskvand
 ================================================================================
-  Sections completed: 13 / 14
-  Tables written:     15 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
-  Plots written:      4 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_plots
+  Sections completed: 16 / 18
+  Tables written:     19 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_tables
+  Plots written:      7 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Danskvand\pipeline_step_outputs\danskvand_eda_plots
 
-  Skipped (1) -- column(s) absent in this category:
+  Skipped (2) -- column(s) absent in this category:
     3.13  PROMO INTENSITY ACROSS BRANDS
+      missing: promo_units
+    3.17  PROMO INTENSITY DISTRIBUTION
       missing: promo_units
 
   This step derives no parameters. Its output is evidence for Chapter 4;

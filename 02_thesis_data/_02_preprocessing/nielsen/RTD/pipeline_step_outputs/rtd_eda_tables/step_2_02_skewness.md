@@ -1,5 +1,10 @@
 ## Skewness Analysis
 
+- Fisher-Pearson skewness per numeric column. Zero is symmetric; positive means a long right tail.
+- Thresholds follow Kim (2013): |skew| > 2 indicates substantial departure from normality, 0.5-2 moderate. These bands are the stated basis for the log-transform recommendation, not an eyeball judgement.
+- The forecast target's skewness is the empirical case for LOG_TRANSFORM_TARGET; see 3.15 for the same evidence as a distribution curve.
+- Skewness is a property of the marginal distribution and says nothing about the time-series structure -- 3.05 and 3.16 cover that.
+
 | feature                                      |   skewness | interpretation                                                                          |
 |:---------------------------------------------|-----------:|:----------------------------------------------------------------------------------------|
 | sales_value                                  |     5.4980 | Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary |

@@ -1,5 +1,9 @@
 ## ADF Test per Brand (top brands by volume)
 
+- Augmented Dickey-Fuller test per brand. Null hypothesis is a unit root, i.e. non-stationarity; p < 0.05 rejects it and indicates a stationary series (Dickey & Fuller, 1979).
+- Failing to reject is weak evidence -- ADF has low power on short series, and these brands have at most ~46 monthly observations. Read a non-rejection as inconclusive, not as proof of a unit root.
+- Non-stationary brands are the argument for differencing or for lag features that let the model absorb the trend rather than extrapolate it.
+
 | brand             |   n |   p_raw |   p_log |   p_diff | recommendation   |
 |:------------------|----:|--------:|--------:|---------:|:-----------------|
 | HARBOE            |  41 |  0.9990 |  0.9960 |   0.0000 | log1p+diff       |

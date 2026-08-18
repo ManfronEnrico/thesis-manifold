@@ -1,5 +1,10 @@
 ## Measure-Column Quality Scan
 
+- Per-column scan for the two defects that silently corrupt aggregation: impossible negatives, and rate columns mistakenly treated as additive.
+- Negative counts and negative shares are impossible by definition, so any listed here are delivery defects. Reported and left uncorrected (F42): clipping would manufacture a plausible-looking value and hide the problem, and none of the affected columns is the target.
+- The in_0_100 flag answers F39. A column bounded within [0, 100] behaves as a rate and must be averaged when aggregating -- summing two 70% distribution figures into 140% is the specific error this check exists to prevent.
+- The additive/intensive split it implies is what step 1's aggregation already applies; this table is the evidence that the classification matches the data.
+
 | column                                       |       min |            max |         mean |   nulls |   zeros |   negatives |   neg_pct | in_0_100   |
 |:---------------------------------------------|----------:|---------------:|-------------:|--------:|--------:|------------:|----------:|:-----------|
 | sales_value                                  |    5.0000 |  57493355.7915 | 2954004.4915 |       0 |       0 |           0 |    0.0000 | False      |

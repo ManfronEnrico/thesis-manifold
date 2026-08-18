@@ -112,6 +112,7 @@ def save_table(
 	caption: str | None = None,
 	index: bool = False,
 	float_format: str = "%.4f",
+	notes: list[str] | None = None,
 ) -> tuple[Path, Path]:
 	"""Persist a DataFrame as both CSV and a Markdown table.
 
@@ -135,6 +136,12 @@ def save_table(
 			pipeline tables carry a meaningful column key already; pass True for
 			describe()/value_counts() output where the index IS the label.
 		float_format: applied to both outputs so CSV and TXT agree.
+		notes: interpretation bullets rendered above the table in the .md --
+			what it shows, how to read it, and the methodological basis where
+			one exists. These exist because the .md is an appendix artifact:
+			a screenshot of a bare number grid forces the reader to
+			reverse-engineer the intent. Not written to the CSV, which is the
+			machine-readable form and should stay pure data.
 
 	Returns:
 		(csv_path, md_path)
@@ -165,6 +172,10 @@ def save_table(
 			# H2, not H1: these files are appendix fragments pasted under a
 			# thesis heading, so they should not claim the top level.
 			fh.write(f"## {caption}\n\n")
+		if notes:
+			for note in notes:
+				fh.write(f"- {note}\n")
+			fh.write("\n")
 		fh.write(rendered)
 		fh.write("\n")
 

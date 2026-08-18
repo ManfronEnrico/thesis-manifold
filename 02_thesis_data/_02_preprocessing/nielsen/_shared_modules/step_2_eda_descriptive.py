@@ -117,13 +117,24 @@ class EdaContext:
 		self.plots_written: list[str] = []
 
 	def save(self, frame: pd.DataFrame, name: str, caption: str,
-			 index: bool = False) -> None:
-		"""Persist a table and echo it, recording that it was written."""
+			 index: bool = False, notes: list[str] | None = None) -> None:
+		"""Persist a table and echo it, recording that it was written.
+
+		`notes` are interpretation bullets written above the table in the .md
+		and echoed to the console. They state what the table shows, how to
+		read it, and the methodological basis where one exists -- the .md
+		files are pasted into thesis appendices, where a bare number grid
+		makes the reader reconstruct the intent from the column headers.
+		"""
 		print(f"\n{caption}")
 		print("-" * max(len(caption), 40))
+		if notes:
+			for note in notes:
+				print(f"  - {note}")
+			print()
 		print(frame.to_string(index=index))
 		save_table(frame, name, self.paths["tables_dir"], caption=caption,
-				   index=index)
+				   index=index, notes=notes)
 		self.tables_written.append(name)
 
 	def savefig(self, plt, name: str) -> None:
@@ -186,7 +197,16 @@ def s01_preview(ctx: EdaContext) -> None:
 			"Value": [f"{len(df):,}", f"{df[BRAND_COL].nunique()}",
 					  f"{len(df.columns)}"],
 		})
-		ctx.save(shape_df, "step_2_01_shape", "Data Shape")
+		ctx.save(shape_df, "step_2_01_shape", "Data Shape",
+			notes=[
+				"Panel dimensions after step 1: the brand x month grain locked "
+				"by DEC-GRAIN (2026-07-12), scoped to the DVH EXCL. HD parent "
+				"market (DEC-SCOPE) rather than its nine region children.",
+				"Row count is brands x observed months, not a complete grid -- "
+				"brands enter and leave the panel, so absent brand-months are "
+				"genuinely absent rather than null.",
+			],
+		)
 
 		cols_info = pd.DataFrame({
 			"Column": df.columns,
@@ -195,13 +215,32 @@ def s01_preview(ctx: EdaContext) -> None:
 			"Missing": df.isnull().sum(),
 			"Missing %": (100 * df.isnull().sum() / len(df)).round(1),
 		}).reset_index(drop=True)
-		ctx.save(cols_info, "step_2_01_columns", "Columns & Data Quality")
+		ctx.save(cols_info, "step_2_01_columns", "Columns & Data Quality",
+			notes=[
+				"Every column step 1 produced, with its dtype and null count. "
+				"Discovered, not enumerated (DEC-OPEN-WORLD): a category "
+				"carrying a column no other category has still appears here.",
+				"Column counts differ by category by design -- the four "
+				"categories sit at different Nielsen capability tiers, and a "
+				"column absent here was never delivered rather than lost in "
+				"processing.",
+			],
+		)
 
 		missing_df = cols_info[cols_info["Missing"] > 0][
 			["Column", "Missing", "Missing %"]
 		]
 		if len(missing_df) > 0:
-			ctx.save(missing_df, "step_2_01_missing", "Missing Value Analysis")
+			ctx.save(missing_df, "step_2_01_missing", "Missing Value Analysis",
+				notes=[
+					"Nulls per column. In this panel a null is an unreported "
+					"measure for an observed brand-month, which is distinct from a "
+					"brand-month that does not appear at all.",
+					"Matters for feature engineering because a lag or rolling "
+					"window computed across a null propagates it forward into every "
+					"window that spans the gap.",
+				],
+			)
 		else:
 			print("\nMissing Value Analysis: no missing values in any column")
 
@@ -263,7 +302,22 @@ def s02_distributions(ctx: EdaContext) -> None:
 
 		plt.tight_layout()
 		ctx.savefig(plt, "01_distribution_histograms")
-		ctx.save(pd.DataFrame(rows), "step_2_02_skewness", "Skewness Analysis")
+		ctx.save(pd.DataFrame(rows), "step_2_02_skewness", "Skewness Analysis",
+			notes=[
+				"Fisher-Pearson skewness per numeric column. Zero is symmetric; "
+				"positive means a long right tail.",
+				"Thresholds follow Kim (2013): |skew| > 2 indicates substantial "
+				"departure from normality, 0.5-2 moderate. These bands are the "
+				"stated basis for the log-transform recommendation, not an "
+				"eyeball judgement.",
+				"The forecast target's skewness is the empirical case for "
+				"LOG_TRANSFORM_TARGET; see 3.15 for the same evidence as a "
+				"distribution curve.",
+				"Skewness is a property of the marginal distribution and says "
+				"nothing about the time-series structure -- 3.05 and 3.16 cover "
+				"that.",
+			],
+		)
 
 
 # ============================================================================
@@ -290,7 +344,18 @@ def s03_date_range(ctx: EdaContext) -> None:
 				f"{len(df) / df[BRAND_COL].nunique():.1f}",
 			],
 		})
-		ctx.save(coverage_df, "step_2_03_coverage", "Coverage")
+		ctx.save(coverage_df, "step_2_03_coverage", "Coverage",
+			notes=[
+				"Observed span and completeness of the panel. Total months is "
+				"the distinct period count, which bounds every window-based "
+				"feature: a 12-month rolling mean is undefined in a panel "
+				"shorter than 12.",
+				"Also bounds the split. Train/validation/test cutoffs are "
+				"derived proportionally from this span rather than hardcoded, "
+				"after the hardcoded dates drifted to a 24-27% test share "
+				"(F25).",
+			],
+		)
 
 		rows_per_brand = df.groupby(BRAND_COL).size()
 		dist_df = pd.DataFrame({
@@ -302,7 +367,19 @@ def s03_date_range(ctx: EdaContext) -> None:
 			],
 		})
 		ctx.save(dist_df, "step_2_03_rows_per_brand",
-				 "Rows per Brand Distribution")
+				 "Rows per Brand Distribution",
+			notes=[
+				"Distribution of observation counts per brand -- how much "
+				"history each brand actually has.",
+				"Directly relevant to MIN_PERIODS: a brand with few "
+				"observations cannot support lag-12 features and contributes "
+				"mostly warmup rows. The threshold decision is step 3's (P0036 "
+				"task 8 open); this table is its evidence.",
+				"A long left tail means the panel is dominated by short-lived "
+				"brands, which is a case for filtering rather than pooling them "
+				"in.",
+			],
+		)
 		ctx.derived["total_months"] = int(total_months)
 
 
@@ -374,7 +451,20 @@ def s04_structural_break(ctx: EdaContext) -> None:
 			  f"{n_months} months")
 		ctx.save(top3[["date", "chow_f", "chow_p", "mean_ratio", "std_ratio"]],
 				 "step_2_04_structural_break",
-				 "Top 3 Break Candidates by Chow F-statistic")
+				 "Top 3 Break Candidates by Chow F-statistic",
+			notes=[
+				"Chow test for a structural break in the aggregate series: the "
+				"null is that the same relationship holds before and after the "
+				"candidate date (Chow, 1960).",
+				"A low p-value indicates the series mean/variance shifts at "
+				"that point. That matters for the split, because a break inside "
+				"the test window means the test period is not drawn from the "
+				"training regime.",
+				"Reported as the three strongest candidates rather than one "
+				"verdict: with a single series and many candidate dates this is "
+				"exploratory, and the multiple-comparisons problem is real.",
+			],
+		)
 
 		best = cand_df.iloc[0]
 		break_detected = bool(best["chow_p"] < 0.05)
@@ -445,7 +535,20 @@ def s05_stationarity(ctx: EdaContext) -> None:
 
 		adf_df = pd.DataFrame(results)
 		ctx.save(adf_df, "step_2_05_adf_per_brand",
-				 "ADF Test per Brand (top brands by volume)")
+				 "ADF Test per Brand (top brands by volume)",
+			notes=[
+				"Augmented Dickey-Fuller test per brand. Null hypothesis is a "
+				"unit root, i.e. non-stationarity; p < 0.05 rejects it and "
+				"indicates a stationary series (Dickey & Fuller, 1979).",
+				"Failing to reject is weak evidence -- ADF has low power on "
+				"short series, and these brands have at most ~46 monthly "
+				"observations. Read a non-rejection as inconclusive, not as "
+				"proof of a unit root.",
+				"Non-stationary brands are the argument for differencing or for "
+				"lag features that let the model absorb the trend rather than "
+				"extrapolate it.",
+			],
+		)
 
 		n_raw = int((adf_df["recommendation"] == "raw").sum())
 		n_log = int((adf_df["recommendation"] == "log1p").sum())
@@ -503,7 +606,21 @@ def s06_brand_stability(ctx: EdaContext) -> None:
 								 else ("Medium" if threshold <= 35 else "High")),
 			})
 		ctx.save(pd.DataFrame(rows), "step_2_06_brand_retention",
-				 "Brand Retention at Different MIN_PERIODS Thresholds")
+				 "Brand Retention at Different MIN_PERIODS Thresholds",
+			notes=[
+				"How many brands survive each candidate minimum-observation "
+				"threshold -- the retention curve for MIN_PERIODS.",
+				"Thresholds are generated from the panel's own maximum span "
+				"rather than the notebook's fixed 20-43 ladder, which had been "
+				"written against CSD's 43-month history and produced empty rows "
+				"elsewhere.",
+				"The trade-off is explicit: a higher threshold buys longer, "
+				"cleaner series at the cost of brand coverage. Look for the "
+				"knee where retention falls sharply.",
+				"Evidence only -- MIN_PERIODS is decided in step 3 (P0036 task "
+				"8).",
+			],
+		)
 
 		# The notebook printed "RECOMMENDATION: MIN_PERIODS = 40" here. That is
 		# an open decision (P0036 task 8), so the evidence is reported and the
@@ -566,7 +683,20 @@ def s07_zero_sales(ctx: EdaContext) -> None:
 		type_counts = (zero_df["type"].value_counts().rename_axis("type")
 					   .reset_index(name="brands"))
 		ctx.save(type_counts, "step_2_07_zero_types",
-				 f"Zero-Sales Characterisation across {len(zero_df)} brands")
+				 f"Zero-Sales Characterisation across {len(zero_df)} brands",
+			notes=[
+				"Brands classified by where zero-sales months occur: leading "
+				"zeros (not yet launched), trailing (delisted), intermittent "
+				"(genuinely sporadic demand), or none.",
+				"The distinction drives treatment. Leading and trailing zeros "
+				"are structural absence and should be trimmed; intermittent "
+				"zeros are real demand behaviour and must be kept, since "
+				"removing them would bias the target upward.",
+				"Intermittent demand also breaks the usual accuracy metrics -- "
+				"MAPE is undefined at zero, which constrains metric choice "
+				"downstream.",
+			],
+		)
 
 		with_zeros = zero_df[zero_df["n_zero"] > 0]
 		print(f"\n  Brands with any zeros: {len(with_zeros)} / {len(zero_df)}")
@@ -614,7 +744,17 @@ def s08_seasonality(ctx: EdaContext) -> None:
 								   else ("Normal" if pct >= 8 else "Valley")),
 			})
 		ctx.save(pd.DataFrame(rows), "step_2_08_monthly_distribution",
-				 "Monthly Sales Distribution (Full Year)")
+				 "Monthly Sales Distribution (Full Year)",
+			notes=[
+				"Total target by calendar month, aggregated across all years "
+				"and brands -- the seasonal profile of the category.",
+				"Confounded with trend: a category growing over the observation "
+				"window inflates whichever months its later years cover most. "
+				"Read alongside 3.10, where decomposition separates the two.",
+				"The empirical basis for HOLIDAY_MONTHS, reported here but not "
+				"persisted anywhere step 3 could read (DEC-EDA-SPLIT).",
+			],
+		)
 
 		top_3 = monthly_sales.nlargest(3).index.tolist()
 		bottom_3 = monthly_sales.nsmallest(3).index.tolist()
@@ -632,7 +772,16 @@ def s08_seasonality(ctx: EdaContext) -> None:
 				f"{100 * monthly_sales[holiday_months].sum() / total:.1f}%",
 			],
 		})
-		ctx.save(peak_valley, "step_2_08_peak_valley", "Peak & Valley Analysis")
+		ctx.save(peak_valley, "step_2_08_peak_valley", "Peak & Valley Analysis",
+			notes=[
+				"Highest and lowest months of the seasonal profile, with the "
+				"ratio between them as a one-number measure of seasonal "
+				"amplitude.",
+				"A large peak-to-valley ratio justifies month-of-year features; "
+				"a flat profile argues they would add parameters without "
+				"signal.",
+			],
+		)
 
 		# Reported as evidence only. Step 3 derives the contract value; this
 		# number is deliberately not persisted anywhere a later step reads.
@@ -794,7 +943,17 @@ def s11_top_brands(ctx: EdaContext) -> None:
 			"Brand": top_brands,
 			"Total Sales": [f"{totals[b]:,.0f}" for b in top_brands],
 		}), "step_2_11_top_brands",
-			f"Top {len(top_brands)} Brands by Total Sales")
+			f"Top {len(top_brands)} Brands by Total Sales",
+			notes=[
+				"The largest brands by cumulative target volume, with their "
+				"series plotted in the companion figure.",
+				"These brands dominate any pooled error metric: a model can "
+				"score well overall while failing on the long tail. Relevant to "
+				"the pooled-versus-specialised question (P0036 task 9).",
+				"Volume ranking, not forecastability ranking -- a large brand "
+				"is not necessarily a stable or predictable one.",
+			],
+		)
 
 		# squeeze=False keeps `axes` 2-D even when a category has a single
 		# brand, so the indexing below cannot become a scalar.
@@ -842,7 +1001,19 @@ def s12_heterogeneity(ctx: EdaContext) -> None:
 				   f"{stats['cv'].median():.3f}",
 				   f"{stats['cv'].quantile(0.75):.3f}",
 				   f"{stats['cv'].max():.3f}"],
-		}), "step_2_12_cv", f"Sales CV (std/mean) across {len(stats)} brands")
+		}), "step_2_12_cv", f"Sales CV (std/mean) across {len(stats)} brands",
+			notes=[
+				"Coefficient of variation (std / mean) per brand: volatility "
+				"normalised by level, so brands of different sizes are "
+				"comparable.",
+				"High CV means an inherently harder series. Reporting the "
+				"spread of CV across brands is what justifies expecting "
+				"heterogeneous accuracy rather than treating one aggregate "
+				"error as representative.",
+				"Undefined for a brand with mean zero, and unstable for "
+				"near-zero means -- read the extreme values alongside 3.07.",
+			],
+		)
 
 		high_cv = int((stats["cv"] > 1.0).sum())
 		print(f"\n  Brands with CV > 1.0 (high volatility): "
@@ -861,7 +1032,16 @@ def s12_heterogeneity(ctx: EdaContext) -> None:
 		ctx.save(pd.DataFrame({
 			"Month": [MONTH_NAMES[m - 1] for m in peak_dist.index],
 			"Brands Peaking": peak_dist.values,
-		}), "step_2_12_peak_months", "Brands' Peak Sales Month")
+		}), "step_2_12_peak_months", "Brands' Peak Sales Month",
+			notes=[
+				"Each brand's own peak month, showing whether brands share the "
+				"category's seasonal pattern or carry individual ones.",
+				"If peaks cluster, a single shared seasonal feature suffices. "
+				"If they scatter, brand-specific seasonality is what the model "
+				"needs, which is an argument for brand identity interacting "
+				"with month.",
+			],
+		)
 
 		concentration = peak_dist.max() / peak_dist.sum()
 		print(f"\n  Peak-month concentration: {concentration:.2f} "
@@ -916,7 +1096,21 @@ def s13_promo_intensity(ctx: EdaContext) -> None:
 								f"{intensity.quantile(0.75):.3f}",
 								f"{intensity.max():.3f}"],
 		}), "step_2_13_promo_intensity",
-			"Promo Intensity per Brand (where promo > 0)")
+			"Promo Intensity per Brand (where promo > 0)",
+			notes=[
+				"Brands ranked by promotional intensity (promo units as a share "
+				"of total units).",
+				"Identifies which brands rely on promotion. Only meaningful for "
+				"categories where Nielsen delivered promo columns -- this "
+				"section is skipped entirely elsewhere rather than reported as "
+				"zero.",
+				"Descriptive, not causal: intensity reflects commercial "
+				"strategy, and promoted brands differ systematically from "
+				"unpromoted ones.",
+				"See 3.17 for the distribution's shape rather than the brand "
+				"ranking.",
+			],
+		)
 
 		n_with = df[BRAND_COL].isin(intensity.index).sum()
 		print(f"\n  Brands with any promotional activity: "
@@ -975,7 +1169,25 @@ def s14_measure_quality(ctx: EdaContext) -> None:
 
 		quality = pd.DataFrame(rows)
 		ctx.save(quality, "step_2_14_measure_quality",
-				 "Measure-Column Quality Scan")
+				 "Measure-Column Quality Scan",
+			notes=[
+				"Per-column scan for the two defects that silently corrupt "
+				"aggregation: impossible negatives, and rate columns mistakenly "
+				"treated as additive.",
+				"Negative counts and negative shares are impossible by "
+				"definition, so any listed here are delivery defects. Reported "
+				"and left uncorrected (F42): clipping would manufacture a "
+				"plausible-looking value and hide the problem, and none of the "
+				"affected columns is the target.",
+				"The in_0_100 flag answers F39. A column bounded within [0, "
+				"100] behaves as a rate and must be averaged when aggregating "
+				"-- summing two 70% distribution figures into 140% is the "
+				"specific error this check exists to prevent.",
+				"The additive/intensive split it implies is what step 1's "
+				"aggregation already applies; this table is the evidence that "
+				"the classification matches the data.",
+			],
+		)
 
 		negatives = quality[quality["negatives"] > 0]
 		if len(negatives) > 0:
@@ -1001,6 +1213,448 @@ def s14_measure_quality(ctx: EdaContext) -> None:
 
 
 # ============================================================================
+# 3.15 -- EMPIRICAL CDF OF THE FORECAST TARGET
+# ============================================================================
+
+def s15_ecdf(ctx: EdaContext) -> None:
+	"""Cumulative distribution of the target, per the notebook's stated plan.
+
+	The notebook header advertises "histograms with skewness, ECDF" and its
+	imports include statsmodels' ECDF, but the cell that drew
+	02_ecdf_distributions.png had already been deleted by the time this port
+	ran -- the PNG on disk had no surviving source (the header claims 14
+	visualisations; 8 PNGs exist). Rebuilt from the stated intent rather than
+	recovered.
+
+	Complements 3.02: a histogram's shape depends on bin width, an ECDF does
+	not. Reading quantiles straight off the curve is what makes it worth
+	keeping alongside the skewness figure.
+	"""
+	@section(ctx, "3.15  EMPIRICAL CDF OF THE FORECAST TARGET",
+			 requires=(TARGET_COL,))
+	def _run():
+		import matplotlib.pyplot as plt
+
+		df = ctx.df
+		series = df[TARGET_COL].dropna()
+		if series.empty:
+			print("  Target column is entirely null; nothing to plot.")
+			return
+
+		positive = series[series > 0]
+		log_ok = len(positive) > 0
+
+		fig, axes = plt.subplots(1, 2 if log_ok else 1,
+								 figsize=FIGSIZE_DEFAULT, squeeze=False)
+
+		x = np.sort(series.values)
+		y = np.arange(1, len(x) + 1) / len(x)
+		axes[0][0].step(x, y, where="post", color=PLOT_COLOR)
+		axes[0][0].set_title(f"ECDF -- {TARGET_COL} (raw)", fontweight="bold")
+		axes[0][0].set_xlabel(TARGET_COL)
+		axes[0][0].set_ylabel("Cumulative proportion")
+		axes[0][0].grid(True, alpha=0.3)
+
+		# Quantile reference lines: the practical reason to prefer an ECDF
+		# over a histogram is that these can be read straight off the curve.
+		quantiles = {}
+		for q in (0.25, 0.50, 0.75, 0.90):
+			quantiles[q] = float(series.quantile(q))
+			axes[0][0].axhline(q, color="grey", lw=0.6, ls="--", alpha=0.6)
+
+		if log_ok:
+			xl = np.sort(np.log1p(positive.values))
+			yl = np.arange(1, len(xl) + 1) / len(xl)
+			axes[0][1].step(xl, yl, where="post", color=PLOT_COLOR)
+			axes[0][1].set_title(f"ECDF -- log1p({TARGET_COL})",
+								 fontweight="bold")
+			axes[0][1].set_xlabel(f"log1p({TARGET_COL})")
+			axes[0][1].set_ylabel("Cumulative proportion")
+			axes[0][1].grid(True, alpha=0.3)
+
+		plt.tight_layout()
+		ctx.savefig(plt, "02_ecdf_distributions")
+
+		q_df = pd.DataFrame({
+			"quantile": [f"p{int(q * 100)}" for q in quantiles],
+			"value": [round(v, 4) for v in quantiles.values()],
+		})
+		ctx.save(
+			q_df, "step_2_15_ecdf_quantiles",
+			f"Target Distribution Quantiles ({TARGET_COL})",
+			notes=[
+				f"Cumulative share of brand-months at or below each "
+				f"{TARGET_COL} value; shows the spread without the "
+				f"bin-width dependence a histogram introduces.",
+				f"p50 = {quantiles[0.50]:,.0f} against p90 = "
+				f"{quantiles[0.90]:,.0f}: the gap between them is the "
+				f"concentration this panel has to forecast across.",
+				"A long right tail here is the empirical case for "
+				"LOG_TRANSFORM_TARGET. The second panel shows the same data "
+				"after log1p, where an approximately straight curve "
+				"indicates the transform has done its job.",
+				"Companion to 3.02 (skewness): that figure states the "
+				"asymmetry as a single number, this one shows where in the "
+				"distribution it sits.",
+			],
+		)
+
+
+# ============================================================================
+# 3.16 -- AUTOCORRELATION STRUCTURE (ACF / PACF)
+# ============================================================================
+
+def s16_acf_pacf(ctx: EdaContext) -> None:
+	"""ACF/PACF for the largest brands. Ported from notebook cell 43.
+
+	This is the evidential basis for whichever LAGS step 3 selects, which is
+	why it is worth keeping as a figure and not only as the number step 3
+	derives. Reported here, never persisted: DEC-EDA-SPLIT keeps parameter
+	derivation in step 3.
+	"""
+	@section(ctx, "3.16  AUTOCORRELATION STRUCTURE (ACF / PACF)",
+			 requires=(BRAND_COL, TARGET_COL))
+	def _run():
+		import matplotlib.pyplot as plt
+		from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+		df = ctx.df
+		totals = df.groupby(BRAND_COL)[TARGET_COL].sum().nlargest(5)
+		top_brands = list(totals.index)
+		if not top_brands:
+			print("  No brands available.")
+			return
+
+		fig, axes = plt.subplots(len(top_brands), 2,
+								 figsize=(14, 3 * len(top_brands)),
+								 squeeze=False)
+
+		rows = []
+		for idx, brand in enumerate(top_brands):
+			series = (df[df[BRAND_COL] == brand]
+					  .sort_values([YEAR_COL, MONTH_COL])[TARGET_COL].values)
+			# log1p to match the modelled target, so the lags read off this
+			# figure are the lags that matter for the model actually fitted.
+			series = np.log1p(series.astype(float))
+			n = len(series)
+
+			# statsmodels requires lags < nobs//2. A short brand series gets
+			# fewer lags rather than an exception.
+			if n < 4:
+				axes[idx][0].set_visible(False)
+				axes[idx][1].set_visible(False)
+				continue
+			max_lags = max(1, min(24, n // 2 - 1))
+
+			plot_acf(series, lags=max_lags, ax=axes[idx][0], color=PLOT_COLOR)
+			axes[idx][0].set_title(f"{brand} -- ACF", fontweight="bold")
+			axes[idx][0].grid(True, alpha=0.3)
+
+			plot_pacf(series, lags=max_lags, ax=axes[idx][1],
+					  color=PLOT_COLOR, method="ywm")
+			axes[idx][1].set_title(f"{brand} -- PACF", fontweight="bold")
+			axes[idx][1].grid(True, alpha=0.3)
+
+			# Significance band is +/-1.96/sqrt(n): the 95% band under the
+			# null of no autocorrelation.
+			conf = 1.96 / np.sqrt(n)
+			acf_vals = [
+				float(np.corrcoef(series[k:], series[:-k])[0, 1])
+				for k in range(1, max_lags + 1)
+				if len(series[k:]) > 1
+			]
+			sig = [k + 1 for k, v in enumerate(acf_vals)
+				   if not np.isnan(v) and abs(v) > conf]
+			rows.append({
+				"brand": str(brand)[:30],
+				"n_periods": n,
+				"conf_band": round(conf, 4),
+				"significant_lags": str(sig[:15]),
+			})
+
+		plt.tight_layout()
+		ctx.savefig(plt, "06_acf_pacf_plots")
+
+		if rows:
+			sig_df = pd.DataFrame(rows)
+			# Consensus across brands: a lag significant for one brand is
+			# noise; one significant across the majority is structure.
+			all_sig: list[int] = []
+			for r in rows:
+				all_sig.extend(
+					int(v) for v in
+					r["significant_lags"].strip("[]").split(",") if v.strip()
+				)
+			counts: dict[int, int] = {}
+			for lag in all_sig:
+				counts[lag] = counts.get(lag, 0) + 1
+			consensus = sorted(k for k, v in counts.items()
+							   if v / len(rows) >= 0.5)
+			ctx.derived["acf_consensus_lags"] = consensus
+
+			ctx.save(
+				sig_df, "step_2_16_acf_significant_lags",
+				"Significant ACF Lags per Brand",
+				notes=[
+					"Lags whose autocorrelation exceeds the 95% band "
+					"(+/-1.96/sqrt(n)) under the null of no autocorrelation "
+					"-- the standard Box-Jenkins reading of an ACF plot "
+					"(Box & Jenkins, 1970).",
+					f"Lags significant in at least half of the top "
+					f"{len(rows)} brands: "
+					f"{consensus if consensus else 'none'}. A lag clearing "
+					f"the band for one brand is noise; one clearing it "
+					f"across the majority is structure worth a feature.",
+					"A spike at lag 12 indicates annual seasonality; spikes "
+					"at 1-3 indicate short-run momentum. Both are what the "
+					"lag features exist to capture.",
+					"Computed on log1p(target) so these lags describe the "
+					"series the model is actually fitted to.",
+					"Evidence only -- LAGS is derived in step 3 "
+					"(DEC-EDA-SPLIT). This figure is the justification for "
+					"whatever that step selects.",
+				],
+			)
+
+
+# ============================================================================
+# 3.17 -- PROMO INTENSITY DISTRIBUTION
+# ============================================================================
+
+def s17_promo_distribution(ctx: EdaContext) -> None:
+	"""Promo intensity histogram + promo/no-promo split. Notebook cell 49.
+
+	Distinct from 3.13, which ranks brands by promo intensity. This section
+	characterises the distribution's shape and whether promoted brand-months
+	differ in level from unpromoted ones.
+	"""
+	@section(ctx, "3.17  PROMO INTENSITY DISTRIBUTION",
+			 requires=("promo_units", TARGET_COL))
+	def _run():
+		import matplotlib.pyplot as plt
+		import seaborn as sns
+
+		df = ctx.df.copy()
+
+		# clip(lower=1) avoids zero-division without the +1 bias that would
+		# inflate intensity for low-volume brands. Preserved from cell 49.
+		df["promo_intensity"] = (df["promo_units"]
+								 / df[TARGET_COL].clip(lower=1))
+
+		# promo_units is a SUBSET of sales_units in Nielsen's model, so a
+		# ratio above 1 is a delivery defect, not a heavy promotion.
+		invalid = int((df.loc[df[TARGET_COL] > 0, "promo_intensity"] > 1.0)
+					  .sum())
+		if invalid:
+			print(f"  WARNING: {invalid} rows have promo_units > "
+				  f"{TARGET_COL} -- data quality issue, reported not "
+				  f"corrected.")
+
+		fig, axes = plt.subplots(1, 2, figsize=FIGSIZE_DEFAULT, squeeze=False)
+
+		sns.histplot(df["promo_intensity"], kde=True, ax=axes[0][0],
+					 color=PLOT_COLOR, edgecolor="black", alpha=0.7)
+		skew = float(df["promo_intensity"].skew())
+		axes[0][0].set_title(
+			f"Promo intensity distribution\nSkewness: {skew:.3f}",
+			fontweight="bold")
+		axes[0][0].set_xlabel("Promo intensity (promo / sales)")
+		axes[0][0].set_ylabel("Frequency")
+		axes[0][0].grid(True, alpha=0.3, axis="y")
+
+		df["has_promo"] = (df["promo_units"] > 0).astype(int)
+		sns.boxplot(x="has_promo", y=TARGET_COL, data=df, ax=axes[0][1],
+					hue="has_promo", legend=False,
+					palette=[PLOT_COLOR, "#A9A9A9"])
+		axes[0][1].set_xticks([0, 1])
+		axes[0][1].set_xticklabels(["No promo", "With promo"])
+		axes[0][1].set_xlabel("Promo status", fontweight="bold")
+		axes[0][1].set_ylabel(TARGET_COL, fontweight="bold")
+		axes[0][1].set_title(f"{TARGET_COL}: promo vs no promo",
+							 fontweight="bold")
+		axes[0][1].grid(True, alpha=0.3, axis="y")
+
+		plt.tight_layout()
+		ctx.savefig(plt, "07_promo_intensity_analysis")
+
+		with_promo = df.loc[df["has_promo"] == 1, TARGET_COL]
+		without = df.loc[df["has_promo"] == 0, TARGET_COL]
+		nan = float("nan")
+		summary = pd.DataFrame({
+			"metric": ["mean intensity", "median intensity", "skewness",
+					   "rows with promo", "rows without promo",
+					   f"median {TARGET_COL} (promo)",
+					   f"median {TARGET_COL} (no promo)",
+					   "rows with intensity > 1"],
+			"value": [
+				round(float(df["promo_intensity"].mean()), 4),
+				round(float(df["promo_intensity"].median()), 4),
+				round(skew, 4),
+				int(df["has_promo"].sum()),
+				int((1 - df["has_promo"]).sum()),
+				round(float(with_promo.median()), 4) if len(with_promo) else nan,
+				round(float(without.median()), 4) if len(without) else nan,
+				invalid,
+			],
+		})
+		ctx.save(
+			summary, "step_2_17_promo_distribution",
+			"Promo Intensity Distribution Summary",
+			notes=[
+				"Promo intensity = promo_units / max(sales_units, 1). The "
+				"clip avoids zero-division without the +1 bias that would "
+				"inflate the ratio for low-volume brands.",
+				f"promo_units is a subset of sales_units in Nielsen's model, "
+				f"so an intensity above 1 is a delivery defect: {invalid} "
+				f"such row(s) here, reported and left uncorrected (F42).",
+				"The boxplot compares the target's level between promoted "
+				"and unpromoted brand-months. A visible shift motivates "
+				"promo features; overlapping boxes argue they add little.",
+				"Descriptive, not causal: promotions are placed on brands "
+				"already expected to sell, so this gap is confounded by "
+				"selection and cannot be read as promotional uplift.",
+				"Complements 3.13, which ranks brands by intensity; this "
+				"section characterises the distribution's shape.",
+			],
+		)
+
+
+# ============================================================================
+# 3.18 -- CORRELATION STRUCTURE (PEARSON vs SPEARMAN)
+# ============================================================================
+
+def s18_correlation(ctx: EdaContext) -> None:
+	"""Correlation heatmaps + non-linearity flags. Notebook cell 51.
+
+	Cell 51 hardcoded five column names and silently analysed only those it
+	happened to find. Open-world here: correlate every numeric measure
+	discovered, so a category with columns the notebook never named still
+	gets them analysed.
+	"""
+	@section(ctx, "3.18  CORRELATION STRUCTURE (PEARSON vs SPEARMAN)",
+			 requires=(TARGET_COL,))
+	def _run():
+		import matplotlib.pyplot as plt
+		import seaborn as sns
+
+		df = ctx.df
+		numeric = [c for c in df.select_dtypes(include="number").columns
+				   if c not in (YEAR_COL, MONTH_COL)]
+		# Constant columns give undefined correlations and a row of NaN.
+		numeric = [c for c in numeric if df[c].nunique(dropna=True) > 1]
+		if len(numeric) < 2:
+			print("  Fewer than two varying numeric columns; nothing to "
+				  "correlate.")
+			return
+
+		pearson = df[numeric].corr(method="pearson")
+		spearman = df[numeric].corr(method="spearman")
+
+		# Wider figure when many columns survive discovery: CSD has 29
+		# measures, Danskvand far fewer.
+		size = max(FIGSIZE_LARGE[0], min(24, len(numeric) * 0.7))
+		fig, axes = plt.subplots(1, 2, figsize=(size * 2, size), squeeze=False)
+
+		mask = np.zeros_like(pearson, dtype=bool)
+		mask[np.triu_indices_from(mask)] = True
+
+		annot = len(numeric) <= 12  # numbers become unreadable beyond this
+		sns.heatmap(pearson, mask=mask, annot=annot, fmt=".2f", cmap="BuPu",
+					center=0, square=True, linewidths=0.5,
+					cbar_kws={"shrink": 0.8}, ax=axes[0][0])
+		axes[0][0].set_title("Pearson correlation", fontweight="bold")
+
+		sns.heatmap(spearman, mask=mask, annot=annot, fmt=".2f", cmap="BuPu",
+					center=0, square=True, linewidths=0.5,
+					cbar_kws={"shrink": 0.8}, ax=axes[0][1])
+		axes[0][1].set_title("Spearman correlation (rank-based)",
+							 fontweight="bold")
+
+		plt.suptitle(f"{ctx.category} -- correlation matrix",
+					 fontweight="bold")
+		plt.tight_layout()
+		ctx.savefig(plt, "08_correlation_heatmap")
+
+		# Target correlations, plus the Pearson/Spearman gap that flags a
+		# monotone-but-non-linear relationship.
+		rows = []
+		for col in numeric:
+			if col == TARGET_COL:
+				continue
+			pe = float(pearson.loc[TARGET_COL, col])
+			sp = float(spearman.loc[TARGET_COL, col])
+			rows.append({
+				"column": col,
+				"pearson_r": round(pe, 4),
+				"spearman_r": round(sp, 4),
+				"abs_delta": round(abs(sp - pe), 4),
+				"non_linear": abs(sp - pe) > 0.1,
+			})
+		corr_df = (pd.DataFrame(rows)
+				   .sort_values("pearson_r", key=lambda s: s.abs(),
+								ascending=False))
+		n_nonlinear = int(corr_df["non_linear"].sum())
+
+		ctx.save(
+			corr_df, "step_2_18_target_correlations",
+			f"Correlation with {TARGET_COL}",
+			notes=[
+				"Pearson measures linear association; Spearman measures "
+				"monotone association on ranks. Reporting both is what makes "
+				"the comparison in the next bullet possible.",
+				f"abs_delta above 0.1 flags a relationship that is monotone "
+				f"but not linear -- a candidate for transformation rather "
+				f"than a raw feature. {n_nonlinear} column(s) flagged here.",
+				"Spearman is the more trustworthy of the two on this data: "
+				"the target is right-skewed (see 3.02 and 3.15) and Pearson "
+				"is sensitive to the resulting outliers.",
+				"These correlations are contemporaneous, not predictive: "
+				"the columns are measured in the same month as the target, "
+				"so a high value does not by itself establish forecasting "
+				"value at t+1.",
+				"Descriptive only. No feature is selected or dropped here; "
+				"the contract is step 3's output (DEC-EDA-SPLIT).",
+			],
+		)
+
+		# Redundancy among predictors: |r| > 0.9 pairs are near-duplicates,
+		# which is what P0036 F7 is tracking for weighted_dist.
+		redundant = []
+		for i, a in enumerate(numeric):
+			for b in numeric[i + 1:]:
+				r = float(pearson.loc[a, b])
+				if abs(r) > 0.9:
+					redundant.append({"column_a": a, "column_b": b,
+									  "pearson_r": round(r, 4)})
+
+		if redundant:
+			red_df = (pd.DataFrame(redundant)
+					  .sort_values("pearson_r", key=lambda s: s.abs(),
+								   ascending=False))
+			ctx.derived["redundant_pairs"] = redundant
+			ctx.save(
+				red_df, "step_2_18_redundant_pairs",
+				"Near-Duplicate Column Pairs (|r| > 0.9)",
+				notes=[
+					"Column pairs correlating above 0.9 carry substantially "
+					"the same information; keeping both adds collinearity "
+					"without adding signal.",
+					"The 0.9 threshold is conventional for near-duplicate "
+					"detection and is deliberately stricter than the 0.756 "
+					"weighted_dist correlation P0036 F7 tracks -- pairs "
+					"listed here are a stronger claim than that one.",
+					"Collinearity inflates coefficient variance in linear "
+					"models. Tree ensembles tolerate it but split their "
+					"importance across the duplicates, which makes the "
+					"resulting importance ranking misleading.",
+					"Listed for step 3 to act on, not pruned here.",
+				],
+			)
+		else:
+			print("\n  No column pairs exceed |r| > 0.9.")
+
+
+# ============================================================================
 # RUNNER
 # ============================================================================
 
@@ -1008,7 +1662,8 @@ SECTIONS = (
 	s01_preview, s02_distributions, s03_date_range, s04_structural_break,
 	s05_stationarity, s06_brand_stability, s07_zero_sales, s08_seasonality,
 	s09_monthly_barplot, s10_decomposition, s11_top_brands, s12_heterogeneity,
-	s13_promo_intensity, s14_measure_quality,
+	s13_promo_intensity, s14_measure_quality, s15_ecdf, s16_acf_pacf,
+	s17_promo_distribution, s18_correlation,
 )
 
 

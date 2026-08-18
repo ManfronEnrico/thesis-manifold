@@ -17,6 +17,9 @@ Rebuilding the analysis panel via step 1...
 
 Data Shape
 ----------------------------------------
+  - Panel dimensions after step 1: the brand x month grain locked by DEC-GRAIN (2026-07-12), scoped to the DVH EXCL. HD parent market (DEC-SCOPE) rather than its nine region children.
+  - Row count is brands x observed months, not a complete grid -- brands enter and leave the panel, so absent brand-months are genuinely absent rather than null.
+
        Metric Value
    Total Rows 1,702
 Unique Brands    68
@@ -24,6 +27,9 @@ Unique Brands    68
 
 Columns & Data Quality
 ----------------------------------------
+  - Every column step 1 produced, with its dtype and null count. Discovered, not enumerated (DEC-OPEN-WORLD): a category carrying a column no other category has still appears here.
+  - Column counts differ by category by design -- the four categories sit at different Nielsen capability tiers, and a column absent here was never delivered rather than lost in processing.
+
                                       Column Data Type  Non-Null  Missing  Missing %
                                        brand    object      1702        0        0.0
                                  period_year     int64      1702        0        0.0
@@ -60,6 +66,9 @@ total_weighted_distribution_points_tdp_reach   float64      1702        0       
 
 Missing Value Analysis
 ----------------------------------------
+  - Nulls per column. In this panel a null is an unreported measure for an observed brand-month, which is distinct from a brand-month that does not appear at all.
+  - Matters for feature engineering because a lag or rolling window computed across a null propagates it forward into every window that spans the gap.
+
                             Column  Missing  Missing %
    weighted_distribution_any_promo      332       19.5
    weighted_distribution_disp_feat     1190       69.9
@@ -88,6 +97,11 @@ brand  period_year  period_month  sales_value  sales_liters  sales_units  sales_
 
 Skewness Analysis
 ----------------------------------------
+  - Fisher-Pearson skewness per numeric column. Zero is symmetric; positive means a long right tail.
+  - Thresholds follow Kim (2013): |skew| > 2 indicates substantial departure from normality, 0.5-2 moderate. These bands are the stated basis for the log-transform recommendation, not an eyeball judgement.
+  - The forecast target's skewness is the empirical case for LOG_TRANSFORM_TARGET; see 3.15 for the same evidence as a distribution curve.
+  - Skewness is a property of the marginal distribution and says nothing about the time-series structure -- 3.05 and 3.16 cover that.
+
                                      feature  skewness                                                                          interpretation
                                  sales_value     3.436 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
                                 sales_liters     3.764 Highly right-skewed -- substantial non-normality (Kim, 2013) -> log transform necessary
@@ -125,6 +139,9 @@ total_weighted_distribution_points_tdp_reach     1.378                          
 
 Coverage
 ----------------------------------------
+  - Observed span and completeness of the panel. Total months is the distinct period count, which bounds every window-based feature: a 12-month rolling mean is undefined in a panel shorter than 12.
+  - Also bounds the split. Train/validation/test cutoffs are derived proportionally from this span rather than hardcoded, after the hardcoded dates drifted to a 24-27% test share (F25).
+
         Metric              Value
     Date Range 2023-01 to 2026-07
   Total Months                 43
@@ -134,6 +151,10 @@ Avg Rows/Brand               25.0
 
 Rows per Brand Distribution
 ----------------------------------------
+  - Distribution of observation counts per brand -- how much history each brand actually has.
+  - Directly relevant to MIN_PERIODS: a brand with few observations cannot support lag-12 features and contributes mostly warmup rows. The threshold decision is step 3's (P0036 task 8 open); this table is its evidence.
+  - A long left tail means the panel is dominated by short-lived brands, which is a case for filtering rather than pooling them in.
+
 Statistic Rows/Brand
       Min          1
       Max         43
@@ -149,6 +170,10 @@ Statistic Rows/Brand
 
 Top 3 Break Candidates by Chow F-statistic
 ------------------------------------------
+  - Chow test for a structural break in the aggregate series: the null is that the same relationship holds before and after the candidate date (Chow, 1960).
+  - A low p-value indicates the series mean/variance shifts at that point. That matters for the split, because a break inside the test window means the test period is not drawn from the training regime.
+  - Reported as the three strongest candidates rather than one verdict: with a single series and many candidate dates this is exploratory, and the multiple-comparisons problem is real.
+
    date  chow_f  chow_p  mean_ratio  std_ratio
 2025-03  19.804  0.0001       1.236      1.231
 2025-05  17.178  0.0002       1.228      1.223
@@ -167,6 +192,10 @@ Top 3 Break Candidates by Chow F-statistic
 
 ADF Test per Brand (top brands by volume)
 -----------------------------------------
+  - Augmented Dickey-Fuller test per brand. Null hypothesis is a unit root, i.e. non-stationarity; p < 0.05 rejects it and indicates a stationary series (Dickey & Fuller, 1979).
+  - Failing to reject is weak evidence -- ADF has low power on short series, and these brands have at most ~46 monthly observations. Read a non-rejection as inconclusive, not as proof of a unit root.
+  - Non-stationary brands are the argument for differencing or for lag features that let the model absorb the trend rather than extrapolate it.
+
              brand  n  p_raw  p_log  p_diff recommendation
           RED BULL 43  0.954  0.934   0.000     log1p+diff
     MONSTER ENERGY 43  0.999  0.998   0.045     log1p+diff
@@ -206,6 +235,11 @@ FAXE KONDI BOOSTER 43  0.857  0.706   0.001     log1p+diff
 
 Brand Retention at Different MIN_PERIODS Thresholds
 ---------------------------------------------------
+  - How many brands survive each candidate minimum-observation threshold -- the retention curve for MIN_PERIODS.
+  - Thresholds are generated from the panel's own maximum span rather than the notebook's fixed 20-43 ladder, which had been written against CSD's 43-month history and produced empty rows elsewhere.
+  - The trade-off is explicit: a higher threshold buys longer, cleaner series at the cost of brand coverage. Look for the knee where retention falls sharply.
+  - Evidence only -- MIN_PERIODS is decided in step 3 (P0036 task 8).
+
  Min Periods  Brands Retained % of Total Data Quality
            5               62      91.2%          Low
           10               55      80.9%          Low
@@ -226,6 +260,10 @@ Brand Retention at Different MIN_PERIODS Thresholds
 
 Zero-Sales Characterisation across 68 brands
 --------------------------------------------
+  - Brands classified by where zero-sales months occur: leading zeros (not yet launched), trailing (delisted), intermittent (genuinely sporadic demand), or none.
+  - The distinction drives treatment. Leading and trailing zeros are structural absence and should be trimmed; intermittent zeros are real demand behaviour and must be kept, since removing them would bias the target upward.
+  - Intermittent demand also breaks the usual accuracy metrics -- MAPE is undefined at zero, which constrains metric choice downstream.
+
     type  brands
 no zeros      68
 
@@ -242,6 +280,10 @@ no zeros      68
 
 Monthly Sales Distribution (Full Year)
 ----------------------------------------
+  - Total target by calendar month, aggregated across all years and brands -- the seasonal profile of the category.
+  - Confounded with trend: a category growing over the observation window inflates whichever months its later years cover most. Read alongside 3.10, where decomposition separates the two.
+  - The empirical basis for HOLIDAY_MONTHS, reported here but not persisted anywhere step 3 could read (DEC-EDA-SPLIT).
+
  Month Month Name Sales Units % of Total Classification
      1        Jan  27,184,161       7.8%         Valley
      2        Feb  27,777,010       8.0%         Normal
@@ -258,6 +300,9 @@ Monthly Sales Distribution (Full Year)
 
 Peak & Valley Analysis
 ----------------------------------------
+  - Highest and lowest months of the seasonal profile, with the ratio between them as a one-number measure of seasonal amplitude.
+  - A large peak-to-valley ratio justifies month-of-year features; a flat profile argues they would add parameters without signal.
+
                  Category      Months % of Sales
              Top 3 Months   [6, 3, 5]      32.1%
           Bottom 3 Months [11, 10, 8]      18.8%
@@ -289,6 +334,10 @@ Holiday Months (75th pct)   [3, 5, 6]      32.1%
 
 Top 5 Brands by Total Sales
 ----------------------------------------
+  - The largest brands by cumulative target volume, with their series plotted in the companion figure.
+  - These brands dominate any pooled error metric: a model can score well overall while failing on the long tail. Relevant to the pooled-versus-specialised question (P0036 task 9).
+  - Volume ranking, not forecastability ranking -- a large brand is not necessarily a stable or predictable one.
+
  Rank              Brand Total Sales
     1           RED BULL  95,510,635
     2     MONSTER ENERGY  95,200,963
@@ -302,6 +351,10 @@ Top 5 Brands by Total Sales
 
 Sales CV (std/mean) across 67 brands
 ----------------------------------------
+  - Coefficient of variation (std / mean) per brand: volatility normalised by level, so brands of different sizes are comparable.
+  - High CV means an inherently harder series. Reporting the spread of CV across brands is what justifies expecting heterogeneous accuracy rather than treating one aggregate error as representative.
+  - Undefined for a brand with mean zero, and unstable for near-zero means -- read the extreme values alongside 3.07.
+
 Statistic    CV
       Min 0.039
       P25 0.448
@@ -328,6 +381,9 @@ Statistic    CV
 
 Brands' Peak Sales Month
 ----------------------------------------
+  - Each brand's own peak month, showing whether brands share the category's seasonal pattern or carry individual ones.
+  - If peaks cluster, a single shared seasonal feature suffices. If they scatter, brand-specific seasonality is what the model needs, which is an argument for brand identity interacting with month.
+
 Month  Brands Peaking
   Jan               6
   Feb               2
@@ -355,6 +411,11 @@ Month  Brands Peaking
 
 Promo Intensity per Brand (where promo > 0)
 -------------------------------------------
+  - Brands ranked by promotional intensity (promo units as a share of total units).
+  - Identifies which brands rely on promotion. Only meaningful for categories where Nielsen delivered promo columns -- this section is skipped entirely elsewhere rather than reported as zero.
+  - Descriptive, not causal: intensity reflects commercial strategy, and promoted brands differ systematically from unpromoted ones.
+  - See 3.17 for the distribution's shape rather than the brand ranking.
+
 Statistic Promo Intensity
       Min           0.126
       P25           0.370
@@ -371,6 +432,11 @@ Statistic Promo Intensity
 
 Measure-Column Quality Scan
 ----------------------------------------
+  - Per-column scan for the two defects that silently corrupt aggregation: impossible negatives, and rate columns mistakenly treated as additive.
+  - Negative counts and negative shares are impossible by definition, so any listed here are delivery defects. Reported and left uncorrected (F42): clipping would manufacture a plausible-looking value and hide the problem, and none of the affected columns is the target.
+  - The in_0_100 flag answers F39. A column bounded within [0, 100] behaves as a rate and must be averaged when aggregating -- summing two 70% distribution figures into 140% is the specific error this check exists to prevent.
+  - The additive/intensive split it implies is what step 1's aggregation already applies; this table is the evidence that the classification matches the data.
+
                                       column         min          max         mean  nulls  zeros  negatives  neg_pct  in_0_100
                                  sales_value    5.000000 5.749336e+07 2.954004e+06      0      0          0    0.000     False
                                 sales_liters    0.040000 2.185647e+06 9.430911e+04      0      0          0    0.000     False
@@ -424,11 +490,213 @@ total_weighted_distribution_points_tdp_reach    0.000044 9.349417e-01 1.471934e-
   Relevant to F39: such columns must be averaged, not summed, when aggregating (70% + 70% != 140%).
 
 ================================================================================
+3.15  EMPIRICAL CDF OF THE FORECAST TARGET
+================================================================================
+
+Target Distribution Quantiles (sales_units)
+-------------------------------------------
+  - Cumulative share of brand-months at or below each sales_units value; shows the spread without the bin-width dependence a histogram introduces.
+  - p50 = 7,901 against p90 = 322,775: the gap between them is the concentration this panel has to forecast across.
+  - A long right tail here is the empirical case for LOG_TRANSFORM_TARGET. The second panel shows the same data after log1p, where an approximately straight curve indicates the transform has done its job.
+  - Companion to 3.02 (skewness): that figure states the asymmetry as a single number, this one shows where in the distribution it sits.
+
+quantile       value
+     p25    644.0195
+     p50   7901.0000
+     p75  70871.0967
+     p90 322775.4359
+
+================================================================================
+3.16  AUTOCORRELATION STRUCTURE (ACF / PACF)
+================================================================================
+
+Significant ACF Lags per Brand
+----------------------------------------
+  - Lags whose autocorrelation exceeds the 95% band (+/-1.96/sqrt(n)) under the null of no autocorrelation -- the standard Box-Jenkins reading of an ACF plot (Box & Jenkins, 1970).
+  - Lags significant in at least half of the top 5 brands: [1, 2, 3, 6, 9, 10, 12, 15, 18]. A lag clearing the band for one brand is noise; one clearing it across the majority is structure worth a feature.
+  - A spike at lag 12 indicates annual seasonality; spikes at 1-3 indicate short-run momentum. Both are what the lag features exist to capture.
+  - Computed on log1p(target) so these lags describe the series the model is actually fitted to.
+  - Evidence only -- LAGS is derived in step 3 (DEC-EDA-SPLIT). This figure is the justification for whatever that step selects.
+
+             brand  n_periods  conf_band                                    significant_lags
+          RED BULL         43     0.2989                               [3, 6, 9, 12, 15, 18]
+    MONSTER ENERGY         43     0.2989                     [1, 2, 3, 6, 9, 10, 12, 15, 18]
+FAXE KONDI BOOSTER         43     0.2989              [1, 2, 3, 4, 6, 9, 10, 11, 12, 15, 18]
+              CULT         43     0.2989 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+             STATE         43     0.2989                             [1, 2, 3, 6, 9, 12, 18]
+
+================================================================================
+3.17  PROMO INTENSITY DISTRIBUTION
+================================================================================
+
+Promo Intensity Distribution Summary
+----------------------------------------
+  - Promo intensity = promo_units / max(sales_units, 1). The clip avoids zero-division without the +1 bias that would inflate the ratio for low-volume brands.
+  - promo_units is a subset of sales_units in Nielsen's model, so an intensity above 1 is a delivery defect: 0 such row(s) here, reported and left uncorrected (F42).
+  - The boxplot compares the target's level between promoted and unpromoted brand-months. A visible shift motivates promo features; overlapping boxes argue they add little.
+  - Descriptive, not causal: promotions are placed on brands already expected to sell, so this gap is confounded by selection and cannot be read as promotional uplift.
+  - Complements 3.13, which ranks brands by intensity; this section characterises the distribution's shape.
+
+                       metric      value
+               mean intensity     0.4253
+             median intensity     0.4905
+                     skewness    -0.2082
+              rows with promo  1369.0000
+           rows without promo   333.0000
+   median sales_units (promo) 14925.0000
+median sales_units (no promo)    33.0000
+      rows with intensity > 1     0.0000
+
+================================================================================
+3.18  CORRELATION STRUCTURE (PEARSON vs SPEARMAN)
+================================================================================
+
+Correlation with sales_units
+----------------------------------------
+  - Pearson measures linear association; Spearman measures monotone association on ranks. Reporting both is what makes the comparison in the next bullet possible.
+  - abs_delta above 0.1 flags a relationship that is monotone but not linear -- a candidate for transformation rather than a raw feature. 13 column(s) flagged here.
+  - Spearman is the more trustworthy of the two on this data: the target is right-skewed (see 3.02 and 3.15) and Pearson is sensitive to the resulting outliers.
+  - These correlations are contemporaneous, not predictive: the columns are measured in the same month as the target, so a high value does not by itself establish forecasting value at t+1.
+  - Descriptive only. No feature is selected or dropped here; the contract is step 3's output (DEC-EDA-SPLIT).
+
+                                      column  pearson_r  spearman_r  abs_delta  non_linear
+                                 sales_value     0.9967      0.9927     0.0041       False
+                        baseline_sales_units     0.9918      0.9847     0.0071       False
+                                 promo_units     0.9890      0.9688     0.0202       False
+                       sales_value_any_promo     0.9876      0.9642     0.0235       False
+              baseline_sales_units_any_promo     0.9837      0.9605     0.0232       False
+              baseline_sales_value_any_promo     0.9820      0.9575     0.0245       False
+                         sales_units_any_tpr     0.9706      0.9388     0.0318       False
+                                sales_liters     0.9688      0.9953     0.0264       False
+                   sales_in_liters_any_promo     0.9680      0.9665     0.0015       False
+          baseline_sales_in_liters_any_promo     0.9541      0.9582     0.0041       False
+                    baseline_sales_in_liters     0.9466      0.9808     0.0343       False
+          weighted_distribution_feat_wo_disp     0.6613      0.5865     0.0748       False
+            weighted_distribution_total_feat     0.6349      0.5716     0.0633       False
+                        baseline_sales_value     0.5387      0.9833     0.4446        True
+               weighted_distribution_any_tpr     0.4997      0.7550     0.2553        True
+             weighted_distribution_any_promo     0.4646      0.7992     0.3345        True
+                        numeric_distribution     0.4597      0.9214     0.4617        True
+             weighted_distribution_disp_feat     0.4533      0.4209     0.0324       False
+                               weighted_dist     0.4206      0.8852     0.4645        True
+                       number_of_items_reach     0.3903      0.8983     0.5080        True
+          avg_number_of_stores_selling_reach     0.3900      0.8983     0.5083        True
+                  numeric_distribution_reach     0.3896      0.8983     0.5087        True
+total_weighted_distribution_points_tdp_reach     0.3592      0.8552     0.4961        True
+                 weighted_distribution_reach     0.3592      0.8552     0.4961        True
+              weighted_distribution_any_disp     0.3289      0.7139     0.3850        True
+          weighted_distribution_disp_wo_feat     0.2631      0.6856     0.4225        True
+             avg_no_of_items_per_store_reach    -0.0080      0.5429     0.5509        True
+                   universe_number_of_stores     0.0018     -0.0890     0.0907       False
+
+Near-Duplicate Column Pairs (|r| > 0.9)
+----------------------------------------
+  - Column pairs correlating above 0.9 carry substantially the same information; keeping both adds collinearity without adding signal.
+  - The 0.9 threshold is conventional for near-duplicate detection and is deliberately stricter than the 0.756 weighted_dist correlation P0036 F7 tracks -- pairs listed here are a stronger claim than that one.
+  - Collinearity inflates coefficient variance in linear models. Tree ensembles tolerate it but split their importance across the duplicates, which makes the resulting importance ranking misleading.
+  - Listed for step 3 to act on, not pruned here.
+
+                                    column_a                                     column_b  pearson_r
+                       number_of_items_reach           avg_number_of_stores_selling_reach     1.0000
+                 weighted_distribution_reach total_weighted_distribution_points_tdp_reach     1.0000
+                  numeric_distribution_reach                        number_of_items_reach     0.9999
+                  numeric_distribution_reach           avg_number_of_stores_selling_reach     0.9999
+                                 sales_value                                  sales_units     0.9967
+                       sales_value_any_promo               baseline_sales_units_any_promo     0.9952
+                       sales_value_any_promo                                  promo_units     0.9950
+              baseline_sales_value_any_promo               baseline_sales_units_any_promo     0.9947
+                       sales_value_any_promo               baseline_sales_value_any_promo     0.9934
+                                 sales_value                         baseline_sales_units     0.9931
+                   sales_in_liters_any_promo           baseline_sales_in_liters_any_promo     0.9923
+                                 sales_units                         baseline_sales_units     0.9918
+                                sales_liters                    sales_in_liters_any_promo     0.9908
+                                 promo_units               baseline_sales_units_any_promo     0.9902
+                                 sales_units                                  promo_units     0.9890
+                                 sales_value                        sales_value_any_promo     0.9885
+                                sales_liters                     baseline_sales_in_liters     0.9877
+                                 sales_units                        sales_value_any_promo     0.9876
+                               weighted_dist                  weighted_distribution_reach     0.9866
+                               weighted_dist total_weighted_distribution_points_tdp_reach     0.9866
+                                sales_liters           baseline_sales_in_liters_any_promo     0.9860
+                        numeric_distribution                   numeric_distribution_reach     0.9859
+                        numeric_distribution                        number_of_items_reach     0.9858
+                        numeric_distribution           avg_number_of_stores_selling_reach     0.9858
+                                 sales_value               baseline_sales_value_any_promo     0.9850
+                                 promo_units               baseline_sales_value_any_promo     0.9849
+                                 sales_units               baseline_sales_units_any_promo     0.9837
+                                 sales_value               baseline_sales_units_any_promo     0.9833
+                                 promo_units                          sales_units_any_tpr     0.9832
+                                 sales_value                                  promo_units     0.9828
+                                 sales_units               baseline_sales_value_any_promo     0.9820
+          weighted_distribution_disp_wo_feat               weighted_distribution_any_disp     0.9798
+                    baseline_sales_in_liters           baseline_sales_in_liters_any_promo     0.9791
+                        baseline_sales_units               baseline_sales_value_any_promo     0.9775
+                        baseline_sales_units               baseline_sales_units_any_promo     0.9772
+                       sales_value_any_promo                         baseline_sales_units     0.9763
+                  numeric_distribution_reach                  weighted_distribution_reach     0.9739
+                  numeric_distribution_reach total_weighted_distribution_points_tdp_reach     0.9739
+                 weighted_distribution_reach           avg_number_of_stores_selling_reach     0.9736
+total_weighted_distribution_points_tdp_reach           avg_number_of_stores_selling_reach     0.9736
+                 weighted_distribution_reach                        number_of_items_reach     0.9735
+total_weighted_distribution_points_tdp_reach                        number_of_items_reach     0.9735
+                        numeric_distribution                                weighted_dist     0.9729
+                   sales_in_liters_any_promo                     baseline_sales_in_liters     0.9723
+                                 sales_value                                 sales_liters     0.9718
+                                 promo_units                         baseline_sales_units     0.9713
+                                sales_liters                         baseline_sales_units     0.9709
+                                 sales_units                          sales_units_any_tpr     0.9706
+                       sales_value_any_promo                          sales_units_any_tpr     0.9702
+                  numeric_distribution_reach                                weighted_dist     0.9698
+                               weighted_dist           avg_number_of_stores_selling_reach     0.9695
+                               weighted_dist                        number_of_items_reach     0.9695
+                                 sales_value                    sales_in_liters_any_promo     0.9692
+                                sales_liters                                  sales_units     0.9688
+                   sales_in_liters_any_promo               baseline_sales_value_any_promo     0.9683
+                                 sales_units                    sales_in_liters_any_promo     0.9680
+              baseline_sales_value_any_promo           baseline_sales_in_liters_any_promo     0.9664
+                       sales_value_any_promo                    sales_in_liters_any_promo     0.9646
+                    baseline_sales_in_liters                         baseline_sales_units     0.9639
+          weighted_distribution_feat_wo_disp             weighted_distribution_total_feat     0.9629
+                   sales_in_liters_any_promo                         baseline_sales_units     0.9627
+                                 sales_value                          sales_units_any_tpr     0.9605
+                         sales_units_any_tpr               baseline_sales_value_any_promo     0.9593
+                                 sales_value           baseline_sales_in_liters_any_promo     0.9592
+                   sales_in_liters_any_promo               baseline_sales_units_any_promo     0.9586
+                        baseline_sales_units           baseline_sales_in_liters_any_promo     0.9579
+                         sales_units_any_tpr               baseline_sales_units_any_promo     0.9577
+                   sales_in_liters_any_promo                                  promo_units     0.9574
+          baseline_sales_in_liters_any_promo               baseline_sales_units_any_promo     0.9554
+                                 sales_units           baseline_sales_in_liters_any_promo     0.9541
+                                sales_liters               baseline_sales_value_any_promo     0.9540
+                                 sales_value                     baseline_sales_in_liters     0.9534
+                       sales_value_any_promo           baseline_sales_in_liters_any_promo     0.9529
+                        numeric_distribution total_weighted_distribution_points_tdp_reach     0.9509
+                        numeric_distribution                  weighted_distribution_reach     0.9509
+                                sales_liters                        sales_value_any_promo     0.9477
+                                 sales_units                     baseline_sales_in_liters     0.9466
+                         sales_units_any_tpr                         baseline_sales_units     0.9441
+                   sales_in_liters_any_promo                          sales_units_any_tpr     0.9429
+                                sales_liters               baseline_sales_units_any_promo     0.9427
+                                sales_liters                                  promo_units     0.9395
+                                 promo_units           baseline_sales_in_liters_any_promo     0.9390
+                    baseline_sales_in_liters               baseline_sales_value_any_promo     0.9377
+                               weighted_dist              weighted_distribution_any_promo     0.9253
+                                sales_liters                          sales_units_any_tpr     0.9251
+                    baseline_sales_in_liters               baseline_sales_units_any_promo     0.9246
+                       sales_value_any_promo                     baseline_sales_in_liters     0.9240
+                         sales_units_any_tpr           baseline_sales_in_liters_any_promo     0.9147
+             weighted_distribution_any_promo               weighted_distribution_any_disp     0.9137
+             weighted_distribution_any_promo                weighted_distribution_any_tpr     0.9119
+                                 promo_units                     baseline_sales_in_liters     0.9101
+                 weighted_distribution_reach              weighted_distribution_any_promo     0.9039
+total_weighted_distribution_points_tdp_reach              weighted_distribution_any_promo     0.9039
+
+================================================================================
 STEP 2 SUMMARY -- Energidrikke
 ================================================================================
-  Sections completed: 14 / 14
-  Tables written:     17 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
-  Plots written:      4 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_plots
+  Sections completed: 18 / 18
+  Tables written:     22 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_tables
+  Plots written:      8 -> Z:\_dev-ssd\thesis-manifold\02_thesis_data\_02_preprocessing\nielsen\Energidrikke\pipeline_step_outputs\energidrikke_eda_plots
 
   This step derives no parameters. Its output is evidence for Chapter 4;
   the feature-engineering contract is step 3's responsibility.
