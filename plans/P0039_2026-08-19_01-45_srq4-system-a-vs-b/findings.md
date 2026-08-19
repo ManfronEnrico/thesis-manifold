@@ -171,3 +171,107 @@ Two consequences:
    placeholder, that is optimistic. He should check for a *value*, not a key name.
 
 `E2B_API_KEY` is absent entirely from both files.
+
+## F10 — Scenario A cannot retrieve the answer, tested adversarially
+
+The held-out months are historical, so Scenario A could in principle look up the
+figure instead of estimating it. Tested directly rather than assumed: the model
+was asked point-blank to *find* the Nielsen-reported January 2026 unit sales for
+a named brand, with web search enabled.
+
+It searched and returned **NOT FOUND**. What it surfaced instead were
+annual-report aggregates citing NIQ ("Danish soft drinks +2.6%, FMCG incl. HD,
+W16 2026") — category-level growth rates, not brand-level monthly units.
+
+**Why**: Nielsen scanner data is a paid commercial product. Brand x month unit
+sales are not published anywhere the model can reach.
+
+**Consequence for the design**: the "do NOT search for a published figure"
+instruction was removed from Scenario A's prompt. It was doing no work, and it
+made A's prompt structurally different from B's and C's, which is a confound.
+`used_web`, the search queries and `retrieval_suspected` are still logged every
+run, so the claim rests on evidence rather than on the model obeying an
+instruction.
+
+State this in the limitations as a *tested* control, not an assumed one.
+
+## F11 — the prompts were not equivalent; now they are
+
+Found by reading the logged prompts rather than the code. The three scenarios
+were receiving materially different instructions:
+
+- A: the question + a paragraph forbidding search
+- B: the question + method guidance + the CSV
+- C: one bare sentence
+
+Any measured accuracy difference therefore partly reflected **prompt wording**,
+not the mechanism under test — which is precisely what the single-variable
+design exists to exclude.
+
+Rewritten so all three receive the **same user question verbatim**:
+
+> What will {brand} sell in the {category} category in Danish retail in
+> {target}? Give the number, a range, and how confident you are.
+
+Only the capability note differs, and that note *is* the treatment: A is told it
+has no internal data, B is given the history and told to run code, C is told a
+`forecast_demand` tool exists and not to compute the number itself.
+
+"Do not compute it yourself" is retained for C and must be disclosed: without
+it the model may ignore the tool and hand-compute, collapsing C into B.
+
+## F12 — Scenario B's advantage did not replicate; its inconsistency is the finding
+
+Three runs, identical prompt and brand (CSD/HARBOE, target 2026-01):
+
+| Run | B forecast | B's chosen method | B APE | C APE |
+|-----|-----------:|-------------------|------:|------:|
+| 1 | 4,009,826 | inverse-RMSE ensemble of ETS + regression | 16.1% | 17.5% |
+| 2 | 4,143,790 | rolling-origin ensemble, ETS + month/trend | 13.3% | 17.5% |
+| 3 | 3,931,319 | log-linear OLS with monthly seasonality | 17.7% | 17.5% |
+
+**Scenario C returned 3,943,859.8 every single time.**
+
+The logs show B genuinely tries hard — ExponentialSmoothing, SARIMAX, ARIMA, OLS
+and Ridge appear across its generated code, with rolling-origin backtesting and
+inverse-RMSE ensembling. It is not doing something naive.
+
+But it **selects a different model on each run**, and the spread (3.93M–4.14M,
+~5%) is comparable to the accuracy gap being measured. The earlier "B beats C"
+reading was run-to-run variance in an n=1 sample, not a better method.
+
+This is the consistency metric appearing early, and it favours C on grounds that
+survive B occasionally winning on accuracy:
+
+| | Scenario B | Scenario C |
+|---|---|---|
+| Same answer twice? | no | yes, identical |
+| Method | varies per run | fixed, recorded |
+| Cost per run | ~$0.27 | ~$0.007 (~40x cheaper) |
+| Latency | ~143 s | ~6.6 s (~22x faster) |
+| Provenance | none | model, training cutoff, calibration split |
+
+**Do not over-read n=3.** The point is that the design now measures the right
+thing; the scaled run settles the magnitude.
+
+## F13 — compute cost is measured in the serving path, not only offline
+
+The thesis claims these models run in a compute-limited environment (~8 GB per
+query), so `_eval_forecast` now records peak RAM and wall-clock for the code path
+actually used at serve time: **~3-4 MB and ~1.1 s** per forecast, against an 8 GB
+budget — about 0.05%.
+
+Offline profiling (`srq1_profiling.py`) independently reports peak fit RAM of
+5.5 MB (Ridge), 8.0 MB (LightGBM), 0.1 MB (XGBoost), 0.3 MB (ARIMA).
+
+`tracemalloc` measures Python allocations only, so both figures are lower bounds
+on the Python side; they are directly comparable to each other because they
+measure the same quantity the same way. Say so rather than implying a total
+process footprint.
+
+**Scenarios A and B log no RAM, correctly**: their computation happens on
+OpenAI's infrastructure and is already priced into the token and container
+charges. There is no local process to measure, and inventing one would be
+guesswork. The honest cross-scenario compute comparison is therefore
+**cost and latency**, both of which are measured — with the asymmetry itself
+being a finding, since C's compute is ours to control and B's is not.
