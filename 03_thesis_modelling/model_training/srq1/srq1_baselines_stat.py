@@ -20,7 +20,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+# Repo root located by searching upward for PATHS.py rather than by a fixed
+# parents[N] index: the index silently breaks whenever a script moves a
+# directory deeper, which is exactly what happened in the 2026-08-19
+# reorganisation (ModuleNotFoundError: No module named 'PATHS').
+_here = Path(__file__).resolve()
+_root = next((p for p in _here.parents if (p / "PATHS.py").is_file()), None)
+if _root is None:
+    raise RuntimeError(f"PATHS.py not found above {_here}")
+sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir
 
 warnings.filterwarnings("ignore")

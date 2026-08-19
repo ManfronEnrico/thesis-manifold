@@ -306,16 +306,38 @@ def _eval_forecast(category, brand):
     pk = "brand"
     fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"])
-    trval = d[d.split.isin(["train", "val"])].sort_values("period_index")
-    m = XGBRegressor(random_state=42, verbosity=0, n_jobs=-1, **params.get(f"{pk}/{category}/XGBoost", {}))
-    m.fit(trval[available_features(fm)].fillna(0.0), trval["log_sales_units"].values)
+    feats = available_features(fm)
+    tr = d[d.split == "train"].sort_values("period_index")
+    va = d[d.split == "val"].sort_values("period_index")
     te = d[d.split == "test"]
-    res = np.abs(d[d.split == "val"]["log_sales_units"].values - m.predict(d[d.split == "val"][available_features(fm)].fillna(0.0)))
+
+    # SPLIT CONFORMAL REQUIRES A CALIBRATION SET THE MODEL HAS NEVER SEEN.
+    #
+    # This previously fit on train+val and then measured residuals on val -- rows
+    # the model had already memorised. Measured on CSD 2026-08-19, that made the
+    # 90% interval 3.9x too narrow (q90 0.305 in-sample vs 1.194 honest): a 4.30M
+    # forecast reported [3.17M - 5.84M] when the honest interval is
+    # [1.30M - 14.21M].
+    #
+    # This is the same defect P0037 F10 fixed in forecast_service.py, reintroduced
+    # here because this function duplicates that logic instead of calling it.
+    # Scenario C's claimed advantage is calibrated uncertainty, so an interval
+    # that is silently 4x too tight attacks the thesis at its strongest point.
+    #
+    # Fit on TRAIN, calibrate on VAL, leave TEST untouched.
+    m = XGBRegressor(random_state=42, verbosity=0, n_jobs=-1,
+                     **params.get(f"{pk}/{category}/XGBoost", {}))
+    m.fit(tr[feats].fillna(0.0), tr["log_sales_units"].values)
+    res = np.abs(va["log_sales_units"].values - m.predict(va[feats].fillna(0.0)))
+    # No validation rows means no honest calibration is possible; 0.5 is a marker
+    # value, not an estimate, and the confidence tier it produces should be read
+    # as "unknown" rather than trusted.
     q90 = float(np.quantile(res, 0.90)) if len(res) else 0.5
+    trained_on = "train" if len(res) else "train (uncalibrated)"
     row = te[te.brand.str.upper() == brand.upper()].sort_values("period_index").head(1)
     if not len(row):
         return {"status": "not_found", "brand": brand}
-    yhat = float(np.clip(np.expm1(m.predict(row[available_features(fm)].fillna(0.0))[0]), 0, None))
+    yhat = float(np.clip(np.expm1(m.predict(row[feats].fillna(0.0))[0]), 0, None))
     lo, hi = float(np.expm1(np.log(max(yhat, 1e-9)) - q90)), float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
     # Confidence tier, using the SAME formula as forecast_service._tier so the
     # tool and the serving layer cannot disagree about the same brand. Without
@@ -327,13 +349,22 @@ def _eval_forecast(category, brand):
     tier = "High" if conf >= 70 else ("Moderate" if conf >= 40 else "Low")
     target_month = (f"{int(row.iloc[0]['period_year'])}-"
                     f"{int(row.iloc[0]['period_month']):02d}")
-    trained_through = (f"{int(trval.iloc[-1]['period_year'])}-"
-                       f"{int(trval.iloc[-1]['period_month']):02d}") if len(trval) else None
+    trained_through = (f"{int(tr.iloc[-1]['period_year'])}-"
+                       f"{int(tr.iloc[-1]['period_month']):02d}") if len(tr) else None
+    calibrated_through = (f"{int(va.iloc[-1]['period_year'])}-"
+                          f"{int(va.iloc[-1]['period_month']):02d}") if len(va) else None
     return {"status": "ok", "category": category, "brand": brand,
             "forecast_units": round(yhat, 1), "interval_90": [round(lo, 1), round(hi, 1)],
             "confidence": round(conf, 1), "confidence_tier": tier,
             "model": "XGBoost(tuned)", "forecast_month": target_month,
-            "trained_through": trained_through,
+            # Provenance the agent can quote back: what the model saw, what the
+            # interval was calibrated on, and how. SRQ2 defines traceability as a
+            # recorded mapping from tool call -> forecast -> recommendation, so
+            # these fields are the claim, not decoration.
+            "trained_through": trained_through, "trained_on": trained_on,
+            "calibrated_on": "val", "calibrated_through": calibrated_through,
+            "n_train_rows": int(len(tr)), "n_calibration_rows": int(len(va)),
+            "features_used": len(feats),
             "interval_method": "split conformal, 90% quantile of validation residuals",
             "horizon": "next (held-out) month"}
 

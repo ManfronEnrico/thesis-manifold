@@ -30,7 +30,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+# Repo root located by searching upward for PATHS.py rather than by a fixed
+# parents[N] index: the index silently breaks whenever a script moves a
+# directory deeper, which is exactly what happened in the 2026-08-19
+# reorganisation (ModuleNotFoundError: No module named 'PATHS').
+_here = Path(__file__).resolve()
+_root = next((p for p in _here.parents if (p / "PATHS.py").is_file()), None)
+if _root is None:
+    raise RuntimeError(f"PATHS.py not found above {_here}")
+sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 
 warnings.filterwarnings("ignore")
@@ -116,12 +124,45 @@ def _metrics(y, yhat):
     return float(np.mean(ape) * 100), float(np.median(ape) * 100), float(ae.sum() / max(y.sum(), 1e-9) * 100)
 
 
+# Volume-valued features are in RAW UNITS while the target is LOG. Tree models
+# are invariant to monotone transforms of a feature, so they never noticed. A
+# LINEAR model cannot bridge the two: fitting log(y) on raw x forces the
+# coefficient to approximate a logarithm with a straight line, and it
+# extrapolates catastrophically outside the training range.
+#
+# Measured on the untransformed features (2026-08-19), Ridge produced test
+# WMAPE of 446.7% / 7392.6% / 2669.4% / 1121.4% -- on danskvand it predicted
+# 1.9e9 units against a 3.85e6 actual. Log-scaling these columns brings it to
+# 21.9% / 19.2% / 20.8% / 57.3%.
+#
+# This matters beyond tidiness: at 19.2% on danskvand, Ridge BEATS tuned
+# XGBoost (32.6%). The broken baseline was concealing a linear model that wins
+# a category, which changes the SRQ1 model-selection claim.
+LOG_SCALE_FEATURES = ("lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
+                      "rolling_mean_4", "rolling_std_4", "rolling_mean_13")
+
+
+def _log_scale(X):
+    """log1p the volume-valued columns, leaving calendar/flag columns alone.
+
+    Only linear models need this. Applied inside _fit_predict rather than to the
+    matrix so tree models keep training on exactly the features documented
+    elsewhere, and the two model families stay comparable on the same inputs."""
+    X = X.copy()
+    for c in LOG_SCALE_FEATURES:
+        if c in X.columns:
+            X[c] = np.log1p(X[c].clip(lower=0))
+    return X
+
+
 def _fit_predict(model_name, Xtr, ytr_log, Xte):
     """Train in log space, return predictions on the original scale."""
     if model_name == "Ridge":
         from sklearn.linear_model import Ridge
         from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import make_pipeline
+        # See LOG_SCALE_FEATURES above: without this the baseline is meaningless.
+        Xtr, Xte = _log_scale(Xtr), _log_scale(Xte)
         m = make_pipeline(StandardScaler(), Ridge(alpha=1.0, random_state=SEED))
         m.fit(Xtr, ytr_log)
         return np.expm1(m.predict(Xte))
