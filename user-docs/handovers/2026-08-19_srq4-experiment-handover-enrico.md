@@ -283,7 +283,81 @@ comparison scenarios** — itself worth a sentence in the cost discussion.
 
 ---
 
-## 5. Running it yourself
+## 5. API keys — you need your own
+
+**The keys I used are mine and are gitignored.** `.env` never enters git, so a
+fresh clone gives you the code and none of the credentials. You need two keys
+from your own OpenAI account, and **your own billing** — my balance is currently
+negative from today's runs.
+
+### Why two keys
+
+They have **disjoint scopes**, and each returns 403 on the other's endpoint:
+
+| Key | Scope | Used for |
+|-----|-------|----------|
+| project key (`sk-proj-…`) | inference | running the scenarios |
+| admin key (`sk-admin-…`) | organisation billing | reading what a run actually cost |
+
+The admin key is optional — runs work without it — but without it the cost
+figures are token-only estimates that **exclude the Code Interpreter container
+charge**, which the response object does not report. With it, `summary.md`
+reconciles the estimate against real billing. On the first run those agreed to
+within 2% ($0.634 estimated vs $0.648 billed), and the billing endpoint surfaced
+a line item the token model cannot see at all: `web search tool calls`, $0.04.
+
+### Getting them
+
+1. **Project key** — <https://platform.openai.com/api-keys> → *Create new secret
+   key*. Name it something recognisable; the name is only a dashboard label.
+   Copy it immediately, it is shown once.
+2. **Admin key** — <https://platform.openai.com/settings/organization/admin-keys>
+   → *Create new admin key*. Different page from the one above. You need owner
+   or admin rights on the org.
+3. **Add credit** — <https://platform.openai.com/settings/organization/billing>.
+   A full ladder observation is ~$0.70 (see §4.4), so $20 is a sensible first
+   load. Without credit every call returns HTTP 429 `insufficient_quota` and the
+   run completes with every row marked `code_error` — which is exactly what
+   happened to a 90-run attempt today.
+
+### Putting them in `.env`
+
+Repo-root `.env` (the same file that holds `RU_*` for the warehouse pull), or
+`03_thesis_modelling/.env` — the harness checks the modelling one first, then
+falls back:
+
+```
+OPENAI_API_KEY=sk-proj-...
+OPENAI_ADMIN_KEY=sk-admin-...
+```
+
+**A convenience if you name them after your dashboard labels**: the harness also
+maps `thesis_manifold_prompts` → `OPENAI_API_KEY` and
+`thesis_manifold_prompts_admin` → `OPENAI_ADMIN_KEY`, which is how mine are
+stored. Either naming works; the canonical names are clearer.
+
+### Check before spending
+
+```bash
+python 03_thesis_modelling/scenario_setup/verify_setup.py
+```
+
+Free, no API calls. Among its 10 checks it verifies both keys resolve **and that
+their scopes are genuinely disjoint** — the project key must 403 on the costs
+endpoint. If it does not, an over-scoped key is in use.
+
+Two traps worth knowing:
+
+- **An empty value is not a missing key.** The repo-root `.env` here contains
+  `ANTHROPIC_API_KEY=` with nothing after it — it greps like a working
+  credential and is not. The loader now skips empty values so the failure names
+  the key.
+- **`OPENAI_ADMIN_KEY` absent** is fine; `verify_setup.py` says so explicitly
+  rather than failing, and the run proceeds with estimate-only costs.
+
+---
+
+## 6. Running it yourself
 
 ```bash
 # free — 10 checks, no API calls
@@ -313,7 +387,7 @@ Other flags: `--categories`, `--rep-offset` (extend a run without overwriting),
 
 ---
 
-## 6. Open items
+## 7. Open items
 
 | Item | State |
 |---|---|
@@ -325,7 +399,7 @@ Other flags: `--categories`, `--rep-offset` (extend a run without overwriting),
 
 ---
 
-## 7. Where to read more
+## 8. Where to read more
 
 | What | Where |
 |---|---|

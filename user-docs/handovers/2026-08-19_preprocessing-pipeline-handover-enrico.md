@@ -252,14 +252,20 @@ static, corr(t, t−1) = 0.976). Dropped because it does not improve accuracy: w
 
 ## 3. Current results
 
+> **SUPERSEDED 2026-08-19 evening.** The table below was produced with
+> hyperparameters tuned on **pre-EDA data** — `tuned_params.json` predated the
+> feature matrices by seven days and referenced two columns that no longer exist.
+> Re-tuning moved danskvand by **12.6pp**. See the SRQ4 handover §3.1 for the
+> corrected figures, or regenerate with the commands below.
+
 `04_thesis_results/srq1/` — XGBoost wins every category:
 
 | Category | best | WMAPE | naive | medMAPE |
 |----------|------|------:|------:|--------:|
-| CSD | XGBoost | 17.1% | 34.9% | 36.3% |
-| Danskvand | XGBoost | 32.6% | 44.0% | 46.2% |
-| Energidrikke | XGBoost | 14.9% | 30.6% | 43.9% |
-| RTD | XGBoost | 31.8% | 54.8% | 28.6% |
+| CSD | XGBoost | ~~17.1%~~ **14.9%** | 34.9% | 36.3% |
+| Danskvand | XGBoost | ~~32.6%~~ **20.0%** | 44.0% | 46.2% |
+| Energidrikke | XGBoost | ~~14.9%~~ **14.3%** | 30.6% | 43.9% |
+| RTD | XGBoost | ~~31.8%~~ **33.6%** | 54.8% | 28.6% |
 
 Re-run with:
 

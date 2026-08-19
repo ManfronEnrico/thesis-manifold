@@ -628,3 +628,46 @@ of the B-vs-C comparison is unaffected — but **the exact Scenario C figures in
 `run_2026-08-19_dkk-confound/` are superseded** and must be regenerated before
 being quoted. The consistency, cost and latency findings are unaffected, since
 none of them depends on the model's parameters.
+
+## F22 — the split is applied before warm-up rows are dropped (OPEN decision)
+
+Brian asked whether the 13 warm-up months should be dropped *before* the split is
+assigned, so the 70/15/15 holds over the rows that are actually modelled.
+
+**Current behaviour**: `resolve_split_cutoffs()` cuts on the distinct periods
+present in the frame, which includes the first 13 months where `lag_13` is null.
+Those months are entirely in train, so the split boundary dates are correct as
+dates — but the *usable* proportion is not 70/15/15:
+
+| Category | months | usable | current (usable) | if cut on usable only |
+|----------|-------:|-------:|------------------|----------------------|
+| CSD | 46 | 33 | 19/7/7 = **58/21/21** | 23/5/5 = 70/15/15 |
+| danskvand | 41 | 28 | 16/6/6 = 57/21/21 | 20/4/4 = 71/14/14 |
+| energidrikke | 43 | 30 | 17/6/7 = 57/20/23 | 21/4/5 = 70/13/17 |
+| RTD | 41 | 28 | 16/6/6 = 57/21/21 | 20/4/4 = 71/14/14 |
+
+**Brian's reading is methodologically standard**: feature engineering is part of
+preprocessing, and the split is normally struck over the data that survives it.
+On that reading the proportion should be measured after the drop.
+
+**The counter-argument, which is why it is not a one-line change:**
+
+1. **Cutting on usable months shrinks val and test to 4-5 months.** At n=4, a
+   validation window is one seasonal quarter, and the conformal calibration (F18)
+   already showed RTD's val->test correlation collapsing when the windows sit on
+   opposite sides of the year. Shorter windows make that worse, not better.
+2. **The current split gives MORE evaluation data**, not less: 7 test months
+   instead of 5. The "wrong" proportion errs toward a larger held-out set, which
+   is conservative with respect to every accuracy claim.
+3. **Every number in the thesis so far uses the current split**, including all
+   SRQ4 results and the re-tuned hyperparameters. Changing it invalidates them.
+
+**Recommendation: keep the current split and state it precisely.** Say the split
+is 70/15/15 **over available months**, note that 13 warm-up months carry no
+`lag_13` and fall entirely in train, and give both proportions. That is honest,
+costs nothing, and avoids trading 7 test months for 5 in exchange for a rounder
+number.
+
+**If it is changed**, it must be changed before any further paid runs, and every
+SRQ1 and SRQ4 figure regenerated. It is not worth doing with a month left unless
+a supervisor asks for it.
