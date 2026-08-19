@@ -69,3 +69,10 @@ prophet==1.4.0
 # block above. E2B is required by System B only; System A needs anthropic alone.
 anthropic==0.122.0
 e2b-code-interpreter==2.9.1
+
+# Hyperparameter tuning (srq1_benchmark_tuned.py). Absent until 2026-08-19, so
+# tuned_params.json could not be reproduced on a fresh machine -- the values
+# were inherited from the environment that first generated them.
+optuna==4.7.0
+# Model persistence for non-XGBoost estimators (danskvand serves Ridge).
+joblib==1.5.2

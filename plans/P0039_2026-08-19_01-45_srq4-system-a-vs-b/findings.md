@@ -419,3 +419,67 @@ observations per scenario is ample for that.
 
 State the design as: **n chosen so the CI on B's mean is under 2%**, which is
 n=10, not "as many as we could afford".
+
+## F18 — the tuning procedure is sound; RTD's validation split is the problem
+
+Audited because the tuned hyperparameters were inherited from a colleague's
+environment and had never been reproduced here.
+
+**Procedure (`srq1_benchmark_tuned.py`) — correct.** Optuna TPE, seed 42, 30
+trials, objective = **validation** WMAPE, best config refit on train+val,
+evaluated **once** on test. That is the textbook arrangement: the test split is
+touched exactly once, at the end, and never informs a choice.
+
+**Search space — appropriate for gradient boosting.** Six parameters covering the
+three things that matter for a small tabular dataset: capacity
+(`n_estimators` 200-1200, `max_depth` 3-10, `num_leaves` 15-128 for LightGBM),
+step size (`learning_rate` 0.01-0.15, log scale — correct, since learning rate is
+multiplicative), and regularisation (`min_child_weight` / `min_child_samples`,
+`subsample`, `colsample_bytree` 0.6-1.0).
+
+Two defensible omissions worth stating rather than hiding: no explicit L1/L2
+(`reg_alpha`, `reg_lambda`), and no early stopping. Both are partly covered by
+the capacity and subsampling ranges. Adding `reg_lambda` would be the first
+extension if tuning were revisited.
+
+**The real diagnostic — does validation predict test?** Ran 20 fresh trials per
+category and correlated each trial's validation WMAPE against its test WMAPE:
+
+| Category | val rows | corr(val, test) | test of val-best | best test seen |
+|----------|---------:|----------------:|-----------------:|---------------:|
+| CSD | 665 | **0.918** | 17.2% | 16.6% |
+| danskvand | 174 | **0.836** | 32.4% | 29.9% |
+| energidrikke | 264 | **0.902** | 14.6% | 13.6% |
+| RTD | 372 | **-0.096** | 32.9% | 29.7% |
+
+Three categories show strong positive correlation: choosing on validation
+reliably improves test, and the val-best config lands within ~1pp of the best
+configuration seen. **The tuning is doing its job.**
+
+RTD's correlation is **-0.096** — statistically indistinguishable from zero.
+Validation performance there carries no information about test performance, so
+Optuna is optimising a target that does not transfer. This is not a coding error
+and not a wrong search space; it is a property of RTD's data.
+
+**Note it is not a sample-size effect**: RTD has 372 validation rows, more than
+danskvand's 174, which correlates at 0.836. The likelier cause is a regime change
+between RTD's validation window (2025-08..2026-01) and its test window
+(2026-02..2026-07) — RTD is the most seasonal category and those windows sit on
+opposite sides of the year.
+
+**Consequences:**
+
+1. The tuned parameters are **not** the reason RTD degrades. Even the best
+   configuration observed only reaches 29.7% against the default's 31.8% — the
+   ceiling is low regardless of tuning.
+2. **Do not re-tune RTD hoping for a better number.** With zero val-test
+   correlation, any improvement found that way is selection noise.
+3. Report RTD as a limitation: short history, strong seasonality, and a
+   validation window that does not represent the test period. The ensemble
+   (F16) recovers more of it (33.2%) than any tuning did.
+4. RTD is not in the SRQ4 scenario set, so this does not affect the experiment.
+
+**Reproducibility gap closed**: `optuna` was never in `requirements.txt`, so
+`srq1_benchmark_tuned.py` could not run on a fresh machine and the tuned values
+could not be regenerated. Added, with `joblib` (now a hard dependency, since
+danskvand serves a Ridge pipeline persisted via joblib).
