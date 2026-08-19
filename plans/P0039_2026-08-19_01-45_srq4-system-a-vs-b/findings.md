@@ -275,3 +275,147 @@ charges. There is no local process to measure, and inventing one would be
 guesswork. The honest cross-scenario compute comparison is therefore
 **cost and latency**, both of which are measured — with the asymmetry itself
 being a finding, since C's compute is ours to control and B's is not.
+
+## F14 — the served models are correct; verified independently
+
+Prompted by a fair concern: two portability bugs (an unpicklable Ridge pipeline,
+a loader that assumed every model was an XGBoost booster) raised the question of
+whether the models were ever trained or served correctly at all.
+
+**They are.** Scored the *loaded, served* model against the full held-out test
+split and compared with what SRQ1 reported:
+
+| Category | served | SRQ1 | delta |
+|----------|-------:|-----:|------:|
+| CSD | 15.6% | 17.1% | -1.5pp |
+| danskvand | 18.2% | 19.2% | -1.0pp |
+| energidrikke | 15.7% | 14.9% | +0.7pp |
+| RTD | 36.7% | 31.8% | **+4.9pp** |
+
+The two are *expected* to differ: `srq1_benchmark.py` fits **train only with
+default hyperparameters** (it is a model-ranking ladder), while
+`train_and_persist.py` fits **train+val with tuned hyperparameters** (it is the
+deployed model). Decomposing both factors:
+
+| Category | default/train | default/train+val | tuned/train | tuned/train+val |
+|----------|-------------:|------------------:|------------:|----------------:|
+| CSD | 17.1% | 15.5% | 16.8% | **15.3%** |
+| danskvand | 32.6% | 20.4% | 29.5% | **17.7%** |
+| energidrikke | 14.9% | 15.2% | 19.8% | **14.6%** |
+| RTD | 31.8% | 33.4% | 32.5% | **38.1%** |
+
+Three categories behave as designed: more data and tuning both help, and the
+served configuration is the best of the four.
+
+## F15 — RTD degrades under tuning and extra data
+
+RTD is the exception and it is not a bug. Going from default/train (31.8%) to
+tuned/train+val (38.1%) makes it **6.3pp worse**, and both factors hurt
+independently (+1.6pp from extra data, +0.7pp from tuning, +4.0pp interacting).
+
+The likely mechanism, consistent with the other evidence: RTD has the shortest
+validation window and the widest spread of small volatile brands. Optuna tuned
+against a 372-row validation set that does not represent the test period, so the
+configuration it chose is fitted to a window that has passed.
+
+**Consequences:**
+
+1. **Do not report RTD's served accuracy as SRQ1's number.** They measure
+   different configurations and differ by 4.9pp.
+2. **Scenario C serves the worse model for RTD.** Defensible only if the
+   selection rule is stated *in advance* -- "we serve the tuned model refit on
+   train+val" -- and the RTD outcome is reported as a limitation. Switching RTD
+   to the default configuration *after seeing* the test result would be fitting
+   the selection rule to the evaluation set, which is the same error as tuning
+   on test.
+3. **Worth stating positively**: tuning that helps three categories and hurts a
+   fourth is an honest result about hyperparameter transfer under short
+   histories, and it belongs in the limitations rather than being smoothed away.
+
+RTD is not in the SRQ4 scenario set (CSD is primary), so this does not affect the
+experiment -- but it must not be misquoted in the SRQ1 chapter.
+
+## F16 — an ensemble beats the single best model in 3 of 4 categories
+
+The ensemble idea from the archived `srq2_synthesis.py` was dismissed too
+quickly on cost grounds. Tested directly, all three models fitted on train+val
+and scored on the held-out test split:
+
+| Category | XGBoost | LightGBM | Ridge | ensemble (equal) | ensemble (inv-WMAPE) |
+|----------|--------:|---------:|------:|-----------------:|---------------------:|
+| CSD | 15.3% | 15.2% | 19.4% | **14.2%** | **14.2%** |
+| danskvand | 17.7% | 21.4% | 18.2% | 16.0% | **15.6%** |
+| energidrikke | **14.6%** | 33.4% | 20.0% | 15.3% | 16.8% |
+| RTD | 38.1% | 33.6% | 56.2% | 33.3% | **33.2%** |
+
+The weighted ensemble wins in three categories, and on RTD it recovers most of
+the degradation recorded in F15 (38.1% -> 33.2%). Only energidrikke prefers the
+single model, and there LightGBM is so poor (33.4%) that averaging drags the
+result down.
+
+**Cost is not the objection.** Weights come from validation WMAPE, which is
+computed once at training time; serving three persisted models is three
+`predict()` calls on one row -- microseconds, no extra API cost, and no retraining
+at serve time. The original objection was to `srq2_synthesis.py` *retraining on
+import*, which is a separate defect and is now fixed by persistence.
+
+**What it would change:**
+
+- Scenario C's payload gains an **inter-model agreement** signal
+  (`1 - std/mean` across the three forecasts), which is a genuinely different
+  trust dimension from interval width: two models disagreeing is evidence a
+  single model's tight interval is overconfident. That is squarely SRQ2's
+  "reliability and uncertainty".
+- The confidence formula could then legitimately use agreement, which is what
+  the archived 30/40/30 formula was doing. It was not arbitrary; it was
+  unaffordable only because it retrained.
+
+**What it costs the thesis:** SRQ1's story becomes "we selected a model *and*
+found the ensemble better", which is more honest but needs the ensemble
+benchmarked properly rather than bolted on.
+
+**Recommendation**: keep the single-model tool for the first paid SRQ4 run so the
+pipeline is validated against a simple, already-verified path. Treat the ensemble
+as the next iteration, benchmarked in SRQ1 first. Do not bolt it on before the
+run -- an untested change to the tool is exactly what a first paid run should not
+be testing.
+
+## F17 — how many repeats the consistency claim actually needs
+
+Measured from the three real Scenario B runs (same prompt, same brand):
+mean 4,028,312, sd 107,435, **CV 2.67%**.
+
+95% CI half-width on B's mean forecast, by number of repeats:
+
+| n | half-width | as % of mean |
+|--:|-----------:|-------------:|
+| 3 | +/- 266,883 | 6.63% |
+| 5 | +/- 133,398 | 3.31% |
+| 10 | +/- 76,854 | 1.91% |
+| 20 | +/- 50,281 | 1.25% |
+| 30 | +/- 40,117 | 1.00% |
+| 50 | +/- 30,533 | 0.76% |
+
+Smallest B-vs-C gap detectable at 80% power, alpha 0.05:
+
+| n | detectable gap |
+|--:|---------------:|
+| 3 | 8.26% |
+| 5 | 4.43% |
+| 10 | **2.65%** |
+| 20 | 1.76% |
+| 30 | 1.41% |
+
+**n=10 is a defensible stopping point, and the answer to "wouldn't we need
+hundreds?" is no.** Precision improves as sqrt(n): going 10 -> 40 costs four
+times the money to halve the interval. At n=10 the CI is +/-1.9%, which is
+comfortably tighter than the effect being discussed.
+
+**The more important point**: the headline consistency claim does not need a CI
+at all. Scenario C returned *the identical number* on every run -- that is not a
+statistical estimate, it is a property of a deterministic model, and one run
+demonstrates it. What the repeats measure is B's spread, and n=10 x 3 brands = 30
+observations per scenario is ample for that.
+
+State the design as: **n chosen so the CI on B's mean is under 2%**, which is
+n=10, not "as many as we could afford".
