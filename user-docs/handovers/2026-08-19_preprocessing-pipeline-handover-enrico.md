@@ -330,7 +330,7 @@ is computed from them.
 
 ### Suggested order
 
-1. Add `.env`, run `python 03_thesis_modelling/model_training/srq4_experiment.py --demo`
+1. Add `.env`, run `python 03_thesis_modelling/scenario_setup/srq4_experiment.py --demo`
    — one brand through both systems. This tells you whether the remaining schedule is
    realistic, and what one run costs.
 2. Add the System B failure taxonomy (`ok` / `code_error` / `no_forecast` / `timeout` /

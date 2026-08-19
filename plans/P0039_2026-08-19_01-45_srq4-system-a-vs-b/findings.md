@@ -8,7 +8,7 @@ updated: 2026-08-19 02:05:00
 
 ## F1 — the harness is further along than the plan files implied
 
-`03_thesis_modelling/model_training/srq4_experiment.py` already implements the full
+`03_thesis_modelling/scenario_setup/srq4_experiment.py` already implements the full
 experiment. Read before assuming anything needs building:
 
 - `run_system_a()` — Claude calls `forecast_demand`, backed by the trained XGBoost

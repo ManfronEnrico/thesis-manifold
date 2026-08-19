@@ -81,6 +81,12 @@ for _src, _dst in (("thesis_manifold_prompts", "OPENAI_API_KEY"),
         os.environ[_dst] = os.environ[_src]
 
 import importlib.util
+
+# Prompts live in prompts.py, never inline here: they are the experimental
+# instrument and must be inspectable and diffable on their own.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import prompts as P
+
 # forecast_service.py lives in model_serving/, not beside this file: the P0028
 # restructure split train-vs-serve and this path was never updated. Loaded by
 # explicit path because 03_thesis_modelling/ has no __init__.py, so it is not
@@ -469,20 +475,9 @@ def run_system_a(category, brand, question=None):
     """The LLM calls `forecast_demand`, backed by the pre-trained XGBoost. It
     writes no code; the number comes from the dedicated model."""
     c = _client()
-    tools = [{
-        "type": "function",
-        "name": "forecast_demand",
-        "description": ("Return next-month demand forecast for a brand from the dedicated "
-                        "pre-trained model (point, 90% interval, confidence tier). Use for "
-                        "any forecast question; do not compute yourself."),
-        "parameters": {"type": "object",
-                       "properties": {"category": {"type": "string"},
-                                      "brand": {"type": "string"}},
-                       "required": ["category", "brand"], "additionalProperties": False},
-    }]
+    tools = [P.FORECAST_TOOL_SCHEMA]
     _, _, target = _brand_history(category, brand)
-    task = question or (f"What will {brand} sell in {target} in the {category} "
-                        "category? Give the number, range and confidence.")
+    task = question or P.arm_a_prompt(brand, category, target)
     msgs = [{"role": "user", "content": task}]
     t0 = time.perf_counter()
     tot = dict(_EMPTY_USAGE)
@@ -569,18 +564,8 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
     csv = fit.to_csv(index=False)
     # Name the target month rather than saying "next month": arms A, B and C must
     # all be scored on the SAME month, and only the data tells us which one it is.
-    task = question or (f"Forecast sales_units for {brand} in {category} for "
-                        f"{target}, the month immediately after the history above.")
-    prompt = (
-        f"Here is the monthly sales history for brand {brand} in the {category} "
-        f"category as CSV:\n\n{csv}\n\n{task}\n\n"
-        "Write and run Python code to produce the forecast. pandas, numpy, "
-        "scipy, scikit-learn and statsmodels are available.\n\n"
-        f"IMPORTANT: your FINAL message must contain the single line "
-        f"{sentinel}=<number> with a plain number (no commas, no units), "
-        "followed by one line naming your method and a range. Do not end your "
-        "reply with code -- end it with that line."
-    )
+    prompt = (question if question
+              else P.arm_b_prompt(brand, category, target, csv, sentinel))
     t0 = time.perf_counter()
     err = None
     text = ""
@@ -641,14 +626,7 @@ def run_system_c(category, brand, question=None):
     #      ESTIMATE rather than retrieve. This is a mitigation, not a guarantee;
     #      `retrieval_suspected` below flags runs to inspect, and the limitation
     #      is documented in the write-up.
-    task = question or (
-        f"Estimate how many units the brand {brand} sold in the {category} category "
-        f"in Danish retail in {target}. You have no access to internal sales data.\n\n"
-        "Do NOT search for or report an already-published figure for that specific "
-        "month. Reason from general market knowledge -- category size, the brand's "
-        "share, seasonality -- to produce your own estimate.")
-    prompt = (task + "\n\nEnd your reply with the single line FORECAST=<number> "
-              "(a plain number, no commas or units).")
+    prompt = question if question else P.arm_c_prompt(brand, category, target)
     t0 = time.perf_counter()
     err = None
     text = ""
@@ -762,10 +740,20 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
                 # Persist the raw response before anything else touches it: a
                 # paid, non-deterministic run cannot be reproduced later, so
                 # whatever is not written down now is lost.
+                fc = r.get("forecast")
+                cls = _classify(fc, r.get("hit_limit"), r.get("error"), actual)
+                # Cache AFTER classifying, so the stored payload carries the
+                # outcome too. Each file is then self-contained: readable without
+                # joining against runs.csv.
                 try:
                     _cache_response(sysname, cat, brand, rep,
                                     {"category": cat, "brand": brand, "rep": rep,
+                                     "system": sysname,
                                      "actual": actual, "target_month": target,
+                                     "forecast": fc, "outcome": cls,
+                                     "ape": (abs(fc - actual) / actual * 100
+                                             if cls == "ok" and actual else None),
+                                     "latency_s": r.get("latency_s"),
                                      "answer": r.get("answer"), "prompt": r.get("prompt"),
                                      "trace": r.get("trace"), "detail": r.get("detail"),
                                      "tokens_in": r.get("tokens_in"),
@@ -776,8 +764,6 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
                                     out_dir=OUT)
                 except Exception as e:
                     print(f"    ! could not cache response: {str(e)[:120]}")
-                fc = r.get("forecast")
-                cls = _classify(fc, r.get("hit_limit"), r.get("error"), actual)
                 # APE is computed only for runs that produced a usable number.
                 # Failures are counted as a CLASS, never folded into the mean --
                 # one implausible answer would otherwise destroy it (P0038 F72).

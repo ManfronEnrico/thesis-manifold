@@ -41,6 +41,26 @@ Never create a new top-level tier for a new SRQ's output. If SRQ5 lands,
 its results go in `04_thesis_results/srq5/`, matching the existing
 `srq1/`, `srq2/`, `srq4/` pattern.
 
+### `scenario_setup/` holds experiment running and logging, not models
+
+Added 2026-08-19. `03_thesis_modelling/` now has three sibling folders with
+three distinct concerns:
+
+| Folder | Concern |
+|--------|---------|
+| `model_training/` | training the ML/statistical models (SRQ1 benchmarks, tuning, calibration, SHAP) |
+| `model_serving/` | making a trained model reachable at inference time |
+| `scenario_setup/` | running scenarios against those models, and logging what happened |
+
+`srq4_experiment.py` and `srq4_tier2.py` moved out of `model_training/` because
+they train nothing -- they run the three-arm SRQ4 comparison against models
+trained elsewhere. When adding a script, ask which of the three verbs it does:
+train, serve, or run-a-scenario.
+
+`scenario_setup/` also holds `prompts.py` (every prompt in one auditable place,
+never inline in the harness), `verify_setup.py` (free pre-flight checks) and
+`inspect_runs.py` (read back logged runs). See its README for the full contract.
+
 ### `model_training/` vs `model_serving/` is a train-vs-serve split, not a naming convenience
 
 `03_thesis_modelling/model_training/` holds one-off training/benchmark/calibration

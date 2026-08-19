@@ -140,7 +140,7 @@ E2B_API_KEY=...
 Then:
 
 ```bash
-python 03_thesis_modelling/model_training/srq4_experiment.py --demo
+python 03_thesis_modelling/scenario_setup/srq4_experiment.py --demo
 ```
 
 One brand, one prompt, both systems. **Do not skip to the full run.** This is the step
