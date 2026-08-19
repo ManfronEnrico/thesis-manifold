@@ -62,3 +62,10 @@ xgboost==3.4.1
 lightgbm==4.7.0
 prophet==1.4.0
 
+
+# SRQ4 experiment harness (srq4_experiment.py). Both SDKs are imported lazily
+# inside run_system_a/run_system_b, so their absence surfaced only mid-run
+# rather than at import -- the same swallowed-dependency failure as the ML
+# block above. E2B is required by System B only; System A needs anthropic alone.
+anthropic==0.122.0
+e2b-code-interpreter==2.9.1

@@ -12,8 +12,10 @@ Both use the same model (claude-sonnet-4-6, temp 0) and the same prompts. We rec
 the numeric forecast, token cost, and latency; correctness is scored against the
 held-out actual; consistency is the spread over repeated runs.
 
-Keys from .env (ANTHROPIC_API_KEY, E2B_API_KEY). Reproducible. No live RU warehouse.
-Usage: .venv/bin/python scripts/srq4_experiment.py --demo   # one prompt through A and B
+Keys are read from 03_thesis_modelling/.env, falling back to the repo-root .env.
+ANTHROPIC_API_KEY is needed by both systems; E2B_API_KEY only by System B.
+Reproducible. No live RU warehouse access required.
+Usage: python 03_thesis_modelling/model_training/srq4_experiment.py --demo
 """
 import argparse, json, os, re, sys, time, warnings
 from pathlib import Path
@@ -25,12 +27,36 @@ from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category
 
 warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[1]
-for line in (ROOT / ".env").read_text().splitlines():
-    if "=" in line and not line.strip().startswith("#"):
-        k, _, v = line.partition("="); os.environ.setdefault(k.strip(), v.strip())
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Keys are read from the modelling-layer .env first, then the repo-root .env.
+# Both are gitignored. setdefault means an already-exported environment variable
+# always wins, and the first file to define a key wins over the second.
+# Neither file is required to exist: a missing key surfaces at the point of use
+# as an SDK auth error naming the key, which is more useful than a
+# FileNotFoundError on import that blocks even the parts needing no credentials.
+for _env in (ROOT / ".env", REPO_ROOT / ".env"):
+    if not _env.is_file():
+        continue
+    for line in _env.read_text(encoding="utf-8").splitlines():
+        if "=" in line and not line.strip().startswith("#"):
+            k, _, v = line.partition("=")
+            # An empty value is a placeholder, not a credential. Setting it would
+            # shadow a real exported variable and turn a clear auth error into a
+            # confusing one -- the repo-root .env declares an empty
+            # ANTHROPIC_API_KEY exactly like this.
+            if v.strip():
+                os.environ.setdefault(k.strip(), v.strip())
 
 import importlib.util
-_spec = importlib.util.spec_from_file_location("fs", Path(__file__).resolve().parent / "forecast_service.py")
+# forecast_service.py lives in model_serving/, not beside this file: the P0028
+# restructure split train-vs-serve and this path was never updated. Loaded by
+# explicit path because 03_thesis_modelling/ has no __init__.py, so it is not
+# an importable package.
+_FS_PATH = ROOT / "model_serving" / "system_a_forecast" / "forecast_service.py"
+if not _FS_PATH.is_file():
+    raise FileNotFoundError(f"System A's backing service is missing: {_FS_PATH}")
+_spec = importlib.util.spec_from_file_location("fs", _FS_PATH)
 fs = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(fs)
 
 MODEL = "claude-sonnet-4-6"
