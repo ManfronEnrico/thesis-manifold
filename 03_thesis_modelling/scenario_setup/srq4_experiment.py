@@ -522,7 +522,8 @@ def run_scenario_c(category, brand, question=None):
     try:
         for _ in range(4):
             r = c.responses.create(model=MODEL,
-                                   reasoning={"effort": REASONING_EFFORT},
+                                   reasoning={"effort": REASONING_EFFORT,
+                                          "summary": "auto"},
                                    tools=tools, input=msgs)
             u = _usage(r)
             for k in tot:
@@ -569,9 +570,16 @@ def run_scenario_c(category, brand, question=None):
                    trace_extra={"tool": "forecast_demand", "wrote_code": False,
                                 "target_month": target,
                                 "tool_returned_forecast": tool_forecast is not None})
-    res["detail"] = {"rounds": details, "tool_outputs": tool_outputs,
-                     "tool_calls": tool_calls,
-                     "tool_schema": tools}
+    # Flatten the per-round details into the same shape the other two scenarios
+    # use, so inspect_runs.py and any later analysis can read one structure
+    # rather than branching on which scenario wrote the file. `rounds` is kept
+    # for the per-turn breakdown.
+    flat = {"code_blocks": [], "reasoning": [], "web_queries": [], "item_types": []}
+    for rd in details:
+        for k in flat:
+            flat[k].extend(rd.get(k) or [])
+    res["detail"] = {**flat, "rounds": details, "tool_outputs": tool_outputs,
+                     "tool_calls": tool_calls, "tool_schema": tools}
     res["prompt"] = task
     return res
 
@@ -605,7 +613,8 @@ def run_scenario_b(category, brand, question=None, sentinel="FORECAST"):
     u = dict(_EMPTY_USAGE)
     try:
         r = c.responses.create(model=MODEL,
-                               reasoning={"effort": REASONING_EFFORT},
+                               reasoning={"effort": REASONING_EFFORT,
+                                          "summary": "auto"},
                                tools=[{"type": "code_interpreter",
                                        "container": {"type": "auto"}}],
                                input=prompt)
@@ -666,7 +675,8 @@ def run_scenario_a(category, brand, question=None):
     used_web = False
     try:
         r = c.responses.create(model=MODEL,
-                               reasoning={"effort": REASONING_EFFORT},
+                               reasoning={"effort": REASONING_EFFORT,
+                                          "summary": "auto"},
                                tools=[{"type": "web_search"}],
                                input=prompt)
         u = _usage(r, containers=0)
