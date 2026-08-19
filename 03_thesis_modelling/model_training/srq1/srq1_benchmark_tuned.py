@@ -109,11 +109,17 @@ def _all_metrics(y, yhat):
 
 
 def _load(ds, cat, slug):
+    """Return the split parts AND the feature list this matrix supports.
+
+    The feature list must travel with the parts: available_features() needs the
+    matrix to intersect against (DEC-OPEN-WORLD), and previously `tune()`
+    referenced a global `fm` that did not exist there -- the script raised
+    NameError on its first call and could not run at all."""
     sub = "CSD" if cat == "CSD" else cat
     fm = pd.read_parquet(DATASETS[ds] / sub / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     parts = {s: d[d.split == s] for s in ("train", "val", "test")}
-    return parts
+    return parts, available_features(fm)
 
 
 def _make(model, params):
@@ -144,10 +150,10 @@ def _space(trial, model):
     )
 
 
-def tune(model, parts, trials):
+def tune(model, parts, feats, trials):
     tr, va = parts["train"], parts["val"]
-    Xtr, ytr = tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values
-    Xva, yva = va[available_features(fm)].fillna(0.0), np.expm1(va["log_sales_units"].values)
+    Xtr, ytr = tr[feats].fillna(0.0), tr["log_sales_units"].values
+    Xva, yva = va[feats].fillna(0.0), np.expm1(va["log_sales_units"].values)
 
     def objective(trial):
         m = _make(model, _space(trial, model))
@@ -160,9 +166,9 @@ def tune(model, parts, trials):
     # refit best on train+val, eval on test
     trval = pd.concat([tr, va])
     m = _make(model, study.best_params)
-    m.fit(trval[available_features(fm)].fillna(0.0), trval["log_sales_units"].values)
+    m.fit(trval[feats].fillna(0.0), trval["log_sales_units"].values)
     te = parts["test"]
-    pred = np.expm1(m.predict(te[available_features(fm)].fillna(0.0)))
+    pred = np.expm1(m.predict(te[feats].fillna(0.0)))
     mp, md, wm = _all_metrics(np.expm1(te["log_sales_units"].values), pred)
     return dict(val_wmape=study.best_value, test_wmape=wm, test_mape=mp, test_median=md), study.best_params
 
@@ -175,11 +181,11 @@ def main():
     for ds in DATASETS:
         print(f"\n########## {ds} (trials={trials}) ##########")
         for cat, slug in CATS.items():
-            parts = _load(ds, cat, slug)
+            parts, feats = _load(ds, cat, slug)
             if len(parts["train"]) < 30 or len(parts["test"]) == 0:
                 continue
             for model in ("LightGBM", "XGBoost"):
-                res, best = tune(model, parts, trials)
+                res, best = tune(model, parts, feats, trials)
                 rows.append(dict(dataset=ds, category=cat, model=model, **res))
                 params[f"{ds}/{cat}/{model}"] = best
                 print(f"  {cat:13s} {model:9s} test WMAPE={res['test_wmape']:5.1f}% "
