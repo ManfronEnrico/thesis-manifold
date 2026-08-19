@@ -18,7 +18,7 @@ updated: 2026-08-11
 - **SRQ1 — Models & Efficiency**: Which lightweight forecasting models provide the best trade-off between accuracy, memory efficiency, and category specialization for FMCG demand forecasting under computational constraints?
 - **SRQ2 — Structured Tool Interface**: How can forecasting outputs be exposed to an agentic decision-support system through a structured tool/action interface that preserves reliability, uncertainty, and traceability?
 - **SRQ3 — Integration Readiness**: What architectural and operational capabilities are required for a production-oriented agentic system to integrate forecast-informed decision-support?
-- **SRQ4 — ML Integration vs LLM-Coder**: To what extent does integrating dedicated lightweight forecasting models into an agentic decision-support system improve the correctness, consistency, and replicability of forecast-informed decision-support outputs, at justified cost and latency, compared with a general-purpose LLM that writes and self-corrects its own forecasting code (a code-as-action baseline)?
+- **SRQ4 — ML Integration vs LLM-Coder Scenarios**: To what extent does integrating dedicated lightweight forecasting models into an agentic decision-support system improve the correctness, consistency, and replicability of forecast-informed decision-support outputs, at justified cost and latency, compared with a general-purpose LLM that writes and self-corrects its own forecasting code (a code-as-action baseline)?
 
 ## Scope decisions
 
