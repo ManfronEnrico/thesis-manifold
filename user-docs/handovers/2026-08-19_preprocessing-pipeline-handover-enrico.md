@@ -274,8 +274,9 @@ python 03_thesis_modelling/model_training/srq1_baselines_stat.py
 
 ### The one blocker
 
-`03_thesis_modelling/.env` is missing. SRQ4 — **the thesis premise** — cannot run
-without it:
+SRQ4 — **the thesis premise** — needs two API keys. Put them in
+`03_thesis_modelling/.env` (the repo-root `.env` also works; the harness checks the
+modelling one first, then falls back):
 
 ```
 ANTHROPIC_API_KEY=...
@@ -285,10 +286,28 @@ E2B_API_KEY=...
 E2B is a disposable cloud sandbox where System B's self-written code executes. System A
 does not need it; that asymmetry is the experiment.
 
-**On the LLM choice (DEC-VENDOR)** — you likely already have an
-`ANTHROPIC_API_KEY` in place from building System B, so the harness should run for you
-as-is. That is the fastest path to a first `--demo`, and worth doing before changing
+**Check for a value, not a key name.** Brian's repo-root `.env` contains the line
+`ANTHROPIC_API_KEY=` with nothing after it — a placeholder that greps like a working
+credential. If yours from building System B looks the same, the harness will fail
+authentication rather than start. The loader now skips empty values so the error names
+the missing key instead of failing obscurely.
+
+`E2B_API_KEY` is the one genuinely new thing to obtain. It is free-tier for a workload
+this size.
+
+**On the LLM choice (DEC-VENDOR)** — if your Anthropic key is real, running
+`--demo` as-is is the fastest path to a first result, and worth doing before changing
 anything.
+
+**Already fixed on Brian's side (commit `63c8a6c`)**, so you should not hit these:
+the harness used to raise `FileNotFoundError` on import when `.env` was absent; it
+pointed at a stale `forecast_service.py` path left over from the P0028 train-vs-serve
+split; and `anthropic` / `e2b-code-interpreter` were missing from `requirements.txt`.
+Re-run `pip install -r requirements.txt` to pick up the two SDKs.
+
+System A's forecasting core is verified working without any credentials —
+`_eval_forecast("CSD", "HARBOE")` returns a forecast with a 90% interval — so what
+remains genuinely is credentials alone.
 
 The open question is whether Claude should be the **reported** model. The harness
 hardcodes `claude-sonnet-4-6` (line 36) and **no justification is recorded anywhere in

@@ -129,3 +129,45 @@ Real per-run figures come from `--demo` (task 1). The harness already computes c
 per run via `PRICE_IN_PER_M` / `PRICE_OUT_PER_M`, so if the vendor changes, **update
 those constants** or every reported cost will be wrong.
 
+
+## F8 — the blocker was three problems, not one; two are now fixed
+
+F2 said "the only blocker is credentials". That was true of the *symptom* but not
+the cause: the `FileNotFoundError` on import masked two further defects that only
+became visible once it was cleared. Fixed 2026-08-19 (commit `63c8a6c`):
+
+| # | Defect | Why it was invisible |
+|---|--------|----------------------|
+| 1 | `.env` read was unguarded and hard-failed on import | it *was* the visible error |
+| 2 | `forecast_service.py` path stale since the P0028 train-vs-serve split — the file lives in `model_serving/`, the harness looked beside itself | masked by #1 |
+| 3 | `anthropic` and `e2b-code-interpreter` absent from `requirements.txt` **and** from the environment | both imported lazily *inside* the run functions, so they fail mid-run, not at import |
+
+Defect 3 is the same failure mode as the ML block fixed 2026-08-18: a dependency the
+code needs, missing from the manifest, hidden behind a lazy import. Worth treating as
+a pattern in this repo rather than three coincidences.
+
+**Now verified without any credentials**: the module imports, and
+`_eval_forecast("CSD", "HARBOE")` returns
+`forecast_units=4,326,970` with a 90% interval of `[3,259,384 – 5,744,233]`.
+System A's forecasting core is sound; the remaining blocker is genuinely
+credentials alone.
+
+**Caveat on that number**: the interval is roughly ±30%, far tighter than the
+median 3x reported in F6/P0037 F11. HARBOE is a large, stable brand. Do **not**
+quote it as representative — F6's median is the honest headline figure.
+
+## F9 — the ANTHROPIC_API_KEY in the repo-root .env is an empty placeholder
+
+The root `.env` contains the literal line `ANTHROPIC_API_KEY=` with no value. A
+`grep` for the key name finds it and looks like a working credential; it is not.
+
+Two consequences:
+
+1. **The env loader now skips empty values.** Otherwise `setdefault` locks in the
+   empty string and a genuinely exported key can never override it, turning a clear
+   auth failure into a confusing one.
+2. **The handover's claim needs qualifying.** It tells Enrico he "probably already
+   has" an Anthropic key because he built System B. If his `.env` carries the same
+   placeholder, that is optimistic. He should check for a *value*, not a key name.
+
+`E2B_API_KEY` is absent entirely from both files.
