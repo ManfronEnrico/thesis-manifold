@@ -483,3 +483,70 @@ opposite sides of the year.
 `srq1_benchmark_tuned.py` could not run on a fresh machine and the tuned values
 could not be regenerated. Added, with `joblib` (now a hard dependency, since
 danskvand serves a Ridge pipeline persisted via joblib).
+
+## F19 — `tuned_params.json` does not reproduce, but the numbers are sound
+
+Tested directly after installing optuna: re-ran CSD/XGBoost tuning with the same
+seed (42), the same 30 trials and the same search space.
+
+| | n_estimators | learning_rate | max_depth | min_child_weight | subsample | colsample |
+|---|---:|---:|---:|---:|---:|---:|
+| stored | 314 | 0.0513 | 9 | 6.53 | 0.644 | 0.923 |
+| reproduced | 926 | 0.0888 | 7 | 2.91 | 0.899 | 0.925 |
+
+**Completely different parameters.** Something in the generating environment
+differed — a different optuna or xgboost version, a different trial count, or a
+different search space at the time. Not recoverable from the artefact.
+
+**But accuracy is nearly identical**: stored 15.32% test WMAPE vs reproduced
+14.80%. The loss surface is flat across the plausible region, which is why the
+val->test correlation is 0.918 (F18) yet the argmin moves.
+
+**So the choice is narrow, and it is a documentation choice, not a correctness
+one:**
+
+- The stored parameters are **not wrong**. They produce a model within 0.5pp of a
+  freshly tuned one, and every SRQ4 result so far used them.
+- The thesis **cannot claim** these parameters are reproducible from the recorded
+  seed, because they are not.
+
+**Recommendation: do not re-tune before submission.** Re-tuning would invalidate
+every SRQ4 number collected today for a 0.5pp accuracy change, and the parameters
+would still not match the originals. Instead:
+
+1. Keep the stored parameters and state in the methodology that they were
+   produced by a documented procedure (Optuna TPE, seed 42, 30 trials, objective
+   = validation WMAPE) whose exact environment was not captured.
+2. Record the measured evidence that the choice is insensitive: a fresh tuning
+   run lands within 0.5pp.
+3. `optuna==4.7.0` and `joblib==1.5.2` are now pinned in requirements.txt, so
+   **future** tuning is reproducible even though the historical run is not.
+
+If time allows after the writing is done, a clean re-tune plus a full SRQ4 re-run
+would close this properly. It is not worth doing with a month left and \$50 of
+API budget.
+
+## F20 — where Scenario B's tokens actually go
+
+Asked because B bills ~20x C's input tokens on the same question. Measured on
+one run (CSD/HARBOE):
+
+| | prompt sent | input billed | ratio | output | reasoning | code written |
+|---|---:|---:|---:|---:|---:|---:|
+| B_data | ~547 tok | 11,568 | **21.1x** | 6,547 | 6,314 (96%) | 11 blocks, ~2,600 tok |
+| C_model | ~97 tok | 576 | 5.9x | 134 | 21 (16%) | none |
+
+**The input multiplier is the tool loop, not a long prompt.** B's prompt is sent
+once but billed once per *tool round*: each of its 11 code executions re-sends the
+whole conversation — the CSV, every prior code block, and every prior execution
+output. Input tokens therefore grow roughly quadratically in the number of rounds.
+
+**The output is long because the model writes the code.** 6,547 output tokens of
+which 6,314 are reasoning: comparing candidate models, backtesting, weighing
+ensembles. The ~2,600 tokens of Python are a small part; the thinking dominates.
+C's 134 output tokens are one tool call plus a sentence of prose.
+
+**For the write-up**: this is not an implementation inefficiency to apologise for.
+It is what code-as-action *costs*. An agent that re-derives a forecasting method
+per query pays for that derivation every time, while an agent calling a trained
+model pays once at training time and amortises it across every subsequent query.
