@@ -492,6 +492,7 @@ def run_system_a(category, brand, question=None):
     text = ""
     details = []
     tool_outputs = []
+    tool_calls = []
     try:
         for _ in range(4):
             r = c.responses.create(model=MODEL,
@@ -507,6 +508,18 @@ def run_system_a(category, brand, question=None):
                     args = json.loads(call.arguments or "{}")
                     out = _eval_forecast(args.get("category", category),
                                          args.get("brand", brand))
+                    # Log the arguments the MODEL chose alongside what it was
+                    # asked about. A mismatch means the LLM queried a different
+                    # series than the one being scored -- silent otherwise, and
+                    # it would corrupt the accuracy number.
+                    tool_calls.append({
+                        "requested_category": category, "requested_brand": brand,
+                        "llm_arg_category": args.get("category"),
+                        "llm_arg_brand": args.get("brand"),
+                        "args_match_request": (
+                            str(args.get("category", "")).upper() == str(category).upper()
+                            and str(args.get("brand", "")).upper() == str(brand).upper()),
+                        "tool_output": out})
                     # The tool output is authoritative: whatever the LLM then says
                     # in prose, the dedicated model's number is what Arm A is
                     # credited with.
@@ -530,7 +543,10 @@ def run_system_a(category, brand, question=None):
                    trace_extra={"tool": "forecast_demand", "wrote_code": False,
                                 "target_month": target,
                                 "tool_returned_forecast": tool_forecast is not None})
-    res["detail"] = {"rounds": details, "tool_outputs": tool_outputs}
+    res["detail"] = {"rounds": details, "tool_outputs": tool_outputs,
+                     "tool_calls": tool_calls,
+                     "tool_schema": tools}
+    res["prompt"] = task
     return res
 
 
