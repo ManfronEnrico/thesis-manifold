@@ -84,6 +84,112 @@ updated: 2026_07_13-00_30
 | **T04/T05/T07** | spend approvals (~$0.2 / ~$9 / ~$25, to re-estimate on gpt-5.5 pricing) | Money wall. |
 | **F03** | solo vs group CBS page limit (80 vs 120 standard pages) | Must be confirmed before any cut decisions. |
 
+---
+
+## BRIAN'S DECISIONS — 2026-08-19
+
+> Added by Brian on 2026-08-19, five weeks after this handover was written. These are
+> **decisions taken**, not proposals: the work is proceeding on this basis. Enrico is
+> free to object to any of them, but the reasoning is recorded here so the objection can
+> be to the argument rather than to a surprise.
+>
+> Full rationale, including the challenges each decision has to survive at defence:
+> `05_thesis_writing/notes/srq4-experiment-design-rationale.md`
+
+### B-DEC-1 — DEC-LLM confirmed, pinned to a dated snapshot
+
+`gpt-5.5` stands as the base model for all arms. The ecological-validity argument
+(it is Prometheus's production model) holds and was re-examined against the current
+model landscape.
+
+**Changed**: use the dated snapshot **`gpt-5.5-2026-04-23`**, not the floating
+`gpt-5.5` alias. An alias silently re-points; a dated snapshot is citable and
+reproducible. Verified present on the project account.
+
+Deliberately *not* moving to the newer GPT-5.6 line, despite it being available:
+changing the base model changes coding competence and tool-use reliability, which are
+the mechanisms that produce the between-arm difference. A switch after preliminary runs
+would also read as outcome-contingent. An explicitly labelled robustness replication on
+`gpt-5.6-sol` is optional and must not replace the primary analysis.
+
+### B-DEC-2 — the judge is dropped
+
+**OPEN-PARAMS' judge question is resolved by removing the judge**, not by choosing one.
+
+Every primary metric in the protocol spec (§4) is programmatic: correctness against
+ground truth, consistency across repeats, replicability, cost, latency. The judge
+appears only in §5, scoped to optional qualitative dimensions (clarity, actionability)
+that are **not in the SRQ4 research question**.
+
+A defensible judge protocol needs cross-family selection, blinding, order randomisation,
+a rubric, and human-validated agreement statistics on a stratified subset — substantial
+work defending a measurement that does not answer the question. MAPE against a held-out
+actual cannot be attacked on those grounds.
+
+**Consequence**: the "judge must be another family (Claude/Gemini)" constraint in the
+table above no longer applies, and with it the last methodological reason to keep a
+second LLM vendor in the harness.
+
+### B-DEC-3 — prediction-only prompt set (replaces the ~50-prompt taxonomy)
+
+The protocol spec's six archetypes total ~50 prompts, of which roughly **34 involve no
+forecasting at all** — they are descriptive queries answerable by ordinary dataframe
+work. On those, Arm A's `forecast_demand` tool is irrelevant and both arms do identical
+work, which shrinks any real effect toward zero across two-thirds of the sample.
+
+**Replaced with a single prediction prompt template**, applied across brands rather than
+across question types. The thesis is about prediction; the prompt set should be too.
+
+Given up: the ability to show tool availability does no *harm* on non-forecasting tasks.
+Real question, not the SRQ4 question — future work.
+
+### B-DEC-4 — sample design: ~10 brands x 5 repeats
+
+Resolves the **K** half of OPEN-PARAMS at **K = 5**.
+
+The initial instinct was one brand x ~50 repeats. That measures LLM non-determinism
+precisely but confounds the result with one brand's characteristics — a large stable
+series is easy to forecast, a small volatile one is not.
+
+~10 brands x 5 repeats keeps enough repetition for the consistency metric while making
+the accuracy claim cross-sectional, at the same total run count. Brand selection must be
+stratified across volume/volatility and **fixed in writing before running**; top-N by
+volume would bias toward easily-forecast series.
+
+### B-DEC-5 — Arm C reframed: the three arms are an information ladder
+
+DEC-ARMS listed arm C as a "floor". Reframed, the arms isolate **two separate
+increments**: C to B measures what **data access** buys; B to A measures what **model
+integration** adds on top. A two-arm design conflates these, and without arm C a
+reviewer can argue the entire effect is just data access rather than the thesis
+artefact.
+
+Arm C keeps **open web access**. It is not a null condition: it will find annual
+reports, market commentary and stock coverage, and produce a confident forecast. How
+wrong that is, is the finding — and it directly answers the practitioner question
+"why can't I just ask ChatGPT?".
+
+Stated as a limitation: because arm C can browse, it is not a clean no-information
+floor. That *understates* the measured value of data access, so the bias runs
+conservative to our own claim.
+
+### B-DEC-6 — Code Interpreter, not hosted shell; cost promoted to primary
+
+Arm B runs in OpenAI's hosted `code_interpreter` (`container: auto`). A hosted shell
+would grant arbitrary terminal access that arms A and C do not have — a second variable
+moving. It would also let the model work around its own failures, suppressing the
+failure taxonomy that is itself part of the result. Each observation starts from a fresh
+container.
+
+**Cost is promoted from secondary to primary**, because SRQ4's own wording is "at
+justified cost and latency". Measured 2026-08-19: token cost is exact from
+`response.usage` (including reasoning tokens, which dominated output in testing), but
+**container charges are absent from the API response** — only a `container_id` is
+exposed. Cost will therefore be logged programmatically per run and **reconciled against
+the billing export**, with the per-run figure labelled an estimate.
+
+---
+
 ## 4. What can move forward WITHOUT Enrico — start here
 
 The key point of this handover: **none of the open decisions in §3 blocks the work below.**
