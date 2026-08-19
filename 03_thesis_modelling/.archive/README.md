@@ -89,6 +89,37 @@ be quoted in a methodology appendix if it is lost.
 
 ---
 
+## `superseded_scripts_2026-08/` — archived 2026-08-19
+
+### `srq4_tier2.py`
+
+The 25-prompt / 5-family decision-support battery (point, interval, comparison,
+ranking, seasonality) with deterministic ground-truth builders and per-family
+evaluators.
+
+**Archived for two independent reasons:**
+
+1. **It was broken.** `--selftest` raised
+   `ValueError: too many values to unpack (expected 2, got 3)` — it unpacks the
+   old 2-tuple from `_brand_history`, which now also returns the target month.
+   The failure predates this session and had gone unnoticed, which is itself
+   evidence nothing depended on it.
+2. **Its design was superseded.** B-DEC-3 (2026-08-19) replaced the
+   multi-archetype prompt taxonomy with a single prediction template, because
+   roughly two-thirds of such prompts involve no forecasting and dilute the
+   effect being measured. Three of its five families (comparison, ranking,
+   seasonality) are exactly those non-forecasting archetypes.
+
+**Worth keeping** for its parsing and evaluation helpers — `parse_interval`,
+`parse_ranklist`, `parse_yesno`, the overlap@k scorer — which are careful,
+tested, and would be the starting point if a broader prompt set is ever
+reinstated for SRQ2/SRQ3.
+
+**Do not repair it in place.** The `_brand_history` signature is the smallest of
+its problems.
+
+---
+
 ## Related
 
 - `.archive/grain_artifacts_p0035_2026-08/` — chain/region grain artefacts (repo root)

@@ -4,9 +4,9 @@ Peak RAM (tracemalloc, Python-object allocations) and wall-clock per model. Supp
 
 | Model | fit (s) | predict (ms) | peak RAM fit (MB) | peak RAM predict (MB) | n_train | n_features |
 |---|---|---|---|---|---|---|
-| Ridge | 0.011 | 2.5 | 1.5 | 0.98 | 6045 | 14 |
-| LightGBM | 7.714 | 166.9 | 18.7 | 0.53 | 6045 | 14 |
-| XGBoost | 1.746 | 16.3 | 0.2 | 0.12 | 6045 | 14 |
-| ARIMA(per-series) | 0.058 | 55.7 | 0.5 | 0.17 | 174 | 1 |
+| Ridge | 0.075 | 2.8 | 5.5 | 0.15 | 2470 | 13 |
+| LightGBM | 2.039 | 15.9 | 8.0 | 0.09 | 2470 | 13 |
+| XGBoost | 0.968 | 9.3 | 0.1 | 0.06 | 2470 | 13 |
+| ARIMA(per-series) | 0.085 | 7.0 | 0.3 | 0.08 | 26 | 1 |
 
 All models fit comfortably within the ≤8 GB budget (peak RAM in the tens-of-MB range). Note tracemalloc captures Python-level allocations; native library buffers (LightGBM/XGBoost C++) are additional but small at this data scale.

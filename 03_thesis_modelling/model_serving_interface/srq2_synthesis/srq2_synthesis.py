@@ -124,71 +124,84 @@ def tier(score):
     return "High" if score >= 70 else ("Moderate" if score >= 40 else "Low")
 
 
-rows = []
-for cat, (slug, ds_tag, sub) in SELECTED.items():
-    eng_dir = get_category_engineered_bymonth_dir(sub)
-    fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix_h3.parquet")
-    keys = ["brand", "chain"] if "chain" in fm.columns else ["brand"]
-    d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
-    tr, va, te = (d[d.split == s] for s in ("train", "val", "test"))
-    if len(tr) < 30 or len(te) == 0:
-        continue
-    mods = _models(ds_tag, cat)
-    # fit on train; val for weights+calibration
-    val_wmape, val_res, te_pred = {}, {}, {}
-    for name, m in mods.items():
-        m.fit(tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values)
-        pv = np.expm1(m.predict(va[available_features(fm)].fillna(0.0)))
-        yv = np.expm1(va["log_sales_units"].values)
-        val_wmape[name] = np.abs(yv - np.clip(pv, 0, None)).sum() / max(yv.sum(), 1e-9)
-        val_res[name] = np.abs(va["log_sales_units"].values - m.predict(va[available_features(fm)].fillna(0.0)))
-        te_pred[name] = np.clip(np.expm1(m.predict(te[available_features(fm)].fillna(0.0))), 0, None)
-    # inverse-WMAPE weights
-    inv = {k: 1.0 / max(v, 1e-6) for k, v in val_wmape.items()}
-    Z = sum(inv.values()); w = {k: inv[k] / Z for k in inv}
-    # ensemble conformal half-width (weighted val residuals, 90%)
-    q90 = np.quantile(np.concatenate([val_res[k] for k in mods]), 0.90)
-    acc_score = float(1.0 - min(val_wmape.values()))  # best model skill, clipped later
-    ytrue = np.expm1(te["log_sales_units"].values)
-    P = np.vstack([te_pred[k] for k in mods]).T  # rows=series, cols=models
-    ens = P @ np.array([w[k] for k in mods])
-    for i in range(len(ytrue)):
-        fc = P[i]; mean_fc = max(fc.mean(), 1e-9)
-        agreement = float(np.clip(1.0 - fc.std() / mean_fc, 0, 1))
-        lo, hi = np.expm1(np.log(max(ens[i], 1e-9)) - q90), np.expm1(np.log(max(ens[i], 1e-9)) + q90)
-        rel_width = (hi - lo) / max(ens[i], 1e-9)
-        sc = confidence(agreement, rel_width, max(acc_score, 0))
-        rows.append(dict(category=cat, ensemble=round(float(ens[i]), 1),
-                         lower90=round(float(lo), 1), upper90=round(float(hi), 1),
-                         agreement=round(agreement, 3), confidence=round(sc, 1), tier=tier(sc),
-                         actual=round(float(ytrue[i]), 1),
-                         in_interval=bool(lo <= ytrue[i] <= hi)))
 
-df = pd.DataFrame(rows)
-df.to_csv(OUT / "synthesis.csv", index=False)
+def build_synthesis():
+    """Train the model ladder and write synthesis.csv + synthesis_summary.md.
 
-# summary
-lines = ["# SRQ2 synthesis engine — deterministic core (Ch7 §7.2)", "",
-         "Per-series ensemble forecast (inverse-WMAPE weighted), inter-model agreement, "
-         "split-conformal 90% interval, composite confidence (30% agreement + 40% interval "
-         "tightness + 30% model accuracy) and 3-tier label. LLM recommendation text + "
-         "LLM-as-Judge (Ch7 §7.6 / Ch8 §8.3) need an LLM API and are not run here.", "",
-         "| Category | n_series | mean confidence | %High | %Moderate | %Low | interval coverage |",
-         "|---|---|---|---|---|---|---|"]
-for cat in SELECTED:
-    s = df[df.category == cat]
-    if not len(s):
-        continue
-    cov = 100 * s.in_interval.mean()
-    vc = s.tier.value_counts(normalize=True) * 100
-    lines.append(f"| {cat} | {len(s)} | {s.confidence.mean():.1f} | {vc.get('High',0):.0f}% | "
-                 f"{vc.get('Moderate',0):.0f}% | {vc.get('Low',0):.0f}% | {cov:.1f}% |")
-lines += ["", "Confidence-tier triage lets the agentic layer surface High-confidence forecasts "
-          "directly and flag Low-confidence ones for human review (SRQ2 reliability/traceability)."]
-(OUT / "synthesis_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
-print("Saved synthesis.csv + synthesis_summary.md")
-for cat in SELECTED:
-    s = df[df.category == cat]
-    if len(s):
-        print(f"  {cat:13s} n={len(s):4d} meanConf={s.confidence.mean():4.1f} "
-              f"coverage={100*s.in_interval.mean():4.1f}% tiers={dict(s.tier.value_counts())}")
+    Previously this ran at IMPORT time -- the whole training pass fired the
+    moment anything did `import srq2_synthesis`, including a harmless
+    inspection or a doc tool. That made the module unusable as a library and
+    made any importer silently pay for a full retrain.
+    """
+    rows = []
+    for cat, (slug, ds_tag, sub) in SELECTED.items():
+        eng_dir = get_category_engineered_bymonth_dir(sub)
+        fm = pd.read_parquet(eng_dir / f"{slug}_feature_matrix_h3.parquet")
+        keys = ["brand", "chain"] if "chain" in fm.columns else ["brand"]
+        d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
+        tr, va, te = (d[d.split == s] for s in ("train", "val", "test"))
+        if len(tr) < 30 or len(te) == 0:
+            continue
+        mods = _models(ds_tag, cat)
+        # fit on train; val for weights+calibration
+        val_wmape, val_res, te_pred = {}, {}, {}
+        for name, m in mods.items():
+            m.fit(tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values)
+            pv = np.expm1(m.predict(va[available_features(fm)].fillna(0.0)))
+            yv = np.expm1(va["log_sales_units"].values)
+            val_wmape[name] = np.abs(yv - np.clip(pv, 0, None)).sum() / max(yv.sum(), 1e-9)
+            val_res[name] = np.abs(va["log_sales_units"].values - m.predict(va[available_features(fm)].fillna(0.0)))
+            te_pred[name] = np.clip(np.expm1(m.predict(te[available_features(fm)].fillna(0.0))), 0, None)
+        # inverse-WMAPE weights
+        inv = {k: 1.0 / max(v, 1e-6) for k, v in val_wmape.items()}
+        Z = sum(inv.values()); w = {k: inv[k] / Z for k in inv}
+        # ensemble conformal half-width (weighted val residuals, 90%)
+        q90 = np.quantile(np.concatenate([val_res[k] for k in mods]), 0.90)
+        acc_score = float(1.0 - min(val_wmape.values()))  # best model skill, clipped later
+        ytrue = np.expm1(te["log_sales_units"].values)
+        P = np.vstack([te_pred[k] for k in mods]).T  # rows=series, cols=models
+        ens = P @ np.array([w[k] for k in mods])
+        for i in range(len(ytrue)):
+            fc = P[i]; mean_fc = max(fc.mean(), 1e-9)
+            agreement = float(np.clip(1.0 - fc.std() / mean_fc, 0, 1))
+            lo, hi = np.expm1(np.log(max(ens[i], 1e-9)) - q90), np.expm1(np.log(max(ens[i], 1e-9)) + q90)
+            rel_width = (hi - lo) / max(ens[i], 1e-9)
+            sc = confidence(agreement, rel_width, max(acc_score, 0))
+            rows.append(dict(category=cat, ensemble=round(float(ens[i]), 1),
+                             lower90=round(float(lo), 1), upper90=round(float(hi), 1),
+                             agreement=round(agreement, 3), confidence=round(sc, 1), tier=tier(sc),
+                             actual=round(float(ytrue[i]), 1),
+                             in_interval=bool(lo <= ytrue[i] <= hi)))
+
+    df = pd.DataFrame(rows)
+    df.to_csv(OUT / "synthesis.csv", index=False)
+
+    # summary
+    lines = ["# SRQ2 synthesis engine — deterministic core (Ch7 §7.2)", "",
+             "Per-series ensemble forecast (inverse-WMAPE weighted), inter-model agreement, "
+             "split-conformal 90% interval, composite confidence (30% agreement + 40% interval "
+             "tightness + 30% model accuracy) and 3-tier label. LLM recommendation text + "
+             "LLM-as-Judge (Ch7 §7.6 / Ch8 §8.3) need an LLM API and are not run here.", "",
+             "| Category | n_series | mean confidence | %High | %Moderate | %Low | interval coverage |",
+             "|---|---|---|---|---|---|---|"]
+    for cat in SELECTED:
+        s = df[df.category == cat]
+        if not len(s):
+            continue
+        cov = 100 * s.in_interval.mean()
+        vc = s.tier.value_counts(normalize=True) * 100
+        lines.append(f"| {cat} | {len(s)} | {s.confidence.mean():.1f} | {vc.get('High',0):.0f}% | "
+                     f"{vc.get('Moderate',0):.0f}% | {vc.get('Low',0):.0f}% | {cov:.1f}% |")
+    lines += ["", "Confidence-tier triage lets the agentic layer surface High-confidence forecasts "
+              "directly and flag Low-confidence ones for human review (SRQ2 reliability/traceability)."]
+    (OUT / "synthesis_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    print("Saved synthesis.csv + synthesis_summary.md")
+    for cat in SELECTED:
+        s = df[df.category == cat]
+        if len(s):
+            print(f"  {cat:13s} n={len(s):4d} meanConf={s.confidence.mean():4.1f} "
+                  f"coverage={100*s.in_interval.mean():4.1f}% tiers={dict(s.tier.value_counts())}")
+
+
+if __name__ == "__main__":
+    build_synthesis()

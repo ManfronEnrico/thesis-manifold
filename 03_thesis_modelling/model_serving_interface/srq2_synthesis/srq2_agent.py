@@ -2,6 +2,21 @@
 """
 SRQ2 LLM layer — Synthesis Agent recommendations + LLM-as-Judge evaluation.
 
+STATUS 2026-08-19: NOT CURRENT. Two of its design choices were superseded and it
+has never been re-run against them:
+
+  - it calls claude-sonnet-4-6, but B-DEC-1 pinned the thesis to
+    gpt-5.5-2026-04-23 for every LLM measurement;
+  - it uses GPT-4o as an LLM-as-judge, and B-DEC-2 dropped the judge entirely
+    (every SRQ4 metric is programmatic; "clarity" is not in the research
+    question, and a defensible judge protocol costs more than the claim is
+    worth).
+
+Kept rather than archived because the deterministic half it depends on
+(srq2_synthesis.py) IS current, and SRQ2 may still want a recommendation-text
+layer. If it is revived, re-point the model and delete the judge path first.
+Do not quote numbers produced by this script as they stand.
+
 Builds on the deterministic synthesis (scripts/srq2_synthesis.py → 04_thesis_results/srq2/
 synthesis.csv). For a stratified N≈50 sample:
   1. Synthesis Agent (claude-sonnet-4-6, temp 0) generates a 2-3 sentence
@@ -36,10 +51,19 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = THESIS_RESULTS_SRQ2_DIR
 SEED = 42
 
-for line in (ROOT / ".env").read_text().splitlines():
-    line = line.strip()
-    if line and not line.startswith("#") and "=" in line:
-        k, _, v = line.partition("="); os.environ.setdefault(k.strip(), v.strip())
+# Search the modelling layer then the repo root, and tolerate absence: the
+# unguarded read raised FileNotFoundError on import, so the module could not even
+# be inspected without credentials present. A missing key should surface as an
+# auth error naming the key, at the point of use.
+for _env in (ROOT / ".env", ROOT.parent / ".env"):
+    if not _env.is_file():
+        continue
+    for line in _env.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, _, v = line.partition("=")
+            if v.strip():
+                os.environ.setdefault(k.strip(), v.strip())
 
 SYS_SYNTH = ("You are a demand forecasting analyst for FMCG retail. Given ML model "
              "forecasts, a calibrated confidence score, and demand signals, produce a concise, "

@@ -297,10 +297,24 @@ def _assert_no_leakage(fit, test, category, brand):
 
 
 def _eval_forecast(category, brand):
-    """System A's tool, EVALUATION mode: train tuned XGBoost on train+val only and
-    predict the FIRST test month — same target/data as System B, for a fair comparison."""
+    """Scenario C's tool: train tuned XGBoost and predict the first test month —
+    the same target month Scenario B is asked for, so the comparison is fair.
+
+    Instrumented for peak RAM because the thesis claims these models run inside a
+    compute-limited environment (~8 GB per query). That claim needs a measured
+    number attached to the code path actually used at serve time, not only to the
+    offline profiling script."""
     import json as _json
+    import tracemalloc
     from xgboost import XGBRegressor
+    # tracemalloc measures PYTHON allocations only. XGBoost does most of its work
+    # in native C++ memory that this cannot see, so treat the figure as a lower
+    # bound on the Python side; srq1_profiling.py reports the same quantity for
+    # the offline path, and the two are directly comparable to each other.
+    _tm_started = not tracemalloc.is_tracing()
+    if _tm_started:
+        tracemalloc.start()
+    _t_fit = time.perf_counter()
     slug, tag, sub = CAT_FILE[category]
     params = _json.loads((THESIS_RESULTS_SRQ1_DIR / "tuned_params.json").read_text())
     pk = "brand"
@@ -336,6 +350,10 @@ def _eval_forecast(category, brand):
     trained_on = "train" if len(res) else "train (uncalibrated)"
     row = te[te.brand.str.upper() == brand.upper()].sort_values("period_index").head(1)
     if not len(row):
+        # Stop tracing on this path too: leaving it on would make the NEXT call's
+        # peak include this one's allocations.
+        if _tm_started:
+            tracemalloc.stop()
         return {"status": "not_found", "brand": brand}
     yhat = float(np.clip(np.expm1(m.predict(row[feats].fillna(0.0))[0]), 0, None))
     lo, hi = float(np.expm1(np.log(max(yhat, 1e-9)) - q90)), float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
@@ -349,6 +367,13 @@ def _eval_forecast(category, brand):
     tier = "High" if conf >= 70 else ("Moderate" if conf >= 40 else "Low")
     target_month = (f"{int(row.iloc[0]['period_year'])}-"
                     f"{int(row.iloc[0]['period_month']):02d}")
+    # Capture before building the return dict, so the figure covers fit +
+    # calibrate + predict and nothing after it.
+    _elapsed = time.perf_counter() - _t_fit
+    _peak = tracemalloc.get_traced_memory()[1]
+    if _tm_started:
+        tracemalloc.stop()
+
     trained_through = (f"{int(tr.iloc[-1]['period_year'])}-"
                        f"{int(tr.iloc[-1]['period_month']):02d}") if len(tr) else None
     calibrated_through = (f"{int(va.iloc[-1]['period_year'])}-"
@@ -365,6 +390,9 @@ def _eval_forecast(category, brand):
             "calibrated_on": "val", "calibrated_through": calibrated_through,
             "n_train_rows": int(len(tr)), "n_calibration_rows": int(len(va)),
             "features_used": len(feats),
+            # Compute cost of producing this number, for the 8 GB claim.
+            "peak_ram_mb": round(_peak / 1e6, 2),
+            "compute_seconds": round(_elapsed, 3),
             "interval_method": "split conformal, 90% quantile of validation residuals",
             "horizon": "next (held-out) month"}
 
