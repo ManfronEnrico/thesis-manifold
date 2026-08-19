@@ -242,16 +242,52 @@ def available_features(fm, wanted=None):
 
 
 def _brand_history(category, brand):
-    """Monthly observed series for a brand (train+val), and the test actual (next month)."""
+    """Monthly observed series for a brand (train+val), the held-out actual, and
+    the target month that actual belongs to.
+
+    The target month is returned EXPLICITLY rather than left to each arm to infer
+    from "next month". Arm C has no data and would otherwise anchor on the
+    current wall-clock date, scoring a different month than arms A and B --
+    which would make the arms incomparable rather than merely different.
+
+    LEAKAGE BOUNDARY: `fit` is train+val only. The test row is never included,
+    verified by `_assert_no_leakage` below."""
     slug, tag, sub = CAT_FILE[category]
     fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
     g = fm[(fm.brand.str.upper() == brand.upper())].sort_values("period_index")
     test = g[g.split == "test"].dropna(subset=["sales_units"])
     actual = float(test.iloc[0]["sales_units"]) if len(test) else None
+    target = (f"{int(test.iloc[0]['period_year'])}-{int(test.iloc[0]['period_month']):02d}"
+              if len(test) else None)
     cols = ["period_year", "period_month", "sales_units"] + [
         c for c in ("promo_intensity", "weighted_distribution") if c in g.columns]
     fit = g[g.split.isin(["train", "val"])].dropna(subset=["sales_units"])[cols]
-    return fit, actual
+    _assert_no_leakage(fit, test, category, brand)
+    return fit, actual, target
+
+
+def _assert_no_leakage(fit, test, category, brand):
+    """Hard-fail if the held-out month reached the data an arm is given.
+
+    A silent leak here would not produce an error -- it would produce an
+    impressively accurate Arm B, which is exactly the result the thesis is
+    trying to measure. Cheap to check, catastrophic to miss."""
+    if not len(test) or not len(fit):
+        return
+    t = test.iloc[0]
+    clash = fit[(fit.period_year == t["period_year"])
+                & (fit.period_month == t["period_month"])]
+    if len(clash):
+        raise AssertionError(
+            f"LEAKAGE: {category}/{brand} target "
+            f"{int(t['period_year'])}-{int(t['period_month']):02d} present in the "
+            f"history handed to the agent")
+    last = fit.sort_values(["period_year", "period_month"]).iloc[-1]
+    if (last["period_year"], last["period_month"]) >= (t["period_year"], t["period_month"]):
+        raise AssertionError(
+            f"LEAKAGE: {category}/{brand} history ends "
+            f"{int(last['period_year'])}-{int(last['period_month']):02d}, "
+            f"at or after the target month")
 
 
 def _eval_forecast(category, brand):
@@ -264,7 +300,7 @@ def _eval_forecast(category, brand):
     pk = "brand"
     fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"])
-    trval = d[d.split.isin(["train", "val"])]
+    trval = d[d.split.isin(["train", "val"])].sort_values("period_index")
     m = XGBRegressor(random_state=42, verbosity=0, n_jobs=-1, **params.get(f"{pk}/{category}/XGBoost", {}))
     m.fit(trval[available_features(fm)].fillna(0.0), trval["log_sales_units"].values)
     te = d[d.split == "test"]
@@ -275,9 +311,25 @@ def _eval_forecast(category, brand):
         return {"status": "not_found", "brand": brand}
     yhat = float(np.clip(np.expm1(m.predict(row[available_features(fm)].fillna(0.0))[0]), 0, None))
     lo, hi = float(np.expm1(np.log(max(yhat, 1e-9)) - q90)), float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
+    # Confidence tier, using the SAME formula as forecast_service._tier so the
+    # tool and the serving layer cannot disagree about the same brand. Without
+    # it the tool silently omitted a field the prompt asks for, and Arm A
+    # answered "confidence tier not returned by the forecast tool" -- which
+    # undercuts traceability, the one advantage Arm A is claimed to have.
+    rel = (hi - lo) / max(yhat, 1e-9)
+    conf = float(np.clip(100 * (0.5 * (1 / (1 + rel)) + 0.5 * (1 - min(q90, 1))), 0, 100))
+    tier = "High" if conf >= 70 else ("Moderate" if conf >= 40 else "Low")
+    target_month = (f"{int(row.iloc[0]['period_year'])}-"
+                    f"{int(row.iloc[0]['period_month']):02d}")
+    trained_through = (f"{int(trval.iloc[-1]['period_year'])}-"
+                       f"{int(trval.iloc[-1]['period_month']):02d}") if len(trval) else None
     return {"status": "ok", "category": category, "brand": brand,
             "forecast_units": round(yhat, 1), "interval_90": [round(lo, 1), round(hi, 1)],
-            "model": "XGBoost(tuned)", "horizon": "next (held-out) month"}
+            "confidence": round(conf, 1), "confidence_tier": tier,
+            "model": "XGBoost(tuned)", "forecast_month": target_month,
+            "trained_through": trained_through,
+            "interval_method": "split conformal, 90% quantile of validation residuals",
+            "horizon": "next (held-out) month"}
 
 
 # ---------------------------------------------------------------------------
@@ -341,6 +393,43 @@ def _trace(arm, extra=None):
     return t
 
 
+def _cache_response(arm, category, brand, rep, payload, out_dir=None):
+    """Persist the full raw response for retrospective inspection.
+
+    Paid, non-deterministic runs cannot be reproduced after the fact: the same
+    prompt will not return the same reasoning or the same generated code. Anything
+    not written down at run time is gone. Stored per run as JSON, including the
+    code Arm B wrote and the reasoning summaries -- these are qualitative
+    evidence for the write-up, not debug output."""
+    base = Path(out_dir) if out_dir else THESIS_RESULTS_SRQ4_DIR
+    d = base / "raw_responses"
+    d.mkdir(parents=True, exist_ok=True)
+    safe = re.sub(r"[^A-Za-z0-9_-]+", "_", f"{category}_{brand}")
+    f = d / f"{arm}__{safe}__rep{rep}.json"
+    f.write_text(json.dumps(payload, indent=2, default=str),
+                 encoding="utf-8", newline="\n")
+    return str(f)
+
+
+def _response_detail(r):
+    """Pull the inspectable parts out of a Responses API object: the code the
+    model wrote, any reasoning summary it exposed, and web-search queries."""
+    detail = {"code_blocks": [], "reasoning": [], "web_queries": [], "item_types": []}
+    for it in getattr(r, "output", []) or []:
+        detail["item_types"].append(it.type)
+        if it.type == "code_interpreter_call":
+            detail["code_blocks"].append({"code": getattr(it, "code", None),
+                                          "container_id": getattr(it, "container_id", None),
+                                          "status": getattr(it, "status", None)})
+        elif it.type == "reasoning":
+            for s in (getattr(it, "summary", None) or []):
+                detail["reasoning"].append(getattr(s, "text", str(s)))
+        elif it.type.startswith("web_search"):
+            act = getattr(it, "action", None)
+            detail["web_queries"].append(getattr(act, "query", None) if act else None)
+    return detail
+
+
 def _result(arm, text, err, t0, u, forecast, containers=0, hit_limit=False, trace_extra=None):
     """Uniform result record. One shape across all three arms so the results
     writer never has to branch on which arm produced a row."""
@@ -391,8 +480,9 @@ def run_system_a(category, brand, question=None):
                                       "brand": {"type": "string"}},
                        "required": ["category", "brand"], "additionalProperties": False},
     }]
-    task = question or (f"What will {brand} sell next month in the {category} category? "
-                        "Give the number, range and confidence.")
+    _, _, target = _brand_history(category, brand)
+    task = question or (f"What will {brand} sell in {target} in the {category} "
+                        "category? Give the number, range and confidence.")
     msgs = [{"role": "user", "content": task}]
     t0 = time.perf_counter()
     tot = dict(_EMPTY_USAGE)
@@ -400,6 +490,8 @@ def run_system_a(category, brand, question=None):
     err = None
     hit_limit = True
     text = ""
+    details = []
+    tool_outputs = []
     try:
         for _ in range(4):
             r = c.responses.create(model=MODEL,
@@ -408,6 +500,7 @@ def run_system_a(category, brand, question=None):
             u = _usage(r)
             for k in tot:
                 tot[k] += u[k]
+            details.append(_response_detail(r))
             calls = [it for it in r.output if it.type == "function_call"]
             if calls:
                 for call in calls:
@@ -417,6 +510,7 @@ def run_system_a(category, brand, question=None):
                     # The tool output is authoritative: whatever the LLM then says
                     # in prose, the dedicated model's number is what Arm A is
                     # credited with.
+                    tool_outputs.append(out)
                     if out.get("forecast_units") is not None:
                         tool_forecast = out["forecast_units"]
                     msgs += [{"type": "function_call", "call_id": call.call_id,
@@ -431,10 +525,13 @@ def run_system_a(category, brand, question=None):
         err = str(e)[:300]
 
     forecast = tool_forecast if tool_forecast is not None else _extract_number(text)
-    return _result("A_dedicated", text, err, t0, tot, forecast,
+    res = _result("A_dedicated", text, err, t0, tot, forecast,
                    containers=0, hit_limit=hit_limit,
                    trace_extra={"tool": "forecast_demand", "wrote_code": False,
+                                "target_month": target,
                                 "tool_returned_forecast": tool_forecast is not None})
+    res["detail"] = {"rounds": details, "tool_outputs": tool_outputs}
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -452,9 +549,12 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
     Each call creates a fresh container (`container: auto`), so no state carries
     between observations."""
     c = _client()
-    fit, _ = _brand_history(category, brand)
+    fit, _, target = _brand_history(category, brand)
     csv = fit.to_csv(index=False)
-    task = question or f"Forecast next month's sales_units for {brand} in {category}."
+    # Name the target month rather than saying "next month": arms A, B and C must
+    # all be scored on the SAME month, and only the data tells us which one it is.
+    task = question or (f"Forecast sales_units for {brand} in {category} for "
+                        f"{target}, the month immediately after the history above.")
     prompt = (
         f"Here is the monthly sales history for brand {brand} in the {category} "
         f"category as CSV:\n\n{csv}\n\n{task}\n\n"
@@ -469,6 +569,7 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
     err = None
     text = ""
     ncalls = 0
+    detail = {}
     u = dict(_EMPTY_USAGE)
     try:
         r = c.responses.create(model=MODEL,
@@ -479,15 +580,23 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
         ncalls = sum(1 for it in r.output if it.type == "code_interpreter_call")
         u = _usage(r, containers=1)
         text = r.output_text
+        detail = _response_detail(r)
     except Exception as e:
         err = str(e)[:300]
 
     forecast, via_sentinel = _parse_sentinel(text, sentinel)
     containers = 0 if err else 1
-    return _result("B_codeaction", text, err, t0, u, forecast,
+    res = _result("B_codeaction", text, err, t0, u, forecast,
                    containers=containers,
                    trace_extra={"tool": "code_interpreter", "wrote_code": True,
+                                "target_month": target, "history_months": len(fit),
+                                "history_ends": (f"{int(fit.period_year.iloc[-1])}-"
+                                                 f"{int(fit.period_month.iloc[-1]):02d}"
+                                                 if len(fit) else None),
                                 "code_calls": ncalls, "via_sentinel": via_sentinel})
+    res["detail"] = detail
+    res["prompt"] = prompt
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -506,15 +615,29 @@ def run_system_c(category, brand, question=None):
     UNDERSTATES the measured value of data access (C->B), so the bias runs
     conservative with respect to our own claim."""
     c = _client()
-    task = question or (f"What will the brand {brand} sell next month in the {category} "
-                        "category in Danish retail, in units? You have no access to "
-                        "internal sales data. Give your best single numeric estimate.")
+    _, _, target = _brand_history(category, brand)
+    # The target month is in the PAST relative to wall-clock time (the held-out
+    # period runs 2026-01..2026-07 and this is being run later). Two consequences,
+    # both handled here:
+    #   1. "next month" would anchor on today's date and score a DIFFERENT month
+    #      than arms A and B -- so the month is named explicitly.
+    #   2. The figure may be publicly reported by now, so the arm is instructed to
+    #      ESTIMATE rather than retrieve. This is a mitigation, not a guarantee;
+    #      `retrieval_suspected` below flags runs to inspect, and the limitation
+    #      is documented in the write-up.
+    task = question or (
+        f"Estimate how many units the brand {brand} sold in the {category} category "
+        f"in Danish retail in {target}. You have no access to internal sales data.\n\n"
+        "Do NOT search for or report an already-published figure for that specific "
+        "month. Reason from general market knowledge -- category size, the brand's "
+        "share, seasonality -- to produce your own estimate.")
     prompt = (task + "\n\nEnd your reply with the single line FORECAST=<number> "
               "(a plain number, no commas or units).")
     t0 = time.perf_counter()
     err = None
     text = ""
     u = dict(_EMPTY_USAGE)
+    detail = {}
     used_web = False
     try:
         r = c.responses.create(model=MODEL,
@@ -524,13 +647,23 @@ def run_system_c(category, brand, question=None):
         u = _usage(r, containers=0)
         used_web = any(it.type.startswith("web_search") for it in r.output)
         text = r.output_text
+        detail = _response_detail(r)
     except Exception as e:
         err = str(e)[:300]
 
     forecast, via_sentinel = _parse_sentinel(text)
-    return _result("C_nodata", text, err, t0, u, forecast, containers=0,
+    # If the answer cites the target month itself, the arm may have retrieved the
+    # figure rather than estimated it. Flagged, not dropped -- the decision to
+    # exclude a run belongs in analysis, on inspected evidence.
+    retrieval_suspected = bool(target and target in (text or ""))
+    res = _result("C_nodata", text, err, t0, u, forecast, containers=0,
                    trace_extra={"tool": "web_search", "wrote_code": False,
-                                "used_web": used_web, "via_sentinel": via_sentinel})
+                                "used_web": used_web, "via_sentinel": via_sentinel,
+                                "target_month": target,
+                                "retrieval_suspected": retrieval_suspected})
+    res["detail"] = detail
+    res["prompt"] = prompt
+    return res
 
 
 # Arm order is the information ladder (B-DEC-5): C -> B measures what data access
@@ -574,7 +707,8 @@ def _select_brands(per_cat=(4, 4, 4, 3)):
     return picks
 
 
-def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None):
+def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
+             budget_usd=None):
     """Run the experiment and write runs.csv + summary.md.
 
     Checkpoints after every brand: a crash 40 runs in should not cost the
@@ -587,11 +721,16 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None):
     t_start = time.time()
     n_total = len(brands) * repeats * len(arms)
     print(f"SRQ4: {len(brands)} brands x {repeats} repeats x {len(arms)} arms "
-          f"= {n_total} runs, model={MODEL}\n")
+          f"= {n_total} runs, model={MODEL}")
+    if budget_usd:
+        print(f"      budget cap: ${budget_usd:.2f} (estimated spend; stops mid-run)")
+    print()
 
     rows = []
+    spent = 0.0
+    stopped = False
     for cat, brand in brands:
-        _, actual = _brand_history(cat, brand)
+        _, actual, target = _brand_history(cat, brand)
         if not actual:
             print(f"  skip {cat}/{brand}: no held-out actual")
             continue
@@ -604,6 +743,23 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None):
                          "tokens_out": 0, "tokens_cached_in": 0, "tokens_reasoning": 0,
                          "containers": 0, "cost_usd_est": 0.0, "answer": str(e)[:200],
                          "error": str(e)[:300], "hit_limit": False, "trace": {}}
+                # Persist the raw response before anything else touches it: a
+                # paid, non-deterministic run cannot be reproduced later, so
+                # whatever is not written down now is lost.
+                try:
+                    _cache_response(sysname, cat, brand, rep,
+                                    {"category": cat, "brand": brand, "rep": rep,
+                                     "actual": actual, "target_month": target,
+                                     "answer": r.get("answer"), "prompt": r.get("prompt"),
+                                     "trace": r.get("trace"), "detail": r.get("detail"),
+                                     "tokens_in": r.get("tokens_in"),
+                                     "tokens_out": r.get("tokens_out"),
+                                     "tokens_reasoning": r.get("tokens_reasoning"),
+                                     "cost_usd_est": r.get("cost_usd_est"),
+                                     "error": r.get("error")},
+                                    out_dir=OUT)
+                except Exception as e:
+                    print(f"    ! could not cache response: {str(e)[:120]}")
                 fc = r.get("forecast")
                 cls = _classify(fc, r.get("hit_limit"), r.get("error"), actual)
                 # APE is computed only for runs that produced a usable number.
@@ -623,9 +779,25 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None):
                     error=r.get("error"),
                     trace=json.dumps(r.get("trace") or {}, default=str),
                     answer=(r.get("answer") or "")[:2000]))
+                spent += r.get("cost_usd_est") or 0.0
                 print(f"  {cat:12s} {str(brand)[:16]:16s} {sysname:13s} rep{rep} "
                       f"{cls:12s} fc={fc} ape={ape if ape is None else round(ape, 1)} "
-                      f"lat={r.get('latency_s')} est=${r.get('cost_usd_est') or 0:.4f}")
+                      f"lat={r.get('latency_s')} est=${r.get('cost_usd_est') or 0:.4f} "
+                      f"cum=${spent:.2f}")
+                # Hard budget stop. Estimated cost per run varies by an order of
+                # magnitude between arms and brands, so a pre-run projection is
+                # not a safeguard -- this is. Partial results are already on
+                # disk from the per-brand checkpoint.
+                if budget_usd and spent >= budget_usd:
+                    print(f"\n!! BUDGET STOP: estimated spend ${spent:.2f} reached the "
+                          f"${budget_usd:.2f} cap after {len(rows)} runs.")
+                    print("   Partial results saved. Raise --budget to continue.")
+                    stopped = True
+                    break
+            if stopped:
+                break
+        if stopped:
+            break
         pd.DataFrame(rows).to_csv(OUT / "runs.csv", index=False)  # checkpoint per brand
 
     df = pd.DataFrame(rows)
@@ -749,6 +921,8 @@ def main():
     ap.add_argument("--category", default="CSD")
     ap.add_argument("--brand", default="HARBOE")
     ap.add_argument("--out", default=None, help="output dir (default: SRQ4 results dir)")
+    ap.add_argument("--budget", type=float, default=None,
+                    help="stop once estimated spend reaches this many USD")
     a = ap.parse_args()
 
     want = {s.strip().upper() for s in a.arms.split(",") if s.strip()}
@@ -757,14 +931,14 @@ def main():
         raise SystemExit(f"--arms {a.arms!r} selected no arms; expected some of A,B,C")
 
     if a.full:
-        run_full(a.repeats, tuple(a.brands_per_cat), arms, a.out)
+        run_full(a.repeats, tuple(a.brands_per_cat), arms, a.out, a.budget)
         return
 
     # Demo: one brand, one repeat, every selected arm. This is the smoke test --
     # it reveals what a run costs and how long it takes before committing to the
     # full schedule.
     t_start = time.time()
-    _, actual = _brand_history(a.category, a.brand)
+    _, actual, target = _brand_history(a.category, a.brand)
     print(f"=== SRQ4 demo: {a.brand} / {a.category} ===")
     print(f"    model={MODEL} reasoning={REASONING_EFFORT} ({DECODING_NOTE})")
     print(f"    held-out actual = {actual:,.0f}\n")

@@ -143,9 +143,32 @@ cost and behaviour and default silently:
 - `service_tier` (default `"default"`), model snapshot, tool definitions, SDK
   version, container memory limit, execution dates.
 
-**Temperature 0 does not guarantee identical outputs.** This is why run-to-run
-consistency remains a meaningful measured outcome rather than an assumed
-constant.
+### Decoding cannot be controlled on this model (measured 2026-08-19)
+
+**`gpt-5.5-2026-04-23` rejects both `temperature` and `top_p`** with HTTP 400,
+`"Unsupported parameter"`. This is a property of the reasoning-model line, not a
+configuration error. The 2026-06-19 protocol specified *"temperature 0,
+identical decoding everywhere"* as the control across arms; **that control does
+not exist on this model.**
+
+What this does and does not affect:
+
+- **The comparison still holds.** All three arms are equally uncontrolled, so
+  decoding is constant across arms in the only sense the API permits — which is
+  what the single-variable design actually requires.
+- **The write-up must not claim temperature 0.** Any sentence of the form
+  "despite temperature 0" or "with decoding held at 0" would be false. The
+  harness records `temperature: null` plus an explicit decoding note in every
+  run trace so the published parameter table matches what was actually sent.
+- **Consistency becomes a purely measured outcome.** It was always going to be
+  measured, but it can no longer be framed as *"variation persists even under
+  deterministic decoding"* — there is no deterministic decoding to invoke. The
+  honest framing is that run-to-run spread is reported as observed, under the
+  vendor default sampling behaviour.
+
+This is worth stating explicitly in the methodology rather than omitting: a
+reader who knows the model line will otherwise wonder why the usual control is
+absent.
 
 ---
 
@@ -255,14 +278,79 @@ uncertainty, plus provenance*.
 
 ---
 
-## 9. Open items
+## 9. Leakage controls, and why they needed checking
+
+The held-out test period runs **2026-01 to 2026-07** — entirely in the past
+relative to when the experiment is being run. That creates two distinct leakage
+risks that a forward-looking design would not have.
+
+**Arm B (verified clean).** The history handed to the sandbox is `train`+`val`
+only; the target month never appears. Verified empirically, not by reading the
+filter: for CSD/HARBOE the agent receives 39 months ending 2025-12 and is asked
+for 2026-01, and the held-out value is absent from its input. A
+`_assert_no_leakage` guard now hard-fails if the target month ever reaches the
+data an arm is given, or if the history runs to or past the target. A silent
+leak here would not raise an error — it would produce an impressively accurate
+Arm B, which is precisely the quantity under measurement.
+
+**Arm C (mitigated, not eliminated).** Because the target month is historical,
+a published figure for it may exist on the open web. Two changes:
+
+1. The prompt names the target month explicitly and instructs the model to
+   estimate from general market knowledge rather than retrieve a published
+   figure for that month.
+2. Every Arm C run records `retrieval_suspected` (does the answer cite the
+   target month?) and `used_web`, so suspect runs can be inspected rather than
+   silently trusted.
+
+**This is a mitigation, not a guarantee, and must be stated as a limitation.**
+The direction of the residual bias is conservative with respect to the thesis
+claim: any retrieval would make Arm C look *better*, shrinking the measured
+value of data access (C to B).
+
+**All three arms are scored on the same named month.** Previously Arm C was
+asked about "next month", which it would anchor on the wall-clock date — a
+different month than arms A and B were scored on, making the arms incomparable
+rather than merely different. The target month is now derived from the data and
+passed to every arm.
+
+---
+
+## 10. Measured costs (pilot, 2026-08-19)
+
+Per-run estimates from a 6-run pilot (2 CSD brands x 3 arms):
+
+| Arm | Est. USD/run | Latency | Driver |
+|-----|-------------:|--------:|--------|
+| A — dedicated | $0.006 | 5–10s | one tool call, minimal reasoning |
+| B — code-as-action | $0.24–0.28 | 125–145s | many tool rounds; reasoning tokens dominate |
+| C — no firm data | $0.04–0.06 | 28s | web search calls, billed separately from tokens |
+
+**Arm B costs ~45x Arm A per run** and takes ~20x as long. That asymmetry is a
+finding in its own right and belongs in the results, not just the appendix.
+
+**Projected full design** (10 brands x 5 repeats x 3 arms = 150 runs):
+approximately **$31**, within the $50 budget ceiling. The harness carries a
+`--budget` cap that stops mid-run on estimated spend, because per-run cost
+varies by an order of magnitude across arms and a pre-run projection is not a
+safeguard.
+
+**Reconciliation works.** Estimated $0.6344 against $0.6478 actually billed on
+the pilot — 2% apart. The billing endpoint also surfaced a line item the token
+model does not see at all: **`web search tool calls`, $0.04**, which is Arm C's
+real cost driver. Report billed figures, not estimates.
+
+---
+
+## 11. Open items
 
 | Item | State |
 |------|-------|
-| Verified token pricing for `gpt-5.5-2026-04-23` | **unverified** — no pricing endpoint exists on the API; vendor-quoted figures must be checked against the published pricing page before entering any cost table |
-| `reasoning.effort` value to freeze | not yet chosen (currently defaulting to `medium`) |
-| Brand selection + stratification for the 10 brands | not yet fixed in writing |
-| Admin-scoped key for billing reconciliation | not yet obtained; project key returns 403 on `/v1/organization/costs` |
+| Token pricing for `gpt-5.5-2026-04-23` | **resolved** — no pricing endpoint exists, but actual charges are readable from `/v1/organization/costs` with an admin key. Estimate reconciled to within 2% of billed on a 6-run pilot ($0.634 est. vs $0.648 billed) |
+| Admin-scoped key for billing reconciliation | **obtained** 2026-08-19. Scopes are disjoint: the project key returns 403 on the costs endpoint, the admin key returns 403 on `/v1/models`, so both are required |
+| `reasoning.effort` value to freeze | **`medium`** (the API default), recorded in every trace |
+| Brand selection + stratification for the 10 brands | not yet fixed in writing — **must be settled before the full run** |
+| Whether Arm C repeats are worth their cost | open — Arm C showed the widest spread across brands (1.7% vs 78.0% APE), so repeats may be better spent there than on Arm A, whose forecast is deterministic |
 
 ---
 
