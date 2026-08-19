@@ -2,23 +2,23 @@
 """
 SRQ4 experiment harness — does model availability improve an LLM's forecasts?
 
-Three arms forming an INFORMATION LADDER (B-DEC-5, 2026-08-19). Each adds one
-thing to the arm below it, so the two increments can be attributed separately:
+Three scenarios forming an INFORMATION LADDER (B-DEC-5, 2026-08-19). Each adds one
+thing to the scenario below it, so the two increments can be attributed separately:
 
-  C_nodata      no firm data; web search only. Not a null condition -- it finds
+  A_plain      no firm data; web search only. Not a null condition -- it finds
                 annual reports and market commentary and answers confidently.
-  B_codeaction  the brand history in a hosted Code Interpreter sandbox; the LLM
+  B_data  the brand history in a hosted Code Interpreter sandbox; the LLM
                 writes and runs its own forecasting code.
-  A_dedicated   the same data behind a `forecast_demand` tool backed by the
+  C_model   the same data behind a `forecast_demand` tool backed by the
                 pre-trained XGBoost. The LLM writes no code.
 
-  C -> B  measures what DATA ACCESS buys.
-  B -> A  measures what MODEL INTEGRATION adds on top -- the thesis contribution.
+  A -> B  measures what DATA ACCESS buys.
+  B -> C  measures what MODEL INTEGRATION adds on top -- the thesis contribution.
 
-A two-arm A-vs-B design conflates these, and a reviewer could then argue the
+A two-scenario C-vs-B design conflates these, and a reviewer could then argue the
 whole effect is just data access.
 
-All arms run the SAME model, temperature and reasoning effort: the design
+All scenarios run the SAME model, temperature and reasoning effort: the design
 isolates how the forecast is produced, so any other difference would measure LLM
 quality instead of the intervention.
 
@@ -27,13 +27,13 @@ rather than averaged. Failures are findings: "code-as-action failed 12% of the
 time" says more about production readiness than a small accuracy gap.
 
 Keys are read from 03_thesis_modelling/.env, falling back to the repo-root .env:
-  OPENAI_API_KEY    project key   -- inference (all arms)
+  OPENAI_API_KEY    project key   -- inference (all scenarios)
   OPENAI_ADMIN_KEY  admin key     -- billing reconciliation (optional)
 The two scopes are disjoint; the project key returns 403 on the costs endpoint.
 
 Usage:
   python 03_thesis_modelling/model_training/srq4_experiment.py --demo
-  python 03_thesis_modelling/model_training/srq4_experiment.py --demo --arms A,B
+  python 03_thesis_modelling/model_training/srq4_experiment.py --demo --scenarios A,B
   python 03_thesis_modelling/model_training/srq4_experiment.py --full --repeats 5
 """
 import argparse, json, os, re, sys, time, warnings
@@ -100,8 +100,8 @@ fs = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(fs)
 # ---------------------------------------------------------------------------
 # Model + pricing (DEC-LLM 2026-07-12, confirmed B-DEC-1 2026-08-19)
 # ---------------------------------------------------------------------------
-# All three arms MUST run the same model: the design isolates a single variable
-# (how the forecast is produced), so a model that differs between arms measures
+# All three scenarios MUST run the same model: the design isolates a single variable
+# (how the forecast is produced), so a model that differs between scenarios measures
 # LLM quality instead of the intervention.
 #
 # Pinned to the DATED SNAPSHOT, not the floating "gpt-5.5" alias -- an alias
@@ -117,10 +117,10 @@ REASONING_EFFORT = "medium"   # API default; stated explicitly because reasoning
 # DECODING IS NOT CONTROLLABLE ON THIS MODEL (verified 2026-08-19).
 # gpt-5.5 rejects BOTH `temperature` and `top_p` with HTTP 400
 # ("Unsupported parameter"). The original protocol specified temperature 0 as
-# the decoding control across arms; that is not available on a reasoning model.
+# the decoding control across scenarios; that is not available on a reasoning model.
 #
-# This does NOT break the comparison -- all three arms are equally uncontrolled,
-# so decoding is held constant across arms in the only sense the API permits.
+# This does NOT break the comparison -- all three scenarios are equally uncontrolled,
+# so decoding is held constant across scenarios in the only sense the API permits.
 # What it changes is the WRITE-UP: run-to-run consistency is a purely measured
 # outcome, and cannot be described as "despite temperature 0". Reporting
 # temperature 0 in the methodology would be false.
@@ -137,7 +137,7 @@ PRICE_CACHED_IN_PER_M = 0.50
 # Code Interpreter container, 1 GB tier (the default when no memory_limit is
 # given). Published per 20-minute session, billed by the minute with a 5-minute
 # minimum. The API does NOT report container duration or charge -- only a
-# container_id -- so this is necessarily an estimate. Arm B alone incurs it.
+# container_id -- so this is necessarily an estimate. Scenario B alone incurs it.
 PRICE_CONTAINER_SESSION = 0.03
 
 
@@ -251,10 +251,10 @@ def _brand_history(category, brand):
     """Monthly observed series for a brand (train+val), the held-out actual, and
     the target month that actual belongs to.
 
-    The target month is returned EXPLICITLY rather than left to each arm to infer
-    from "next month". Arm C has no data and would otherwise anchor on the
-    current wall-clock date, scoring a different month than arms A and B --
-    which would make the arms incomparable rather than merely different.
+    The target month is returned EXPLICITLY rather than left to each scenario to infer
+    from "next month". Scenario A has no data and would otherwise anchor on the
+    current wall-clock date, scoring a different month than scenarios B and C --
+    which would make the scenarios incomparable rather than merely different.
 
     LEAKAGE BOUNDARY: `fit` is train+val only. The test row is never included,
     verified by `_assert_no_leakage` below."""
@@ -273,10 +273,10 @@ def _brand_history(category, brand):
 
 
 def _assert_no_leakage(fit, test, category, brand):
-    """Hard-fail if the held-out month reached the data an arm is given.
+    """Hard-fail if the held-out month reached the data a scenario is given.
 
     A silent leak here would not produce an error -- it would produce an
-    impressively accurate Arm B, which is exactly the result the thesis is
+    impressively accurate Scenario B, which is exactly the result the thesis is
     trying to measure. Cheap to check, catastrophic to miss."""
     if not len(test) or not len(fit):
         return
@@ -319,9 +319,9 @@ def _eval_forecast(category, brand):
     lo, hi = float(np.expm1(np.log(max(yhat, 1e-9)) - q90)), float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
     # Confidence tier, using the SAME formula as forecast_service._tier so the
     # tool and the serving layer cannot disagree about the same brand. Without
-    # it the tool silently omitted a field the prompt asks for, and Arm A
+    # it the tool silently omitted a field the prompt asks for, and Scenario C
     # answered "confidence tier not returned by the forecast tool" -- which
-    # undercuts traceability, the one advantage Arm A is claimed to have.
+    # undercuts traceability, the one advantage Scenario C is claimed to have.
     rel = (hi - lo) / max(yhat, 1e-9)
     conf = float(np.clip(100 * (0.5 * (1 / (1 + rel)) + 0.5 * (1 - min(q90, 1))), 0, 100))
     tier = "High" if conf >= 70 else ("Moderate" if conf >= 40 else "Low")
@@ -341,8 +341,8 @@ def _eval_forecast(category, brand):
 # ---------------------------------------------------------------------------
 # Shared OpenAI plumbing
 # ---------------------------------------------------------------------------
-# All three arms go through _usage() so token accounting is identical across
-# them. Any per-arm difference in how cost is measured would confound the cost
+# All three scenarios go through _usage() so token accounting is identical across
+# them. Any per-scenario difference in how cost is measured would confound the cost
 # comparison, which B-DEC-6 promoted to a primary outcome.
 FAILURE_CLASSES = ("ok", "code_error", "no_forecast", "timeout", "implausible")
 
@@ -353,7 +353,7 @@ def _client():
 
 
 def _usage(r, containers=0):
-    """Extract the token counts every arm reports. `reasoning_tokens` is broken
+    """Extract the token counts every scenario reports. `reasoning_tokens` is broken
     out because it is billed at the OUTPUT rate while being invisible in the
     answer -- in testing it was the majority of output tokens."""
     u = r.usage
@@ -387,11 +387,11 @@ def _classify(forecast, hit_limit=False, error=None, actual=None):
     return "ok"
 
 
-def _trace(arm, extra=None):
+def _trace(scenario, extra=None):
     """Provenance recorded per run (SRQ2 traceability). Every free parameter that
     changes cost or behaviour is captured, so a result can be tied to exactly the
     configuration that produced it."""
-    t = {"arm": arm, "model": MODEL, "temperature": TEMPERATURE,
+    t = {"scenario": scenario, "model": MODEL, "temperature": TEMPERATURE,
          "decoding": DECODING_NOTE, "reasoning_effort": REASONING_EFFORT,
          "run_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
     if extra:
@@ -399,19 +399,19 @@ def _trace(arm, extra=None):
     return t
 
 
-def _cache_response(arm, category, brand, rep, payload, out_dir=None):
+def _cache_response(scenario, category, brand, rep, payload, out_dir=None):
     """Persist the full raw response for retrospective inspection.
 
     Paid, non-deterministic runs cannot be reproduced after the fact: the same
     prompt will not return the same reasoning or the same generated code. Anything
     not written down at run time is gone. Stored per run as JSON, including the
-    code Arm B wrote and the reasoning summaries -- these are qualitative
+    code Scenario B wrote and the reasoning summaries -- these are qualitative
     evidence for the write-up, not debug output."""
     base = Path(out_dir) if out_dir else THESIS_RESULTS_SRQ4_DIR
     d = base / "raw_responses"
     d.mkdir(parents=True, exist_ok=True)
     safe = re.sub(r"[^A-Za-z0-9_-]+", "_", f"{category}_{brand}")
-    f = d / f"{arm}__{safe}__rep{rep}.json"
+    f = d / f"{scenario}__{safe}__rep{rep}.json"
     f.write_text(json.dumps(payload, indent=2, default=str),
                  encoding="utf-8", newline="\n")
     return str(f)
@@ -436,9 +436,9 @@ def _response_detail(r):
     return detail
 
 
-def _result(arm, text, err, t0, u, forecast, containers=0, hit_limit=False, trace_extra=None):
-    """Uniform result record. One shape across all three arms so the results
-    writer never has to branch on which arm produced a row."""
+def _result(scenario, text, err, t0, u, forecast, containers=0, hit_limit=False, trace_extra=None):
+    """Uniform result record. One shape across all three scenarios so the results
+    writer never has to branch on which scenario produced a row."""
     return {"answer": text or (err or "(no output)"),
             "latency_s": round(time.perf_counter() - t0, 2),
             "tokens_in": u["tokens_in"], "tokens_out": u["tokens_out"],
@@ -448,7 +448,7 @@ def _result(arm, text, err, t0, u, forecast, containers=0, hit_limit=False, trac
             "cost_usd_est": _cost_usd(u["tokens_in"], u["tokens_out"],
                                       u["tokens_cached_in"], containers),
             "forecast": forecast, "error": err, "hit_limit": hit_limit,
-            "trace": _trace(arm, trace_extra)}
+            "trace": _trace(scenario, trace_extra)}
 
 
 _EMPTY_USAGE = {"tokens_in": 0, "tokens_out": 0, "tokens_cached_in": 0, "tokens_reasoning": 0}
@@ -469,15 +469,15 @@ def _parse_sentinel(text, sentinel="FORECAST"):
 
 
 # ---------------------------------------------------------------------------
-# Arm A -- dedicated-model tool (the thesis artefact)
+# Scenario C -- dedicated-model tool (the thesis artefact)
 # ---------------------------------------------------------------------------
-def run_system_a(category, brand, question=None):
+def run_scenario_c(category, brand, question=None):
     """The LLM calls `forecast_demand`, backed by the pre-trained XGBoost. It
     writes no code; the number comes from the dedicated model."""
     c = _client()
     tools = [P.FORECAST_TOOL_SCHEMA]
     _, _, target = _brand_history(category, brand)
-    task = question or P.arm_a_prompt(brand, category, target)
+    task = question or P.scenario_c_prompt(brand, category, target)
     msgs = [{"role": "user", "content": task}]
     t0 = time.perf_counter()
     tot = dict(_EMPTY_USAGE)
@@ -516,7 +516,7 @@ def run_system_a(category, brand, question=None):
                             and str(args.get("brand", "")).upper() == str(brand).upper()),
                         "tool_output": out})
                     # The tool output is authoritative: whatever the LLM then says
-                    # in prose, the dedicated model's number is what Arm A is
+                    # in prose, the dedicated model's number is what Scenario C is
                     # credited with.
                     tool_outputs.append(out)
                     if out.get("forecast_units") is not None:
@@ -533,7 +533,7 @@ def run_system_a(category, brand, question=None):
         err = str(e)[:300]
 
     forecast = tool_forecast if tool_forecast is not None else _extract_number(text)
-    res = _result("A_dedicated", text, err, t0, tot, forecast,
+    res = _result("C_model", text, err, t0, tot, forecast,
                    containers=0, hit_limit=hit_limit,
                    trace_extra={"tool": "forecast_demand", "wrote_code": False,
                                 "target_month": target,
@@ -546,14 +546,14 @@ def run_system_a(category, brand, question=None):
 
 
 # ---------------------------------------------------------------------------
-# Arm B -- code-as-action (the LLM writes and runs its own forecasting code)
+# Scenario B -- code-as-action (the LLM writes and runs its own forecasting code)
 # ---------------------------------------------------------------------------
-def run_system_b(category, brand, question=None, sentinel="FORECAST"):
+def run_scenario_b(category, brand, question=None, sentinel="FORECAST"):
     """The LLM gets the brand history and must write + run its own code in the
     hosted Code Interpreter sandbox.
 
     Code Interpreter, not the hosted shell (B-DEC-6): a shell would grant
-    arbitrary terminal access that arms A and C do not have -- a second variable
+    arbitrary terminal access that scenarios A and C do not have -- a second variable
     moving -- and would let the model work around its own failures, suppressing
     the failure taxonomy that is itself part of the result.
 
@@ -562,10 +562,10 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
     c = _client()
     fit, _, target = _brand_history(category, brand)
     csv = fit.to_csv(index=False)
-    # Name the target month rather than saying "next month": arms A, B and C must
+    # Name the target month rather than saying "next month": scenarios A, B and C must
     # all be scored on the SAME month, and only the data tells us which one it is.
     prompt = (question if question
-              else P.arm_b_prompt(brand, category, target, csv, sentinel))
+              else P.scenario_b_prompt(brand, category, target, csv, sentinel))
     t0 = time.perf_counter()
     err = None
     text = ""
@@ -587,7 +587,7 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
 
     forecast, via_sentinel = _parse_sentinel(text, sentinel)
     containers = 0 if err else 1
-    res = _result("B_codeaction", text, err, t0, u, forecast,
+    res = _result("B_data", text, err, t0, u, forecast,
                    containers=containers,
                    trace_extra={"tool": "code_interpreter", "wrote_code": True,
                                 "target_month": target, "history_months": len(fit),
@@ -601,9 +601,9 @@ def run_system_b(category, brand, question=None, sentinel="FORECAST"):
 
 
 # ---------------------------------------------------------------------------
-# Arm C -- no firm data (the floor, and the first rung of the ladder)
+# Scenario A -- no firm data (the floor, and the first rung of the ladder)
 # ---------------------------------------------------------------------------
-def run_system_c(category, brand, question=None):
+def run_scenario_a(category, brand, question=None):
     """The LLM answers with no access to the Nielsen data at all.
 
     NOT a null condition (B-DEC-5). With web search it will find annual reports,
@@ -611,7 +611,7 @@ def run_system_c(category, brand, question=None):
     wrong that number is -- and how confidently wrong -- is the finding, and it
     answers the practitioner question "why not just ask ChatGPT?".
 
-    Documented limitation: because this arm can browse, it is not a clean
+    Documented limitation: because this scenario can browse, it is not a clean
     no-information floor. It may encounter genuinely relevant public data. That
     UNDERSTATES the measured value of data access (C->B), so the bias runs
     conservative with respect to our own claim."""
@@ -621,12 +621,12 @@ def run_system_c(category, brand, question=None):
     # period runs 2026-01..2026-07 and this is being run later). Two consequences,
     # both handled here:
     #   1. "next month" would anchor on today's date and score a DIFFERENT month
-    #      than arms A and B -- so the month is named explicitly.
-    #   2. The figure may be publicly reported by now, so the arm is instructed to
+    #      than scenarios B and C -- so the month is named explicitly.
+    #   2. The figure may be publicly reported by now, so the scenario is instructed to
     #      ESTIMATE rather than retrieve. This is a mitigation, not a guarantee;
     #      `retrieval_suspected` below flags runs to inspect, and the limitation
     #      is documented in the write-up.
-    prompt = question if question else P.arm_c_prompt(brand, category, target)
+    prompt = question if question else P.scenario_a_prompt(brand, category, target)
     t0 = time.perf_counter()
     err = None
     text = ""
@@ -646,11 +646,11 @@ def run_system_c(category, brand, question=None):
         err = str(e)[:300]
 
     forecast, via_sentinel = _parse_sentinel(text)
-    # If the answer cites the target month itself, the arm may have retrieved the
+    # If the answer cites the target month itself, the scenario may have retrieved the
     # figure rather than estimated it. Flagged, not dropped -- the decision to
     # exclude a run belongs in analysis, on inspected evidence.
     retrieval_suspected = bool(target and target in (text or ""))
-    res = _result("C_nodata", text, err, t0, u, forecast, containers=0,
+    res = _result("A_plain", text, err, t0, u, forecast, containers=0,
                    trace_extra={"tool": "web_search", "wrote_code": False,
                                 "used_web": used_web, "via_sentinel": via_sentinel,
                                 "target_month": target,
@@ -660,11 +660,13 @@ def run_system_c(category, brand, question=None):
     return res
 
 
-# Arm order is the information ladder (B-DEC-5): C -> B measures what data access
-# buys, B -> A measures what model integration adds on top.
-ARMS = (("A_dedicated", run_system_a),
-        ("B_codeaction", run_system_b),
-        ("C_nodata", run_system_c))
+
+# Ordered as the information ladder, weakest first:
+#   A -> B  adds the firm's data and code execution
+#   B -> C  adds the trained forecasting model
+SCENARIOS = (("A_plain", run_scenario_a),
+             ("B_data", run_scenario_b),
+             ("C_model", run_scenario_c))
 
 
 def _extract_number(text):
@@ -701,7 +703,7 @@ def _select_brands(per_cat=(4, 4, 4, 3)):
     return picks
 
 
-def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
+def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=None,
              budget_usd=None):
     """Run the experiment and write runs.csv + summary.md.
 
@@ -710,11 +712,11 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
     flush."""
     OUT = Path(out_dir) if out_dir else THESIS_RESULTS_SRQ4_DIR
     OUT.mkdir(parents=True, exist_ok=True)
-    arms = arms or ARMS
+    scenarios = scenarios or SCENARIOS
     brands = _select_brands(brands_per_cat)
     t_start = time.time()
-    n_total = len(brands) * repeats * len(arms)
-    print(f"SRQ4: {len(brands)} brands x {repeats} repeats x {len(arms)} arms "
+    n_total = len(brands) * repeats * len(scenarios)
+    print(f"SRQ4: {len(brands)} brands x {repeats} repeats x {len(scenarios)} scenarios "
           f"= {n_total} runs, model={MODEL}")
     if budget_usd:
         print(f"      budget cap: ${budget_usd:.2f} (estimated spend; stops mid-run)")
@@ -728,7 +730,7 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
         if not actual:
             print(f"  skip {cat}/{brand}: no held-out actual")
             continue
-        for sysname, fn in arms:
+        for sysname, fn in scenarios:
             for rep in range(repeats):
                 try:
                     r = fn(cat, brand)
@@ -787,7 +789,7 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
                       f"lat={r.get('latency_s')} est=${r.get('cost_usd_est') or 0:.4f} "
                       f"cum=${spent:.2f}")
                 # Hard budget stop. Estimated cost per run varies by an order of
-                # magnitude between arms and brands, so a pre-run projection is
+                # magnitude between scenarios and brands, so a pre-run projection is
                 # not a safeguard -- this is. Partial results are already on
                 # disk from the per-brand checkpoint.
                 if budget_usd and spent >= budget_usd:
@@ -809,12 +811,12 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), arms=None, out_dir=None,
 
 
 def _write_summary(df, OUT, repeats, brands, t_start):
-    """Aggregate per arm and write summary.md.
+    """Aggregate per scenario and write summary.md.
 
-    Reports the failure taxonomy alongside accuracy: an arm that answers 60% of
+    Reports the failure taxonomy alongside accuracy: a scenario that answers 60% of
     the time with great accuracy is not better than one that always answers, and
     a table showing only mean APE would hide that."""
-    arm_names = [a for a, _ in ARMS if a in set(df.system)]
+    arm_names = [a for a, _ in SCENARIOS if a in set(df.system)]
     agg = {}
     for sysname in arm_names:
         s = df[df.system == sysname]
@@ -846,17 +848,17 @@ def _write_summary(df, OUT, repeats, brands, t_start):
                          else fmt.format(v) + pct)
         return f"| {label} | " + " | ".join(cells) + " |"
 
-    hdr = {"A_dedicated": "A — dedicated model",
-           "B_codeaction": "B — code-as-action",
-           "C_nodata": "C — no firm data"}
+    hdr = {"C_model": "A — dedicated model",
+           "B_data": "B — code-as-action",
+           "A_plain": "C — no firm data"}
     lines = [
         "# SRQ4 — does model availability improve an LLM's forecasts?", "",
-        f"{len(brands)} brands x {repeats} repeats x {len(arm_names)} arms. "
+        f"{len(brands)} brands x {repeats} repeats x {len(arm_names)} scenarios. "
         f"Model `{MODEL}`, reasoning effort `{REASONING_EFFORT}`. "
         f"Decoding: {DECODING_NOTE}. "
         "Forecasting the held-out test month from train+val.", "",
-        "The arms are an information ladder: **C -> B** measures what data access buys, "
-        "**B -> A** measures what model integration adds on top.", "",
+        "The scenarios are an information ladder: **A -> B** measures what data access buys, "
+        "**B -> C** measures what model integration adds on top.", "",
         "| Metric | " + " | ".join(hdr.get(a, a) for a in arm_names) + " |",
         "|---|" + "---|" * len(arm_names),
         row("Runs", "n", "{:.0f}"),
@@ -874,7 +876,7 @@ def _write_summary(df, OUT, repeats, brands, t_start):
         "",
         "## Outcome taxonomy",
         "",
-        "Failures are reported as classes, not averaged away. An arm that answers "
+        "Failures are reported as classes, not averaged away. An scenario that answers "
         "60% of the time is not comparable to one that always answers, and a single "
         "implausible value destroys a mean (P0038 F72).", "",
         "| Outcome | " + " | ".join(hdr.get(a, a) for a in arm_names) + " |",
@@ -911,15 +913,16 @@ def _write_summary(df, OUT, repeats, brands, t_start):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="SRQ4 experiment: three-arm information ladder")
+    ap = argparse.ArgumentParser(description="SRQ4 experiment: three-scenario information ladder")
     ap.add_argument("--demo", action="store_true",
-                    help="one brand through all three arms, no repeats -- the smoke test")
+                    help="one brand through all three scenarios, no repeats -- the smoke test")
     ap.add_argument("--full", action="store_true", help="the full experiment")
     ap.add_argument("--repeats", type=int, default=5)
     ap.add_argument("--brands-per-cat", type=int, nargs=4, default=[4, 4, 4, 3],
                     help="brands drawn per category, in CAT_FILE order")
-    ap.add_argument("--arms", default="A,B,C",
-                    help="comma-separated subset of A,B,C")
+    ap.add_argument("--scenarios", default="A,B,C",
+                    help="comma-separated subset of A (plain LLM), "
+                         "B (data + code), C (trained model)")
     ap.add_argument("--category", default="CSD")
     ap.add_argument("--brand", default="HARBOE")
     ap.add_argument("--out", default=None, help="output dir (default: SRQ4 results dir)")
@@ -927,16 +930,17 @@ def main():
                     help="stop once estimated spend reaches this many USD")
     a = ap.parse_args()
 
-    want = {s.strip().upper() for s in a.arms.split(",") if s.strip()}
-    arms = tuple((n, f) for n, f in ARMS if n[0] in want)
-    if not arms:
-        raise SystemExit(f"--arms {a.arms!r} selected no arms; expected some of A,B,C")
+    want = {s.strip().upper() for s in a.scenarios.split(",") if s.strip()}
+    scenarios = tuple((n, f) for n, f in SCENARIOS if n[0] in want)
+    if not scenarios:
+        raise SystemExit(f"--scenarios {a.scenarios!r} selected nothing; "
+                         "expected some of A,B,C")
 
     if a.full:
-        run_full(a.repeats, tuple(a.brands_per_cat), arms, a.out, a.budget)
+        run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget)
         return
 
-    # Demo: one brand, one repeat, every selected arm. This is the smoke test --
+    # Demo: one brand, one repeat, every selected scenario. This is the smoke test --
     # it reveals what a run costs and how long it takes before committing to the
     # full schedule.
     t_start = time.time()
@@ -945,7 +949,7 @@ def main():
     print(f"    model={MODEL} reasoning={REASONING_EFFORT} ({DECODING_NOTE})")
     print(f"    held-out actual = {actual:,.0f}\n")
     est = 0.0
-    for name, fn in arms:
+    for name, fn in scenarios:
         print(f">>> {name}")
         r = fn(a.category, a.brand)
         cls = _classify(r.get("forecast"), r.get("hit_limit"), r.get("error"), actual)

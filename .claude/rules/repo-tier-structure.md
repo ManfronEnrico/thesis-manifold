@@ -52,6 +52,22 @@ three distinct concerns:
 | `model_serving/` | making a trained model reachable at inference time |
 | `scenario_setup/` | running scenarios against those models, and logging what happened |
 
+`03_thesis_modelling/notebooks/` and `03_thesis_modelling/prompts/` no longer
+exist -- both were archived 2026-08-19 to `03_thesis_modelling/.archive/`, and
+their `PATHS.py` constants were removed rather than left resolving to missing
+directories. The notebooks predate the four-category scope (6 of 10 reference
+the dropped `totalbeer`), the H=3 horizon and the 2026-08-18 leakage fixes. The
+prompts folder holds Enrico's SRQ2/SRQ3 set and a partially-executed human-eval
+pilot -- a different research question from SRQ4, gitignored, and existing only
+on the machine that produced it. Read `.archive/README.md` before touching
+either.
+
+The three scenarios are named A (plain LLM), B (LLM + data & code execution),
+C (LLM + trained models) -- ordered as an information ladder of increasing
+capability, so A -> B measures what data access buys and B -> C measures what
+the thesis artefact adds. Do not reintroduce the earlier "arm" vocabulary or the
+earlier lettering, which ran the other way.
+
 `srq4_experiment.py` and `srq4_tier2.py` moved out of `model_training/` because
 they train nothing -- they run the three-arm SRQ4 comparison against models
 trained elsewhere. When adding a script, ask which of the three verbs it does:

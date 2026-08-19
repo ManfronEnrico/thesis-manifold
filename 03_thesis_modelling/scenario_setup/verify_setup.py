@@ -6,17 +6,17 @@ unless --live is passed.
 WHY: a paid, non-deterministic run that fails 40 observations in has wasted both
 money and the runs already completed. Every failure mode found so far --
 missing credentials, a stale module path, an unsupported decoding parameter, an
-arm scored on the wrong month -- was detectable before spending anything.
+scenario scored on the wrong month -- was detectable before spending anything.
 
 Checks, in order of what they would cost you to discover late:
 
   1. Credentials resolve, and the two key scopes are actually distinct
   2. The pinned model exists on this account
   3. Feature matrices load for every category
-  4. LEAKAGE: the held-out month never appears in the data an arm receives
-  5. Every arm is scored on the same target month
+  4. LEAKAGE: the held-out month never appears in the data a scenario receives
+  5. Every scenario is scored on the same target month
   6. The forecast tool returns a complete payload
-  7. (--live) one real call per arm, to confirm the API contract still holds
+  7. (--live) one real call per scenario, to confirm the API contract still holds
 
 Usage:
     python 03_thesis_modelling/scenario_setup/verify_setup.py
@@ -69,7 +69,7 @@ class Checks:
 def main():
     ap = argparse.ArgumentParser(description="SRQ4 pre-flight verification")
     ap.add_argument("--live", action="store_true",
-                    help="also make one real API call per arm (~$0.30)")
+                    help="also make one real API call per scenario (~$0.30)")
     ap.add_argument("--category", default="CSD")
     ap.add_argument("--brand", default="HARBOE")
     a = ap.parse_args()
@@ -87,7 +87,7 @@ def main():
         proj = os.environ.get("OPENAI_API_KEY")
         adm = os.environ.get("OPENAI_ADMIN_KEY")
         if not proj:
-            return False, "OPENAI_API_KEY absent. Needed by every arm."
+            return False, "OPENAI_API_KEY absent. Needed by every scenario."
         if not adm:
             return True, ("OPENAI_ADMIN_KEY absent -- runs will work, but cost "
                           "cannot be reconciled against actual billing.")
@@ -158,7 +158,7 @@ def main():
     c.run("feature matrices present", matrices)
 
     def leakage():
-        # The check that matters most: a leak does not raise, it just makes Arm B
+        # The check that matters most: a leak does not raise, it just makes Scenario B
         # look brilliant -- the exact quantity under measurement.
         problems, checked = [], 0
         for cat in m.CAT_FILE:
@@ -180,7 +180,7 @@ def main():
         return (not problems), (f"{checked} brand-series clean, target month absent "
                                 f"from every history" if not problems
                                 else "; ".join(problems[:4]))
-    c.run("LEAKAGE: target month excluded from arm data", leakage)
+    c.run("LEAKAGE: target month excluded from scenario data", leakage)
 
     def same_month():
         # Arms scored on different months are incomparable, not merely different.
@@ -188,7 +188,7 @@ def main():
         tool = m._eval_forecast(a.category, a.brand)
         ok = tool.get("forecast_month") == t
         return ok, (f"history target={t}, tool forecast_month={tool.get('forecast_month')}")
-    c.run("all arms target the same month", same_month)
+    c.run("all scenarios target the same month", same_month)
 
     print("\n-- tool contract -------------------------------------------------")
 
@@ -207,16 +207,16 @@ def main():
         sys.path.insert(0, str(HERE))
         import prompts as P
         _, _, t = m._brand_history(a.category, a.brand)
-        pa = P.arm_a_prompt(a.brand, a.category, t)
-        pc = P.arm_c_prompt(a.brand, a.category, t)
-        # Every arm must name the month; "next month" is what broke Arm C before.
+        pa = P.scenario_c_prompt(a.brand, a.category, t)
+        pc = P.scenario_a_prompt(a.brand, a.category, t)
+        # Every scenario must name the month; "next month" is what broke Scenario A before.
         ok = t in pa and t in pc and "next month" not in pc.lower()
-        return ok, f"target {t} named in every arm prompt"
+        return ok, f"target {t} named in every scenario prompt"
     c.run("prompts name the target month", prompts_module)
 
     if a.live:
         print("\n-- live API (paid) -----------------------------------------------")
-        for name, fn in m.ARMS:
+        for name, fn in m.SCENARIOS:
             def call(name=name, fn=fn):
                 r = fn(a.category, a.brand)
                 if r.get("error"):

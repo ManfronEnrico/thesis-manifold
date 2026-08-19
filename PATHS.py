@@ -179,29 +179,42 @@ Example:
     print(THESIS_MODELLING_DIR.resolve())  # C:\\dev\\thesis-manifold\\03_thesis_modelling
 """
 
-THESIS_MODELLING_NOTEBOOKS_DIR: Path = THESIS_MODELLING_DIR / "notebooks"
-"""
-Directory containing all Jupyter notebooks for modelling work.
+# REMOVED 2026-08-19: THESIS_MODELLING_NOTEBOOKS_DIR and
+# THESIS_MODELLING_PROMPTS_DIR. Both directories were archived to
+# 03_thesis_modelling/.archive/ and the constants would have resolved to paths
+# that no longer exist.
+#   notebooks/ -> .archive/notebooks_srq1_srq2_2026-08/  (6 of 10 referenced
+#                 `totalbeer`, the fifth category dropped by DEC-GRAIN; they also
+#                 predate the H=3 horizon and the 2026-08-18 leakage fixes)
+#   prompts/   -> .archive/prompts_srq2_2026-08/  (Enrico's SRQ2/SRQ3 prompt set
+#                 and partially-executed human-eval pilot -- a DIFFERENT research
+#                 question from SRQ4; see the archive README before reusing)
+# SRQ4 prompts now live in 03_thesis_modelling/scenario_setup/prompts.py, as
+# code rather than data, so they are diffable and reviewable alongside the
+# harness that sends them.
 
-Houses notebooks organized by research question (SRQ_1, SRQ_2, etc.) and
-modelling type. Each notebook contains code, exploration, and results for
-specific analytical tasks.
+THESIS_MODELLING_SCENARIO_DIR: Path = THESIS_MODELLING_DIR / "scenario_setup"
+"""
+Directory containing the scenario-testing harness for SRQ4.
+
+Holds the experiment orchestration, the prompt definitions, the pre-flight
+verification and the run-log inspection tooling. This is the third of the three
+modelling concerns: model_training/ trains, model_serving/ serves, and
+scenario_setup/ runs scenarios against those models and logs what happened.
 
 Example:
-    from PATHS import THESIS_MODELLING_NOTEBOOKS_DIR
-    notebook_path = THESIS_MODELLING_NOTEBOOKS_DIR / "SRQ_1" / "modelling.ipynb"
+    from PATHS import THESIS_MODELLING_SCENARIO_DIR
+    prompts = THESIS_MODELLING_SCENARIO_DIR / "prompts.py"
 """
 
-THESIS_MODELLING_PROMPTS_DIR: Path = THESIS_MODELLING_DIR / "prompts"
+THESIS_MODELLING_ARCHIVE_DIR: Path = THESIS_MODELLING_DIR / ".archive"
 """
-Directory containing prompt templates and configurations.
+Superseded modelling artefacts, retained as provenance rather than deleted.
 
-Stores reusable prompts for system interactions, model queries, and other
-computational tasks used across the thesis modelling.
-
-Example:
-    from PATHS import THESIS_MODELLING_PROMPTS_DIR
-    prompts_file = THESIS_MODELLING_PROMPTS_DIR / "system_prompts.json"
+Nothing here is on a live code path, but at least one item (the SRQ2/SRQ3
+human-eval pilot) holds results that were never reproduced elsewhere and is
+gitignored, so it exists only on the machine that generated it. Read
+.archive/README.md before deleting anything.
 """
 
 THESIS_MODELLING_TRAINING_DIR: Path = THESIS_MODELLING_DIR / "model_training"
@@ -728,9 +741,9 @@ def print_all_paths(verbose: bool = True) -> None:
         print(f"THESIS_RESEARCH_QUESTIONS_DIR: {THESIS_RESEARCH_QUESTIONS_DIR.resolve()}")
         print(f"THESIS_RESEARCH_LITERATURE_DIR: {THESIS_RESEARCH_LITERATURE_DIR.resolve()}")
         print(f"THESIS_MODELLING_DIR: {THESIS_MODELLING_DIR.resolve()}")
-        print(f"THESIS_MODELLING_NOTEBOOKS_DIR: {THESIS_MODELLING_NOTEBOOKS_DIR.resolve()}")
-        print(f"THESIS_MODELLING_PROMPTS_DIR: {THESIS_MODELLING_PROMPTS_DIR.resolve()}")
         print(f"THESIS_MODELLING_TRAINING_DIR: {THESIS_MODELLING_TRAINING_DIR.resolve()}")
+        print(f"THESIS_MODELLING_SCENARIO_DIR: {THESIS_MODELLING_SCENARIO_DIR.resolve()}")
+        print(f"THESIS_MODELLING_ARCHIVE_DIR: {THESIS_MODELLING_ARCHIVE_DIR.resolve()}")
         print(f"THESIS_MODELLING_SERVING_DIR: {THESIS_MODELLING_SERVING_DIR.resolve()}")
         print(f"THESIS_MODELLING_SERVING_SYSTEM_A_DIR: {THESIS_MODELLING_SERVING_SYSTEM_A_DIR.resolve()}")
         print(f"THESIS_MODELLING_SERVING_SYSTEM_B_DIR: {THESIS_MODELLING_SERVING_SYSTEM_B_DIR.resolve()}")
