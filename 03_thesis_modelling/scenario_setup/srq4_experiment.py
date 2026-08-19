@@ -676,20 +676,61 @@ def _tar(vals, tol=0.01):
     return best / len(v)
 
 
-def _select_brands(per_cat=(4, 4, 4, 3)):
-    """Top brands by volume that have a held-out test actual, balanced across categories."""
+def _eligible_brands(cat):
+    """Brands in a category that have a held-out test actual, ordered by volume."""
+    slug, tag, sub = CAT_FILE[cat]
+    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
+    has_test = set(fm[fm.split == "test"].dropna(subset=["sales_units"]).brand.str.upper())
+    vol = (fm.dropna(subset=["sales_units"]).groupby("brand").sales_units.sum()
+           .sort_values(ascending=False))
+    return [b for b in vol.index if str(b).upper() in has_test]
+
+
+def _select_brands(per_cat=(4, 4, 4, 3), categories=None, brands=None):
+    """Which (category, brand) pairs to run.
+
+    Three ways to choose, in order of precedence:
+
+      brands=["HARBOE", "PEPSI"]  exactly those, matched case-insensitively
+      categories=["CSD"]          top-N within only those categories
+      per_cat=(4, 4, 4, 3)        top-N per category, all categories
+
+    Naming brands explicitly matters for cost. `per_cat` always counts from the
+    highest-volume brand down, so a partial re-run repeats brands already
+    measured -- an attempt to collect only Coca Cola's Scenario A on 2026-08-19
+    re-ran HARBOE first and exhausted the credit balance before reaching it."""
+    cats = list(categories) if categories else list(CAT_FILE)
+    for c in cats:
+        if c not in CAT_FILE:
+            raise SystemExit(f"unknown category {c!r}; expected some of {sorted(CAT_FILE)}")
+
+    if brands:
+        wanted = {b.strip().upper() for b in brands}
+        picks, seen = [], set()
+        for cat in cats:
+            for b in _eligible_brands(cat):
+                if str(b).upper() in wanted:
+                    picks.append((cat, b))
+                    seen.add(str(b).upper())
+        missing = wanted - seen
+        if missing:
+            # Fail rather than silently run a subset: a typo would otherwise
+            # produce a smaller experiment than the one written down.
+            raise SystemExit(
+                f"no held-out rows for brand(s) {sorted(missing)} in "
+                f"categor{'y' if len(cats) == 1 else 'ies'} {cats}. "
+                f"Use --list-brands to see what is available.")
+        return picks
+
     picks = []
-    for (cat, (slug, tag, sub)), k in zip(CAT_FILE.items(), per_cat):
-        fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
-        has_test = set(fm[fm.split == "test"].dropna(subset=["sales_units"]).brand.str.upper())
-        vol = (fm.dropna(subset=["sales_units"]).groupby("brand").sales_units.sum().sort_values(ascending=False))
-        chosen = [b for b in vol.index if str(b).upper() in has_test][:k]
-        picks += [(cat, b) for b in chosen]
+    for cat, k in zip(cats, per_cat):
+        picks += [(cat, b) for b in _eligible_brands(cat)[:k]]
     return picks
 
 
 def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=None,
-             budget_usd=None):
+             budget_usd=None, categories=None, brands=None, rep_offset=0,
+             dry_run=False):
     """Run the experiment and write runs.csv + summary.md.
 
     Checkpoints after every brand: a crash 40 runs in should not cost the
@@ -698,25 +739,42 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
     OUT = Path(out_dir) if out_dir else THESIS_RESULTS_SRQ4_DIR
     OUT.mkdir(parents=True, exist_ok=True)
     scenarios = scenarios or SCENARIOS
-    brands = _select_brands(brands_per_cat)
+    pairs = _select_brands(brands_per_cat, categories, brands)
     t_start = time.time()
-    n_total = len(brands) * repeats * len(scenarios)
-    print(f"SRQ4: {len(brands)} brands x {repeats} repeats x {len(scenarios)} scenarios "
+    n_total = len(pairs) * repeats * len(scenarios)
+    print(f"SRQ4: {len(pairs)} brands x {repeats} repeats x {len(scenarios)} scenarios "
           f"= {n_total} runs, model={MODEL}")
+    print("      " + ", ".join(f"{c}/{b}" for c, b in pairs))
+    if rep_offset:
+        print(f"      repeat numbering starts at {rep_offset} "
+              "(continuing an earlier run)")
     if budget_usd:
         print(f"      budget cap: ${budget_usd:.2f} (estimated spend; stops mid-run)")
     print()
 
+    if dry_run:
+        # Per-run estimates from measured 2026-08-19 runs. Rough by design --
+        # the point is to catch "this costs 4x what I expected" before spending.
+        est = {"A_plain": 0.4243, "B_data": 0.2664, "C_model": 0.0068}
+        total = sum(est.get(n, 0.2) for n, _ in scenarios) * len(pairs) * repeats
+        print(f"\nDRY RUN -- nothing was sent.")
+        print(f"  {n_total} calls, estimated ${total:.2f} "
+              f"(from measured per-run costs)")
+        for n, _ in scenarios:
+            print(f"    {n:10s} {len(pairs)*repeats:3d} runs x ${est.get(n,0.2):.4f} "
+                  f"= ${len(pairs)*repeats*est.get(n,0.2):6.2f}")
+        return None
+
     rows = []
     spent = 0.0
     stopped = False
-    for cat, brand in brands:
+    for cat, brand in pairs:
         _, actual, target = _brand_history(cat, brand)
         if not actual:
             print(f"  skip {cat}/{brand}: no held-out actual")
             continue
         for sysname, fn in scenarios:
-            for rep in range(repeats):
+            for rep in range(rep_offset, rep_offset + repeats):
                 try:
                     r = fn(cat, brand)
                 except Exception as e:
@@ -791,7 +849,7 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
 
     df = pd.DataFrame(rows)
     df.to_csv(OUT / "runs.csv", index=False)
-    _write_summary(df, OUT, repeats, brands, t_start)
+    _write_summary(df, OUT, repeats, pairs, t_start)
     return df
 
 
@@ -903,8 +961,22 @@ def main():
                     help="one brand through all three scenarios, no repeats -- the smoke test")
     ap.add_argument("--full", action="store_true", help="the full experiment")
     ap.add_argument("--repeats", type=int, default=5)
-    ap.add_argument("--brands-per-cat", type=int, nargs=4, default=[4, 4, 4, 3],
-                    help="brands drawn per category, in CAT_FILE order")
+    ap.add_argument("--brands-per-cat", type=int, nargs="+", default=[4, 4, 4, 3],
+                    help="top-N brands per category, in --categories order")
+    ap.add_argument("--brands", nargs="+", default=None,
+                    help="run EXACTLY these brands (case-insensitive). Overrides "
+                         "--brands-per-cat. Use this for partial re-runs: "
+                         "--brands-per-cat always counts from the top brand down, "
+                         "so it repeats work already paid for.")
+    ap.add_argument("--categories", nargs="+", default=None,
+                    help="restrict to these categories (default: all four)")
+    ap.add_argument("--rep-offset", type=int, default=0,
+                    help="start repeat numbering here, to extend an earlier run "
+                         "without overwriting its files")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="print the plan and its estimated cost; send nothing")
+    ap.add_argument("--list-brands", action="store_true",
+                    help="list eligible brands per category and exit")
     ap.add_argument("--scenarios", default="A,B,C",
                     help="comma-separated subset of A (plain LLM), "
                          "B (data + code), C (trained model)")
@@ -915,6 +987,15 @@ def main():
                     help="stop once estimated spend reaches this many USD")
     a = ap.parse_args()
 
+    if a.list_brands:
+        for cat in (a.categories or list(CAT_FILE)):
+            bs = _eligible_brands(cat)
+            print(f"\n{cat} -- {len(bs)} brands with held-out test rows "
+                  "(highest volume first):")
+            for i, b in enumerate(bs, 1):
+                print(f"  {i:3d}. {b}")
+        return
+
     want = {s.strip().upper() for s in a.scenarios.split(",") if s.strip()}
     scenarios = tuple((n, f) for n, f in SCENARIOS if n[0] in want)
     if not scenarios:
@@ -922,7 +1003,9 @@ def main():
                          "expected some of A,B,C")
 
     if a.full:
-        run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget)
+        run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget,
+                 categories=a.categories, brands=a.brands,
+                 rep_offset=a.rep_offset, dry_run=a.dry_run)
         return
 
     # Demo: one brand, one repeat, every selected scenario. This is the smoke test --

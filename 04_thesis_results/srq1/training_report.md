@@ -10,6 +10,8 @@ This documents the model that **Scenario C** exposes through the `forecast_deman
 
 One row per brand x month. The `split` column is assigned by the preprocessing pipeline as a strict forward chain: every train month precedes every validation month, which precedes every test month. A random split would let the model learn from the future.
 
+**The split is 70/15/15 over MONTHS**, applied before modelling. The row counts below are lower for train because rows without 13 months of history are dropped (no `lag_13`), and those are all early *training* months. CSD is 69.6/15.2/15.2 of all rows and 57.6/21.2/21.2 of modellable rows -- the same split, measured before and after warm-up loss. Quote the month-level figure; the row-level one invites the question of why train looks small.
+
 | Category | Brands | Train | Val | Test | Train span | Val span | Test span |
 |---|---:|---:|---:|---:|---|---|---|
 | CSD | 95 | 1805 | 665 | 665 | 2023-11 to 2025-05 | 2025-06 to 2025-12 | 2026-01 to 2026-07 |
@@ -138,8 +140,8 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "n_calibration_rows": 665,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "n_features": 13,
-  "serve_seconds": 0.5068,
-  "served_at_utc": "2026-08-19T18:14:26+00:00"
+  "serve_seconds": 0.5322,
+  "served_at_utc": "2026-08-19T18:23:07+00:00"
 }
 ```
 
