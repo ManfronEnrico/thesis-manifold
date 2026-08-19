@@ -1,0 +1,34 @@
+{
+  "CSD": {
+    "model_file": "CSD_xgboost.json",
+    "trained_through": "2025-12",
+    "q90_log": 1.1099124228010258,
+    "test_from": "2026-01",
+    "test_through": "2026-07",
+    "trained_at_utc": "2026-08-19T16:02:48+00:00"
+  },
+  "danskvand": {
+    "model_file": "danskvand_xgboost.json",
+    "trained_through": "2026-01",
+    "q90_log": 1.983071181604556,
+    "test_from": "2026-02",
+    "test_through": "2026-07",
+    "trained_at_utc": "2026-08-19T16:02:54+00:00"
+  },
+  "energidrikke": {
+    "model_file": "energidrikke_xgboost.json",
+    "trained_through": "2025-12",
+    "q90_log": 1.7303913381538825,
+    "test_from": "2026-01",
+    "test_through": "2026-07",
+    "trained_at_utc": "2026-08-19T16:03:01+00:00"
+  },
+  "RTD": {
+    "model_file": "RTD_xgboost.json",
+    "trained_through": "2026-01",
+    "q90_log": 1.1716509376477393,
+    "test_from": "2026-02",
+    "test_through": "2026-07",
+    "trained_at_utc": "2026-08-19T16:03:08+00:00"
+  }
+}

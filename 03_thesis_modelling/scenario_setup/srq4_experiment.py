@@ -87,15 +87,16 @@ import importlib.util
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import prompts as P
 
-# forecast_service.py lives in model_serving_interface/, not beside this file.
-# Loaded by explicit path because 03_thesis_modelling/ has no __init__.py, so it
-# is not an importable package.
-_FS_PATH = (ROOT / "model_serving_interface" / "system_a_forecast"
-            / "forecast_service.py")
-if not _FS_PATH.is_file():
-    raise FileNotFoundError(f"System A's backing service is missing: {_FS_PATH}")
-_spec = importlib.util.spec_from_file_location("fs", _FS_PATH)
-fs = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(fs)
+# Scenario C's tool comes from the serving interface. Loaded by explicit path
+# because 03_thesis_modelling/ has no __init__.py, so it is not an importable
+# package. Serving loads persisted models; nothing here trains.
+_FT_PATH = (ROOT / "model_serving_interface" / "scenario_c_forecast"
+            / "forecast_tool.py")
+if not _FT_PATH.is_file():
+    raise FileNotFoundError(
+        f"Scenario C's forecast tool is missing: {_FT_PATH}")
+_spec = importlib.util.spec_from_file_location("forecast_tool", _FT_PATH)
+_ft = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_ft)
 
 # ---------------------------------------------------------------------------
 # Model + pricing (DEC-LLM 2026-07-12, confirmed B-DEC-1 2026-08-19)
@@ -296,105 +297,20 @@ def _assert_no_leakage(fit, test, category, brand):
             f"at or after the target month")
 
 
-def _eval_forecast(category, brand):
-    """Scenario C's tool: train tuned XGBoost and predict the first test month —
-    the same target month Scenario B is asked for, so the comparison is fair.
+def _eval_forecast(category, brand, month=None):
+    """Scenario C's tool: delegate to the serving interface.
 
-    Instrumented for peak RAM because the thesis claims these models run inside a
-    compute-limited environment (~8 GB per query). That claim needs a measured
-    number attached to the code path actually used at serve time, not only to the
-    offline profiling script."""
-    import json as _json
-    import tracemalloc
-    from xgboost import XGBRegressor
-    # tracemalloc measures PYTHON allocations only. XGBoost does most of its work
-    # in native C++ memory that this cannot see, so treat the figure as a lower
-    # bound on the Python side; srq1_profiling.py reports the same quantity for
-    # the offline path, and the two are directly comparable to each other.
-    _tm_started = not tracemalloc.is_tracing()
-    if _tm_started:
-        tracemalloc.start()
-    _t_fit = time.perf_counter()
-    slug, tag, sub = CAT_FILE[category]
-    params = _json.loads((THESIS_RESULTS_SRQ1_DIR / "tuned_params.json").read_text())
-    pk = "brand"
-    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
-    d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"])
-    feats = available_features(fm)
-    tr = d[d.split == "train"].sort_values("period_index")
-    va = d[d.split == "val"].sort_values("period_index")
-    te = d[d.split == "test"]
+    This used to duplicate the whole training + calibration path and refit the
+    model on EVERY tool call -- ~1.1 s of identical work per call, and a second
+    copy of logic that had already drifted (its conformal calibration was
+    in-sample, making intervals 3.9x too narrow, long after the same bug was
+    fixed in forecast_service.py).
 
-    # SPLIT CONFORMAL REQUIRES A CALIBRATION SET THE MODEL HAS NEVER SEEN.
-    #
-    # This previously fit on train+val and then measured residuals on val -- rows
-    # the model had already memorised. Measured on CSD 2026-08-19, that made the
-    # 90% interval 3.9x too narrow (q90 0.305 in-sample vs 1.194 honest): a 4.30M
-    # forecast reported [3.17M - 5.84M] when the honest interval is
-    # [1.30M - 14.21M].
-    #
-    # This is the same defect P0037 F10 fixed in forecast_service.py, reintroduced
-    # here because this function duplicates that logic instead of calling it.
-    # Scenario C's claimed advantage is calibrated uncertainty, so an interval
-    # that is silently 4x too tight attacks the thesis at its strongest point.
-    #
-    # Fit on TRAIN, calibrate on VAL, leave TEST untouched.
-    m = XGBRegressor(random_state=42, verbosity=0, n_jobs=-1,
-                     **params.get(f"{pk}/{category}/XGBoost", {}))
-    m.fit(tr[feats].fillna(0.0), tr["log_sales_units"].values)
-    res = np.abs(va["log_sales_units"].values - m.predict(va[feats].fillna(0.0)))
-    # No validation rows means no honest calibration is possible; 0.5 is a marker
-    # value, not an estimate, and the confidence tier it produces should be read
-    # as "unknown" rather than trusted.
-    q90 = float(np.quantile(res, 0.90)) if len(res) else 0.5
-    trained_on = "train" if len(res) else "train (uncalibrated)"
-    row = te[te.brand.str.upper() == brand.upper()].sort_values("period_index").head(1)
-    if not len(row):
-        # Stop tracing on this path too: leaving it on would make the NEXT call's
-        # peak include this one's allocations.
-        if _tm_started:
-            tracemalloc.stop()
-        return {"status": "not_found", "brand": brand}
-    yhat = float(np.clip(np.expm1(m.predict(row[feats].fillna(0.0))[0]), 0, None))
-    lo, hi = float(np.expm1(np.log(max(yhat, 1e-9)) - q90)), float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
-    # Confidence tier, using the SAME formula as forecast_service._tier so the
-    # tool and the serving layer cannot disagree about the same brand. Without
-    # it the tool silently omitted a field the prompt asks for, and Scenario C
-    # answered "confidence tier not returned by the forecast tool" -- which
-    # undercuts traceability, the one advantage Scenario C is claimed to have.
-    rel = (hi - lo) / max(yhat, 1e-9)
-    conf = float(np.clip(100 * (0.5 * (1 / (1 + rel)) + 0.5 * (1 - min(q90, 1))), 0, 100))
-    tier = "High" if conf >= 70 else ("Moderate" if conf >= 40 else "Low")
-    target_month = (f"{int(row.iloc[0]['period_year'])}-"
-                    f"{int(row.iloc[0]['period_month']):02d}")
-    # Capture before building the return dict, so the figure covers fit +
-    # calibrate + predict and nothing after it.
-    _elapsed = time.perf_counter() - _t_fit
-    _peak = tracemalloc.get_traced_memory()[1]
-    if _tm_started:
-        tracemalloc.stop()
-
-    trained_through = (f"{int(tr.iloc[-1]['period_year'])}-"
-                       f"{int(tr.iloc[-1]['period_month']):02d}") if len(tr) else None
-    calibrated_through = (f"{int(va.iloc[-1]['period_year'])}-"
-                          f"{int(va.iloc[-1]['period_month']):02d}") if len(va) else None
-    return {"status": "ok", "category": category, "brand": brand,
-            "forecast_units": round(yhat, 1), "interval_90": [round(lo, 1), round(hi, 1)],
-            "confidence": round(conf, 1), "confidence_tier": tier,
-            "model": "XGBoost(tuned)", "forecast_month": target_month,
-            # Provenance the agent can quote back: what the model saw, what the
-            # interval was calibrated on, and how. SRQ2 defines traceability as a
-            # recorded mapping from tool call -> forecast -> recommendation, so
-            # these fields are the claim, not decoration.
-            "trained_through": trained_through, "trained_on": trained_on,
-            "calibrated_on": "val", "calibrated_through": calibrated_through,
-            "n_train_rows": int(len(tr)), "n_calibration_rows": int(len(va)),
-            "features_used": len(feats),
-            # Compute cost of producing this number, for the 8 GB claim.
-            "peak_ram_mb": round(_peak / 1e6, 2),
-            "compute_seconds": round(_elapsed, 3),
-            "interval_method": "split conformal, 90% quantile of validation residuals",
-            "horizon": "next (held-out) month"}
+    Training now happens once in model_training/train_and_persist.py; serving
+    loads the persisted booster. One implementation, one place to fix, and
+    Scenario C's measured latency stops including training time that a real
+    deployment would never pay."""
+    return _ft.forecast_demand(category, brand, month)
 
 
 # ---------------------------------------------------------------------------

@@ -2,6 +2,23 @@
 """
 SRQ2 synthesis engine (deterministic core) — multi-model -> confidence-scored output.
 
+STATUS 2026-08-19: STILL TRAINS ITS OWN MODELS. Unlike scenario_c_forecast/,
+which loads the boosters persisted by model_training/train_and_persist.py, this
+module fits Ridge/LightGBM/XGBoost itself. That is a third copy of the training
+path and it should be migrated to load the persisted models before any number
+from it is reported.
+
+It also uses a DIFFERENT confidence formula than the served tool:
+    here            30% inter-model agreement + 40% interval tightness + 30% accuracy
+    forecast_tool   50% interval tightness + 50% (1 - q90)
+Both are defensible; having both is not. The two must be reconciled, or the
+thesis has to say which one it reports and why.
+
+Nothing currently imports this module. It is retained because the ENSEMBLE idea
+it implements -- inter-model agreement as a trust signal -- is the part of SRQ2
+that the single-model tool does not cover, and it may still earn a place in the
+write-up. Do not quote its numbers until the two issues above are resolved.
+
 Implements the non-LLM part of the Synthesis Agent (Ch7 §7.2): per category, train
 the model ladder (Ridge/LightGBM/XGBoost) with tuned configs on the SELECTED
 granularity (Ch6 §6.5.6), produce per-series test forecasts, then for each series:

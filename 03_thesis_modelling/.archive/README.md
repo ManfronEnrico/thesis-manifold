@@ -125,3 +125,39 @@ its problems.
 - `.archive/grain_artifacts_p0035_2026-08/` — chain/region grain artefacts (repo root)
 - `05_thesis_writing/notes/srq4-experiment-design-rationale.md` — why the SRQ4 prompt set replaced the archetype taxonomy
 - `user-docs/handovers/2026-07-13_harness-and-srq4-decisions-handover-brian.md` — DEC-GRAIN, DEC-ARMS, the L0–L3 tier design
+
+### `srq2_agent.py` — archived 2026-08-19
+
+SRQ2 LLM layer: Synthesis Agent recommendations + LLM-as-Judge scoring.
+
+**Superseded on both of its design axes.** It calls `claude-sonnet-4-6`, but
+B-DEC-1 pinned every LLM measurement to `gpt-5.5-2026-04-23`; and it uses GPT-4o
+as a judge, which B-DEC-2 dropped entirely (every SRQ4 metric is programmatic,
+"clarity" is not in the research question, and a defensible judge protocol costs
+more work than the claim is worth).
+
+**Checked before archiving — nothing in it is worth porting.** Its three
+components are all superseded: the Anthropic call path (wrong vendor), the
+GPT-4o judge (dropped), and the rule-based template comparator (dropped with the
+old baseline). Its `.env` reader had the same unguarded-read bug already fixed
+in the harness. Nothing imports it.
+
+### `forecast_service.py` + `forecasts_stale_2026-08-18.csv` — archived 2026-08-19
+
+The original Scenario C serving path, replaced by
+`model_serving_interface/scenario_c_forecast/forecast_tool.py`.
+
+**Why replaced rather than kept:** it retrained every category on every call,
+which made it a second copy of the training logic. Three copies existed
+(`forecast_service`, `srq4_experiment._eval_forecast`, `srq2_synthesis`) and they
+had drifted: the conformal-calibration fix landed in this one while
+`_eval_forecast` kept the bug, producing intervals 3.9x too narrow.
+
+Training now happens once in `model_training/train_and_persist.py`, which writes
+boosters and metadata to `04_thesis_results/srq1/models/`. Serving loads them.
+
+`forecasts.csv` is archived as evidence of a second defect: it was written with
+a whole-file `to_csv` overwrite, so every row carried the timestamp of the last
+`build_service()` run (2026-08-18) and no served forecast was ever appended.
+The replacement log is `forecast_log.jsonl` — one JSON object per line, O(1)
+append, real per-call timestamps, nested provenance a flat CSV cannot carry.

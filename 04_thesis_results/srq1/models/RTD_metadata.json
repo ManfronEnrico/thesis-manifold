@@ -1,0 +1,53 @@
+{
+  "category": "RTD",
+  "model": "XGBoost(tuned)",
+  "model_file": "RTD_xgboost.json",
+  "features": [
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_4",
+    "lag_8",
+    "lag_13",
+    "rolling_mean_4",
+    "rolling_std_4",
+    "rolling_mean_13",
+    "month",
+    "quarter",
+    "peak_month"
+  ],
+  "n_features": 12,
+  "hyperparameters": {
+    "n_estimators": 1108,
+    "learning_rate": 0.14897573831780134,
+    "max_depth": 4,
+    "min_child_weight": 4.989338329408183,
+    "subsample": 0.7860191526903634,
+    "colsample_bytree": 0.6597061558713648
+  },
+  "seed": 42,
+  "trained_on": "train+val",
+  "trained_through": "2026-01",
+  "n_train_rows": 1364,
+  "calibrated_on": "val",
+  "calibrated_through": "2026-01",
+  "n_calibration_rows": 372,
+  "calibration_note": "90th percentile of |residual| on held-out validation rows",
+  "q90_log": 1.1716509376477393,
+  "interval_method": "split conformal, 90% quantile of validation residuals",
+  "test_from": "2026-02",
+  "test_through": "2026-07",
+  "test_months": [
+    "2026-02",
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07"
+  ],
+  "n_test_rows": 372,
+  "brands": 62,
+  "train_seconds": 7.348,
+  "train_peak_ram_mb": 1.96,
+  "trained_at_utc": "2026-08-19T16:03:08+00:00"
+}
