@@ -64,9 +64,17 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 # The shared user question -- identical across all three scenarios
 # ---------------------------------------------------------------------------
+# "how many UNITS" is not a stylistic choice. The first paid run (2026-08-19)
+# asked "what will X sell", and all six Scenario A runs answered in DKK --
+# 145,000,000 DKK for Coca Cola against a 3.15M unit actual, scored as a 4500%
+# error. Scenarios B and C infer the unit from the data they are handed; A has no
+# data, so an ambiguous question let it answer a different question. That made
+# A's measured accuracy an artefact of the prompt rather than a property of the
+# scenario, which is exactly the confound the shared question exists to remove.
 USER_QUESTION = (
-    "What will {brand} sell in the {category} category in Danish retail in "
-    "{target}? Give the number, a range, and how confident you are."
+    "How many units of {brand} will be sold in the {category} category in "
+    "Danish retail in {target}? Answer in units sold, not currency. "
+    "Give the number, a range, and how confident you are."
 )
 
 # Shared output contract, so answer parsing is never a scenario-specific
