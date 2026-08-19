@@ -78,7 +78,7 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
 
 
 def available_features(fm, wanted=None):
-    """Features this matrix actually has (DEC-OPEN-WORLD).
+    """Features this matrix actually has (DEC-DISCOVER-COLUMNS).
 
     Categories differ in capability, not only in values: Nielsen reports no
     promotion for danskvand or RTD, so `promo_intensity` is omitted there rather

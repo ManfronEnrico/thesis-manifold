@@ -72,7 +72,7 @@ GROUP_KEYS: dict[str, list[str]] = {"bymonth": ["brand"]}
 
 
 # ============================================================================
-# AGGREGATION SPEC -- open-world column discovery
+# AGGREGATION SPEC -- column-discovery column discovery
 # ============================================================================
 # Measures are DISCOVERED from the merged frame, not enumerated.
 #
@@ -152,7 +152,7 @@ RENAMES: dict[str, str] = {
 	#   feature WITHOUT display  feat_w_o_disp  feat_wo_disp   feat_wo_disp
 	#
 	# This is a naming difference, not a capability difference -- precisely the
-	# case DEC-OPEN-WORLD anticipated. Canonical form spells out and/without:
+	# case DEC-DISCOVER-COLUMNS anticipated. Canonical form spells out and/without:
 	# "disp_feat" does not say whether it means "display and feature" or the
 	# pair, and "w_o" is an abbreviation the reader must decode.
 	"weighted_distribution_disp_feat": "weighted_distribution_disp_and_feat",
@@ -189,7 +189,7 @@ def _sum_nan_as_zero(series: pd.Series) -> float:
 def discover_measures(df: pd.DataFrame) -> list[str]:
 	"""Every numeric column that is a measure rather than a join key.
 
-	Open-world: a column the pipeline has never seen is included automatically,
+	Column-discovery: a column the pipeline has never seen is included automatically,
 	classified by `classify_measure`. Nothing is dropped for not being on a list.
 	"""
 	missing = REQUIRED_MEASURES - set(df.columns)

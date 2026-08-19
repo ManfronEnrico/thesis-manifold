@@ -2,7 +2,7 @@
 
 This is the shared orchestrator that replaces the four per-category ones. Those
 were 184 lines each and differed only in the category name (F-plan), which is
-exactly the duplication DEC-OPEN-WORLD exists to prevent: a fix applied to one
+exactly the duplication DEC-DISCOVER-COLUMNS exists to prevent: a fix applied to one
 was a fix missing from three.
 
 	Steps 0-2 are horizon-independent -- they validate the cache, build the

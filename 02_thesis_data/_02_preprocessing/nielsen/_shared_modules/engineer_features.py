@@ -455,8 +455,8 @@ def engineer_features(
     # absent feature is honest; a constant-zero feature is a fabrication.
     #
     # Downstream consumers must therefore select features from what the matrix
-    # contains rather than from a fixed list. This is the same open-world rule
-    # the pipeline applies to measures generally (DEC-OPEN-WORLD).
+    # contains rather than from a fixed list. This is the same column-discovery rule
+    # the pipeline applies to measures generally (DEC-DISCOVER-COLUMNS).
     if "promo_units" in df.columns:
         _promo_intensity_t = pd.Series(
             np.where(

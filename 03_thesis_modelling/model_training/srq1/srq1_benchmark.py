@@ -87,7 +87,7 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
 def available_features(fm, wanted=None):
 	"""Return the wanted features that this matrix actually contains.
 
-	DEC-OPEN-WORLD: categories differ in capability, not just in values.
+	DEC-DISCOVER-COLUMNS: categories differ in capability, not just in values.
 	Danskvand and RTD carry no `promo_units` (Nielsen does not report promotion
 	for them), so the pipeline omits `promo_intensity` for those categories
 	rather than zero-filling -- a constant-zero column would assert "no

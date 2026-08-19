@@ -21,7 +21,7 @@ in-code defaults are what let MIN_PERIODS drift to three different live values
 this step writes every parameter step 4 needs, including the ones that look
 constant, and records HOW each was obtained.
 
-DEC-OPEN-WORLD
+DEC-DISCOVER-COLUMNS
 --------------
 Never names a category, never enumerates a column. Parameters that depend on
 category capability (peak months, log transform) are measured from the data
@@ -549,7 +549,7 @@ def main(argv: list[str] | None = None) -> int:
 				not_evaluable.append(cat)
 		except Exception as exc:  # noqa: BLE001
 			# One category failing must not abort the rest -- categories
-			# genuinely differ, which is the premise of the open-world design.
+			# genuinely differ, which is the premise of the column-discovery design.
 			failed.append((cat, f"{type(exc).__name__}: {exc}"))
 			print(f"\n  !! {cat} FAILED: {type(exc).__name__}: {exc}",
 				  file=sys.stderr)

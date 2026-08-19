@@ -121,7 +121,7 @@ def section_data(L):
 
 def section_features(L):
     L += ["## 2. Features", "",
-          "Selected by intersection, not by a fixed list (DEC-OPEN-WORLD). "
+          "Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). "
           "Categories differ in *capability*, not only in values: Nielsen reports "
           "no promotion data for some categories, so `promo_intensity` is omitted "
           "there rather than zero-filled -- a constant-zero column would assert "

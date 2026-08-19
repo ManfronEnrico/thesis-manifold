@@ -30,7 +30,7 @@ The version check is the same guarantee applied to shape rather than content:
 a contract whose schema this file does not know is refused, because a field
 that moved is indistinguishable from a field that is missing.
 
-DEC-OPEN-WORLD
+DEC-DISCOVER-COLUMNS
 --------------
 Never names a category and never enumerates a column. Category differences
 arrive through the contract, and measure columns are whatever step 1 produced.

@@ -17,7 +17,7 @@ Several cells printed a "recommendation" (MIN_PERIODS = 40, PEAK_MONTHS =
 them, and are NOT written anywhere a later step could pick them up. The real
 values are step 3's job.
 
-DEC-OPEN-WORLD (P0038, 2026-08-12)
+DEC-DISCOVER-COLUMNS (P0038, 2026-08-12)
 ----------------------------------
 This script never names a category and never enumerates a column. It discovers
 what a category has and analyses that.
@@ -92,7 +92,7 @@ MIN_OBS_ADF = 10
 
 
 # ============================================================================
-# SECTION RUNNER (the DEC-OPEN-WORLD mechanism)
+# SECTION RUNNER (the DEC-DISCOVER-COLUMNS mechanism)
 # ============================================================================
 
 class EdaContext:
@@ -152,7 +152,7 @@ class EdaContext:
 def section(ctx: EdaContext, title: str, requires: tuple[str, ...] = ()):
 	"""Decorator: run an analysis only if the columns it needs are present.
 
-	`requires` is the whole of DEC-OPEN-WORLD in practice. A section declares
+	`requires` is the whole of DEC-DISCOVER-COLUMNS in practice. A section declares
 	the columns it cannot run without; if the category lacks any, the section
 	is skipped with a visible, specific notice naming the missing columns --
 	rather than raising KeyError (the notebook's behaviour) or silently
@@ -260,7 +260,7 @@ def s02_distributions(ctx: EdaContext) -> None:
 		import seaborn as sns
 
 		df = ctx.df
-		# Already open-world in the notebook -- select_dtypes, not a list.
+		# Already column-discovery in the notebook -- select_dtypes, not a list.
 		numeric_cols = [c for c in df.select_dtypes(include="number").columns
 						if c not in (YEAR_COL, MONTH_COL)]
 		if not numeric_cols:
@@ -1129,7 +1129,7 @@ def s13_promo_intensity(ctx: EdaContext) -> None:
 
 
 # ============================================================================
-# 3.14 -- MEASURE-COLUMN DATA QUALITY (open-world)
+# 3.14 -- MEASURE-COLUMN DATA QUALITY (column-discovery)
 # ============================================================================
 
 def s14_measure_quality(ctx: EdaContext) -> None:
@@ -1539,7 +1539,7 @@ def s18_correlation(ctx: EdaContext) -> None:
 	"""Correlation heatmaps + non-linearity flags. Notebook cell 51.
 
 	Cell 51 hardcoded five column names and silently analysed only those it
-	happened to find. Open-world here: correlate every numeric measure
+	happened to find. Column-discovery here: correlate every numeric measure
 	discovered, so a category with columns the notebook never named still
 	gets them analysed.
 	"""

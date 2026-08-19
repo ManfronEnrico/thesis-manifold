@@ -34,7 +34,7 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 
 ## 2. Features
 
-Selected by intersection, not by a fixed list (DEC-OPEN-WORLD). Categories differ in *capability*, not only in values: Nielsen reports no promotion data for some categories, so `promo_intensity` is omitted there rather than zero-filled -- a constant-zero column would assert "no promotion ran", which the data does not support.
+Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). Categories differ in *capability*, not only in values: Nielsen reports no promotion data for some categories, so `promo_intensity` is omitted there rather than zero-filled -- a constant-zero column would assert "no promotion ran", which the data does not support.
 
 | Feature | CSD | danskvand | energidrikke | RTD | what it is |
 |---|:-:|:-:|:-:|:-:|---|
@@ -140,8 +140,8 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "n_calibration_rows": 665,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "n_features": 13,
-  "serve_seconds": 0.5322,
-  "served_at_utc": "2026-08-19T18:23:07+00:00"
+  "serve_seconds": 0.4432,
+  "served_at_utc": "2026-08-19T18:27:39+00:00"
 }
 ```
 
