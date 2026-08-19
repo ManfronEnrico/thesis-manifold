@@ -1,7 +1,8 @@
 {
   "category": "danskvand",
-  "model": "XGBoost(tuned)",
-  "model_file": "danskvand_xgboost.json",
+  "model": "Ridge",
+  "model_file": "danskvand_model.joblib",
+  "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
   "features": [
     "lag_1",
     "lag_2",
@@ -17,14 +18,8 @@
     "peak_month"
   ],
   "n_features": 12,
-  "hyperparameters": {
-    "n_estimators": 864,
-    "learning_rate": 0.0961075292986141,
-    "max_depth": 4,
-    "min_child_weight": 1.0267080932809027,
-    "subsample": 0.8408948738896085,
-    "colsample_bytree": 0.869338681861774
-  },
+  "clip_negative_features": true,
+  "hyperparameters": {},
   "seed": 42,
   "trained_on": "train+val",
   "trained_through": "2026-01",
@@ -33,7 +28,7 @@
   "calibrated_through": "2026-01",
   "n_calibration_rows": 174,
   "calibration_note": "90th percentile of |residual| on held-out validation rows",
-  "q90_log": 1.983071181604556,
+  "q90_log": 1.7599818004908512,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "test_from": "2026-02",
   "test_through": "2026-07",
@@ -47,7 +42,7 @@
   ],
   "n_test_rows": 174,
   "brands": 29,
-  "train_seconds": 6.158,
-  "train_peak_ram_mb": 0.61,
-  "trained_at_utc": "2026-08-19T16:02:54+00:00"
+  "train_seconds": 0.205,
+  "train_peak_ram_mb": 8.37,
+  "trained_at_utc": "2026-08-19T16:23:53+00:00"
 }

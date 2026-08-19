@@ -76,9 +76,19 @@ def _load(category: str):
             f"No persisted model for {category}. Run "
             f"model_training/train_and_persist.py first. Expected {meta_f}")
     meta = json.loads(meta_f.read_text(encoding="utf-8"))
-    from xgboost import XGBRegressor
-    m = XGBRegressor()
-    m.load_model(str(MODELS_DIR / meta["model_file"]))
+    f = MODELS_DIR / meta["model_file"]
+    # The serving model is whichever one SRQ1 selected for this category, which
+    # is not always XGBoost -- danskvand serves Ridge. Dispatch on the persisted
+    # format rather than assuming a booster: assuming one raised
+    # UnicodeDecodeError on a joblib pickle, which is a confusing way to learn
+    # that the wrong loader was used.
+    if f.suffix == ".json":
+        from xgboost import XGBRegressor
+        m = XGBRegressor()
+        m.load_model(str(f))
+    else:
+        import joblib
+        m = joblib.load(f)
     _CACHE[category] = (m, meta)
     return _CACHE[category]
 
@@ -146,7 +156,14 @@ def forecast_demand(category: str, brand: str, month: str | None = None) -> dict
                     "message": f"No row for {brand} in {month}"}
 
     row = rows.head(1)
-    yhat = float(np.clip(np.expm1(m.predict(row[feats].fillna(0.0))[0]), 0, None))
+    # Apply exactly the transform training applied. The metadata records it, so
+    # serving cannot silently diverge from the fitted pipeline -- a linear model
+    # fitted on clipped inputs and served unclipped would take log1p of a
+    # negative number and return NaN.
+    X = row[feats].fillna(0.0)
+    if meta.get("clip_negative_features"):
+        X = X.clip(lower=0)
+    yhat = float(np.clip(np.expm1(m.predict(X)[0]), 0, None))
     lo = float(np.expm1(np.log(max(yhat, 1e-9)) - q90))
     hi = float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
     rel = (hi - lo) / max(yhat, 1e-9)

@@ -1,7 +1,8 @@
 {
   "category": "RTD",
   "model": "XGBoost(tuned)",
-  "model_file": "RTD_xgboost.json",
+  "model_file": "RTD_model.json",
+  "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
   "features": [
     "lag_1",
     "lag_2",
@@ -17,6 +18,7 @@
     "peak_month"
   ],
   "n_features": 12,
+  "clip_negative_features": false,
   "hyperparameters": {
     "n_estimators": 1108,
     "learning_rate": 0.14897573831780134,
@@ -47,7 +49,7 @@
   ],
   "n_test_rows": 372,
   "brands": 62,
-  "train_seconds": 7.348,
+  "train_seconds": 4.078,
   "train_peak_ram_mb": 1.96,
-  "trained_at_utc": "2026-08-19T16:03:08+00:00"
+  "trained_at_utc": "2026-08-19T16:24:00+00:00"
 }

@@ -1,7 +1,8 @@
 {
   "category": "CSD",
   "model": "XGBoost(tuned)",
-  "model_file": "CSD_xgboost.json",
+  "model_file": "CSD_model.json",
+  "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
   "features": [
     "lag_1",
     "lag_2",
@@ -18,6 +19,7 @@
     "promo_intensity"
   ],
   "n_features": 13,
+  "clip_negative_features": false,
   "hyperparameters": {
     "n_estimators": 314,
     "learning_rate": 0.05125561490148708,
@@ -49,7 +51,7 @@
   ],
   "n_test_rows": 665,
   "brands": 95,
-  "train_seconds": 5.466,
-  "train_peak_ram_mb": 3.72,
-  "trained_at_utc": "2026-08-19T16:02:48+00:00"
+  "train_seconds": 8.059,
+  "train_peak_ram_mb": 58.95,
+  "trained_at_utc": "2026-08-19T16:23:52+00:00"
 }

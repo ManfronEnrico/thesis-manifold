@@ -91,9 +91,75 @@ def _period(row):
     return f"{int(row['period_year'])}-{int(row['period_month']):02d}"
 
 
+def best_model_for(cat: str) -> str:
+    """The model SRQ1 selected for this category, read from metrics.csv.
+
+    Hardcoding XGBoost was wrong: after the Ridge log-scaling fix, danskvand's
+    best model is Ridge at 19.2% WMAPE against XGBoost's 32.6%. Serving XGBoost
+    there would hand Scenario C a model 13 points worse than the one SRQ1
+    selected -- and the thesis claim is that the SELECTED model is what the
+    agent gets."""
+    f = THESIS_RESULTS_SRQ1_DIR / "metrics.csv"
+    if not f.is_file():
+        return "XGBoost"
+    m = pd.read_csv(f)
+    m = m[(m.category == cat) & m.wmape.notna()]
+    # SeasonalNaive is the floor, not a candidate: it exists to show the models
+    # beat doing nothing, and serving it would defeat the purpose.
+    m = m[m.model != "SeasonalNaive"]
+    return m.sort_values("wmape").iloc[0]["model"] if len(m) else "XGBoost"
+
+
+def _make(model_name: str, params: dict):
+    """Build an unfitted estimator. Linear models get the log-scaling pipeline;
+    tree models do not need it (they are invariant to monotone transforms of a
+    feature, which is why only Ridge broke on raw-unit lags)."""
+    if model_name == "Ridge":
+        from sklearn.linear_model import Ridge
+        from sklearn.preprocessing import StandardScaler, FunctionTransformer
+        from sklearn.pipeline import make_pipeline
+        # np.log1p by name, not a local function: pickling a locally-defined
+        # transformer stores a reference to __main__._log_volume_cols, which does
+        # not exist when the model is loaded from anywhere else (AttributeError
+        # on unpickle). A numpy ufunc pickles by reference and always resolves.
+        #
+        # Applied to ALL columns rather than only the volume ones: the remaining
+        # features are month (1-12), quarter (1-4), peak_month (0/1) and
+        # promo_intensity (0-1), all non-negative and small, so log1p is a
+        # monotone rescale that StandardScaler then normalises away. Keeping the
+        # transformer column-agnostic is what makes it portable.
+        return make_pipeline(
+            FunctionTransformer(np.log1p, validate=True),
+            StandardScaler(), Ridge(alpha=1.0, random_state=SEED))
+    if model_name == "LightGBM":
+        from lightgbm import LGBMRegressor
+        return LGBMRegressor(random_state=SEED, verbose=-1, n_jobs=-1, **params)
+    from xgboost import XGBRegressor
+    return XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params)
+
+
+# Volume-valued columns are in RAW units while the target is LOG. A linear model
+# cannot bridge that (it would have to approximate a logarithm with a straight
+# line) and extrapolates catastrophically; tree models are unaffected.
+LOG_SCALE_FEATURES = ("lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
+                      "rolling_mean_4", "rolling_std_4", "rolling_mean_13")
+
+
+def _persist(model, model_name: str, path_stem: Path) -> str:
+    """Save a fitted model. XGBoost has a native JSON format that is portable and
+    diffable; everything else falls back to joblib."""
+    if model_name == "XGBoost":
+        f = path_stem.with_suffix(".json")
+        model.save_model(str(f))
+    else:
+        import joblib
+        f = path_stem.with_suffix(".joblib")
+        joblib.dump(model, f)
+    return f.name
+
+
 def train_category(cat: str, slug: str) -> dict | None:
     """Fit, calibrate and persist one category. Returns its metadata."""
-    from xgboost import XGBRegressor
 
     eng = get_category_engineered_bymonth_dir(cat)
     f = eng / f"{slug}_feature_matrix_h3.parquet"
@@ -112,22 +178,28 @@ def train_category(cat: str, slug: str) -> dict | None:
         print(f"  {cat:14s} SKIP -- only {len(tr)} training rows")
         return None
 
+    model_name = best_model_for(cat)
     params = {}
     pf = THESIS_RESULTS_SRQ1_DIR / "tuned_params.json"
     if pf.is_file():
+        # Ridge is the untuned baseline and has no entry; it uses its defaults.
         params = json.loads(pf.read_text(encoding="utf-8")).get(
-            f"brand/{cat}/XGBoost", {})
+            f"brand/{cat}/{model_name}", {})
 
     tracemalloc.start()
     t0 = time.perf_counter()
 
     # 1. CALIBRATION model: train only, so val residuals are genuinely
     #    out-of-sample. Its predictions are never served.
-    m_cal = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params)
-    m_cal.fit(tr[feats].fillna(0.0), tr["log_sales_units"].values)
+    # log1p is undefined below -1, and the pipeline applies it to every column,
+    # so clip once here rather than inside a custom (unpicklable) transformer.
+    def _X(df):
+        return df[feats].fillna(0.0).clip(lower=0) if model_name == "Ridge"             else df[feats].fillna(0.0)
+
+    m_cal = _make(model_name, params)
+    m_cal.fit(_X(tr), tr["log_sales_units"].values)
     if len(va):
-        resid = np.abs(va["log_sales_units"].values
-                       - m_cal.predict(va[feats].fillna(0.0)))
+        resid = np.abs(va["log_sales_units"].values - m_cal.predict(_X(va)))
         q90 = float(np.quantile(resid, 0.90))
         calib_note = "90th percentile of |residual| on held-out validation rows"
     else:
@@ -138,24 +210,25 @@ def train_category(cat: str, slug: str) -> dict | None:
 
     # 2. SERVING model: train+val, because withholding val from the deployed
     #    model wastes data for no gain. Test is never seen by either model.
-    m_srv = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params)
+    m_srv = _make(model_name, params)
     trval = pd.concat([tr, va]).sort_values("period_index")
-    m_srv.fit(trval[feats].fillna(0.0), trval["log_sales_units"].values)
+    m_srv.fit(_X(trval), trval["log_sales_units"].values)
 
     elapsed = time.perf_counter() - t0
     peak = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    model_file = MODELS_DIR / f"{cat}_xgboost.json"
-    m_srv.save_model(str(model_file))
+    model_file_name = _persist(m_srv, model_name, MODELS_DIR / f"{cat}_model")
 
     meta = {
         "category": cat,
-        "model": "XGBoost(tuned)",
-        "model_file": model_file.name,
+        "model": f"{model_name}(tuned)" if params else model_name,
+        "model_file": model_file_name,
+        "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
         "features": feats,
         "n_features": len(feats),
+        "clip_negative_features": model_name == "Ridge",
         "hyperparameters": params,
         "seed": SEED,
         # Provenance: what the served model saw, and what the interval was
@@ -186,7 +259,7 @@ def train_category(cat: str, slug: str) -> dict | None:
     (MODELS_DIR / f"{cat}_metadata.json").write_text(
         json.dumps(meta, indent=2), encoding="utf-8", newline="\n")
 
-    print(f"  {cat:14s} trained on {len(trval):5d} rows through {meta['trained_through']}"
+    print(f"  {cat:14s} {model_name:9s} on {len(trval):5d} rows through {meta['trained_through']}"
           f" | q90={q90:.3f} from {len(va)} val rows"
           f" | {elapsed:.2f}s {peak/1e6:.1f}MB")
     return meta

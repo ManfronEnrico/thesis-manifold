@@ -121,24 +121,25 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "status": "ok",
   "category": "CSD",
   "brand": "HARBOE",
-  "forecast_units": 3943859.8,
+  "forecast_month": "2026-01",
+  "forecast_units": 4117982.0,
   "interval_90": [
-    1299847.2,
-    11966034.9
+    1357235.7,
+    12494338.0
   ],
   "confidence": 13.5,
   "confidence_tier": "Low",
   "model": "XGBoost(tuned)",
-  "forecast_month": "2026-01",
-  "trained_through": "2025-05",
-  "trained_on": "train",
+  "model_file": "CSD_model.json",
+  "trained_on": "train+val",
+  "trained_through": "2025-12",
   "calibrated_on": "val",
   "calibrated_through": "2025-12",
-  "n_train_rows": 1805,
   "n_calibration_rows": 665,
-  "features_used": 13,
   "interval_method": "split conformal, 90% quantile of validation residuals",
-  "horizon": "next (held-out) month"
+  "n_features": 13,
+  "serve_seconds": 0.1926,
+  "served_at_utc": "2026-08-19T16:24:51+00:00"
 }
 ```
 
