@@ -21,12 +21,12 @@
   "n_features": 13,
   "clip_negative_features": false,
   "hyperparameters": {
-    "n_estimators": 953,
-    "learning_rate": 0.036124323050328325,
-    "max_depth": 3,
-    "min_child_weight": 3.3995950178642143,
-    "subsample": 0.8922738795650821,
-    "colsample_bytree": 0.8668982441914541
+    "n_estimators": 1146,
+    "learning_rate": 0.03497685103388633,
+    "max_depth": 10,
+    "min_child_weight": 1.12573312930374,
+    "subsample": 0.8391524267229545,
+    "colsample_bytree": 0.876098829427658
   },
   "seed": 42,
   "trained_on": "train+val",
@@ -36,7 +36,7 @@
   "calibrated_through": "2025-12",
   "n_calibration_rows": 264,
   "calibration_note": "90th percentile of |residual| on held-out validation rows",
-  "q90_log": 1.7303913381538825,
+  "q90_log": 1.6030046939849854,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "test_from": "2026-01",
   "test_through": "2026-07",
@@ -51,7 +51,7 @@
   ],
   "n_test_rows": 308,
   "brands": 44,
-  "train_seconds": 3.507,
+  "train_seconds": 7.886,
   "train_peak_ram_mb": 1.53,
-  "trained_at_utc": "2026-08-19T16:23:56+00:00"
+  "trained_at_utc": "2026-08-19T18:13:11+00:00"
 }

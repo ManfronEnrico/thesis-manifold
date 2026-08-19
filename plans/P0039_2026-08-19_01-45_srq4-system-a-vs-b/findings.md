@@ -550,3 +550,81 @@ C's 134 output tokens are one tool call plus a sentence of prose.
 It is what code-as-action *costs*. An agent that re-derives a forecasting method
 per query pays for that derivation every time, while an agent calling a trained
 model pays once at training time and amortises it across every subsequent query.
+
+## F21 — F19 was wrong: the parameters were stale, not irreproducible
+
+**Brian's hypothesis was correct and my F19 explanation was not.** F19 attributed
+the non-reproducing hyperparameters to "some environment difference not
+recoverable from the artefact". The actual cause is simpler and worse:
+
+| artefact | timestamp |
+|----------|-----------|
+| `tuned_params.json` | **2026-08-11 17:55** |
+| feature matrices | **2026-08-18 22:59** |
+
+Seven days apart, spanning the entire preprocessing rebuild.
+
+**The feature set differed.** The tuning script on 2026-08-11 declared:
+
+```
+[..., "holiday_month", "promo_intensity", "weighted_distribution"]
+```
+
+Neither `holiday_month` (since renamed `peak_month`) nor `weighted_distribution`
+exists in the current matrix. Open-world selection silently dropped both, so the
+**tuning ran on 12 features while the served model trains on 13** — and one of
+those 12 was a column later removed from model inputs on purpose (P0036 task 7).
+
+So the hyperparameters were optimised for a different dataset *and* a different
+feature set than the models they were being applied to.
+
+### Why it had never been caught
+
+`srq1_benchmark_tuned.py` raised `NameError: name 'fm' is not defined` on its
+first call to `tune()`. The open-world refactor left `available_features(fm)`
+inside a function that never received `fm`. **The script could not run at all**,
+which is why `tuned_params.json` was never regenerated — not an environment
+quirk, a crash. Fixed: `_load()` now returns the feature list alongside the
+split parts.
+
+### Effect of re-tuning on the current data
+
+| Category | stale params | re-tuned | delta |
+|----------|-------------:|---------:|------:|
+| CSD | 17.1% | **14.9%** | -2.2pp |
+| danskvand | 32.6% | **20.0%** | **-12.6pp** |
+| energidrikke | 14.9% | **14.3%** | -0.6pp |
+| RTD | 31.8% | 33.6% | +1.8pp |
+
+**Danskvand improves by 12.6pp.** F19's claim that re-tuning was not worth doing
+because the effect was ~0.5pp was based on CSD alone and does not generalise.
+
+Served-model accuracy, measured independently after retraining:
+
+| Category | now | before | delta |
+|----------|----:|-------:|------:|
+| CSD | **15.1%** | 15.6% | -0.5pp |
+| danskvand | 19.9% | 18.2% | +1.7pp |
+| energidrikke | **13.9%** | 15.7% | -1.8pp |
+| RTD | **34.6%** | 36.7% | -2.1pp |
+
+### A second defect this exposed: incomparable results files
+
+`metrics.csv` (train-only, **default** params) and `tuned_metrics.csv`
+(train+val, **tuned** params) measure different regimes. `best_model_for()` read
+only the first, so on danskvand it selected Ridge at 19.2% (untuned, train-only)
+over XGBoost at 20.0% (tuned, train+val) — **not the same measurement**.
+
+Selection now reads `tuned_metrics.csv`, with untuned baselines from
+`metrics.csv` admitted only on a >10% relative margin, since a narrow win by a
+model that never had the benefit of tuning is likely noise. All four categories
+now serve tuned XGBoost.
+
+### Consequence for the SRQ4 results collected today
+
+Every SRQ4 number from 2026-08-19 used a Scenario C model built on the stale
+parameters. CSD (the experiment category) moves 15.6% -> 15.1%, so the direction
+of the B-vs-C comparison is unaffected — but **the exact Scenario C figures in
+`run_2026-08-19_dkk-confound/` are superseded** and must be regenerated before
+being quoted. The consistency, cost and latency findings are unaffected, since
+none of them depends on the model's parameters.

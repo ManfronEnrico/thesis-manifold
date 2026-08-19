@@ -67,12 +67,12 @@ Tuned with Optuna against **validation** WMAPE, then refit on train+val and eval
 
 | Parameter | CSD | RTD | danskvand | energidrikke |
 |---|---|---|---|---|
-| `colsample_bytree` | 0.922724 | 0.659706 | 0.869339 | 0.866898 |
-| `learning_rate` | 0.0512556 | 0.148976 | 0.0961075 | 0.0361243 |
-| `max_depth` | 9 | 4 | 4 | 3 |
-| `min_child_weight` | 6.53086 | 4.98934 | 1.02671 | 3.3996 |
-| `n_estimators` | 314 | 1108 | 864 | 953 |
-| `subsample` | 0.644215 | 0.786019 | 0.840895 | 0.892274 |
+| `colsample_bytree` | 0.924966 | 0.771471 | 0.639164 | 0.876099 |
+| `learning_rate` | 0.0888086 | 0.0309348 | 0.0270346 | 0.0349769 |
+| `max_depth` | 7 | 9 | 8 | 10 |
+| `min_child_weight` | 2.91381 | 2.6671 | 1.63659 | 1.12573 |
+| `n_estimators` | 926 | 744 | 1167 | 1146 |
+| `subsample` | 0.899297 | 0.601168 | 0.695805 | 0.839152 |
 
 _8 tuned configurations in total (LightGBM, XGBoost)._
 
@@ -103,10 +103,10 @@ Getting this wrong does not raise an error -- it produces intervals that look im
 
 | Category | Calibration rows | q90 (log space) | Median 90% interval width |
 |---|---:|---:|---|
-| CSD | 665 | 1.194 | ~3.0x the point forecast |
-| danskvand | 174 | 2.461 | ~11.6x the point forecast |
-| energidrikke | 264 | 1.741 | ~5.5x the point forecast |
-| RTD | 372 | 1.137 | ~2.8x the point forecast |
+| CSD | 665 | 1.209 | ~3.1x the point forecast |
+| danskvand | 174 | 2.233 | ~9.2x the point forecast |
+| energidrikke | 264 | 1.697 | ~5.3x the point forecast |
+| RTD | 372 | 1.112 | ~2.7x the point forecast |
 
 A wide interval is not a failure of the model -- it is an honest statement about monthly brand-level demand. Reporting a narrow one that is not earned would be.
 
@@ -122,12 +122,12 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "category": "CSD",
   "brand": "HARBOE",
   "forecast_month": "2026-01",
-  "forecast_units": 4117982.0,
+  "forecast_units": 4261390.0,
   "interval_90": [
-    1357235.7,
-    12494338.0
+    1305954.7,
+    13905098.6
   ],
-  "confidence": 13.5,
+  "confidence": 12.6,
   "confidence_tier": "Low",
   "model": "XGBoost(tuned)",
   "model_file": "CSD_model.json",
@@ -138,8 +138,8 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "n_calibration_rows": 665,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "n_features": 13,
-  "serve_seconds": 0.1926,
-  "served_at_utc": "2026-08-19T16:24:51+00:00"
+  "serve_seconds": 0.5068,
+  "served_at_utc": "2026-08-19T18:14:26+00:00"
 }
 ```
 

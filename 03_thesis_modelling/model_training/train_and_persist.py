@@ -99,15 +99,40 @@ def best_model_for(cat: str) -> str:
     there would hand Scenario C a model 13 points worse than the one SRQ1
     selected -- and the thesis claim is that the SELECTED model is what the
     agent gets."""
-    f = THESIS_RESULTS_SRQ1_DIR / "metrics.csv"
-    if not f.is_file():
-        return "XGBoost"
-    m = pd.read_csv(f)
-    m = m[(m.category == cat) & m.wmape.notna()]
-    # SeasonalNaive is the floor, not a candidate: it exists to show the models
-    # beat doing nothing, and serving it would defeat the purpose.
-    m = m[m.model != "SeasonalNaive"]
-    return m.sort_values("wmape").iloc[0]["model"] if len(m) else "XGBoost"
+    # Two results files exist and they are NOT comparable:
+    #   metrics.csv        train-only, DEFAULT hyperparameters (a ranking ladder)
+    #   tuned_metrics.csv  train+val, TUNED hyperparameters (the deployed regime)
+    # The served model uses the second regime, so selection must read the second
+    # file. Reading metrics.csv would compare a tuned candidate against untuned
+    # ones -- on danskvand that picked Ridge at 19.2% (untuned, train-only) over
+    # XGBoost at 20.0% (tuned, train+val), which are not the same measurement.
+    #
+    # Ridge and SeasonalNaive appear only in metrics.csv: Ridge is the untuned
+    # linear baseline, SeasonalNaive the floor. Both are candidates ONLY if they
+    # beat the best tuned model, and that comparison is unavailable, so they are
+    # included from metrics.csv with an explicit margin requirement below.
+    tf = THESIS_RESULTS_SRQ1_DIR / "tuned_metrics.csv"
+    mf = THESIS_RESULTS_SRQ1_DIR / "metrics.csv"
+    best, best_wmape = "XGBoost", float("inf")
+
+    if tf.is_file():
+        t = pd.read_csv(tf)
+        t = t[(t.category == cat) & t.test_wmape.notna()]
+        if len(t):
+            r = t.sort_values("test_wmape").iloc[0]
+            best, best_wmape = r["model"], float(r["test_wmape"])
+
+    # An untuned baseline is only preferred if it wins by a clear margin, since
+    # it has not had the benefit of tuning and a narrow win is likely noise.
+    if mf.is_file():
+        m = pd.read_csv(mf)
+        m = m[(m.category == cat) & m.wmape.notna() & (m.model == "Ridge")]
+        if len(m):
+            rw = float(m.iloc[0]["wmape"])
+            if rw < best_wmape * 0.9:      # >10% relative improvement
+                best, best_wmape = "Ridge", rw
+
+    return best
 
 
 def _make(model_name: str, params: dict):
