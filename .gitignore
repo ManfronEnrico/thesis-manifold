@@ -22,6 +22,15 @@ env/
 *.feather
 *.db
 *.sqlite
+
+# EXEMPTION: prompt sets are the experimental instrument, not data.
+# They must be shared so Brian and Enrico run identical prompts -- a prompt set
+# that lives on one machine only is a silent source of drift between our
+# results, and it cannot be quoted in the methodology appendix if it is lost.
+# These carry no Nielsen figures beyond the ground-truth column needed to score
+# an answer, which is already derivable from the committed feature matrices.
+!03_thesis_modelling/scenario_setup/**/*.csv
+!03_thesis_modelling/.archive/prompts_srq2_2026-08/*.csv
 *.7z
 # Exception: literature review CSV is safe to track
 !2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv

@@ -53,19 +53,39 @@ Enrico's SRQ2/SRQ3 prompt set and human-evaluation pilot.
    never completed — and `L0_pred` is empty while `L3_pred` has 4 of 15. So it is
    a **partially executed pilot**, not a finished result and not an empty
    template.
-2. **It answers a different research question.** The L0–L3 tiers are an SRQ2/SRQ3
-   capability ladder. The SRQ4 experiment compares three *scenarios* (plain LLM /
-   data + code / trained model) on a single prediction task. The 50-prompt
-   archetype taxonomy was deliberately replaced for SRQ4 (B-DEC-3, 2026-08-19)
-   because ~34 of the 50 involve no forecasting at all.
+2. **It answers a different research question.** SRQ2 asks *how forecasting
+   outputs can be exposed through a structured tool interface preserving
+   reliability, uncertainty and traceability* — the unit of analysis is the
+   **interface contract**, and the L0–L3 tiers vary how much structure the
+   interface carries. SRQ4 asks whether *integrating dedicated models* improves
+   correctness/consistency/cost against a code-as-action baseline — the unit of
+   analysis is **which mechanism produces the number**, and its three scenarios
+   vary what the agent can reach (nothing / data + code / trained model). One
+   varies the interface; the other varies the capability behind it.
 
-**These CSVs are gitignored** (`.gitignore` line 18, `*.csv`) and were never
-committed, so they exist only on the machine that generated them. Losing them
-loses the pilot.
+3. **It inherits the prompt-design flaw SRQ4 rejected.** Verified 2026-08-19:
+   the 15 pilot rows are **15 distinct queries across 9 archetypes**, not one
+   prompt repeated. Only 4 of 9 archetypes are forecasting at all
+   (`point_forecast`, `range_forecast`, `confidence_interval`,
+   `channel_volatility`); the rest are ranking, comparison and driver questions.
+   That is the same dilution B-DEC-3 removed from SRQ4.
 
-**If SRQ2/SRQ3 is written up, start here** — do not regenerate the prompt set
-from scratch, and do not assume the pilot needs re-running before the human
-scoring step is attempted.
+4. **Every pilot prompt is chain-level.** The queries name retail chains
+   (`BRUGSEN`, `7_ELEVEN`, `REMA_1000`, `SPAR`), i.e. the **chain grain deleted
+   by DEC-GRAIN** (2026-07-12) in favour of brand × month. Re-running the pilot
+   as written would require data the project no longer produces.
+
+**Consequence**: treat this as evidence of an earlier design, not as a partial
+result to be finished. If SRQ2/SRQ3 is written up, the prompt set needs
+rebuilding against the current grain and a decision on whether the archetype
+spread is wanted — the *responses* here are still useful as qualitative
+material about how the tiers differed.
+
+**These CSVs are now committed.** They were previously caught by the blanket
+`*.csv` rule and existed on one machine only. `.gitignore` now carries an
+explicit exemption for prompt sets, because a prompt set that lives on one
+machine is a silent source of drift between two people's results, and it cannot
+be quoted in a methodology appendix if it is lost.
 
 ---
 

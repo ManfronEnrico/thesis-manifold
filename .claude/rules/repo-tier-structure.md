@@ -46,11 +46,22 @@ its results go in `04_thesis_results/srq5/`, matching the existing
 Added 2026-08-19. `03_thesis_modelling/` now has three sibling folders with
 three distinct concerns:
 
-| Folder | Concern |
-|--------|---------|
-| `model_training/` | training the ML/statistical models (SRQ1 benchmarks, tuning, calibration, SHAP) |
-| `model_serving/` | making a trained model reachable at inference time |
-| `scenario_setup/` | running scenarios against those models, and logging what happened |
+| Folder | SRQ | Concern |
+|--------|-----|---------|
+| `model_training/` | SRQ1 | training the ML/statistical models (benchmarks, tuning, calibration, SHAP) |
+| `model_serving_interface/` | SRQ2 | the structured tool/action interface that exposes forecasts with uncertainty and traceability |
+| `scenario_setup/` | SRQ4 | orchestrating the scenario comparison and logging every run |
+
+The folders map one-to-one onto research questions, which is the test for where
+a new script belongs. `model_serving/` was renamed `model_serving_interface/`
+on 2026-08-19 to name SRQ2's "Structured Tool Interface" explicitly.
+
+**`srq2_synthesis.py` and `srq2_agent.py` live under `model_serving_interface/`,
+not `model_training/`.** `srq2_synthesis.py` does fit models, but training is a
+*means*: its output is the confidence-scored payload the tool interface carries
+(inter-model agreement, inverse-MAPE ensemble, split-conformal interval,
+confidence tier). `srq2_agent.py` trains nothing at all -- it is LLM calls plus a
+judge. Ask what a script is *for*, not what it happens to call.
 
 `03_thesis_modelling/notebooks/` and `03_thesis_modelling/prompts/` no longer
 exist -- both were archived 2026-08-19 to `03_thesis_modelling/.archive/`, and

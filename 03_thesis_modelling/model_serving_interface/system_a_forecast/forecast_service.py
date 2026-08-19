@@ -9,7 +9,7 @@ observed data, then produces a one-step-ahead (next month) forecast for every se
 with a split-conformal 90% interval and a confidence tier.
 
 Two entry points:
-  - build_service()        : train + write 03_thesis_modelling/model_serving/system_a_forecast/forecasts.csv
+  - build_service()        : train + write 03_thesis_modelling/model_serving_interface/system_a_forecast/forecasts.csv
   - forecast_demand(...)   : the callable the agent tool wraps (reads the lookup)
 
 Self-contained, reproducible (seed=42). No Prometheus/Nika/LLM dependency.

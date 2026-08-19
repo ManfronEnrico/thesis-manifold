@@ -18,8 +18,11 @@ Locked repo structure (P0028 restructure, 2026-07-11) — see
     01_thesis_research/   research-questions/, literature/
     02_thesis_data/       _00_raw/ .. _03_engineered/ (pipeline tiers),
                           preprocessing/ (per-category scripts, not data)
-    03_thesis_modelling/  model_training/ vs model_serving/ (train vs serve),
-                          notebooks/, prompts/
+    03_thesis_modelling/  model_training/ (SRQ1: trains the models),
+                          model_serving_interface/ (SRQ2: exposes them through a
+                          structured tool interface),
+                          scenario_setup/ (SRQ4: runs + logs the scenarios),
+                          .archive/ (superseded notebooks + SRQ2 prompt set)
     04_thesis_results/    srq{N}/ subfolders — new SRQ results always go here,
                           never a new top-level tier
     05_thesis_writing/    sections-drafts/, sections-final/, figures/, analysis/
@@ -199,7 +202,7 @@ Directory containing the scenario-testing harness for SRQ4.
 
 Holds the experiment orchestration, the prompt definitions, the pre-flight
 verification and the run-log inspection tooling. This is the third of the three
-modelling concerns: model_training/ trains, model_serving/ serves, and
+modelling concerns: model_training/ trains, model_serving_interface/ serves, and
 scenario_setup/ runs scenarios against those models and logs what happened.
 
 Example:
@@ -227,14 +230,38 @@ Example:
     script = THESIS_MODELLING_TRAINING_DIR / "srq1_benchmark.py"
 """
 
-THESIS_MODELLING_SERVING_DIR: Path = THESIS_MODELLING_DIR / "model_serving"
+THESIS_MODELLING_SERVING_DIR: Path = THESIS_MODELLING_DIR / "model_serving_interface"
 """
-Directory containing model-serving code: making trained models available to
-downstream consumers (a dedicated forecast service, or a conversational LLM).
+SRQ2 — the structured tool/action interface that exposes forecasting outputs to
+an agentic system while preserving reliability, uncertainty and traceability.
+
+Renamed from "model_serving" 2026-08-19 to name the research question it answers.
+This is where the interface CONTRACT lives: the typed tool schema, the payload
+that carries point forecast + calibrated interval + provenance, and the synthesis
+layer that assembles it. Training happens in model_training/ (SRQ1); running
+scenarios against the interface happens in scenario_setup/ (SRQ4).
 
 Example:
     from PATHS import THESIS_MODELLING_SERVING_DIR
     print(THESIS_MODELLING_SERVING_DIR.resolve())
+"""
+
+THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR: Path = (
+    THESIS_MODELLING_SERVING_DIR / "srq2_synthesis")
+"""
+SRQ2 synthesis layer: the deterministic engine that turns multiple model
+forecasts into a single confidence-scored payload, plus the LLM recommendation
+and judge scripts that consume it.
+
+Moved here from model_training/ 2026-08-19. `srq2_synthesis.py` does fit models,
+but training is a MEANS -- its output is the structured payload the tool
+interface carries (inter-model agreement, inverse-MAPE ensemble, split-conformal
+interval, confidence tier). `srq2_agent.py` trains nothing at all. Both answer
+SRQ2's interface question, not SRQ1's model-selection question.
+
+Example:
+    from PATHS import THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR
+    engine = THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR / "srq2_synthesis.py"
 """
 
 THESIS_MODELLING_SERVING_SYSTEM_A_DIR: Path = THESIS_MODELLING_SERVING_DIR / "system_a_forecast"

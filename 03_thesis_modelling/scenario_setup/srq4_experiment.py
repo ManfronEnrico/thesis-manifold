@@ -5,17 +5,17 @@ SRQ4 experiment harness — does model availability improve an LLM's forecasts?
 Three scenarios forming an INFORMATION LADDER (B-DEC-5, 2026-08-19). Each adds one
 thing to the scenario below it, so the two increments can be attributed separately:
 
-  A_plain      no firm data; web search only. Not a null condition -- it finds
-                annual reports and market commentary and answers confidently.
-  B_data  the brand history in a hosted Code Interpreter sandbox; the LLM
-                writes and runs its own forecasting code.
+  A_plain   no firm data; web search only. Not a null condition -- it finds
+            annual reports and market commentary and answers confidently.
+  B_data    the brand history in a hosted Code Interpreter sandbox; the LLM
+            writes and runs its own forecasting code.
   C_model   the same data behind a `forecast_demand` tool backed by the
-                pre-trained XGBoost. The LLM writes no code.
+            pre-trained XGBoost. The LLM writes no code.
 
   A -> B  measures what DATA ACCESS buys.
   B -> C  measures what MODEL INTEGRATION adds on top -- the thesis contribution.
 
-A two-scenario C-vs-B design conflates these, and a reviewer could then argue the
+A two-scenario B-vs-C design conflates these, and a reviewer could then argue the
 whole effect is just data access.
 
 All scenarios run the SAME model, temperature and reasoning effort: the design
@@ -32,9 +32,9 @@ Keys are read from 03_thesis_modelling/.env, falling back to the repo-root .env:
 The two scopes are disjoint; the project key returns 403 on the costs endpoint.
 
 Usage:
-  python 03_thesis_modelling/model_training/srq4_experiment.py --demo
-  python 03_thesis_modelling/model_training/srq4_experiment.py --demo --scenarios A,B
-  python 03_thesis_modelling/model_training/srq4_experiment.py --full --repeats 5
+  python 03_thesis_modelling/scenario_setup/srq4_experiment.py --demo
+  python 03_thesis_modelling/scenario_setup/srq4_experiment.py --demo --scenarios A,B
+  python 03_thesis_modelling/scenario_setup/srq4_experiment.py --full --repeats 5
 """
 import argparse, json, os, re, sys, time, warnings
 from pathlib import Path
@@ -87,11 +87,11 @@ import importlib.util
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import prompts as P
 
-# forecast_service.py lives in model_serving/, not beside this file: the P0028
-# restructure split train-vs-serve and this path was never updated. Loaded by
-# explicit path because 03_thesis_modelling/ has no __init__.py, so it is not
-# an importable package.
-_FS_PATH = ROOT / "model_serving" / "system_a_forecast" / "forecast_service.py"
+# forecast_service.py lives in model_serving_interface/, not beside this file.
+# Loaded by explicit path because 03_thesis_modelling/ has no __init__.py, so it
+# is not an importable package.
+_FS_PATH = (ROOT / "model_serving_interface" / "system_a_forecast"
+            / "forecast_service.py")
 if not _FS_PATH.is_file():
     raise FileNotFoundError(f"System A's backing service is missing: {_FS_PATH}")
 _spec = importlib.util.spec_from_file_location("fs", _FS_PATH)
