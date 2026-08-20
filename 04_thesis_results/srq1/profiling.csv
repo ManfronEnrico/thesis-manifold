@@ -1,0 +1,5 @@
+model,fit_s,predict_ms,peak_fit_MB,peak_predict_MB,n_train,n_features
+Ridge,0.075,2.8,5.5,0.15,2470,13
+LightGBM,2.039,15.9,8.0,0.09,2470,13
+XGBoost,0.968,9.3,0.1,0.06,2470,13
+ARIMA(per-series),0.085,7.0,0.3,0.08,26,1

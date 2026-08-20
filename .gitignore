@@ -31,6 +31,16 @@ env/
 # an answer, which is already derivable from the committed feature matrices.
 !03_thesis_modelling/scenario_setup/**/*.csv
 !03_thesis_modelling/.archive/prompts_srq2_2026-08/*.csv
+# EXEMPTION: SRQ1 result tables are findings, not data. They are the numbers
+# behind the tracked figures and the thesis prose -- 222 B to 1.9 KB of model
+# metrics, never Nielsen rows. Excluding them meant shap_importance.png shipped
+# while the values it plots did not, so a reader could see the chart and not
+# reproduce or check it. They also make results diffable: the 2026-08-20 SHAP
+# regeneration changed promo_intensity 0.100 -> 0.041 and dropped
+# weighted_distribution entirely, a change no tracked file recorded.
+!04_thesis_results/srq1/*.csv
+!04_thesis_results/srq4/*.csv
+
 *.7z
 # Exception: literature review CSV is safe to track
 !2026-03\ -\ CMT\ -\ Master\ Thesis\ -\ Literature\ review\ -\ Main\ Articles\ (40).csv
