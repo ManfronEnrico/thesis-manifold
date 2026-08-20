@@ -1,0 +1,187 @@
+---
+pid: P0040
+created: 2026-08-20 00:00:00
+updated: 2026-08-20 12:00:00
+status: focus
+focus_detail: "Extend the SRQ4 ladder from three scenarios to five by adding the real Prometheus Graph Engine: D_prometheus (as it ships, code-as-action) and E_prometheus_model (same engine, plus the forecast_demand tool). D->E is the thesis contribution measured inside the production system, and it independently replicates B->C. Tasks 1-3 DONE 2026-08-20: the archived blueprint's API is correct (F13), the engine runs gpt-5.5 like scenarios A-C, RU warehouse credentials verified live (F35), and E2B cost measured at ~$0.0001/run -- negligible (F38). Nothing external is blocked: E2B key is Brian's own, and PROMETHEUS_TEMPLATE_ID is a build artifact of a recipe that ships with the engine. Next: build the template (REQUIRED -- base image lacks statsmodels/prophet, so D would be silently handicapped), then run the engine locally."
+---
+
+# P0040 — Prometheus scenarios D and E
+
+## Goal
+
+Measure the thesis contribution **inside the production agent**, not only in a
+GPT-based stand-in.
+
+> Does adding a dedicated forecasting model as a tool improve Prometheus's
+> answers, versus Prometheus writing its own forecasting code?
+
+## The five-scenario ladder
+
+| Scenario | Engine | Forecast access | Reproducible by an examiner |
+|----------|--------|-----------------|------------------------------|
+| `A_plain` | GPT-5.5 | none | yes |
+| `B_data` | GPT-5.5 | Code Interpreter | yes |
+| `C_model` | GPT-5.5 | `forecast_demand` tool | yes |
+| `D_prometheus` | Prometheus Graph Engine | none (code-as-action, as shipped) | **no** — NDA/proprietary |
+| `E_prometheus_model` | Prometheus Graph Engine | `forecast_demand` tool | **no** — NDA/proprietary |
+
+**Naming convention (Brian, 2026-08-20): `{LETTER}_{suffix}`.** The suffix names
+the capability so every log line and results table stays legible once letters stop
+carrying meaning on their own. Applies to D and E exactly as to A-C.
+
+### Why two Prometheus scenarios rather than one
+
+A single Prometheus scenario would move **two variables at once** (engine *and*
+tool), so a C-to-D difference could not isolate the contribution. Splitting gives:
+
+- **D -> E** — same engine, same prompts, one variable: the tool. This is the
+  comparison the thesis has claimed since the outset.
+- **B -> C and D -> E** — the *same intervention on two different orchestrators*.
+  Agreement between them is a materially stronger claim than either alone.
+
+### What this does to B_data's role
+
+B_data was built as a stand-in for Prometheus while access was pending. Once D
+exists, B is no longer a proxy — it becomes "generic LLM with code execution."
+**State this explicitly in the methodology** rather than leaving a reviewer to
+notice the reframing.
+
+### Reproducibility is a design feature, not a concession
+
+A-C is the reproducible core (repo + an API key). D-E is ecological validation
+that no third party can rerun. Presenting them as two tiers that *agree* is
+stronger than pretending the whole ladder is reproducible.
+
+## Decisions
+
+### DEC-SCENARIO-SPLIT — five scenarios, D plain and E tooled
+
+**Status: SETTLED (Brian, 2026-08-20).** Superseded the earlier single-scenario-D
+proposal for the confound reason above.
+
+### DEC-PROMETHEUS-VENDORING — the engine never enters the repo
+
+**Status: SETTLED (Brian, 2026-08-20).**
+
+The Graph Engine is Manifold AI proprietary (~500 MB extracted). It stays a
+**sibling of the repo**, located via `.env`:
+
+```
+PROMETHEUS_ROOT=Z:/_dev-ssd/prometheus
+```
+
+The repo holds only a thin, committable, auditable adapter under
+`03_thesis_modelling/scenario_setup/`. Rationale is IP and thesis-repository
+publication, not file size. `.gitignore` already covers `.env`, `.env.*` and
+`*.7z`; add a defensive `prometheus/` entry in case the tree ever lands inside
+the repo.
+
+### DEC-PROMETHEUS-DATA — same snapshot across all five scenarios
+
+**Status: SETTLED in principle (Brian, 2026-08-20); verify in task 3.**
+
+Initial concern was that D/E reading the live Royal Unibrew warehouse while A-C
+read the local Nielsen snapshot would break comparability and risk leaking the
+target month.
+
+**Brian's correction, which resolves it:** the warehouse is **not** updated daily.
+It is refreshed roughly monthly, and a re-poll on 2026-08-19 returned data through
+**July 2026 — identical to the local snapshot.** So within August the two sources
+*are* the same snapshot, and the concern is largely theoretical.
+
+Decision: prefer pointing Prometheus at the **local snapshot** where supported
+(the archived `data_credentials.json` uses `type: file`, suggesting it is), because
+it makes identical-input an *enforced property* rather than a timing coincidence.
+Fall back to the live connection if the engine requires it, and record which was
+used in every run trace. **If the run slips past August, re-verify** — the
+coincidence expires when the warehouse next refreshes.
+
+## Inherited context (do not re-derive)
+
+| Fact | Source |
+|------|--------|
+| A/B/C ladder runs, 18 paid runs logged | P0039, `04_thesis_results/srq4/` |
+| C beat B on every run: 7.7% vs 13.5% median APE | P0039 results |
+| C is also ~28x cheaper and ~22x faster than B | P0039 results |
+| `forecast_tool.py` loads persisted models, never fits | P0037 task 3 |
+| Every forecast carries a `trace` block | P0037 F12 |
+| Conformal calibration uses val residuals, not test | P0037 task 7 |
+| Chain grain deleted; brand x month is locked | DEC-GRAIN |
+| Enrico has funding for the D/E API spend | Brian, 2026-08-20 |
+
+## The archived integration blueprint — read critically
+
+`.archive/thesis_agents_preintegration/system_a_oracle/` contains a
+`forecast_demand_tool.py`, README and persona doc describing how to register the
+tool with the Graph Engine.
+
+**Provenance caveat (Brian, 2026-08-20):** this is most likely Enrico's work from
+*before* the team had Prometheus access. Its own README concedes *"Not yet wired
+into a running engine (needs `oracle.py` + a local engine run; E2B template id to
+confirm)."*
+
+**Treat it as a hypothesis about the engine's API, not a description of it.** It is
+specific in ways that suggest real knowledge — `@data_agent.tool`, imports from
+`data_agents.agents.base_agents`, `ProjectDeps.tool_names`, pydantic_ai, LangGraph,
+registration in `langgraph.json` — but none of that is verified against what
+shipped. Task 1 is exactly that verification.
+
+Known-stale regardless of whether the API matches:
+
+| Reference | Current state |
+|-----------|---------------|
+| `scripts/forecast_service.py` via `parents[3]` | moved in the P0028 restructure; path resolves to nothing |
+| `chain` parameter, `_07_forecast_service/` | chain grain deleted per DEC-GRAIN |
+| "~50 prompts", "System A / System B" | superseded: 1 prompt x N repeats, scenarios, reversed lettering |
+
+## Tasks
+
+| # | Task | Phase | Blocked by | Status |
+|---|------|-------|-----------|--------|
+| 1 | Verify the engine's real tool API against the archived blueprint | 1 | -- | **done** (F13) |
+| 2 | Locate `prometheus.py`, `langgraph.json`, and the tool-registration path | 1 | -- | **done** (F13) |
+| 3 | Determine how data access is configured; confirm local-snapshot support | 1 | -- | **done** (F18, F35) |
+| 3b | Build the `prometheus` E2B template -- **required**, base image is bare (F38) | 1 | -- | pending |
+| 4 | Get the engine running locally on the shipped Prometheus project | 2 | 3b | pending |
+| 5 | Run `D_prometheus` on the SRQ4 prompt with logging + cost capture | 2 | 4 | pending |
+| 6 | Port `forecast_demand` to the verified API; drop `chain`; repoint via PATHS | 3 | 1, 4 | pending |
+| 7 | Register the tooled project and run `E_prometheus_model` | 3 | 6 | pending |
+| 8 | Analyse D->E against B->C; check the two agree in direction | 4 | 5, 7 | pending |
+| 9 | Measure the engine's real RAM footprint (see below) | 4 | 4 | pending |
+| 10 | Write up; fold into the SRQ4 results section | 4 | 8, 9 | pending |
+
+Tasks 1-3 are **read-only and free** and decide the entire cost estimate.
+
+## The RAM budget — a real finding replaces a fabricated one
+
+`04_thesis_results/generate_figures.py::fig4_ram_budget` is currently **hardcoded
+and invented** (a literal 500 MB Python runtime, 512 MB "active ML model"). The
+measured reality is that the served model needs **3-4 MB**.
+
+Prometheus does not invalidate the compute-constraint argument — it **rescues** it.
+The defensible claim was never "ML models are heavy"; it is:
+
+> The model is the cheap part. The agent runtime is where the budget goes.
+
+Task 9 measures the engine's actual footprint and regenerates the figure from
+measurement. This converts the thesis's weakest figure into a genuine result.
+
+## Out of scope
+
+- Retraining or model reselection (SRQ1 settled)
+- The A-C scale-up run (P0039; deliberately lower priority than D/E — the
+  scale-up strengthens a result already established in direction, whereas D/E is
+  the only result nobody else could produce)
+- The ensemble iteration (deferred; see findings)
+- Reframing SRQ3 from "assessment" to "integration" — a scope decision for Brian
+  and Enrico, **not** settled by access alone
+
+## Related
+
+- `plans/P0039_2026-08-19_01-45_srq4-system-a-vs-b/` — the A/B/C ladder this extends
+- `plans/P0037_2026-08-12_15-28_serving-interface-refinement/` — its out-of-scope
+  line ("Prometheus/Graph Engine integration ... pending NDA") is what expired
+- `00_thesis_context/prometheus-integration/` — April architecture docs
+- `01_thesis_research/research-questions/srq3-integration-readiness.md`
+- `.archive/thesis_agents_preintegration/system_a_oracle/` — the unverified blueprint

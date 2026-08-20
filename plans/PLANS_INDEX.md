@@ -4,7 +4,7 @@
 > New plans: `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`
 > Archived plans: `plans/.archive/`
 > Status tracked in plan frontmatter only — no outcome files, no folder movement on status change.
-> Next available P-ID: **P0040**
+> Next available P-ID: **P0041**
 
 ---
 
@@ -14,58 +14,34 @@
 
 | P-ID | Folder | Status | Detail |
 |------|--------|--------|--------|
-| **P0039** | `P0039_2026-08-19_01-45_srq4-system-a-vs-b/` | **focus** | **THE THESIS PREMISE.** Does exposing a trained model as a tool improve an LLM's answers, versus letting it write its own forecasting code? System A calls `forecast_demand` (trained XGBoost); System B writes and runs its own code in an E2B sandbox. Same model, same prompts, one variable. The harness already exists and is sound (F1) — the only blocker is a missing `03_thesis_modelling/.env` (F2). Open: **DEC-VENDOR**, which LLM is primary; the current `claude-sonnet-4-6` is a hardcoded default with no recorded justification (F4), and Brian favours GPT on ecological-validity grounds (the "cheaper and weaker" argument was rejected as indefensible). Settled: **DEC-SCOPE-SRQ4** — CSD primary because it has the most brands, one category as robustness. Key reframing (F6): honest interval calibration made System A's intervals wide, so its defensible claim is not "more accurate" but "a number **plus** calibrated uncertainty **plus** provenance" — neither of which self-written code can produce. |
-| **P0038** | `P0038_2026-08-12_18-32_csd-notebook-decomposition/` | in_progress | **CURRENT FOCUS. Gates P0036 task 6 and therefore P0033.** Decompose the 57.8k-token CSD notebook into **6 shared step scripts (`--category`) + 1 per-category feature-engineering script = 11 files replacing 32.** Decisive finding (F30): `CSD/preprocessing_csd.py` invokes step scripts P0030 deleted — CSD's orchestrator is **broken today**, so this repairs a dead entry point rather than adding one. F31: the 3 working orchestrators are 184 lines each and differ *only* in the category name. Brian's correction (2026-08-12) reframed the drift argument: drift comes from *copying*, not *splitting*, so shared+parameterised removes the surface P0027/P0029/P0030 fought. Contract between EDA and feature engineering is `{category}_eda_findings.json`, which **already exists and is already written — it is simply never read back** (F27); only 6 params cross the boundary (F26). Two contract fields look derived but are not (F28): TRAIN_END/VAL_END (absolute counts) and MIN_PERIODS (literal `40` with a derived-*sounding* rationale). Also corrects P0036 F25: CSD's real split is **52/13/35**, not 63/13/24 — it runs a different pathway (F29). Other 3 categories gain EDA for free, which is most of P0033. 9 tasks. |
-| **P0037** | `P0037_2026-08-12_15-28_serving-interface-refinement/` | in_progress | Model serving + LLM query-interpretation interface design (worked in a parallel session). **Open decision: DEC-HORIZON** — one-step vs recursive multi-step forecasting, options A–D, recommendation D falling back to A. Brian's decision required. |
-| **P0036** | `P0036_2026-08-11_16-08_csd-fixes-before-mirror/` | in_progress (partly superseded by P0038) | **GATES P0033 — do this first.** Fix every defect in the CSD notebook + shared modules before mirroring multiplies them by four. Headline finding: **promo-zero was an artifact of the market filter, not the data.** The notebook filters to 9 *region children* of DVH EXCL. HD instead of the parent market `1256338`; parent carries 119,010 nonzero promo rows, children carry 0. DEC-SCOPE (Brian 2026-08-11) switches to the parent per Nielsen's own metadata — strictly better at brand×month (3,917 vs 3,641 brand-month rows; 85 vs 74 brands @ MIN_PERIODS>=24), reversing P0026's region choice. Also: commit P0032's at-risk uncommitted V3/V4 fixes, fix `make_calendar` bfill leakage (shared module), resolve sales_value/sales_liters redundancy, decide MIN_PERIODS (140→58 brands is a 59% cull), and measure single-brand vs pooled training. **2026-08-12: tasks 6, 12, 14, 15 moved to or answered by P0038** — task 6 (parity check) is now P0038 task 8 since it must run against the decomposed scripts; task 14's seam question is answered by DEC-SHARED-SEAM; task 15's shared-module half is done on disk. Remaining here: 4, 7, 8, 9, 11. |
-| **P0033** | `P0033_2026-08-01_eda-mirror-three-categories/` | **blocked** (by P0036) | **TOP PRIORITY once P0036 lands — critical path to writing phase.** Blocked by P0036 (mirroring the current notebook would propagate the region filter + all-zero promo columns to all four categories). Mirror the CSD notebook-based preprocessing/EDA to Danskvand, Energidrikke, RTD. Decision locked (Brian 2026-08-01): one notebook per category, exactly as CSD. Structural gap: CSD became a notebook 2026-07-13 while the other three remain flat `pre_{cat}_0..6.py` step scripts. Explicitly min/max — the 6 EDA enrichment candidates in `_notes/eda-improvement-candidates.md` are deferred (4 need Zotero refs not in the library). Closes harness B03, unblocks Ch4. 8 tasks. Runs independently of P0032/P0034, except energidrikke's final run which should follow P0032. |
-| **P0035** | `P0035_2026-08-01_grain-artifact-removal/` | in_progress | Remove every chain/region-grain artifact from live code, paths, results and repo docs so the pipeline targets brand×month only, per DEC-GRAIN + Brian 2026-08-01. **Half-state hazard:** `_03_engineered/bychain/` is already deleted from disk, but 20 live files still reference it (PATHS.py constants, `phase3_region_grain_test.py`, 7 model_training scripts, forecast_service.py, srq1 results artifacts, repo docs) — those paths now resolve to a non-existent directory. Key decision recorded: `group_keys` in `_shared_modules` stays (grain-*capable*, not grain-*committed*; default already `["brand"]`). Also flags `utility_scripts/scripts/` shadowing `03_thesis_modelling/` — determine canonical tree before editing. 8 tasks. |
-| **P0032** | `P0032_2026-08-01_leakage-fix-v3-v4/` | blocked (F11 only) | Fix Enrico's V3 (promo_intensity target leakage — `sales_units_t` in its own denominator, consumed at current t) and V4 (market_id assert) in `_shared_modules/engineer_features.py`. **Verified live in current code at :317-321**, not just in the archived builders Enrico reviewed; both legacy `build_feature_matrix*.py` are dead code under `.archive/`. Affects CSD + energidrikke (danskvand/RTD promo-zero). Also decides `weighted_distribution` treatment. 8 tasks. Feeds corrected numbers to P0034. |
-| **P0034** | `P0034_2026-08-01_chapter-number-reconciliation/` | in_progress | Inventory + reconcile every hard-coded metric the S01 retrain invalidates (13 locations across Ch6/Ch8/Ch9/Ch10; the four headline WMAPE figures repeat in 3 tables in Ch6 alone), and drop Totalbeer from prose with its compute-constraint justification (~10M rows, larger than any other category). Answers Enrico handover Q2 + Q3. Key finding: chain-grain removal per DEC-GRAIN is a *structural* rewrite of Ch6 tables, and danskvand's headline worsens 22.0%→23.8% from the grain decision alone. Prepare-only — no prose lands without Enrico. 7 tasks. Phase 1 runs today; phase 3 needs P0032. |
-| **P0031** | `P0031_2026-07-13_18-29_csd-eda-remaining-gaps/` | in_progress | Post-P0030 EDA review found 5 remaining gaps in the (working, migrated) CSD notebook: ACF/PACF lag-consensus unwired, CSD's zero promo signal undocumented, cross-brand heterogeneity verdict not persisted to findings JSON, sales_value/sales_liters redundancy with sales_units unexamined, stale CELL-N print headers. 6 tasks (5 independent + 1 final re-verification), none started. Priority: Task 4 (redundancy) first per real modeling risk. |
-| **P0030** | `P0030_2026-07-13_14-08_csd-notebook-consolidation/` | complete | Migrated CSD's 7-stage preprocessing pipeline + EDA stage into one combined Jupyter notebook (`pre_processing_notebook_csd.ipynb`). All 8 tasks complete; Brian re-ran end-to-end successfully. Original 7 `.py` scripts archived to `.archive/`. Post-migration hardening added: auto-detected structural break scan, zero-run flags, per-category log-transform gate, non-blocking plots. Superseded by P0031 for further EDA-completeness work. |
-| **P0029** | `P0029_2026-07-13_13-26_chatgpt-eda-gap-analysis-reconciliation/` | in_progress | Reconcile a ChatGPT-generated gap analysis of `pre_csd_1.5_eda.py` (single-file input, no dataset/repo access) against ground truth — triage each claim as already-resolved-in-P0027 / context-blind-false-positive / needs-verification, then verify before any fix. Feeds back into P0027's paused Phase 5 decision. Waiting on Brian to paste the analysis text. |
-| **P0028** | `P0028_2026-07-10_restructure-thesis-enrico-integration/` | in_progress | Full repo-root restructure (grew from thesis/data-only scope): flatten `thesis/` prefix to root, renumber 00_thesis_context→01_thesis_research→02_thesis_data→03_thesis_modelling→04_thesis_results→05_thesis_writing, split utility_scripts/ into real tooling vs. relocated thesis-pipeline code (model_training/model_serving), archive Enrico's stray root results/+reports/, centralize all paths in PATHS.py. 8 phases, ~9.5 hrs total; tree design locked after 4 rounds of critique. |
-| **P0027** | `P0027_2026-07-10_15-30_csd-eda-reconciliation/` | in_progress | Verify Enrico's 2026-07-01 merge handover claims (SRQ1-4 track); rigor pass on CSD EDA (KPSS, missingness mechanism, distribution shift); region-grain WMAPE test; then extend to danskvand/energidrikke/RTD. **2026-07-11**: found a real leakage bug (shared `engineer_features.py` groups by `brand` only, not `brand`+`market_id` — region-grain lag/rolling features conflate across regions) that blocks trusting Phase 3's 21.2% WMAPE result; added Phase 4a (fix) and Phase 4b (add chain branch alongside region) before Phase 5 can proceed. **2026-07-12**: compared colleague's standalone `02_thesis_data/preprocessing/` scripts vs. the CSD orchestrator — archived the former to `.archive/enrico_legacy_preprocessing_2026-07/` (branch `chore/archive-colleague-preprocessing`, not yet committed); also found `_03_engineered/{bymonth,bychain}/CSD/` are currently empty, so `srq1_benchmark.py` can't run yet even after the leakage fix — added a regenerate-to-canonical-path step to Phase 4a. Resume with the group_keys fix. |
-| **P0026** | `P0026_2026-06-30_16-38_aggregation-grain-analysis/` | complete | Implemented brand×region×period grain (9 DVH geographic regions, MIN_PERIODS=24). CSD pipeline: 25,124 rows / 571 series — 10.6× more data than previous grain. NOTE: since rejected by Enrico pending WMAPE test, see P0027. **SUPERSEDED 2026-08-11 (P0036 DEC-SCOPE):** the region grain was measured to be a net *loss* at brand×month — the "10.6× more data" counted the same brand-months nine times, and region scope yields fewer brand-month rows (3,641 vs 3,917) and fewer surviving brands (74 vs 85) than the parent market, while zeroing out every promo observation. |
-| **P0024** | `P0024_2026-06-30_12-40_market-filter-fix/` | complete | Fix DVH EXCL. HD market filter across all 5 Nielsen category preprocessing pipelines (CSD, Danskvand, Energidrikke, RTD, Totalbeer) |
-| **P0023** | `P0023_2026-06-30_12-38_csd-eda-critique/` | in_progress | EDA critique from predictive ML + FMCG perspective; 13 issues across P0/P1/P2; output doc pending |
-| **P0022** | `P0022_2026-05-07_10-00_preprocessing-pipeline-modularization/` | in_progress | Phase 5 next: EDA replication for Energidrikke, Danskvand, RTD (data folder now clean) |
-| **P0017** | `P0017_2026-04-27_14-20_jupyter-notebook-path-centralization/` | in_progress | Path infra complete; remaining: notebook template (comparison §1-5, 7+ notebooks); data folder cleanup needed first |
+| **P0040** | `P0040_2026-08-20_prometheus-scenarios-d-e/` | **focus** | **Prometheus access landed 2026-08-20.** Extends the SRQ4 ladder from three scenarios to five by adding the real Graph Engine: `D_prometheus` (as shipped, code-as-action) and `E_prometheus_model` (same engine + the `forecast_demand` tool). **D->E is the contribution measured inside the production agent**, and it independently replicates B->C — the same intervention on two different orchestrators. Splitting D from E avoids confounding engine with tool (DEC-SCENARIO-SPLIT, Brian). Engine never enters the repo: proprietary, located via `PROMETHEUS_ROOT` in `.env` (DEC-PROMETHEUS-VENDORING). Data comparability holds — the RU warehouse refreshes monthly and currently sits at July 2026, same as the local snapshot (DEC-PROMETHEUS-DATA, F4). An integration blueprint exists in `.archive/thesis_agents_preintegration/` but **predates engine access** — treat as hypothesis (F1). Also replaces the fabricated `fig4_ram_budget` with real measurement (F5). Tasks 1-3 are free and read-only. 10 tasks. |
+| **P0039** | `P0039_2026-08-19_01-45_srq4-system-a-vs-b/` | in_progress | **The A/B/C ladder — delivered.** 18 paid runs, $3.44: `C_model` beat `B_data` on every run (7.7% vs 13.5% median APE), ~28x cheaper and ~22x faster. Tasks 1-6 discharged 2026-08-19; the in-file task table still reads all-pending and is stale. DEC-VENDOR settled: `gpt-5.5-2026-04-23`. Remaining: the optional scale-up (5 brands x 10 repeats, ~$35), an unmeasured Coca Cola `A_plain` (~$1.27), a cheap `C_model` re-run on the re-tuned models (~$0.04), and task 7 (write-up). **Now lower priority than P0040** — the scale-up strengthens a result already established in direction, whereas D/E is the only result nobody else could produce. |
+| **P0037** | `P0037_2026-08-12_15-28_serving-interface-refinement/` | in_progress | Tasks 3, 4, 7 delivered 2026-08-19 — `build_service()` runs end to end (230 forecasts), every response carries a trace block, and conformal calibration moved off test residuals. Remaining is cleanup: tasks 2, 6, 8, 9. **Note:** its out-of-scope line "Prometheus/Graph Engine integration (pending NDA)" has expired — that work is P0040, not a reopening of this plan's scope. |
+| **P0034** | `P0034_2026-08-01_chapter-number-reconciliation/` | paused | Parked by Brian 2026-08-19 until the pipelines stop moving. Unpauses after the SRQ4 write-up. Its core scope — inventorying hard-coded metrics in the drafts — is now substantially pre-done by `05_thesis_writing/check_chapter_facts.py`, which found **46 factual errors across 9 chapters**, including a five-vs-four category contradiction between Ch1/Ch3/Ch5/Ch10 and Ch4. |
 
-### Blocked
+### Blocked / Paused / Backlog
 
-| P-ID | Folder | Blocked By |
-|------|--------|------------|
-| **P0005** | `P0005_2026-04-23_08-00_system-a-feature-eng-integration/` | Decision needed: packaging fix Option A vs B |
-
-### Paused
-
-| P-ID | Folder | Waiting On |
-|------|--------|------------|
-| **P0019** | `P0019_2026-05-04_14-00_root-documentation-boundary-and-folder-cleanup/` | P0022 + P0017 completion |
-| **P0020** | `P0020_2026-05-04_14-30_rule-system-reform/` | P0019 Phase 4 |
-
-### Backlog
-
-| P-ID | Folder | Description |
-|------|--------|-------------|
-| **P0001** | `P0001_2026-04-13_08-00_cmt-master-upgrade-plan/` | CMT Master Upgrade |
-| **P0002** | `P0002_2026-04-13_08-00_notebooklm-integration-plan/` | NotebookLM Integration |
-| **P0003** | `P0003_2026-04-13_08-00_pta-best-practices-extraction/` | PTA Best Practices Extraction |
-| **P0004** | `P0004_2026-04-13_08-00_thesis-repo-upgrade-plan/` | Thesis Repo Upgrade |
+None. **Verified 2026-08-20:** the rows previously listed here (P0001-P0005, P0019,
+P0020) reference folders that exist neither in `plans/` nor in `plans/.archive/`.
+They were removed from disk without the index being updated, so the index was
+advertising plans that could not be opened. If any of that work is still wanted it
+needs a fresh P-ID, not a resurrected row.
 
 ---
 
 ## Archived Plans
 
-See `plans/.archive/README.md` for the full list. Archived: P0006, P0007, P0008, P0009, P0010, P0011, P0012, P0013, P0014, P0015, P0016, P0018.
+See `plans/.archive/README.md` for the full list. Archived: P0006-P0018, P0022-P0033, P0035, P0036, P0038.
+
+**Every archived plan carries a terminal status** (`complete`, `cancelled`, or deliberately
+`paused`) — verified 2026-08-20. Only P0025 and P0027 are archived while non-terminal
+(`in_progress` / `paused`); both were superseded rather than finished.
 
 ---
 
 ## How to Create a New Plan
 
-1. Next P-ID: **P0040**
+1. Next P-ID: **P0041**
 2. Create folder: `plans/P0023_YYYY-MM-DD_HH-mm_<slug>/`
 3. Create files: `task_plan.md`, `findings.md`, `progress.md` (use `/planning-with-files` skill)
 4. Add to this index
@@ -77,4 +53,4 @@ Move entire folder to `plans/.archive/` and update this index.
 
 ---
 
-**Last updated**: 2026-08-19 (P0039 added — SRQ4 System A vs B, now the focus and the last technical work the thesis requires. P0026/P0029/P0031/P0032/P0033/P0035/P0036/P0038 all closed and archived; P0034 paused until numbers are final; P0037 delivered tasks 3, 4, 7 and its remainder folds into P0039.)
+**Last updated**: 2026-08-20 (P0040 added — Prometheus scenarios D/E, now the focus. P0039's A/B/C ladder delivered its first paid results and drops to secondary. Index tables rewritten: they had listed P0022-P0038 as active while those folders were already archived on disk.)

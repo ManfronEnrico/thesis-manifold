@@ -686,12 +686,65 @@ def _eligible_brands(cat):
     return [b for b in vol.index if str(b).upper() in has_test]
 
 
-def _select_brands(per_cat=(4, 4, 4, 3), categories=None, brands=None):
+def _scorable_brands(cat):
+    """Eligible brands whose held-out test window has NO zero actuals.
+
+    APE divides by the actual, so a zero month is not a hard score -- it is
+    undefined. Measured 2026-08-20, the lowest-volume eligible brand in
+    danskvand (SIRMA) and energidrikke (GLACEAU) has an ALL-zero test window,
+    and CSD's (DOCTOR POLIDORIS) reads [0, 1, 1, 0, 0, 2]. Selecting those
+    brands would produce divide-by-zero cells rather than measurements.
+
+    History length is NOT the discriminator -- every brand in a category shares
+    the same split geometry and ~22-26 fit rows. Sparsity is.
+
+    Scoping the experiment to brands with continuous recent sales is also the
+    honest population for a demand forecast; intermittent/zero-inflated series
+    are a different forecasting problem, and one worth naming as a limitation
+    rather than silently averaging over."""
+    slug, tag, sub = CAT_FILE[cat]
+    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
+    te = fm[fm.split == "test"].dropna(subset=["sales_units"])
+    keep = {str(b).upper() for b, g in te.groupby("brand") if (g.sales_units > 0).all()}
+    return [b for b in _eligible_brands(cat) if str(b).upper() in keep]
+
+
+def _stratified_brands(cat, k=3):
+    """Highest / median / lowest-volume brand among the SCORABLE ones.
+
+    Volume-ranked top-N evaluates every scenario on the largest, most stable,
+    most data-rich series -- exactly where a trained model should look best. It
+    does not bias the A/B/C/D/E comparison (all scenarios see identical brands)
+    but it cannot answer whether the advantage survives on a thin, volatile
+    brand. Sampling across the volume range can.
+
+    Stratifying over `_scorable_brands` rather than raw volume rank keeps that
+    range coverage while guaranteeing every selected cell yields a defined APE."""
+    pool = _scorable_brands(cat)
+    if not pool:
+        raise SystemExit(
+            f"{cat}: no brand has a fully non-zero test window; cannot stratify. "
+            f"Inspect with --list-brands.")
+    if len(pool) <= k:
+        return pool
+    if k == 3:
+        idx = [0, len(pool) // 2, len(pool) - 1]
+    else:
+        # Even spacing across the volume range, endpoints always included.
+        idx = sorted({round(i * (len(pool) - 1) / (k - 1)) for i in range(k)})
+    return [pool[i] for i in idx]
+
+
+def _select_brands(per_cat=(4, 4, 4, 3), categories=None, brands=None,
+                   strategy="volume"):
     """Which (category, brand) pairs to run.
 
     Three ways to choose, in order of precedence:
 
       brands=["HARBOE", "PEPSI"]  exactly those, matched case-insensitively
+      strategy="stratified"       highest/median/lowest volume per category,
+                                  drawn only from brands with a scorable
+                                  (fully non-zero) test window
       categories=["CSD"]          top-N within only those categories
       per_cat=(4, 4, 4, 3)        top-N per category, all categories
 
@@ -723,6 +776,13 @@ def _select_brands(per_cat=(4, 4, 4, 3), categories=None, brands=None):
         return picks
 
     picks = []
+    if strategy == "stratified":
+        # per_cat's first entry sets the per-category count (default 3).
+        k = per_cat[0] if per_cat else 3
+        for cat in cats:
+            picks += [(cat, b) for b in _stratified_brands(cat, k)]
+        return picks
+
     for cat, k in zip(cats, per_cat):
         picks += [(cat, b) for b in _eligible_brands(cat)[:k]]
     return picks
@@ -730,7 +790,7 @@ def _select_brands(per_cat=(4, 4, 4, 3), categories=None, brands=None):
 
 def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=None,
              budget_usd=None, categories=None, brands=None, rep_offset=0,
-             dry_run=False):
+             dry_run=False, strategy="volume"):
     """Run the experiment and write runs.csv + summary.md.
 
     Checkpoints after every brand: a crash 40 runs in should not cost the
@@ -739,7 +799,7 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
     OUT = Path(out_dir) if out_dir else THESIS_RESULTS_SRQ4_DIR
     OUT.mkdir(parents=True, exist_ok=True)
     scenarios = scenarios or SCENARIOS
-    pairs = _select_brands(brands_per_cat, categories, brands)
+    pairs = _select_brands(brands_per_cat, categories, brands, strategy)
     t_start = time.time()
     n_total = len(pairs) * repeats * len(scenarios)
     print(f"SRQ4: {len(pairs)} brands x {repeats} repeats x {len(scenarios)} scenarios "
@@ -975,6 +1035,13 @@ def main():
                          "without overwriting its files")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the plan and its estimated cost; send nothing")
+    ap.add_argument("--brand-strategy", choices=["volume", "stratified"],
+                    default="volume",
+                    help="volume: top-N by units (default). stratified: "
+                         "highest/median/lowest volume among brands with a "
+                         "fully non-zero test window, so every cell yields a "
+                         "defined APE. Use --brands-per-cat N to set the count "
+                         "(default 3 when stratified).")
     ap.add_argument("--list-brands", action="store_true",
                     help="list eligible brands per category and exit")
     ap.add_argument("--scenarios", default="A,B,C",
@@ -990,10 +1057,15 @@ def main():
     if a.list_brands:
         for cat in (a.categories or list(CAT_FILE)):
             bs = _eligible_brands(cat)
-            print(f"\n{cat} -- {len(bs)} brands with held-out test rows "
-                  "(highest volume first):")
+            scorable = {str(b).upper() for b in _scorable_brands(cat)}
+            print(f"\n{cat} -- {len(bs)} brands with held-out test rows, "
+                  f"{len(scorable)} of them scorable "
+                  "(highest volume first; * = no zero in the test window):")
             for i, b in enumerate(bs, 1):
-                print(f"  {i:3d}. {b}")
+                mark = "*" if str(b).upper() in scorable else " "
+                print(f"  {i:3d}. {mark} {b}")
+            print(f"  stratified pick: "
+                  f"{', '.join(str(x) for x in _stratified_brands(cat))}")
         return
 
     want = {s.strip().upper() for s in a.scenarios.split(",") if s.strip()}
@@ -1005,7 +1077,8 @@ def main():
     if a.full:
         run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget,
                  categories=a.categories, brands=a.brands,
-                 rep_offset=a.rep_offset, dry_run=a.dry_run)
+                 rep_offset=a.rep_offset, dry_run=a.dry_run,
+                 strategy=a.brand_strategy)
         return
 
     # Demo: one brand, one repeat, every selected scenario. This is the smoke test --

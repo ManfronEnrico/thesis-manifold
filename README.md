@@ -125,7 +125,7 @@ gh auth login
 
 ```bash
 pip install graphviz matplotlib
-python utility_scripts/scripts/generate_figures.py
+python 04_thesis_results/generate_figures.py
 # Output: 05_thesis_writing/figures/*.svg and *.png
 ```
 

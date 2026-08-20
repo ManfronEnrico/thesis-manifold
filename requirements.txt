@@ -59,16 +59,35 @@ wcwidth==0.7.0
 # n_series=0 with nan metrics.
 scikit-learn==1.9.0
 xgboost==3.4.1
+# SHAP feature attribution for SRQ1 explainability (srq1_shap.py).
+# Was missing until 2026-08-20, which is why shap_importance.csv sat 40 days
+# stale: the script simply could not run in a clean environment.
+shap==0.52.0
+
 lightgbm==4.7.0
 prophet==1.4.0
 
 
-# SRQ4 experiment harness (srq4_experiment.py). Both SDKs are imported lazily
-# inside run_system_a/run_system_b, so their absence surfaced only mid-run
-# rather than at import -- the same swallowed-dependency failure as the ML
-# block above. E2B is required by System B only; System A needs anthropic alone.
+# SRQ4 experiment harness (srq4_experiment.py). SDKs are imported lazily inside
+# the scenario runners, so their absence surfaces mid-run rather than at import
+# -- the same swallowed-dependency failure as the ML block above.
+#
+# anthropic: retained only because DEC-LLM keeps a second vendor available; every
+# scenario currently runs gpt-5.5-2026-04-23 via the openai SDK.
 anthropic==0.122.0
+#
+# E2B: needed by scenarios B_data (Code Interpreter) and D_prometheus, which runs
+# the Prometheus Graph Engine's code-as-action in an E2B sandbox. `e2b` is the
+# template/sandbox API (build_template.py); `e2b-code-interpreter` is what the
+# engine's code_executor imports.
+#
+# PIN NOTE 2026-08-20: graph-engine/pyproject.toml declares
+# `e2b_code_interpreter==2.0.0`. The 2.9.1 below predates Prometheus access and
+# was chosen for the abandoned standalone-sandbox design. Running the engine may
+# require downgrading to 2.0.0 -- verify against the engine before the D/E runs
+# rather than assuming 2.9.1 is compatible.
 e2b-code-interpreter==2.9.1
+e2b
 
 # Hyperparameter tuning (srq1_benchmark_tuned.py). Absent until 2026-08-19, so
 # tuned_params.json could not be reproduced on a fresh machine -- the values
