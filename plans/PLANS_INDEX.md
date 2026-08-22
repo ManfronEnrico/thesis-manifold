@@ -53,4 +53,4 @@ Move entire folder to `plans/.archive/` and update this index.
 
 ---
 
-**Last updated**: 2026-08-20 (P0040 added — Prometheus scenarios D/E, now the focus. P0039's A/B/C ladder delivered its first paid results and drops to secondary. Index tables rewritten: they had listed P0022-P0038 as active while those folders were already archived on disk.)
+**Last updated**: 2026-08-22 (P0041 added -- citation sourcing register, maintained alongside P0040 rather than replacing it: every methodological claim needing an academic source, tracked as VERIFIED / PROSPECTIVE / UNSOURCED / UNSOURCEABLE for export to NotebookLM. Prompted by an unsourceable "50-200 HPO trials" claim caught before it reached the prose.) (2026-08-20: P0040 added — Prometheus scenarios D/E, now the focus. P0039's A/B/C ladder delivered its first paid results and drops to secondary. Index tables rewritten: they had listed P0022-P0038 as active while those folders were already archived on disk.)
