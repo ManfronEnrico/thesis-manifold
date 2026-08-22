@@ -253,6 +253,22 @@ description of a hazard avoided at runtime.
    **flipped the sign of the XGBoost size correlation** (+0.252 → −0.095). Any
    per-brand number predating that fix is unusable. Hyndman & Koehler (2006,
    p. 683) also criticise the exclusion practice generally.
+
+   A **declared 1 unit/month volume floor** now applies to the WMAPE tables
+   instead: readmitting every brand let in ones averaging under one unit across
+   the whole test window, where a delta of −3179pp is division by an almost-empty
+   denominator rather than evidence. The floor is stated in the output with its
+   row count, unlike the filter it replaces.
+
+7. **The size correlation is not robust, and should not be reported as a number.**
+   Across three defensible variants of the same analysis — scorable-only (the old
+   bug), all brands, and all brands above the volume floor — XGBoost's
+   correlation between delta and log volume reads **+0.252, −0.095 and +0.176**.
+   It changes sign on inclusion choices alone. **Report the win-rate pattern
+   instead**, which is stable: pooling wins most often on small brands (56–68%)
+   and is near a coin-flip on large ones (46–57%), with no monotone trend. The
+   instability of r is itself worth one sentence, because it is the same lesson
+   as F63/F67 — a diagnostic that looks quantitative but is outlier-driven.
 6. **Under-tuning inflates apparent gains.** At 2 trials the per-category danskvand
    result read 41.6%/22.0%; at 30 trials it read 23.7%/21.5%. The pilot's dramatic
    −20.9pp was a tuning artifact roughly ten times the true effect. Worth one

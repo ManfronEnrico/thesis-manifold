@@ -151,13 +151,40 @@ def main():
     # instead of altering the data to suit the metric. WMAPE is such a metric;
     # applying the exclusion to it took the cost of the workaround without needing
     # the workaround.
-    ok = df[df.scorable].copy()      # MAPE-family only
-    wm = df.copy()                   # WMAPE -- every brand, zeros included
+    # A VOLUME FLOOR, applied to WMAPE and reported, not hidden.
+    #
+    # Removing the scorability filter (correctly) readmitted brands averaging
+    # under one unit per month in the test window. WMAPE is arithmetically fine
+    # there -- but a brand selling 0.33 units/month produces deltas in the
+    # thousands of percentage points, and 89 of 460 rows exceed 100pp with a
+    # MEDIAN volume of 0.0 units/month. Those rows do not carry information about
+    # whether pooling helps; they carry division by an almost-empty denominator.
+    #
+    # So: two thresholds, both reported. MIN_UNITS excludes brands with
+    # essentially no test-window presence. This is a DIFFERENT decision from the
+    # scorability filter and must not be confused with it -- scorability was about
+    # a metric being undefined, this is about a series being too small to inform
+    # the question. Stating the floor and its effect is the honest treatment;
+    # Hyndman & Koehler's objection is to silent exclusion, not to a declared and
+    # justified inclusion criterion.
+    MIN_UNITS = 1.0
+    ok = df[df.scorable].copy()                       # MAPE-family only
+    wm_all = df.copy()                                # WMAPE, literally everything
+    wm = df[df.mean_test_units >= MIN_UNITS].copy()   # WMAPE, above the floor
     lines += [f"Brands scored: {len(df)} rows "
               f"({df.brand.nunique()} distinct brands x {df.model.nunique()} models).", "",
               f"**WMAPE statistics below use all {len(df)} rows.** WMAPE is defined "
               f"against zero actuals (the sum is in the denominator), so no exclusion "
               f"is needed or applied.", "",
+              f"**A volume floor of {MIN_UNITS:g} unit/month applies to the WMAPE tables**, "
+              f"leaving {len(wm)} of {len(wm_all)} rows. Brands below it average under one "
+              f"unit across the whole test window; WMAPE is arithmetically defined there but "
+              f"produces deltas in the thousands of percentage points "
+              f"({int((wm_all.delta_wmape.abs() > 100).sum())} rows exceed 100pp, with a "
+              f"median volume of {wm_all[wm_all.delta_wmape.abs() > 100].mean_test_units.median():.1f} "
+              f"units/month). That is division by an almost-empty denominator, not evidence "
+              f"about pooling. **This is a declared inclusion criterion, not the scorability "
+              f"filter** -- a different decision, made for a different reason.", "",
               f"**MAPE-family statistics use the {int(df.scorable.sum())} scorable rows** "
               f"({int((~df.scorable).sum())}, {100*(~df.scorable).mean():.0f}%, have a zero "
               f"actual somewhere in the test window, where APE is undefined rather than "

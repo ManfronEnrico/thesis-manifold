@@ -80,20 +80,99 @@ WMAPE as a zero-stable, portfolio-aggregate metric.
 The script nonetheless computed **every** statistic on the scorable-only frame, including all
 the `delta_wmape` analyses. It took the cost of the exclusion without needing the exclusion.
 
-**This was not harmless.**
+**This was not harmless.** It dropped 27% of brands, and not a random 27%: they are the
+intermittent, low-volume ones, i.e. exactly the population the pooling question concerns.
 
-| Statistic | scorable-only (as reported) | all brands (correct) |
+**Fixed:** two frames -- `ok` for MAPE-family statistics, where APE is genuinely undefined,
+and `wm` for WMAPE. The docstring and emitted markdown state both domains and cite Hyndman &
+Koehler for why.
+
+### 2.1 What the fix actually changed -- and one claim of mine it corrects
+
+Removing the filter readmitted brands averaging **under one unit per month**. WMAPE is
+arithmetically fine there, but the deltas are not: the worst is **-3179pp on a brand selling
+0.33 units/month**, and **89 of 460 rows exceed 100pp with a median volume of 0.0
+units/month**. Those rows are division by an almost-empty denominator, not evidence about
+pooling. A **declared 1 unit/month volume floor** now applies to the WMAPE tables.
+
+All three variants, so the sensitivity is visible rather than asserted:
+
+| Model | Variant | n | r(delta, log vol) | win-rate small/med/large |
+|---|---|---:|---:|---|
+| LightGBM | A — scorable-only (**the bug**) | 168 | +0.137 | 46 / 45 / 46% |
+| LightGBM | B — all brands, no floor | 201 | +0.158 | 58 / 39 / 49% |
+| LightGBM | **C — floor ≥1 unit/mo (shipped)** | 192 | **+0.152** | **56 / 41 / 48%** |
+| XGBoost | A — scorable-only (**the bug**) | 168 | +0.252 | 68 / 59 / 54% |
+| XGBoost | B — all brands, no floor | 201 | **−0.095** | 63 / 54 / 57% |
+| XGBoost | **C — floor ≥1 unit/mo (shipped)** | 192 | **+0.176** | **66 / 55 / 55%** |
+
+**CORRECTION to an earlier claim in this document.** An intermediate version reported that the
+fix "flips the sign of the XGBoost size correlation, +0.252 → −0.095", and that was written up
+as the headline consequence. **It does not survive the volume floor.** The −0.095 exists only
+in variant B, and is produced by the 9 sub-1-unit rows; at C the correlation is +0.176, the
+same sign as before the fix.
+
+**The right statement is the weaker one:** the correlation is **not robust to inclusion
+choices at all** — it ranges from −0.095 to +0.252 across three defensible variants of the
+same analysis. That is a more useful finding than any single value, and it is why the script's
+verdict is judged on **win-rate monotonicity, not on r** (the same reasoning as F63/F67).
+
+**What IS robust**, holding across all three variants and both algorithms:
+
+- the verdict is **NULL** — win-rate is never monotone across terciles, so the F50 story
+  ("pooling helps small brands, hurts large ones") does not hold as stated;
+- pooling wins **most often on small brands** (56–68%) and hovers near a coin-flip on large
+  ones (46–57%);
+- LightGBM's **medium** tercile is the consistent anomaly (39–45%), which no size-monotone
+  account explains.
+
+The tercile *medians* did move materially and that part stands: LightGBM's small-brand median
+went from **+2.0pp** (bug) to **−9.0pp** (shipped), i.e. from pooling losing to pooling
+winning on the brands most affected by the exclusion.
+
+### 2.1 The fix moved a reported result — and exposed a second, separate decision
+
+Re-running with all 201 brands changed the small-volume tercile substantially:
+
+| LightGBM, small tercile | Before (168 rows) | After (201 rows) |
 |---|---:|---:|
-| Rows used | 168 of 201 | **201** |
-| LightGBM corr(delta_wmape, log volume) | +0.137 | +0.158 |
-| **XGBoost corr(delta_wmape, log volume)** | **+0.252** | **−0.095** |
+| median delta (WMAPE pp) | **+2.0** | **−12.7** |
+| pooling win rate | 46% | **58%** |
 
-**The XGBoost size correlation flips sign.** 27% of brands were dropped — and they were not a
-random 27%. They are the intermittent, low-volume brands, i.e. **exactly the population the
-pooling question is about.** Excluding them biased the specific comparison being made.
+**The sign flips.** Pooling goes from losing by 2pp on small brands to winning by
+12.7pp — which is the *direction the F50 explanation predicted all along*, and it was
+invisible because the brands carrying the signal had been filtered out.
 
-**Fixed:** two frames, `ok` for MAPE-family statistics and `wm` (all brands) for WMAPE. The
-docstring and emitted markdown now state both domains and cite Hyndman & Koehler for why.
+**The overall verdict is unchanged: NULL for both models.** The win-rate is still not
+monotone across terciles (LightGBM 58/39/49, XGBoost 63/54/57), so the F50 story still
+does not hold as stated. The evidence beneath that verdict is now correct, which
+matters more than the verdict moving.
+
+### 2.2 But the readmitted brands needed a *second*, different decision
+
+Restoring them let in brands averaging **under one unit per month** in the test window.
+WMAPE is arithmetically fine there — nothing divides by zero — but the deltas are
+absurd: the worst is **−3179pp on a brand selling 0.33 units/month**, and **89 of 460
+rows exceed 100pp with a median volume of 0.0 units/month.**
+
+Those rows are not evidence about pooling. They are division by an almost-empty
+denominator.
+
+**So a volume floor of 1 unit/month now applies to the WMAPE tables, declared in the
+output with its row count and effect.** This is deliberately *not* the scorability
+filter returning under another name:
+
+| | Scorability filter (removed) | Volume floor (added) |
+|---|---|---|
+| Reason | APE is **undefined** at zero | series too **small to inform the question** |
+| Applies to | MAPE-family only | WMAPE tables |
+| Basis | mathematical | judgement, stated |
+| Disclosed | was not | **is, with counts** |
+
+Hyndman & Koehler's objection (p. 683) is to **silently** excluding data so a metric
+becomes computable. A declared, justified, quantified inclusion criterion is a
+different thing — and the honest response to discovering the first was to make the
+second explicit rather than let a 3179pp outlier set a median.
 
 **Methodology lesson, and it is the same one as F63/F67:** the defect was in a *diagnostic*,
 not in a model. A metric filter copied from where it was needed to where it was not. Verifying
