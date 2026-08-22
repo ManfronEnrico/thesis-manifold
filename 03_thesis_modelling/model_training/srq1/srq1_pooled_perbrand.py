@@ -19,10 +19,17 @@ If it does not hold, the aggregate disagreement needs a different account -- and
 knowing that is worth more than an untested story in the write-up.
 
 METHOD: refits the exact same models as srq1_pooled.py (same 12 features, same
-protocol, same seed), then scores per brand rather than per category. Brands with a
-zero-actual test window are reported but excluded from MAPE-based statistics, since
-APE is undefined there rather than merely large -- the same scorability filter used
-for SRQ4 brand selection.
+protocol, same seed), then scores per brand rather than per category.
+
+METRIC DOMAINS (corrected 2026-08-22). Brands with a zero-actual test window are
+excluded from MAPE-family statistics only, where APE is genuinely undefined. They
+are RETAINED for every WMAPE statistic, because WMAPE puts the sum in the
+denominator and is well-defined at zero. An earlier version applied the exclusion
+to WMAPE too; that dropped 27% of brands -- the intermittent, low-volume ones the
+pooling question is chiefly about -- and flipped the sign of the XGBoost size
+correlation. Hyndman & Koehler (2006, p. 683) call dropping zero windows "an
+artificial solution that is impossible to apply in practical situations"; here it
+was not even necessary.
 
 Self-contained, seed=42, reproducible. No API spend.
 Usage:  .venv/Scripts/python.exe 03_thesis_modelling/model_training/srq1/srq1_pooled_perbrand.py [--trials 30]
@@ -122,17 +129,47 @@ def main():
              "with brand size (pooling helps small brands, hurts large ones), i.e.",
              "a **positive** correlation between delta and size.", ""]
 
-    ok = df[df.scorable].copy()
+    # TWO FRAMES, because the two metric families have different domains.
+    #
+    # `ok` (scorable only) is for MAPE-family statistics: APE is genuinely
+    # UNDEFINED against a zero actual, so those rows cannot enter a mean or median
+    # of percentage errors.
+    #
+    # `wm` (ALL brands) is for WMAPE statistics. **WMAPE is well-defined against
+    # zero actuals** -- it is sum|y-yhat| / sum|y|, so a zero actual contributes a
+    # finite numerator term and zero to the denominator. Nothing divides by zero.
+    # Filtering it by scorability was a bug: it discarded 27% of brands from an
+    # analysis that never needed the filter, and it was not harmless -- it flipped
+    # the sign of the XGBoost size correlation (+0.252 scorable-only vs -0.095 on
+    # all brands). The brands it removed are precisely the intermittent, low-volume
+    # ones whose behaviour the pooling question is *about*, so excluding them
+    # biased the very comparison being made.
+    #
+    # This also matches the literature. Hyndman & Koehler (2006, p. 683) call
+    # dropping zero-actual windows "an artificial solution that is impossible to
+    # apply in practical situations" and recommend metrics that are stable at zero
+    # instead of altering the data to suit the metric. WMAPE is such a metric;
+    # applying the exclusion to it took the cost of the workaround without needing
+    # the workaround.
+    ok = df[df.scorable].copy()      # MAPE-family only
+    wm = df.copy()                   # WMAPE -- every brand, zeros included
     lines += [f"Brands scored: {len(df)} rows "
-              f"({df.brand.nunique()} distinct brands x {df.model.nunique()} models). "
-              f"Excluded as unscorable (zero actual in test window): "
-              f"{int((~df.scorable).sum())} rows.", ""]
+              f"({df.brand.nunique()} distinct brands x {df.model.nunique()} models).", "",
+              f"**WMAPE statistics below use all {len(df)} rows.** WMAPE is defined "
+              f"against zero actuals (the sum is in the denominator), so no exclusion "
+              f"is needed or applied.", "",
+              f"**MAPE-family statistics use the {int(df.scorable.sum())} scorable rows** "
+              f"({int((~df.scorable).sum())}, {100*(~df.scorable).mean():.0f}%, have a zero "
+              f"actual somewhere in the test window, where APE is undefined rather than "
+              f"merely large). Hyndman & Koehler (2006, p. 683) criticise dropping such "
+              f"windows as impractical, which is a further reason to read the WMAPE "
+              f"columns as primary here.", ""]
 
     lines += ["## Correlation of delta with brand size", "",
               "| Model | vs log(train rows) | vs log(mean test units) | n |",
               "|---|---|---|---|"]
     for model in ("LightGBM", "XGBoost"):
-        d = ok[(ok.model == model) & (ok.mean_test_units > 0) & (ok.n_train > 0)]
+        d = wm[(wm.model == model) & (wm.mean_test_units > 0) & (wm.n_train > 0)]
         if len(d) < 5:
             continue
         r_rows = float(np.corrcoef(np.log(d.n_train), d.delta_wmape)[0, 1])
@@ -145,7 +182,7 @@ def main():
               "| Model | Volume tercile | median delta | mean delta | n | pooling wins |",
               "|---|---|---|---|---|---|"]
     for model in ("LightGBM", "XGBoost"):
-        d = ok[(ok.model == model) & (ok.mean_test_units > 0)].copy()
+        d = wm[(wm.model == model) & (wm.mean_test_units > 0)].copy()
         if len(d) < 9:
             continue
         d["tercile"] = pd.qcut(d.mean_test_units, 3,
@@ -165,8 +202,8 @@ def main():
               "|---|---|---|---|---|"]
     for model in ("LightGBM", "XGBoost"):
         for cat in CATS:
-            d = ok[(ok.model == model) & (ok.category == cat) &
-                   (ok.mean_test_units > 0)].copy()
+            d = wm[(wm.model == model) & (wm.category == cat) &
+                   (wm.mean_test_units > 0)].copy()
             if len(d) < 6:
                 continue
             d["tercile"] = pd.qcut(d.mean_test_units, 3,
@@ -190,7 +227,7 @@ def main():
     # only "for how many brands did pooling win", which is the question.
     print("\n" + "=" * 72)
     for model in ("LightGBM", "XGBoost"):
-        d = ok[(ok.model == model) & (ok.mean_test_units > 0) & (ok.n_train > 0)]
+        d = wm[(wm.model == model) & (wm.mean_test_units > 0) & (wm.n_train > 0)]
         if len(d) < 9:
             continue
         r = float(np.corrcoef(np.log(d.mean_test_units), d.delta_wmape)[0, 1])
