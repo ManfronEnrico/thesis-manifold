@@ -86,6 +86,51 @@ def _medmape(y, yhat):
     return float(np.median(np.abs(y[m] - yhat[m]) / y[m]) * 100)
 
 
+def mase_denominator(train_df, series_col="brand", y_col="log_sales_units"):
+    """Per-series in-sample MAE of the one-step naive forecast (Hyndman & Koehler
+    2006, pp. 684-685). This is MASE's scaling factor.
+
+    Computed on RAW units, not the logged target, because MASE is meant to be
+    interpreted against the naive model's error in the quantity being forecast.
+
+    Returns {series_key: denominator}. Series whose naive MAE is zero (a perfectly
+    flat history) are omitted rather than assigned inf -- MASE is genuinely
+    undefined there, and a flat series is not a meaningful benchmark to beat.
+    """
+    out = {}
+    for k, g in train_df.groupby(series_col):
+        y = np.expm1(np.asarray(g.sort_values("ym")[y_col], float)) if "ym" in g             else np.expm1(np.asarray(g[y_col], float))
+        if len(y) < 2:
+            continue
+        d = float(np.mean(np.abs(np.diff(y))))
+        if d > 0:
+            out[k] = d
+    return out
+
+
+def _mase(y, yhat, keys, denom):
+    """Mean absolute scaled error.
+
+    WHY THIS METRIC EXISTS HERE. Hyndman & Koehler (2006) propose MASE precisely
+    for the situation this dataset is in: comparing accuracy across series of very
+    different scales, some of which contain zero actuals. Unlike MAPE it is
+    **defined at zero**, so it admits the ~27% of brands that percentage errors
+    must exclude -- and Hyndman & Koehler (p. 683) explicitly criticise excluding
+    them as "an artificial solution that is impossible to apply in practical
+    situations".
+
+    READING IT. MASE < 1 means the model beats a naive one-step forecast on that
+    series' own history; MASE > 1 means it does not. That makes it the only metric
+    here with an absolute, interpretable threshold rather than a relative one.
+    """
+    y = np.asarray(y, float); yhat = np.clip(np.asarray(yhat, float), 0, None)
+    num, ok = np.abs(y - yhat), np.array([k in denom for k in keys])
+    if not ok.any():
+        return float("nan")
+    d = np.array([denom.get(k, np.nan) for k in keys], float)
+    return float(np.mean(num[ok] / d[ok]))
+
+
 METRICS = {"wmape": _wmape, "medmape": _medmape}
 
 
