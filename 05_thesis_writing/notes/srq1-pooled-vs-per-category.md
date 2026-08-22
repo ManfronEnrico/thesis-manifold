@@ -254,11 +254,37 @@ description of a hazard avoided at runtime.
    per-brand number predating that fix is unusable. Hyndman & Koehler (2006,
    p. 683) also criticise the exclusion practice generally.
 
-   A **declared 1 unit/month volume floor** now applies to the WMAPE tables
-   instead: readmitting every brand let in ones averaging under one unit across
-   the whole test window, where a delta of −3179pp is division by an almost-empty
-   denominator rather than evidence. The floor is stated in the output with its
-   row count, unlike the filter it replaces.
+   **Superseded 2026-08-23 — nothing is excluded from the WMAPE tables at all.**
+   An intermediate fix applied a 1 unit/month volume floor, because readmitting
+   every brand let in ones averaging under one unit across the test window, where
+   a delta of −3179pp is division by an almost-empty denominator. That worked but
+   was a judgement call, and measuring it showed it was a **poor proxy for the
+   thing it targeted**:
+
+   | | brands |
+   |---|---:|
+   | Below the floor (<1 unit/month) | 38 |
+   | — of which **smooth** (well-behaved, merely small) | **8** |
+   | **Above** the floor yet lumpy/intermittent | **21** |
+
+   It removed well-behaved small brands while leaving irregular ones in, because
+   **volume and regularity are different properties**.
+
+   Replaced by the **Syntetos–Boylan–Croston categorisation** (2005, *JORS* 56(5),
+   495–503, p. 495), whose cut-offs are *derived* rather than tuned: average
+   inter-demand interval **p = 1.32** and squared CV of non-zero demand sizes
+   **CV² = 0.49**, partitioning into smooth / erratic / intermittent / lumpy.
+
+   **Results are now reported per demand class, with no exclusion.** A weak result
+   on lumpy series is a stated limitation rather than an absence — which is what
+   both Hyndman & Koehler (p. 683) and Syntetos & Boylan actually recommend, since
+   both object to discarding difficult series rather than modelling them.
+
+   *One caveat to state:* the cut-offs were derived for Croston-type estimators
+   (α = 0.15, lead time 1), not for gradient boosting on a brand-month panel. They
+   are used as a **principled, citable partition of demand patterns**, not as a
+   claim that the same accuracy ordering transfers — which the per-class results
+   can themselves examine.
 
 7. **The size correlation is not robust, and should not be reported as a number.**
    Across three defensible variants of the same analysis — scorable-only (the old

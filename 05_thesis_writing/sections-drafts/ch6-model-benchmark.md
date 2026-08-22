@@ -258,23 +258,72 @@ undefined. Two distinct decisions follow, and they are **not** the same rule:
 
 | Rule | Applies to | Basis |
 |---|---|---|
-| Exclude zero-actual rows | Median APE and MAPE only | Mathematical — APE is undefined |
-| Volume floor of 1 unit/month | Per-brand WMAPE comparisons only | **Declared design choice** — see below |
+| Exclude zero-actual rows | Median APE and MAPE only | Mathematical — APE is undefined there |
+| *(nothing else)* | — | — |
 
-WMAPE and MASE are computed on **all** rows; neither needs an exclusion.
+**WMAPE and MASE are computed on every row.** Both are defined at zero actuals, so
+neither requires an exclusion, and none is applied.
 
-The volume floor exists because per-brand WMAPE on brands averaging under one unit per
-month produces deltas in the thousands of percentage points — division by an almost
-empty denominator rather than evidence. It is stated with its row counts wherever
-applied.
+Irregular series are handled by **categorisation rather than removal** — see §6.4.4.
 
-> **Neither exclusion is attributed to a source, and neither may be.** Hyndman & Koehler
-> (2006, p. 683) explicitly call excluding zero windows "an artificial solution that is
-> impossible to apply in practical situations", recommending zero-stable metrics such as
-> MASE instead — which is why MASE is reported. Likewise Syntetos and Boylan (2005)
-> propose specialised estimators for intermittent series rather than discarding them.
-> **The literature objects to silent exclusion; a declared, quantified inclusion
-> criterion is a different thing, and that is what these are.**
+> **The one exclusion is not attributed to a source, and must not be.** Hyndman &
+> Koehler (2006, p. 683) explicitly call excluding zero windows "an artificial solution
+> that is impossible to apply in practical situations", recommending zero-stable metrics
+> such as MASE instead — which is precisely why MASE is reported here. Dropping
+> zero-actual rows from *percentage* statistics is unavoidable because the quantity does
+> not exist; extending that exclusion to metrics that are well defined would be the
+> practice they criticise.
+
+### 6.4.4 Demand-pattern categorisation
+
+Brand-level demand on this panel ranges from steady weekly sellers to series with long
+gaps and highly variable order sizes. Reporting a single pooled accuracy figure across
+that range obscures more than it conveys, and thresholding the difficult series away
+would reproduce exactly the practice the metric literature objects to.
+
+Each brand is therefore classified using the scheme of Syntetos, Boylan and Croston
+(2005, p. 495), on two measured quantities with **derived** cut-offs:
+
+- **p** — average inter-demand interval (periods per non-zero demand)
+- **CV²** — squared coefficient of variation of **non-zero** demand sizes
+
+| | CV² ≤ 0.49 | CV² > 0.49 |
+|---|---|---|
+| **p ≤ 1.32** | smooth | erratic |
+| **p > 1.32** | intermittent | lumpy |
+
+The thresholds are not tuned to this data: they mark where the relative accuracy
+ordering of Croston's method, the Syntetos–Boylan Approximation and simple exponential
+smoothing changes. Classification uses **train and validation periods only** — deriving
+classes from test rows and then reporting test accuracy per class would leak.
+
+Resulting distribution (230 brands):
+
+| Category | smooth | erratic | intermittent | lumpy |
+|---|---:|---:|---:|---:|
+| CSD | 44 | 32 | 5 | 14 |
+| RTD | 32 | 20 | 2 | 8 |
+| energidrikke | 16 | 18 | 2 | 8 |
+| danskvand | 16 | 9 | 3 | 1 |
+
+**This categorises; it does not exclude.** Accuracy is reported per class, so weak
+performance on lumpy series appears as a stated limitation rather than as an absence.
+That is the response Syntetos and Boylan's own work recommends — their contribution is
+estimators for such series, not advice to discard them.
+
+> **An earlier version of this analysis used a volume floor of one unit per month**, a
+> threshold chosen by judgement to keep near-empty series from dominating per-brand
+> comparisons. Measuring it against the categorisation showed it was a poor instrument:
+> it removed **8 smooth brands** — well-behaved series that merely happen to be small,
+> exactly what a forecasting study should retain — while leaving **21 lumpy or
+> intermittent brands** above the line. Volume and regularity are different properties,
+> and only the second is what the guard was for.
+
+> **A caveat on transfer.** These cut-offs were derived for Croston-type estimators
+> under specific assumptions (α = 0.15, lead time 1), not for gradient boosting on a
+> brand-month panel. They are used here as a principled and citable partition of demand
+> patterns, not as a claim that the same accuracy ordering holds for these models —
+> which is itself a question the per-class results can address.
 
 ### 6.4.3 Targets
 
@@ -456,11 +505,74 @@ stated as such, not an inconsistency.
 
 ---
 
+### 6.5.7 Forecast stability across seeds *(current — added 2026-08-23)*
+
+Chapter 2 motivates evaluating the modelling substrate on accuracy, computational
+efficiency **and stability**, and SRQ1's scope names stability as its fourth axis. This
+section supplies that measurement, which had not previously been made.
+
+Stability is measured as the **coefficient of variation of the forecast for each
+(brand, month) cell across five random seeds**, with data, splits, features and protocol
+held identical. Only the seed varies, driving Optuna's sampler and the models' own
+stochastic elements.
+
+| Category | Model | median CV | p90 CV | WMAPE mean | WMAPE sd |
+|---|---|---:|---:|---:|---:|
+| CSD | LightGBM | 0.112 | 0.295 | 15.4% | 0.65 |
+| CSD | XGBoost | 0.123 | 0.422 | 15.1% | 0.59 |
+| danskvand | LightGBM | 0.119 | 0.687 | 20.8% | 0.69 |
+| danskvand | XGBoost | 0.124 | 0.539 | 21.8% | 1.04 |
+| energidrikke | LightGBM | 0.174 | 0.634 | 14.1% | 1.18 |
+| energidrikke | XGBoost | 0.174 | 0.730 | 13.9% | 0.79 |
+| RTD | LightGBM | 0.125 | 0.397 | 33.5% | 1.64 |
+| RTD | XGBoost | 0.104 | 0.400 | 35.1% | 0.92 |
+
+**Two findings, and both matter more than the accuracy tables suggest.**
+
+**First, aggregate stability flatters the system by roughly three times.** Aggregate
+WMAPE moves by about 4.7% of its own level across seeds, while the *typical individual
+forecast* moves by about 13%, and the ninetieth-percentile cell by 30–73%. Per-cell
+movements partly cancel within a volume-weighted sum, so a planner reading one brand's
+number experiences considerably more run-to-run variability than a headline metric
+implies. **Both figures are therefore reported**; quoting only the aggregate would
+understate instability threefold.
+
+**Second, and more consequentially for this chapter: the winning model changes with the
+seed in every category.**
+
+| Category | Winner per seed | |
+|---|---|---|
+| CSD | XGBoost, XGBoost, LightGBM, XGBoost, LightGBM | **flips** |
+| danskvand | LightGBM ×3, XGBoost, LightGBM | **flips** |
+| energidrikke | LightGBM, LightGBM, XGBoost, LightGBM, LightGBM | **flips** |
+| RTD | XGBoost, XGBoost, LightGBM, LightGBM, LightGBM | **flips** |
+
+Every input is identical; only the random seed differs. **A per-category statement of
+which gradient-boosting model is best is therefore not a finding** — it reports the
+outcome of one seed. §6.6 states the conclusion this supports instead.
+
+> **This is a limitation the thesis discovers about itself, and reporting it is the
+> point.** Cawley and Talbot (2010) show that selecting on a noisy criterion produces
+> apparent differences of a magnitude comparable to genuine differences between learning
+> algorithms. That is exactly what a single-seed model comparison risks, and measuring
+> the seed sensitivity is what distinguishes a reported selection from an artefact.
+
+---
+
 ## 6.6 Model selection decision
 
-- **Selection is per category.** No single model wins everywhere: LightGBM takes CSD,
-  danskvand and RTD on WMAPE; XGBoost takes energidrikke. This is the expected outcome
-  given that no single method dominates across demand patterns
+- **The choice between LightGBM and XGBoost is not supported by this data.** A
+  five-seed sweep with every input held identical shows **the winning model changes with
+  the seed in all four categories** (§6.5.7). Naming a winner per category would be
+  reporting one seed's outcome as a finding
+- **The defensible claim is that the two are statistically indistinguishable here**, the
+  between-seed spread exceeding the between-model difference. This is a weaker headline
+  but a true one, and it is useful: a practitioner deciding what to deploy can choose on
+  operational grounds — training time, memory, tooling — rather than accuracy
+- **What the benchmark does support** is the gap between *families*: both gradient
+  boosters clearly beat Ridge and ARIMA on most categories, and clearly lose to seasonal
+  naive on RTD. Those differences exceed the seed noise; the LightGBM-vs-XGBoost one
+  does not
 - **The served model carries its own track record.** The forecast tool returns the
   selected model's measured accuracy (WMAPE and median APE), both simple baselines for
   that category, and a conformal interval — so the consuming agent receives the
@@ -504,10 +616,6 @@ stated as such, not an inconsistency.
 
 - **Which metric the ≤15% benchmark refers to.** If the source reports plain or median
   MAPE rather than WMAPE, no category meets the target. Blocks any claim in §6.4.3
-- **Whether to replace the 1 unit/month volume floor with the Syntetos–Boylan–Croston
-  demand quadrants** (p = 1.32, CV² = 0.49). This would substitute a citable
-  categorisation for a threshold chosen by judgement, and would let accuracy be reported
-  per demand pattern — a more informative result than a single pooled figure
 - **Whether ARIMA should be order-searched.** The fixed SARIMAX(1,1,1) is a floor for
   the family, not its best performance, and the baseline comparison is weaker for it
 - **Whether the ensemble scenario runs**, which determines whether §6.6's combination
