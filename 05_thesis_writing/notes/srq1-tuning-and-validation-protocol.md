@@ -72,15 +72,73 @@ which improvement fell below 0.1% relative (`plateau_trial`).
 This is stronger than a citation: it is evidence from the actual experiment, and it
 can be shown as a figure. An examiner cannot object that the source was misread.
 
-## Why K-fold cross-validation would be invalid
+**Independently confirmed 2026-08-23 (HPO-07).** A source-level check of Bergstra
+et al. (2011), Bergstra & Bengio (2012), Snoek et al. (2012) and Akiba et al. (2019)
+found **no support anywhere** for a 50–200 trial convention: "a classic practitioner
+rule of thumb with no rigorous support in academic literature". The required budget
+grows with search-space dimensionality. Our empirical plateau approach is the right
+response, and the register entry stays UNSOURCEABLE by design rather than by omission.
 
-State this explicitly — it demonstrates the choice was reasoned, not defaulted.
+**A related trap (HPO-08):** do not attribute the plateau *criterion* to Snoek et al.
+They evaluate over **fixed budgets** (50 or 100 trials, or wall-time) and define no
+stopping rule based on flattening curves. The convergence criterion is **our design
+decision** — which is fine, and must be presented as such.
+
+**Two attributions to keep straight (HPO-04):**
+
+| Cite | For |
+|---|---|
+| **Bergstra et al. (2011), p. 2549** | the **mathematics** of TPE — the l(x)/g(x) density split at quantile γ |
+| **Akiba et al. (2019), p. 2623** | the **Optuna software** — define-by-run API, pruning, distribution |
+
+Citing Akiba for the TPE formulation is a misattribution: that paper explicitly
+attributes the algorithm to Bergstra. Also worth one sentence as a limitation —
+Bergstra et al. note SMBO **can underperform random search** when the surrogate is
+misspecified, which is a real caveat given we never tested random search as a control.
+
+## Why expanding-window CV, and the boundary the literature actually draws
+
+**Do NOT write "K-fold cross-validation is invalid for time series."** Source
+verification (2026-08-23, CV-04) established that this common claim is **false as
+stated**, and it is the kind of overreach an examiner who knows the field will catch.
+
+**Bergmeir, Hyndman & Koo (2018, *CSDA* 120, 70–83, Theorem 1) prove** that standard
+K-fold CV *is* valid for purely autoregressive models whose errors are uncorrelated,
+and is *more* data-efficient than out-of-sample splitting on stationary series.
+Cerqueira et al. (2020) concur, noting CV is beneficial "when the time series is
+stationary, or the sample size is small".
+
+**So the argument must be conditional, and made on OUR data's properties, not on a
+universal rule:**
+
+> Standard K-fold cross-validation is valid for stationary autoregressive processes
+> with uncorrelated residuals (Bergmeir et al., 2018). Monthly brand-level beverage
+> demand does not satisfy that condition — the series are trended, seasonal, and
+> non-stationary — and under non-stationarity, methods preserving temporal order give
+> substantially more accurate estimates of generalisation loss (Cerqueira et al.,
+> 2020). Expanding-window rolling-origin evaluation is therefore used.
+
+**This is a stronger position than the absolute claim**, because it shows we know
+where the boundary is and why our data falls on one side of it.
+
+**Equally, do not write that expanding-window is "mathematically mandatory"** (CV-06,
+also contradicted). No such proof exists. It is a **defensible design choice**;
+sliding windows trade differently, discarding old data to adapt to structural breaks
+(Tashman, 2000, p. 441). Say "chosen because", not "required by".
 
 Standard K-fold shuffles rows into folds. On a time series that permits a model to
 train on 2026-06 and predict 2026-03, which is not forecasting. Expanding-window
 (rolling-origin) evaluation instead grows the training window forward and validates
 on the block immediately after it, so the model never sees a period later than the
 one it predicts.
+
+**Sourcing for the scheme itself** (Tashman, 2000, *IJF* 16(4), 437–450, pp. 439–440),
+verified: rolling-origin successively advances the forecast origin rather than relying
+on a single split, which is vulnerable to "corruption by occurrences unique to that
+origin". Tashman also distinguishes **updating** (adding data to the fit window) from
+**recalibration** (re-estimating parameters), and prefers recalibration — *our folds
+refit the model from scratch each time, so we recalibrate*, which is worth one sentence
+because it is the preferred procedure and we happen to do it.
 
 **A second subtlety worth one sentence:** rows here are *brand-months*, so splitting
 row-wise would place the same month in both training and validation for different
@@ -155,9 +213,22 @@ rather than implying he made it.**
 
 1. **Single seed.** All results use seed 42. A seed sweep would establish whether
    selected configurations are stable; not yet run (P0040 task 11).
-2. **No nested CV.** Hyperparameters are selected by CV and the winner evaluated on
-   a held-out test split — standard practice, but not fully nested, so the reported
-   test score is a mildly optimistic estimate of generalisation.
+2. **No nested CV — and "mildly" is the wrong word (MS-04, verified 2026-08-23).**
+   Hyperparameters are selected by CV and the winner evaluated on a held-out test
+   split — standard practice, but not fully nested.
+
+   **Cawley & Talbot (2010, *JMLR* 11(70), 2079–2107) is the citation, and it does
+   not license the reassuring adjective.** They show model selection can overfit a
+   noisy selection criterion exactly as training overfits data (pp. 2079, 2083), that
+   the resulting bias is "of surprising magnitude", and that it can be "large enough
+   to conceal even the true difference between state-of-the-art and uncompetitive
+   learning algorithms" (p. 2102). They further show the bias persists **even when
+   training, validation and test sets are strictly disjoint** (p. 2097).
+
+   **Write:** *the reported test metrics are optimistically biased to an unquantifiable
+   degree*, not "mildly optimistic". Naming the bias honestly costs nothing here —
+   every model was selected under the same protocol, so the comparison between models
+   is unaffected; it is the absolute level that is uncertain.
 3. **The dual-objective result is a within-sample comparison of objectives**, not
    a claim about which metric a business should optimise. Gneiting's argument says
    what each objective *targets*; which target is right depends on the decision the

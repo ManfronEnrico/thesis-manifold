@@ -29,15 +29,38 @@ against the rung above it** — that ordering is itself the argument.
 
 ## The academic justification — this is the standard set, not a choice
 
-**The three simple benchmarks are convention, not decoration.** Hyndman &
-Athanasopoulos (*Forecasting: Principles and Practice*, 3rd ed., §5.2) define
-naive, seasonal-naive, drift and mean as *the* standard benchmark methods, stating
-that these "are the best we can do" for many series and that any forecasting method
-should be compared against them. The M-competitions (Makridakis, Spiliotis &
-Assimakopoulos 2018, 2020) score every entrant against naive and seasonal-naive as
-the reference point, and the M4 paper's central finding — that many sophisticated
-methods fail to beat simple benchmarks — is precisely why their omission is
-conspicuous.
+**The three simple benchmarks are convention, not decoration.** Verified at source
+2026-08-23 (BM-01, BM-02, both Supported).
+
+Hyndman & Athanasopoulos (*Forecasting: Principles and Practice*, 3rd ed., §5.2)
+define mean, naive, seasonal-naive and drift as the four standard benchmarks. The
+**verified** wording is:
+
+> "Some forecasting methods are extremely simple and surprisingly effective. We will
+> use four simple forecasting methods as benchmarks throughout this book." … "any
+> forecasting methods we develop will be compared to these simple methods to ensure
+> that the new method is better than these simple alternatives."
+
+**An earlier draft of this note quoted them as saying these "are the best we can do"
+for many series. That quote is not in §5.2** and has been removed — the actual text
+says the opposite in emphasis ("sometimes one of these simple methods will be the
+best forecasting method available; but in many cases, these methods will serve as
+benchmarks"). Use the verified wording.
+
+**Write the formulas out** (verified, §5.2), because a benchmark table is stronger
+when the benchmark is defined rather than named:
+
+| Method | Forecast |
+|---|---|
+| Mean | ŷ(T+h) = ȳ |
+| Naive | ŷ(T+h) = y(T) |
+| Seasonal naive | ŷ(T+h) = y(T+h−m(k+1)), m = seasonal period, k = ⌊(h−1)/m⌋ |
+| Drift | ŷ(T+h) = y(T) + h·(y(T) − y(1))/(T−1) |
+
+**M4 (Makridakis et al., 2018, p. 803)** supplies the empirical weight, and the
+**precise** finding is worth quoting rather than paraphrasing: of six submitted pure
+ML methods, **none** beat the statistical combination benchmark (Comb) and **only one**
+beat Naïve2.
 
 **Practical consequence for the defence:** a forecasting result reported without
 these is treated as *unbenchmarked*. The first question an examiner asks is "is
@@ -84,10 +107,28 @@ Regularised linear models are also a standard tabular baseline in their own righ
 A zero-parameter benchmark — "same month last year" — beats 30-trial Optuna-tuned
 XGBoost on RTD.
 
-**This is the M4 finding (Makridakis et al. 2018) reproduced on this dataset**, and
-reporting it is not optional: it is the first thing an examiner checks and the
-reason the benchmark set is standard. Three readings, all of which belong in the
-prose:
+**This is consistent with the M4 finding, and must be worded as consistency rather
+than reproduction (BM-05, verified 2026-08-23).**
+
+M4 is 100,000 heterogeneous series across micro, macro, finance, industry and
+demographic domains. **It contains no retail beverage category**, so it cannot and
+does not establish anything about seasonal-naive versus ML *for this data*. Writing
+"the M4 finding reproduced on this dataset" claims a validation M4 never performed.
+
+**The defensible construction:**
+
+> M4 established that pure machine-learning methods frequently fail to outperform
+> simple statistical baselines (Makridakis et al., 2018, p. 803). Our RTD result —
+> where seasonal-naive at 27.3% WMAPE beats every tuned model — is a concrete
+> instance of that general pattern in a domain M4 did not cover.
+
+**M4's other half matters too, and cuts the opposite way (BM-04).** The competition
+was *won* by a **hybrid**: Smyl's exponential-smoothing/RNN, +9.4% over Comb; second
+place was a combination of seven statistical methods with NN-derived weights. So M4
+does not say "simple beats complex" — it says **pure ML underperformed while
+combinations won**, which is an argument *for* `F_ensemble`, not against modelling.
+
+Three readings, all of which belong in the prose:
 
 1. **The advantage is conditional, not general.** Large on energidrikke and
    danskvand, marginal on CSD, negative on RTD. The thesis should claim a
@@ -134,6 +175,21 @@ methodology chapter, because it is a genuine and non-obvious limitation.
 feature is equivalent. LightGBM and XGBoost therefore perform well on exactly the
 same columns, which is why the defect went unnoticed: no tree-based model could
 have revealed it.
+
+> **Verified at source, and cite it (TREE-03, Supported).** Hastie, Tibshirani &
+> Friedman, *ESL* 2nd ed., p. 307: trees "are invariant under (strictly monotone)
+> transformations of the individual predictors. As a result, scaling and/or more
+> general transformations are not an issue". The extension to boosted ensembles
+> (TREE-04) is Supported-by-inference: ensembles are built from rank-split trees, so
+> the property propagates.
+>
+> **Do not let this drift one word further.** The invariance is to transforming the
+> **predictors**. It does **NOT** hold for transforming the **target** — a
+> neighbouring claim that is false (TREE-05, Contradicted). Leaf values are
+> arithmetic means and 𝔼[log Y] ≠ log 𝔼[Y], and in boosting the target transform
+> changes the loss and hence every pseudo-residual. **Logging the target affects
+> LightGBM too**; what distinguishes Ridge here is the *mismatch* between raw-unit
+> features and a logged target, not immunity to the log itself.
 
 Diagnostic evidence, CSD:
 
@@ -245,10 +301,30 @@ models' numbers** — that is what converts a narrowing into a finding.
    F72), and energidrikke Prophet's 975.6% is not a meaningful accuracy statement.
    Reporting that number without the caveat invites a fair objection.
 2. **Prophet's failure is partly a fit-to-purpose problem, not only an accuracy
-   result.** Prophet is designed for daily/sub-daily series with multiple
-   seasonalities and holiday effects; on ~30 monthly observations per brand it is
-   outside its design range. Say so — it is a more honest account than "Prophet is
-   bad," and it strengthens rather than weakens the case for the tabular approach.
+   result.** On ~30 monthly observations per brand, Prophet's design advantages are
+   largely unavailable. Say so — it is a more honest account than "Prophet is bad,"
+   and it strengthens rather than weakens the case for the tabular approach.
+
+   **Word this carefully (PRO-04/PRO-05, verified 2026-08-23).** Taylor & Letham
+   (2018, *The American Statistician* 72(1), 37–45) **do not** state Prophet is
+   unsuitable for monthly data, and they **do not** show it produces flat forecasts.
+   Both are overstatements that a reader checking the source would catch.
+
+   **The mechanical argument is available and is stronger anyway**, because it
+   explains rather than asserts. Prophet is `y(t) = g(t) + s(t) + h(t) + ε` (p. 38),
+   built for "piecewise trends, multiple seasonality, floating holidays" in
+   high-frequency business series. On monthly data:
+
+   - **weekly seasonality does not exist** — the Fourier machinery has nothing to fit;
+   - **holiday windows collapse** — sub-daily/multi-day effects are invisible at
+     month grain, and we supply no holiday calendar at all;
+   - **yearly seasonality reduces to ~12 points**, which the tabular models capture
+     directly through `month`, `quarter` and `lag_13`.
+
+   What remains is a piecewise trend plus a coarse annual term, estimated on ~30
+   observations. **So the honest claim is that we applied Prophet outside the regime
+   its design targets** — a limitation of our application, not a defect the authors
+   documented.
 
 ## Related
 
