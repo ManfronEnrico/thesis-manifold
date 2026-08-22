@@ -1,5 +1,9 @@
 # Project Overview — Manifold AI Thesis
 
+> **Updated 2026-08-22.** Corrections applied: SRQ4 scenario ladder, LLM-as-judge
+> dropped, Prometheus access landed, benchmark set widened to 8 model families,
+> accuracy targets restated with the metric named, `model_serving_interface/` rename.
+
 > *Extending Production Agentic Decision-Support with Lightweight Forecasting for FMCG Retail*
 > CBS Master's Thesis · Business Administration & Data Science · Deadline 15 May 2026
 
@@ -42,7 +46,7 @@ Five gaps, whose intersection has not been addressed:
 | # | Gap |
 |---|---|
 | G1 | No framework for extending an existing production agentic system with forecasting under ≤ 8 GB RAM |
-| G2 | No head-to-head benchmark of ARIMA / Prophet / LightGBM / XGBoost / Ridge under an explicit RAM budget in retail FMCG |
+| G2 | No head-to-head benchmark of naive / seasonal-naive / drift / Ridge / ARIMA / Prophet / LightGBM / XGBoost under an explicit RAM budget in retail FMCG |
 | G3 | No structured tool/action interface design for exposing ML forecasts — with uncertainty and traceability — to LLM-based agents |
 | G4 | Integration readiness criteria for agentic systems adopting predictive capabilities have not been empirically derived or validated |
 | G5 | No replicable RAM profiling methodology for multi-component AI pipelines combining ML forecasting + LLM synthesis |
@@ -67,12 +71,16 @@ Deliberately not restated here. Ch1 is the editing surface; a copy in this file 
 **Operative scope decisions** (detail in the canonical file):
 
 - **SRQ4 comparator** — a code-as-action LLM that writes and self-corrects its own forecasting
-  code, runnable locally in an E2B sandbox (no Prometheus dependency)
+  code, runnable locally in an E2B sandbox. **Extended 2026-08-22 to a five-scenario ladder**
+  (A_plain / B_data / C_model / D_prometheus / E_prometheus_model) after Prometheus access
+  landed; `B→C` and `D→E` apply the same intervention to two different orchestrators
 - **SRQ4 metrics** — correctness / consistency / replicability (primary) + cost / latency
-  (secondary), ≈50 prompts, judge model with a human-rated subset. Ch8 reports a **pilot**;
-  the full run is stated as further work
-- **SRQ3** — an integration-readiness *assessment*, not a completed integration (Prometheus
-  Graph Engine access pending NDA + dev merge)
+  (secondary). **All metrics are programmatic; LLM-as-judge was dropped (B-DEC-2).**
+  **Prompt set is 1 prompt × N repeats**, not ≈50 varied prompts — repeats are what measure
+  consistency. Ch8 reports a **pilot**; the full run is stated as further work
+- **SRQ3** — an integration-readiness *assessment*, not a completed integration. **Prometheus
+  Graph Engine access LANDED 2026-08-20** and the engine runs locally, so this framing is now
+  an **open scope decision** for Brian and Enrico rather than a constraint
 
 ---
 
@@ -97,10 +105,12 @@ interface design principles reusable beyond this retail context).
 - **Empirical reference case** — Manifold AI's production agentic system, for SRQ3
 - **SRQ4 comparator** — code-as-action LLM baseline in an E2B sandbox
 
-> **Two open reconciliations with Ch1 §1.4:** Ch1 currently states *five* categories
-> (including Totalbeer) and 37–42 periods. Totalbeer was excluded on compute grounds
-> (Brian, 2026-08-01 — see P0034), and CSD measures **44** periods at parent market scope
-> (measured 2026-08-11 — see P0036 findings F5). Ch1 needs updating on both counts.
+> **Two open reconciliations with Ch1 §1.4 — STILL OPEN, verified 2026-08-22.** Ch1 line 64
+> states *five* categories (including totalbeer) and 37–42 periods; line 88 repeats "five
+> categories". Totalbeer was excluded on compute grounds (Brian, 2026-08-01 — see P0034), and
+> CSD measures **44** periods at parent market scope (measured 2026-08-11 — see P0036 F5).
+> **Ch1 line 54 additionally still describes the dropped LLM-as-judge protocol.** All three
+> need correcting before submission.
 
 → Pipeline and structure: [`02_thesis_data/`](../../02_thesis_data/)
 → Sample-size rationale, adequacy per SRQ, and tool-call mechanics:
@@ -111,8 +121,10 @@ interface design principles reusable beyond this retail context).
 ## 6. System Architecture
 
 → **Current:** [`user-docs/architecture/architecture.md`](../../user-docs/architecture/architecture.md)
-→ Forecast service: `03_thesis_modelling/model_serving/system_a_forecast/`
-→ Conversational system: `03_thesis_modelling/model_serving/system_b_conversational/`
+→ Forecast service: `03_thesis_modelling/model_serving_interface/scenario_c_forecast/`
+→ Scenario harness: `03_thesis_modelling/scenario_setup/`
+> `model_serving/` was renamed `model_serving_interface/` on 2026-08-19, to name
+> SRQ2's "Structured Tool Interface" explicitly.
 
 The original v2-era multi-agent design (System A's 5 agents, System B's 10 writing agents) is
 **frozen, not current** — see
@@ -140,18 +152,32 @@ interface** (the SRQ2 contribution).
 | Thesis deadline | 15 May 2026 |
 | Page limit | 120 standard pages (2 students; 2,275 chars incl. spaces / page) |
 | Categories | 4 — CSD, Danskvand, Energidrikke, RTD (Totalbeer excluded, compute grounds) |
+| Model families benchmarked | 8 — naive, seasonal-naive, drift, Ridge, ARIMA, Prophet, LightGBM, XGBoost |
 | Market scope | `DVH EXCL. HD` (id `1256338`) |
 | Grain | brand × month |
 | Panel depth | 44 monthly periods (CSD, measured 2026-08-11) *(pending re-run for other categories)* |
 | RAM hard limit | 8 GB total |
-| MAPE target | ≤ 15% |
+| MAPE target | ≤ 15% **WMAPE** — met on 3 of 4 categories (14.5–20.9%); RTD is ~32% |
 | Calibration target | ≥ 85% empirical coverage of stated 90% prediction intervals |
-| SRQ4 prompt set | ≈ 50 |
+| SRQ4 design | 5 scenarios × 12 stratified brands × N repeats (1 prompt) |
 | Chapters | 10 + abstract + frontpage |
 | CBS methodology | Design Science Research (Hevner 2004 + Peffers 2007) |
 
 > Figures marked *(pending re-run)* change once P0036 and P0033 complete: per-category row
 > counts, brand counts, and all model metrics.
+
+> **Accuracy figures updated 2026-08-22.** Models are now tuned with expanding-window
+> time-series CV over 100 Optuna trials (`04_thesis_results/srq1/cv_metrics.csv`), superseding
+> the earlier single-split results in `tuned_metrics.csv`.
+>
+> **A caveat that applies to every accuracy claim in this thesis:** WMAPE (volume-weighted)
+> and median MAPE (per-series) disagree repeatedly — three separate analyses found the same
+> split. Median MAPE sits at 29–39% where WMAPE sits at 14–32%. **Always name the metric.**
+
+> **The RAM budget figure is not yet defensible.** `04_thesis_results/generate_figures.py::fig4_ram_budget`
+> is entirely hardcoded, including a literal 512 MB "active ML model" against a **measured
+> 3–4 MB**. The honest version is stronger: the trained model is the cheap part, and the agent
+> runtime is where the budget goes — measurable now that the Prometheus engine runs locally.
 
 > **Thesis title unresolved against `frontpage.md`.** The title above is Brian's choice
 > (2026-08-11). `05_thesis_writing/sections-drafts/frontpage.md` is a 2026-03-14 template

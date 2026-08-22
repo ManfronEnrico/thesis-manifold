@@ -5,7 +5,7 @@ category: reference
 applies-to: [literature-curation, ch5-framework-design, ch7-synthesis, ch9-discussion]
 triggers: [srq3, integration readiness, production agentic system, prometheus, graph engine]
 created: 2026_08_11-00_00
-updated: 2026_08_11-00_00
+updated: 2026_08_22-20_00
 ---
 
 # SRQ3: Integration Readiness
@@ -27,9 +27,34 @@ signals improved predictions. That scope is gone. v4 SRQ3 is an **integration-re
 question about the host system**: what must a production agentic system already be able to do
 before a forecasting substrate can be bolted on at all.
 
-Per the v4 notes, this remains an **assessment**, not a completed integration: Prometheus
-access is pending (NDA + dev merge), and the concrete integration target is the Prometheus
-**Graph Engine**. If access lands, SRQ3 may move to *active* integration.
+Per the v4 notes, this was framed as an **assessment**, not a completed integration,
+partly because Prometheus access was pending (NDA + dev merge).
+
+> **ACCESS HAS LANDED (2026-08-20).** The Prometheus Graph Engine was delivered,
+> inspected, and now runs locally with its own environment and E2B sandbox template.
+> The constraint that partly motivated the assessment framing no longer applies.
+>
+> **RESOLVED 2026-08-22 — a middle position, and Ch1 §1.3 now states it.**
+>
+> The framing that ships is: **readiness criteria derived from a working integration,
+> without claiming a completed production deployment.**
+>
+> The reasoning that decided it: **the integration is happening regardless.** Scenario
+> `E_prometheus_model` *is* `forecast_demand` running inside the Prometheus engine, and
+> plan task 6 is literally "port `forecast_demand` to the verified API". SRQ4 cannot run
+> without it. So the question was never whether to integrate — only whether SRQ3 claims
+> that work as its evidence or leaves it as SRQ4's apparatus.
+>
+> Grounding the criteria in what the integration actually depended on is stronger
+> evidence than architectural analysis alone, and costs no additional work.
+>
+> **What is explicitly NOT claimed**, and Ch1 says so: operational hardening, monitoring
+> at scale, and organisational adoption. The integration is conducted for evaluation
+> within a research collaboration, not deployed to production users.
+>
+> **One contingency to watch.** This framing assumes scenario E runs. If the integration
+> hits a wall that cannot be cleared, revert to the pure-assessment framing — it remains
+> fully available and nothing is lost. Decide finally after plan task 6 completes.
 
 ## The capabilities under assessment (Ch1 §1.3)
 
