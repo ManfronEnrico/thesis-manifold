@@ -98,13 +98,24 @@ for cat, slug in CATS.items():
     pred_te = m.predict(te[available_features(fm)].fillna(0.0))
     ytrue = np.expm1(te["log_sales_units"].values)
     for nom in NOMINAL:
-        q = np.quantile(res, nom)  # symmetric half-width in log space
+        # FINITE-SAMPLE QUANTILE, not the nominal one. Lei et al. (2018) Algorithm 2
+        # takes the ceil((n+1)(1-alpha))/n empirical quantile of the calibration
+        # residuals, NOT the (1-alpha) quantile. The correction is what buys the
+        # distribution-free guarantee P(Y in C) >= 1-alpha at FINITE n; using the
+        # plain nominal quantile undercovers slightly and forfeits the theorem the
+        # method is cited for. The gap is small here (+0.3 to +1.0pp of quantile
+        # level at our calibration sizes) but it is the difference between "a
+        # conformal-style interval" and "Lei et al. Algorithm 2".
+        n_cal = len(res)
+        level = min(np.ceil((n_cal + 1) * nom) / n_cal, 1.0)
+        q = np.quantile(res, level)  # symmetric half-width in log space
         lo = np.expm1(pred_te - q); hi = np.expm1(pred_te + q)
         cov = float(np.mean((ytrue >= lo) & (ytrue <= hi)) * 100)
         # median relative interval width (robust; mean explodes on low-volume rows)
         width = float(np.median((hi - lo) / np.maximum(ytrue, 1e-9)))
         rows.append(dict(category=cat, nominal=int(nom * 100), empirical_coverage=round(cov, 1),
-                         mean_rel_width=round(width, 2), n_test=len(te)))
+                         mean_rel_width=round(width, 2), n_test=len(te),
+                         n_calib=n_cal, quantile_level=round(level, 4)))
         print(f"  {cat:13s} nominal={int(nom*100)}%  empirical={cov:5.1f}%  rel_width={width:.2f}")
 
 df = pd.DataFrame(rows)
@@ -112,13 +123,38 @@ df.to_csv(RES / "calibration.csv", index=False)
 lines = ["# SRQ1 prediction-interval calibration — split conformal (tuned XGBoost, brand×month)", "",
          "Half-width calibrated on validation residuals (log space); empirical coverage "
          "measured on test. Well-calibrated => empirical ≈ nominal.", "",
+         "**Read coverage and width together.** Coverage alone is not a success "
+         "criterion: an arbitrarily wide interval attains perfect coverage while "
+         "carrying no decision-relevant information. `Median rel. width` is the "
+         "interval width as a multiple of the actual value, so 3.0 means the "
+         "interval spans about three times the quantity being forecast.", "",
          "| Category | Nominal | Empirical coverage | Median rel. width | n_test |",
          "|---|---|---|---|---|"]
 for _, x in df.iterrows():
+    flag = "" if x['mean_rel_width'] < 5 else "  **<- too wide to act on**"
     lines.append(f"| {x['category']} | {x['nominal']}% | {x['empirical_coverage']}% | "
-                 f"{x['mean_rel_width']} | {int(x['n_test'])} |")
+                 f"{x['mean_rel_width']}{flag} | {int(x['n_test'])} |")
 lines += ["", "Coverage near nominal indicates the conformal interval is a usable confidence "
           "signal for the agentic layer (SRQ2); systematic over/under-coverage flags residual "
-          "heteroskedasticity (interval width is global, not per-series)."]
+          "heteroskedasticity (interval width is global, not per-series).", "",
+          "## What the guarantee does and does not cover", "",
+          "The half-width is the `ceil((n+1)(1-alpha))/n` empirical quantile of the "
+          "calibration residuals, i.e. Algorithm 2 of Lei et al. (2018), whose "
+          "distribution-free finite-sample guarantee is **marginal** coverage "
+          "`P(Y in C(X)) >= 1-alpha` -- an average over cells, NOT a per-brand or "
+          "per-month promise (Lei et al., 2018, Remark 3).", "",
+          "**That guarantee assumes exchangeability, which monthly brand demand "
+          "violates.** Barber et al. (2023) show unweighted split conformal can lose "
+          "coverage materially under temporal drift, and bound the loss by a weighted "
+          "sum of total-variation distances rather than eliminating it. So the "
+          "coverage numbers above are an **empirical measurement**, not a theoretical "
+          "entitlement -- which is exactly why they are measured on a held-out test "
+          "period instead of assumed. The danskvand row (70.7% against a nominal 80%) "
+          "is what that violation looks like in practice.", "",
+          "**Width is the binding constraint here, not coverage.** danskvand and "
+          "energidrikke reach acceptable coverage at 90% only with intervals "
+          "spanning 9-17x the actual, which no planner can act on. Report those "
+          "two as a limitation rather than averaging them into a "
+          "well-calibrated claim."]
 (RES / "calibration.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 print("Saved calibration.csv + calibration.md")
