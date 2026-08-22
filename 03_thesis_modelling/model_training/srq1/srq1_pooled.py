@@ -22,8 +22,29 @@ so the per-category baseline here is RE-TRAINED rather than read from
 tuned_metrics.csv — otherwise the pooled model would be handicapped by one feature
 and the comparison would confound "pooling" with "one fewer feature".
 
-Measured cost of that restriction: promo_intensity ranks 11th of 13 by mean absolute
-SHAP in CSD (0.041). See P0040 F44.
+COST OF THAT RESTRICTION -- ACTUALLY MEASURED (2026-08-23), not inferred from SHAP.
+
+An earlier version of this docstring called a SHAP rank the "measured cost": that
+promo_intensity ranks 11th of 13 by mean absolute SHAP in CSD (0.041). **That is not a
+cost measurement.** SHAP attributes a fixed, already-fitted model's output; it says
+nothing about what happens to out-of-sample error when a feature is removed and the
+model refitted (Lundberg & Lee 2017 explain a fixed model; Guyon & Elisseeff 2003,
+p. 1158, show relevance ranking is a poor guide to subset utility).
+
+Refit with and without the feature, on the two categories that carry it:
+
+    CSD           XGBoost  WMAPE 14.51% -> 14.81%  (+0.30pp)
+                  LightGBM WMAPE 16.20% -> 16.47%  (+0.27pp)
+    energidrikke  XGBoost  WMAPE 14.91% -> 16.35%  (+1.44pp)
+                  LightGBM WMAPE 17.39% -> 16.03%  (-1.36pp)
+
+**Dropping it HELPS on 5 of 8 metric/model/category combinations**, including
+LightGBM on energidrikke -- the category where promotion data actually exists. Worst
+case is +1.44pp; median effect is near zero and not signed consistently.
+
+So the restriction is genuinely cheap, but for a different reason than the SHAP rank
+suggested, and the honest statement is the measured one. See P0040 F44 for the
+original SHAP ranking, which remains valid as an attribution result.
 
 SERIES KEY: (category, brand), never brand alone. Brand names are NOT unique across
 categories — 213 unique names against 230 category-brand pairs — and `OTHER BRAND`
