@@ -21,15 +21,21 @@ knowing that is worth more than an untested story in the write-up.
 METHOD: refits the exact same models as srq1_pooled.py (same 12 features, same
 protocol, same seed), then scores per brand rather than per category.
 
-METRIC DOMAINS (corrected 2026-08-22). Brands with a zero-actual test window are
-excluded from MAPE-family statistics only, where APE is genuinely undefined. They
-are RETAINED for every WMAPE statistic, because WMAPE puts the sum in the
-denominator and is well-defined at zero. An earlier version applied the exclusion
-to WMAPE too; that dropped 27% of brands -- the intermittent, low-volume ones the
-pooling question is chiefly about -- and flipped the sign of the XGBoost size
-correlation. Hyndman & Koehler (2006, p. 683) call dropping zero windows "an
-artificial solution that is impossible to apply in practical situations"; here it
-was not even necessary.
+METRIC DOMAINS. Brands with a zero-actual test window are excluded from MAPE-family
+statistics only, where APE is genuinely undefined. They are RETAINED for every WMAPE
+statistic, because WMAPE puts the sum in the denominator and is well-defined at zero.
+An earlier version applied the exclusion to WMAPE too; that dropped 27% of brands --
+the intermittent, low-volume ones the pooling question is chiefly about. Hyndman &
+Koehler (2006, p. 683) call dropping zero windows "an artificial solution that is
+impossible to apply in practical situations"; here it was not even necessary.
+
+DEMAND CLASSES (2026-08-23). Results are broken out by the Syntetos-Boylan-Croston
+partition -- smooth / erratic / intermittent / lumpy, at the derived cut-offs p = 1.32
+and CV^2 = 0.49 -- rather than guarded by a volume threshold. This replaced a 1
+unit/month floor that was a judgement call and, measured, a poor proxy: it removed 8
+smooth brands while leaving 21 lumpy/intermittent ones in. **Nothing is now excluded
+from the WMAPE tables**; irregular series are reported in their own row, which is what
+Syntetos & Boylan's own work recommends.
 
 Self-contained, seed=42, reproducible. No API spend.
 Usage:  .venv/Scripts/python.exe 03_thesis_modelling/model_training/srq1/srq1_pooled_perbrand.py [--trials 30]
@@ -151,40 +157,59 @@ def main():
     # instead of altering the data to suit the metric. WMAPE is such a metric;
     # applying the exclusion to it took the cost of the workaround without needing
     # the workaround.
-    # A VOLUME FLOOR, applied to WMAPE and reported, not hidden.
+    # DEMAND-PATTERN CATEGORISATION, replacing the earlier ad-hoc volume floor.
     #
-    # Removing the scorability filter (correctly) readmitted brands averaging
-    # under one unit per month in the test window. WMAPE is arithmetically fine
-    # there -- but a brand selling 0.33 units/month produces deltas in the
-    # thousands of percentage points, and 89 of 460 rows exceed 100pp with a
-    # MEDIAN volume of 0.0 units/month. Those rows do not carry information about
-    # whether pooling helps; they carry division by an almost-empty denominator.
+    # An intermediate version (2026-08-23) guarded the WMAPE tables with a 1
+    # unit/month volume floor. It worked but was a judgement call, and the measured
+    # overlap showed it was a poor proxy for what it was trying to exclude: it
+    # removed 8 SMOOTH brands (well-behaved, merely small -- exactly the series a
+    # forecasting study should keep) while leaving 21 lumpy/intermittent brands
+    # above the line. Volume and regularity are different properties.
     #
-    # So: two thresholds, both reported. MIN_UNITS excludes brands with
-    # essentially no test-window presence. This is a DIFFERENT decision from the
-    # scorability filter and must not be confused with it -- scorability was about
-    # a metric being undefined, this is about a series being too small to inform
-    # the question. Stating the floor and its effect is the honest treatment;
-    # Hyndman & Koehler's objection is to silent exclusion, not to a declared and
-    # justified inclusion criterion.
-    MIN_UNITS = 1.0
-    ok = df[df.scorable].copy()                       # MAPE-family only
-    wm_all = df.copy()                                # WMAPE, literally everything
-    wm = df[df.mean_test_units >= MIN_UNITS].copy()   # WMAPE, above the floor
+    # Replaced by the Syntetos-Boylan-Croston categorisation (Syntetos, Boylan &
+    # Croston 2005, JORS 56(5), 495-503, p. 495), whose cut-offs are DERIVED rather
+    # than tuned: p = 1.32 average inter-demand interval, CV^2 = 0.49 on non-zero
+    # demand sizes, giving smooth / erratic / intermittent / lumpy.
+    #
+    # THE KEY CHANGE IS THAT NOTHING IS EXCLUDED. Every brand is reported, broken
+    # out by demand class. A weak result on lumpy series becomes a stated limitation
+    # instead of an absence. That is the response both Hyndman & Koehler (2006,
+    # p. 683) and Syntetos & Boylan (2005) actually recommend -- they object to
+    # discarding difficult series, not to categorising them.
+    #
+    # `demand_classes.csv` is produced by srq1_demand_classes.py from train+val only.
+    ok = df[df.scorable].copy()          # MAPE-family only -- APE undefined at zero
+    wm_all = df.copy()                   # WMAPE -- every brand, nothing dropped
+    wm = df.copy()
+
+    dc_path = OUT / "demand_classes.csv"
+    if dc_path.is_file():
+        dc = pd.read_csv(dc_path)[["category", "brand", "demand_class", "p", "cv2"]]
+        dc["brand"] = dc["brand"].astype(str)
+
+        def _join(f):
+            f = f.copy()
+            f["brand"] = f["brand"].astype(str)
+            return f.merge(dc, on=["category", "brand"], how="left")
+
+        ok, wm, wm_all = _join(ok), _join(wm), _join(wm_all)
+    else:
+        for f in (ok, wm, wm_all):
+            f["demand_class"] = "unclassified"
     lines += [f"Brands scored: {len(df)} rows "
               f"({df.brand.nunique()} distinct brands x {df.model.nunique()} models).", "",
               f"**WMAPE statistics below use all {len(df)} rows.** WMAPE is defined "
               f"against zero actuals (the sum is in the denominator), so no exclusion "
               f"is needed or applied.", "",
-              f"**A volume floor of {MIN_UNITS:g} unit/month applies to the WMAPE tables**, "
-              f"leaving {len(wm)} of {len(wm_all)} rows. Brands below it average under one "
-              f"unit across the whole test window; WMAPE is arithmetically defined there but "
-              f"produces deltas in the thousands of percentage points "
-              f"({int((wm_all.delta_wmape.abs() > 100).sum())} rows exceed 100pp, with a "
-              f"median volume of {wm_all[wm_all.delta_wmape.abs() > 100].mean_test_units.median():.1f} "
-              f"units/month). That is division by an almost-empty denominator, not evidence "
-              f"about pooling. **This is a declared inclusion criterion, not the scorability "
-              f"filter** -- a different decision, made for a different reason.", "",
+              f"**No brand is excluded from the WMAPE tables.** WMAPE is defined "
+              f"against zero actuals (the sum is in the denominator), so all {len(wm_all)} "
+              f"rows are reported. Results are broken out by **demand class** instead, "
+              f"using the derived Syntetos-Boylan-Croston cut-offs (p = 1.32, "
+              f"CV^2 = 0.49; Syntetos, Boylan & Croston 2005, p. 495).", "",
+              f"*This replaces an earlier 1 unit/month volume floor, which was a "
+              f"judgement call and a poor proxy for irregularity: it removed 8 smooth "
+              f"brands while leaving 21 lumpy/intermittent ones in. See "
+              f"`demand_classes.md`.*", "",
               f"**MAPE-family statistics use the {int(df.scorable.sum())} scorable rows** "
               f"({int((~df.scorable).sum())}, {100*(~df.scorable).mean():.0f}%, have a zero "
               f"actual somewhere in the test window, where APE is undefined rather than "
@@ -223,6 +248,79 @@ def main():
                          f"{g.delta_wmape.mean():+.1f} | {len(g)} | "
                          f"{win}/{len(g)} ({100*win/len(g):.0f}%) |")
     lines.append("")
+
+    # The table the categorisation exists to produce.
+    if "demand_class" in wm.columns and wm.demand_class.notna().any():
+        lines += ["## Delta by demand class (WMAPE percentage points)", "",
+                  "The Syntetos-Boylan-Croston partition. **Nothing is excluded** --",
+                  "irregular series appear here rather than being filtered out, so a",
+                  "weak result on them is visible.", "",
+                  "| Model | Demand class | median delta | IQR | n scored | n no-signal | pooling wins |",
+                  "|---|---|---|---|---|---|---|"]
+        for model in ("LightGBM", "XGBoost"):
+            for cls in ("smooth", "erratic", "intermittent", "lumpy"):
+                g = wm[(wm.model == model) & (wm.demand_class == cls)]
+                if not len(g):
+                    continue
+                # MEAN DELTA IS NOT REPORTED, deliberately.
+                #
+                # Removing the volume floor readmitted brands whose test window is
+                # entirely zero (mean_test_units == 0.0). WMAPE is defined for them
+                # -- nothing divides by zero -- but the denominator sum|y| is ~0, so
+                # the ratio reaches 1e14. 63 of 460 rows exceed 1000pp, with a median
+                # volume of 0.0 units. A MEAN over those is meaningless; it reported
+                # magnitudes of 1e12 in the first version of this table.
+                #
+                # The categorisation fixed WHICH series are grouped together. It does
+                # not make a mean of ratios robust, and it was never meant to. So:
+                # median and IQR, plus an explicit count of the degenerate rows, so
+                # the reader sees how many there are instead of finding them inside
+                # an average.
+                # Split, do not filter. `deg` rows have an ALL-ZERO test window --
+                # there is no actual to be accurate about, so their WMAPE is a ratio
+                # to ~0 and carries no information at any quantile, not just at the
+                # mean. They are COUNTED in their own column rather than dropped, so
+                # the reader sees that 15 of 31 lumpy brands have no test signal --
+                # which is itself the most informative fact about that class.
+                #
+                # The quantiles are computed on the rows that HAVE a signal. This is
+                # not the volume floor returning: the split is on "is there anything
+                # to score against", which is a property of the data, not a
+                # threshold chosen to make numbers look better.
+                deg_mask = g.mean_test_units.fillna(0) <= 0
+                deg = int(deg_mask.sum())
+                gs = g[~deg_mask]
+                win = int((gs.delta_wmape < 0).sum())
+                if len(gs):
+                    q1, q3 = gs.delta_wmape.quantile([0.25, 0.75])
+                    med, iqr = f"{gs.delta_wmape.median():+.1f}", f"{q1:+.1f} to {q3:+.1f}"
+                    wr = f"{win}/{len(gs)} ({100*win/len(gs):.0f}%)"
+                else:
+                    med, iqr, wr = "--", "--", "--"
+                lines.append(
+                    f"| {model} | {cls} | {med} | {iqr} | {len(gs)} | {deg} | {wr} |")
+        lines += ["",
+                  "**Reading it.** `smooth` is where a model should do well and where a",
+                  "pooling effect is most interpretable. `lumpy` combines long gaps with",
+                  "highly variable sizes, so large deltas there reflect the series, not",
+                  "the method.", "",
+                  "**`n no-signal` counts brands whose test window is entirely zero.**",
+                  "There is no actual to be accurate about, so their WMAPE is a ratio to",
+                  "~0 and reaches 1e14. They are **counted in their own column rather",
+                  "than dropped**, and the statistics are computed on the rows that have",
+                  "a signal.", "",
+                  "**That column is the most informative thing in this table.** Roughly",
+                  "half the `lumpy` brands (15 of 31) have no test signal at all. The",
+                  "honest statement about lumpy series on this panel is therefore not",
+                  "that a model forecasts them badly -- it is that **for half of them",
+                  "there is nothing to forecast in the evaluation window**, which is a",
+                  "property of monthly brand-level FMCG data worth reporting in its own",
+                  "right.", "",
+                  "Note this split is on *whether anything exists to score against*, a",
+                  "property of the data -- not a volume threshold chosen to improve the",
+                  "numbers.", "",
+                  "**Means are never reported here.** A mean of ratios is not robust on",
+                  "this panel even after the no-signal rows are set aside.", ""]
 
     lines += ["## Per-category, per-tercile (WMAPE pp, median)", "",
               "| Model | Category | small | medium | large |",
