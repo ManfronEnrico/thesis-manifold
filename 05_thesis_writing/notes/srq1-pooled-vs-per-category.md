@@ -62,6 +62,43 @@ Not "pooled wins" and not "per-category wins", but a **conditional**:
 This is more useful to a practitioner than either absolute, because it converts a
 modelling choice into a **measurable precondition** — count your rows, then decide.
 
+### ATTRIBUTION RULE — verified 2026-08-23, do not break this when drafting
+
+**The 750–1000 threshold is ours. It does not appear in Montero-Manso & Hyndman
+(2021) or anywhere else in the literature.** A source-level verification checked
+that paper specifically for it and found nothing, warning that attributing the
+number to them would be *"a misattribution and a severe factual overstatement"*.
+
+The split to hold when writing:
+
+| Cite Montero-Manso & Hyndman (2021) for | Report as OUR finding |
+|---|---|
+| *why* a crossover should exist at all — local models cannot estimate parameters from short series (p. 1633); global models pool to avoid overfitting | **the location of the crossover** on this dataset |
+| the local/global definitions (p. 1634) | that the sign flips **once**, and replicates across two algorithms |
+| that global models need no homogeneity assumption (Prop. 1) | the ~750–1000 brand-month figure |
+
+**This makes the result stronger, not weaker.** The theory predicts a crossover
+exists but supplies no threshold; measuring one on an FMCG brand-month panel is
+a contribution rather than an application.
+
+### Two qualifications the same verification attached
+
+1. **The generalisation bound assumes cross-series independence.** Proposition 2's
+   complexity argument applies Hoeffding across series, which requires them to be
+   independent. **Brands within one beverage category plainly are not** — they
+   compete for the same shelf and the same occasion. The bound is therefore
+   suggestive here, not binding. Saying so is cheap and is the kind of thing an
+   examiner rewards.
+
+2. **Global models may need longer memory than local ones**, per Proposition 1 —
+   a shared function must distinguish series that a per-series model never has to
+   tell apart. **Our pooled and per-category runs use an identical lag set**
+   (lag_1..lag_13 plus rollings), so the pooled arm may be handicapped by exactly
+   the memory constraint the theory flags. **This is a possible confound and
+   belongs in the limitations**: the measured crossover may sit at a different
+   row count for a pooled model given longer lags. Not a reason to withhold the
+   result — a reason to state its scope.
+
 It also sharpens the memory-efficiency leg: one pooled model is a quarter of the
 artifacts, and for two of four categories it is *also more accurate*, so for those
 categories the accuracy/memory trade-off **is not a trade-off at all.** That is a
@@ -208,7 +245,15 @@ description of a hazard avoided at runtime.
 4. **RTD sits near 35% WMAPE in both arms.** For that category the pooling question
    is secondary to the fact that neither model forecasts it well — worth saying so
    rather than reporting a +0.7pp delta as if it were the interesting number.
-5. **Under-tuning inflates apparent gains.** At 2 trials the per-category danskvand
+5. **The per-brand breakdown excluded 27% of brands until 2026-08-23.** A
+   scorability filter (zero actual in the test window) was applied to **WMAPE**
+   statistics, which do not need it — WMAPE puts the sum in the denominator and is
+   defined at zero. The excluded brands were the intermittent, low-volume ones,
+   i.e. precisely the population the pooling question concerns, and restoring them
+   **flipped the sign of the XGBoost size correlation** (+0.252 → −0.095). Any
+   per-brand number predating that fix is unusable. Hyndman & Koehler (2006,
+   p. 683) also criticise the exclusion practice generally.
+6. **Under-tuning inflates apparent gains.** At 2 trials the per-category danskvand
    result read 41.6%/22.0%; at 30 trials it read 23.7%/21.5%. The pilot's dramatic
    −20.9pp was a tuning artifact roughly ten times the true effect. Worth one
    methodology sentence, because the direction of that bias favours whichever arm

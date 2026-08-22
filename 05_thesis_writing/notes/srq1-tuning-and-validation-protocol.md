@@ -108,6 +108,49 @@ outcomes, both reportable:
 Either way an implicit choice becomes a stated and evidenced one. `cv_summary.md`
 carries the comparison table.
 
+### The disagreement is PREDICTED by theory, not an anomaly (verified 2026-08-23)
+
+This is the most useful thing source verification has returned for SRQ1, because it
+turns a recurring empirical oddity into a result with a name and a citation.
+
+**Gneiting (2011, *JASA* 106(494), pp. 746, 752, 758)** proves that a scoring
+function determines *which functional of the predictive distribution* is optimal:
+
+| Loss | Optimal point forecast |
+|---|---|
+| Absolute error | the **median** |
+| Pointwise **absolute percentage error** | the **(−1)-median** — the median of a density reweighted by `y⁻¹` |
+| **WMAPE** (aggregate before dividing) | equivalent to minimising MAE ⇒ the **standard median** |
+
+The `(−1)`-median is pulled toward zero, because dividing by a small actual
+amplifies the penalty. **A model tuned on a MAPE-family objective therefore
+systematically underforecasts** — by construction, not by accident.
+
+**Three things this explains at once:**
+
+1. **Why WMAPE and median MAPE disagree by up to 20pp** across three independent
+   analyses in this project. They are estimates of *different functionals*. There
+   was never a reason to expect them to agree.
+2. **Why tuning for medMAPE costs 8–13pp of WMAPE and buys only 2–3pp of medMAPE.**
+   The medMAPE-tuned model is targeting the `(−1)`-median and underforecasting;
+   WMAPE penalises exactly that. The asymmetry of the trade is the theory's
+   signature, not a quirk of the search.
+3. **Why WMAPE is the defensible headline metric.** Not merely because it is
+   volume-weighted and robust at zero, but because **it is consistent for the
+   standard median**, which is the quantity a demand planner actually wants.
+
+**Write it this way.** "We report WMAPE because it is standard in retail" is weak.
+"We report WMAPE because it is *consistent for the median of the predictive
+distribution, whereas pointwise MAPE optimisation is consistent for the
+(−1)-median and systematically underforecasts* (Gneiting, 2011)" is a
+methodological argument.
+
+**One honest caveat when citing:** Gneiting never writes "WAPE" or "WMAPE". The
+step from his APE result to WMAPE is a short algebraic one — the denominator
+`Σ|yₜ|` is constant across candidate models on a fixed evaluation sample, so
+minimising WMAPE is minimising Σ|error| — and **we must state that step ourselves
+rather than implying he made it.**
+
 ## Honest limitations to state
 
 1. **Single seed.** All results use seed 42. A seed sweep would establish whether
@@ -115,7 +158,11 @@ carries the comparison table.
 2. **No nested CV.** Hyperparameters are selected by CV and the winner evaluated on
    a held-out test split — standard practice, but not fully nested, so the reported
    test score is a mildly optimistic estimate of generalisation.
-3. **Search space bounds were chosen, not searched.** `n_estimators` 200–1200,
+3. **The dual-objective result is a within-sample comparison of objectives**, not
+   a claim about which metric a business should optimise. Gneiting's argument says
+   what each objective *targets*; which target is right depends on the decision the
+   forecast feeds, which this thesis does not model.
+4. **Search space bounds were chosen, not searched.** `n_estimators` 200–1200,
    `learning_rate` 0.01–0.15, etc. are reasonable ranges but not themselves
    justified by experiment. If a selected value sits at a boundary, that indicates
    the range was too narrow and should be reported.
