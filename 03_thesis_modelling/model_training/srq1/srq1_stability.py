@@ -19,6 +19,14 @@ CV = std / mean, computed PER (category, brand, month) cell across seeds, then
 summarised per category. A CV of 0.05 means the forecast for that cell moved by
 about 5% of its own level depending only on the seed.
 
+REPRODUCIBILITY, VERIFIED BY ACCIDENT (2026-08-23). This script was launched twice
+in the same session. Both runs produced **byte-identical** stability.csv and
+stability_per_seed_accuracy.csv. That is the property the whole measurement depends
+on: the run-to-run movement reported here is attributable to the SEED, because
+everything else -- data, splits, folds, protocol -- reproduces exactly. Had the two
+runs disagreed, the CV figures would be measuring nondeterminism of unknown origin
+rather than seed sensitivity.
+
 TWO QUESTIONS, ONE RUN. This also settles the open seed question from P0040 F51 --
 whether LightGBM's flat per-brand pooling result was a one-seed artifact -- because
 the same seed sweep produces per-seed accuracy as a by-product.
