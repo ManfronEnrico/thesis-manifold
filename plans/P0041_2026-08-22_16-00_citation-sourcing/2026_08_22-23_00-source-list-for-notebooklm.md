@@ -2,7 +2,7 @@
 name: source-list-for-notebooklm
 description: Every paper cited in Ch1/Ch2, the specific claim each supports, and what must be verified. Download list for NotebookLM.
 created: 2026_08_22-23_00
-updated: 2026_08_22-23_00
+updated: 2026_08_23-21_00
 ---
 
 # Source list — download these, and what to check in each
@@ -47,13 +47,61 @@ address forecasting under SME constraints."
 
 ---
 
+## ⚠️ PRIORITY 1 — WHICH METRIC IS CERAN'S 15%?
+
+**Blocks a headline claim in Ch1, Ch6 (§6.4.3) and Ch10.** Raised 2026-08-23 during
+the §6.5 rewrite, when it became clear the answer changes the result in opposite
+directions depending on the metric.
+
+**Source:** Ceran, Özkan, Eskiocak, Mert & Yüceoğlu (2024). ML-based demand
+forecasting for an FMCG retailer. INFUS 2024, LNNS 1090. Springer. *(= row A3 below.)*
+
+**The claim it is cited for:** "a MAPE of 15% or below as a practical benchmark" —
+used throughout this thesis as **the** accuracy target.
+
+**Why it cannot be scored right now.** This thesis reports WMAPE and median APE. The
+two disagree by roughly a factor of two, so the target is either half-met or missed
+entirely:
+
+| Category | Our WMAPE | Our median APE |
+|---|---:|---:|
+| CSD | 14.5% ✅ | 33.2% ❌ |
+| energidrikke | 13.0% ✅ | 32.3% ❌ |
+| danskvand | 20.5% ❌ | 38.6% ❌ |
+| RTD | 31.8% ❌ | 38.1% ❌ |
+
+- **If they mean WMAPE** — the thesis meets the target on **2 of 4** categories.
+- **If they mean plain or median MAPE** — the thesis meets it on **none**, and every
+  sentence claiming the target is approached or met must be rewritten.
+
+**ASK NOTEBOOKLM:**
+
+1. **Which metric is the 15%?** Plain MAPE, median MAPE, weighted MAPE/WMAPE, or
+   something else? Quote the definition **verbatim**, including the formula if given.
+2. **At what aggregation level** is it measured — per SKU, per category, per store,
+   or pooled across the panel? A 15% pooled figure and a 15% per-SKU figure are very
+   different targets.
+3. **Is 15% their own result, or a benchmark they cite from elsewhere?** If cited,
+   **the original source is what this thesis should cite**, not Ceran et al.
+4. **What forecast horizon and grain?** Ours is H=3 on brand × month. A daily or
+   weekly SKU-level benchmark is not comparable and should not be used as our target.
+5. **Do they report zero-actual handling?** If their panel has no zero actuals, plain
+   MAPE is well defined for them and undefined for us (§6.4) — which would make the
+   metric non-transferable regardless of the answer to (1).
+
+**If the answer is "plain MAPE per SKU":** the honest move is to drop the ≤15% target
+as a comparability claim and report against the simple benchmarks instead, which are
+measured on our own data and need no cross-study metric alignment.
+
+---
+
 ## GROUP A — Forecasting substrate (§2.1) — SRQ1
 
 | # | Source | Status | Claim it supports | **Verify** |
 |---|--------|:------:|-------------------|-----------|
 | A1 | **Makridakis, Spiliotis & Assimakopoulos (2020).** The M4 competition. *IJF* 36(1), 54–74. | PP | "Combining models tends to outperform any single best model"; hybrids of statistical structure and ML achieve highest accuracy | Does M4 support the **combination** claim as stated? Also: does it support the *simple-beats-complex* finding we now need for the RTD result (seasonal-naive beats our tuned models)? **If that is in M5 rather than M4, we are citing the wrong paper.** |
 | A2 | **Makridakis et al. (2022).** M5 accuracy competition. *IJF* 38(4), 1346–1364. | PP | Top submissions used gradient-boosted trees incl. LightGBM; exogenous promo/calendar features beat history-alone | Confirm both sub-claims. Also check whether M5 reports a **global vs local** (pooled vs per-series) finding — needed for register C4, currently unsourced. |
-| A3 | **Ceran, Özkan, Eskiocak, Mert & Yüceoğlu (2024).** ML-based demand forecasting for an FMCG retailer. INFUS 2024, LNNS 1090. Springer. | PP | LightGBM strong accuracy at low memory; **"MAPE of 15% or below as a practical benchmark"** | **HIGHEST-VALUE SINGLE QUESTION HERE: which metric is their 15%?** Plain MAPE, median MAPE, or weighted/WMAPE? We report WMAPE and meet ≤15% on 2 of 4 categories. **On median MAPE we meet it on none (31.8–38.6%).** This one fact decides whether a headline target is met or missed. |
+| A3 | **Ceran, Özkan, Eskiocak, Mert & Yüceoğlu (2024).** ML-based demand forecasting for an FMCG retailer. INFUS 2024, LNNS 1090. Springer. | PP | LightGBM strong accuracy at low memory; **"MAPE of 15% or below as a practical benchmark"** | **PROMOTED TO PRIORITY 1 ABOVE — see that block for the full question set.** Which metric is their 15%? Plain MAPE, median MAPE, or weighted/WMAPE? We report WMAPE and meet ≤15% on 2 of 4 categories. **On median MAPE we meet it on none (31.8–38.6%).** This one fact decides whether a headline target is met or missed. |
 | A4 | **Ma, Jackson, Huang, Villegas & Macias-Aguayo (2025).** Data-driven context-aware demand forecasting in beverages. *IJLRA*. | PP | ML with exogenous features beats statistical baselines for high-volume stable SKUs; **no single model dominates** | Confirm "no single model dominates". Our evidence **corroborates strongly** and adds a sample-size threshold — check whether they offer one. |
 | A5 | **Nguyen et al. (2025).** ML for economic forecasting and SME growth. *Int. J. Innovation Studies* 9(1). | PP | LightGBM/XGBoost suited to short-horizon forecasting with limited observations | Confirm the regime matches ours (~460–1,800 rows/category, ~44 monthly periods). |
 | A6 | **Ahrens, Hansen, Schaffer & Wiemann (2024).** Model averaging and double machine learning. *J. Applied Econometrics*. | PP (arXiv DOI listed — check) | Stacked averaging, esp. inverse-variance weighting, improves on individual learners | Confirm. **The DOI given is an arXiv DOI** while the venue is a journal — resolve which version is cited. Relevant to disconnection D1. |

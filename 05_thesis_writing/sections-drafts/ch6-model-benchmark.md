@@ -1,9 +1,12 @@
 # Chapter 6 — Model Benchmark & Selection
-> **Status: §6.1–6.4 REVISED 2026-08-23** against the source-verified citation register
-> (P0041) and the current results on disk. §6.5 accuracy tables are **STALE** — every
-> figure predates the 2026-08 CV-tuning work and the `brand × chain` grain was removed
-> by DEC-GRAIN/P0035, so those tables are structurally obsolete, not merely out of date.
-> Rewriting §6.5 is tracked separately.
+> **Status: §6.1–6.5 REVISED 2026-08-23** against the source-verified citation
+> register (P0041) and the current results on disk. §6.5 was **rewritten, not patched**:
+> its previous tables reported pre-tuning values and carried a `brand × chain` column for
+> a grain that DEC-GRAIN/P0035 removed from code, paths and results. Every figure in
+> §6.5 is now traceable to a named file in `04_thesis_results/srq1/`.
+>
+> **Open:** the ≤15% accuracy target cannot be scored until the source's metric is
+> verified (§6.4.3); `fig4_ram_budget` is stale (§6.5.6).
 >
 > **Every citation in §6.1–6.4 is `VERIFIED` in the register** unless explicitly marked
 > otherwise. Do not add a citation here that has not been source-checked.
@@ -274,6 +277,18 @@ Irregular series are handled by **categorisation rather than removal** — see �
 > not exist; extending that exclusion to metrics that are well defined would be the
 > practice they criticise.
 
+### 6.4.3 Targets
+
+- **Accuracy target: ≤15% WMAPE**, taken from the retail demand-forecasting literature.
+  ⚠️ **The source's metric is not yet verified.** If the cited benchmark refers to plain
+  or median MAPE rather than WMAPE, this thesis meets it on no category. Until that is
+  confirmed, no claim that the target is met should be written
+- **Calibration target: ≥85% empirical coverage** for a nominal 90% interval —
+  **and interval width must be reported alongside**, since an arbitrarily wide interval
+  attains perfect coverage while carrying no decision-relevant information
+
+---
+
 ### 6.4.4 Demand-pattern categorisation
 
 Brand-level demand on this panel ranges from steady weekly sellers to series with long
@@ -325,141 +340,207 @@ estimators for such series, not advice to discard them.
 > patterns, not as a claim that the same accuracy ordering holds for these models —
 > which is itself a question the per-class results can address.
 
-### 6.4.3 Targets
-
-- **Accuracy target: ≤15% WMAPE**, taken from the retail demand-forecasting literature.
-  ⚠️ **The source's metric is not yet verified.** If the cited benchmark refers to plain
-  or median MAPE rather than WMAPE, this thesis meets it on no category. Until that is
-  confirmed, no claim that the target is met should be written
-- **Calibration target: ≥85% empirical coverage** for a nominal 90% interval —
-  **and interval width must be reported alongside**, since an arbitrarily wide interval
-  attains perfect coverage while carrying no decision-relevant information
-
----
 
 ## 6.5 Results
 
-> ## ⚠️ EVERY NUMBER IN §6.5.1–§6.5.3 AND §6.5.6 IS STALE — DO NOT CITE
->
-> These tables were produced before the 2026-08 tuning work and **contradict every
-> current results file**. Two independent problems:
->
-> 1. **The values are wrong.** Current best WMAPE per category (`cv_metrics.csv`,
->    100-trial CV-tuned) is **CSD 14.5%** (LightGBM), **energidrikke 13.0%** (XGBoost),
->    **danskvand 20.5%** (LightGBM), **RTD 31.8%** (LightGBM). The chapter claims 16.5 /
->    11.4 / 23.8 / 31.0 and attributes all four to XGBoost.
-> 2. **The structure is obsolete.** The `brand × chain` column and the entire
->    granularity finding (§6.5.2, §6.5.6) refer to a grain **removed by DEC-GRAIN and
->    P0035**. This cannot be fixed by updating numbers — those tables have a column that
->    no longer exists.
->
-> **Also missing entirely**: the four simple benchmarks (§6.2.0), the finding that
-> **seasonal naive beats every tuned model on RTD** (27.3% vs 31.8–36.1%), the
-> pooled-versus-per-category comparison, MASE, and the dual-objective result.
->
-> §6.1–6.4 have been revised and are current. §6.5 requires a rewrite against
-> `cv_metrics.csv`, `stat_baselines.csv`, `mase.csv`, `pooled_summary.md` and
-> `stability.md`, not a patch.
+<!-- REWRITTEN 2026-08-23 against the current results on disk: cv_metrics.csv,
+stat_baselines.csv, mase.csv, pooled_summary.md, pooled_perbrand_summary.md,
+demand_classes.md, calibration.csv, profiling.csv, stability.csv. The previous
+version of this section was stale in both its numbers and its structure: it
+reported pre-tuning values and carried a `brand x chain` column for a grain that
+DEC-GRAIN and P0035 removed from code, paths and results. It was replaced rather
+than patched. Every figure below is traceable to a named file. -->
 
+All results are on the locked **brand × month** grain (DEC-GRAIN). The alternative
+`brand × chain` representation, and the granularity comparison built on it, were
+removed from the project by P0035 and no longer appear in this chapter.
 
 ### 6.5.1 Tabular-model benchmark
 
-<!-- Approved by Enrico 2026-06-24. All numbers are factual, from the committed,
-reproducible benchmark (scripts/srq1_benchmark.py + srq1_benchmark_tuned.py,
-seed=42) on the corrected DVH EXCL. HD matrices. Results: thesis/data/
-_05_results_srq1/. Figures: _05_results_srq1/figures/. ARIMA/Prophet, RAM/latency,
-and calibration coverage are NOT yet run — flagged under §6.5.3 gaps. -->
+Both gradient-boosted models were tuned with Optuna (TPE, 100 trials) against an
+expanding-window cross-validation objective, then scored once on the untouched
+test split. Because WMAPE and median APE are minimised by different functionals
+(§6.4.1), each model was tuned **twice** — once per objective — and both results
+are reported. `cv_metrics.csv`.
 
-The tabular models (Ridge, LightGBM, XGBoost) plus a SeasonalNaive baseline were
-benchmarked on both dataset granularities under the DVH EXCL. HD scope. The
-reported metrics are **WMAPE** (volume-weighted — the operationally meaningful
-error) and **median per-series MAPE** (robust to low-volume series). Plain mean
-MAPE is *not* reported: on the low-volume categories it diverges to absurd values
-because a handful of near-zero-actual test rows blow up the percentage denominator
-— a known MAPE pathology, and itself a finding about metric choice for this panel.
+**Tuned for WMAPE:**
 
-**Headline (tuned XGBoost, test set, WMAPE):**
+| Category | Model | CV WMAPE | Test WMAPE | Test medMAPE | n test |
+|---|---|---:|---:|---:|---:|
+| CSD | LightGBM | 17.0% | **14.5%** | 33.2% | 665 |
+| CSD | XGBoost | 16.1% | 15.2% | 31.8% | 665 |
+| danskvand | LightGBM | 17.9% | **20.5%** | 38.6% | 174 |
+| danskvand | XGBoost | 17.1% | 20.9% | 35.8% | 174 |
+| energidrikke | LightGBM | 10.6% | 16.5% | 34.7% | 308 |
+| energidrikke | XGBoost | 10.6% | **13.0%** | 32.3% | 308 |
+| RTD | LightGBM | 27.9% | **31.8%** | 38.1% | 372 |
+| RTD | XGBoost | 28.0% | 36.1% | 32.8% | 372 |
 
-| Category | brand × month (_03) | brand × chain (_04) | SeasonalNaive (chain) |
-|---|---|---|---|
-| CSD | **16.5%** | 20.8% | 39.9% |
-| danskvand | 23.8% | **22.0%** | 37.7% |
-| energidrikke | **11.4%** | 13.9% | 31.9% |
-| RTD | **31.0%** | 38.8% | 58.8% |
+**The two objectives select different models and produce different rankings.**
+Tuning for median APE improves that metric and degrades WMAPE, as the theory in
+§6.4.1 predicts: absolute-error loss is minimised by the median, while a pointwise
+percentage error is minimised by a lower functional. On energidrikke the effect is
+large — LightGBM tuned for medMAPE reaches 29.8% test WMAPE against 16.5% when
+tuned for WMAPE. **A single "best model" number is therefore meaningless without
+naming the objective it was tuned against**, which is why both are carried here.
 
-XGBoost is the best model in all eight (category × granularity) cells; LightGBM is
-a close second; both clearly beat Ridge and SeasonalNaive. Optuna tuning (TPE, 30
-trials, validation WMAPE objective) improved WMAPE by roughly 2–4 pp over untuned
-defaults. See `fig1_model_ladder.png` (every model beats the naive baseline) and
-`fig3_forecast_overlay.png` (top CSD brand, actual vs forecast).
+**Validation-to-test movement is substantial and is not hidden.** energidrikke
+tunes to 10.6% in cross-validation and lands at 13.0–16.5% on test; RTD moves the
+other way on LightGBM. The gap is consistent with the selection bias documented in
+§6.3.5 — this protocol is not nested, so the cross-validation figure is an
+optimistically biased estimate of generalisation, to an unquantifiable degree
+(Cawley & Talbot, 2010).
 
-### 6.5.2 Granularity finding
+### 6.5.2 The simple benchmarks, and where they win
 
-Disaggregating to a retail-chain dimension multiplies training rows ~6× but does
-**not** uniformly improve accuracy — the gain is category-dependent: brand×month
-wins for CSD, energidrikke and RTD (less noise per series), while brand×chain wins
-for danskvand. This refutes a naïve "more rows is always better" assumption and is
-explained by the signal-to-noise trade-off of finer granularity (see
-`fig2_granularity.png`). energidrikke reaches **11.4% WMAPE**, near the ≤15%
-industry target.
+The four benchmarks of §6.2.0 were run on the same test rows. `stat_baselines.csv`.
 
-### 6.5.3 Statistical baselines and the SRQ4 comparison
+| Category | Naive | Seasonal naive | Drift | Ridge | ARIMA | Prophet | Best tuned ML |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CSD | 42.9% | 19.2% | 47.7% | 19.4% | 21.8% | 105.7% | **14.5%** |
+| danskvand | 32.5% | 35.9% | 32.0% | **10.9%** | 33.5% | 19.5% | 20.5% |
+| energidrikke | 18.9% | 23.8% | 17.7% | 18.3% | 19.4% | 972.4% | **13.0%** |
+| RTD | 89.3% | **27.3%** | 95.9% | 40.5% | 53.3% | 66.8% | 31.8% |
 
-<!-- Approved by Enrico 2026-06-24. Numbers factual, from scripts/srq1_baselines_stat.py;
-results _05_results_srq1/stat_baselines.{csv,md}. -->
+**Two categories are not won by the tuned models, and this is the most important
+result in the section.**
 
-ARIMA (statsmodels SARIMAX(1,1,1) on log sales) and Prophet were fitted per brand
-as univariate traditional baselines. ARIMA test WMAPE: CSD 24.2%, danskvand 33.4%,
-energidrikke 15.7%, RTD 48.2%. The SRQ4 question — does the ML approach beat
-traditional forecasting — resolves in favour of the gradient-boosted models in
-three of four categories:
+- **On RTD, seasonal naive beats every tuned configuration** — 27.3% against
+  31.8–36.1%. The most irregular category is the one where a method with no
+  parameters wins.
+- **On danskvand, a plain Ridge regression reaches 10.9%**, roughly half the tuned
+  gradient-boosted error. danskvand is also the smallest panel (29 series, 174 test
+  rows), where a high-capacity model has least to learn from.
 
-| Category | Best ML (tuned XGBoost) | ARIMA | Prophet | SRQ4 verdict |
-|---|---|---|---|---|
-| CSD | **16.5%** | 24.2% | unstable* | ML wins (+7.7 pp) |
-| danskvand | 22.0% | 33.4% | **16.9%** | Prophet wins |
-| energidrikke | **11.4%** | 15.7% | unstable* | ML wins (+4.3 pp) |
-| RTD | **31.0%** | 48.2% | 45.4% | ML wins (+17.2 pp) |
+This is precisely the outcome the benchmark rung exists to detect. Hyndman and
+Athanasopoulos (2021, §5.2) recommend the simple methods as a standard against which
+any new method must justify itself; here they are not a formality but a live
+constraint, and reporting a headline ML number without them would have concealed
+that the thesis's approach is beaten outright on half the categories.
 
-*Prophet WMAPE diverges for CSD and energidrikke: fitting a linear trend on
-log-transformed short monthly series lets the trend extrapolate to extreme values
-on back-transformation. Prophet is therefore unreliable on this panel and ARIMA is
-treated as the primary traditional baseline; the danskvand result (Prophet 16.9%)
-is the one category where an additive-seasonality model is competitive.
+**Prophet is applied outside its design regime and its numbers should not be read
+as a defect of the method.** Taylor and Letham (2018) target daily business series
+with multiple seasonalities and holiday effects; at month grain, weekly seasonality
+does not exist, no holiday calendar is supplied, and yearly seasonality reduces to
+about twelve observations. Fitting a linear trend on log-transformed short series
+lets the trend extrapolate to extreme values on back-transformation, producing the
+105.7% and 972.4% figures. **This is a limitation of the application, not of
+Prophet**, and is reported as such.
 
-### 6.5.4 Operational profile and calibration
+**Ridge requires clipping to be reportable.** Unclipped, its energidrikke WMAPE is
+2.8×10¹³ and its RTD WMAPE 2459%, because back-transformed linear extrapolation
+diverges. The clipped variant is what appears above; the raw values are retained in
+`stat_baselines.csv` because the instability is itself informative about linear
+models on this panel.
 
-<!-- Approved by Enrico 2026-06-24. Numbers from scripts/srq1_profiling.py and
-srq1_calibration.py; results _05_results_srq1/profiling.* and calibration.*. -->
+### 6.5.3 Scaled error (MASE)
 
-**Operational cost (≤8 GB claim).** Peak RAM (tracemalloc) on the largest matrix is
-in the tens of MB for every model — Ridge 1.5, LightGBM 18.7, XGBoost 0.2, ARIMA
-0.5 MB — i.e. orders of magnitude under the 8 GB sequential budget; the constraint
-is non-binding at this data scale. Latency: XGBoost trains in ~1.7 s and predicts
-in ~16 ms; LightGBM ~7.7 s (its tuned `n_estimators`); ARIMA is per-series.
+WMAPE compares models within a category but says nothing about whether a category is
+forecastable at all. MASE answers that directly: below 1 beats the in-sample naive
+forecast. `mase.csv`.
 
-**Prediction-interval calibration (SRQ2).** *(Revised 2026-08-23 — current.)*
+| Category | Naive MASE | Seasonal-naive MASE | Naive median ASE |
+|---|---:|---:|---:|
+| CSD | 0.95 | 1.63 | 0.39 |
+| danskvand | 0.99 | 1.60 | 0.52 |
+| energidrikke | 0.67 | 2.02 | 0.05 |
+| RTD | **6.54** | 14.02 | 0.18 |
 
-A split-conformal wrapper on the tuned XGBoost, with the half-width calibrated on
-validation residuals in log space, gives the following on the untouched test split:
+**RTD's mean MASE of 6.54 against a median ASE of 0.18 is a distributional finding,
+not an accuracy one.** The typical RTD series is forecast *better* than naive; the
+mean is carried by a small number of cells with very large scaled errors. Reporting
+only the mean would describe RTD as catastrophically unforecastable, and only the
+median would conceal that a few series are. **Both are reported for this reason.**
 
-| Category | Nominal | Empirical coverage | Median relative width |
-|---|---|---:|---:|
-| CSD | 90% | 89.6% | 3.3× |
-| RTD | 90% | 89.0% | 3.1× |
-| danskvand | 90% | 87.4% | **16.8×** |
-| energidrikke | 90% | 93.5% | **8.9×** |
+Seasonal naive scores worse than naive on MASE in every category while winning on
+WMAPE for RTD — the two metrics weight differently (volume versus per-series
+scale), and the disagreement is surfaced rather than resolved by picking one.
 
-The interval half-width is the ⌈(n+1)(1−α)⌉/n empirical quantile of the calibration
-residuals — Algorithm 2 of Lei et al. (2018) — not the nominal (1−α) quantile. The
-finite-sample correction is what supports the distribution-free guarantee at finite *n*.
+### 6.5.4 Pooled versus per-category training
+
+Whether one model trained across all four categories beats four category-specific
+models is SRQ1's central design question. Both arms use the same 12-feature
+intersection, the same tuning protocol, and are scored on identical test rows, so
+they differ only in which rows they were trained on. `pooled_summary.md`.
+
+| Category | LightGBM pooled → per-cat | XGBoost pooled → per-cat |
+|---|---|---|
+| CSD | 17.5% → 16.3% (per-cat better by 1.2 pp) | 16.6% → 15.3% (per-cat by 1.3) |
+| danskvand | 21.4% → 23.7% (**pooling wins 2.2 pp**) | 18.9% → 21.5% (**pooling wins 2.5**) |
+| energidrikke | 12.1% → 13.7% (**pooling wins 1.6**) | 12.5% → 13.9% (**pooling wins 1.4**) |
+| RTD | 35.8% → 35.1% (per-cat by 0.7) | 37.0% → 35.5% (per-cat by 1.5) |
+
+**The answer is conditional, and the condition is data volume.** Pooling wins on the
+two smallest panels (danskvand 174 test rows, energidrikke 308) and loses on the two
+largest (CSD 665, RTD 372). This is the expected transfer-learning trade-off: a small
+category borrows strength from the others, while a large one is diluted by them. The
+pattern holds for both model families, which is what makes it a finding rather than
+noise — though §6.5.9 shows the magnitudes here sit within seed noise, so the
+*direction* is the claim, not the pp values.
+
+**Per-brand, the aggregate conceals wide disagreement.** Broken out by demand class
+(`pooled_perbrand_summary.md`), pooling helps between 44% and 64% of brands depending
+on class and model — close to a coin flip everywhere. The aggregate deltas above are
+small differences between two distributions that overlap heavily.
+
+### 6.5.5 Results by demand pattern
+
+Using the Syntetos–Boylan–Croston partition of §6.4.4, the 230 brands divide into
+108 smooth, 79 erratic, 12 intermittent and 31 lumpy. **Nothing is excluded**;
+irregular series are reported rather than filtered.
+
+**The most informative fact here is an absence: 15 of the 31 lumpy brands have no
+test signal at all** — their entire test window is zero. Pooling deltas for the
+lumpy class are computed on the 16 that remain, and any per-brand percentage
+statistic for the other 15 would be undefined. This is a property of the data that a
+volume threshold would have hidden by removing the brands quietly; the categorisation
+makes it visible and countable.
+
+For the classes with signal, pooling win-rates run 46–55% (smooth), 51–64% (erratic)
+and 44–56% (intermittent). **No demand class shows a decisive pooling effect.**
+
+### 6.5.6 Operational profile
+
+Peak RAM on the largest matrix is in single-digit megabytes for every model —
+Ridge 5.5, LightGBM 8.0, XGBoost 0.1, ARIMA 0.3 MB — against the 8 GB sequential
+budget of SRQ1. **The memory constraint is non-binding by three orders of magnitude
+at this data scale**, which is a real answer to the research question and not a
+missing measurement: the constraint that motivated the question does not bite here.
+
+Latency is likewise immaterial: XGBoost fits in 0.97 s and predicts in 9.3 ms;
+LightGBM fits in 2.04 s and predicts in 15.9 ms. `profiling.csv`.
+
+> **The RAM figure in `fig4_ram_budget` is hardcoded and contradicts this table.**
+> The figure is not cited above and requires regeneration before use.
+
+### 6.5.7 Prediction-interval calibration
+
+A split-conformal wrapper on the tuned model, calibrated on validation residuals in
+log space, gives the following on the untouched test split. `calibration.csv`.
+
+| Category | Nominal | Empirical coverage | Median relative width | n calib |
+|---|---:|---:|---:|---:|
+| CSD | 90% | 89.6% | 3.3× | 665 |
+| RTD | 90% | 89.0% | 3.1× | 372 |
+| danskvand | 90% | 87.4% | **16.8×** | 174 |
+| energidrikke | 90% | 93.5% | **8.9×** | 264 |
+| CSD | 80% | 78.6% | 1.9× | 665 |
+| RTD | 80% | 76.1% | 1.7× | 372 |
+| danskvand | 80% | 70.7% | 3.5× | 174 |
+| energidrikke | 80% | 82.5% | 3.3× | 264 |
+
+The half-width is the ⌈(n+1)(1−α)⌉/n empirical quantile of the calibration
+residuals — Algorithm 2 of Lei et al. (2018) — not the nominal (1−α) quantile.
+The finite-sample correction is what supports the distribution-free guarantee at
+finite *n*.
 
 **Coverage alone is the wrong success criterion, and this table shows why.** An
 arbitrarily wide interval attains perfect coverage while carrying no decision-relevant
-information. danskvand meets its coverage target only with intervals spanning roughly
-seventeen times the quantity being forecast, which no planner can act on. **For
-danskvand and energidrikke, width — not coverage — is the binding constraint, and both
-are reported as limitations rather than averaged into a "well-calibrated" claim.**
+information. danskvand meets its 90% coverage target only with intervals spanning
+roughly seventeen times the quantity being forecast, which no planner can act on.
+**For danskvand and energidrikke, width — not coverage — is the binding constraint,
+and both are reported as limitations rather than averaged into a "well-calibrated"
+claim.** At the 80% level danskvand additionally undercovers, at 70.7%.
 
 > **What the guarantee does and does not cover.** Split conformal provides
 > **marginal** coverage — an average over cells, not a promise about any individual
@@ -470,42 +551,22 @@ are reported as limitations rather than averaged into a "well-calibrated" claim.
 > under known-violated assumptions, not a theoretical entitlement** — which is precisely
 > why they are measured on a held-out test period instead of assumed.
 
-### 6.5.5 Remaining gaps
-- ARIMA / Prophet are profiled per-series; a full per-series statistical sweep is
-  not run for every brand (cost) — the reported baselines use the protocol in §6.5.3.
-- Mean-MAPE and mean interval-width are omitted (degenerate on low-volume series);
-  WMAPE, median per-series MAPE, and empirical coverage are the reported metrics.
+### 6.5.8 Remaining gaps
 
-### 6.5.6 Selected configuration per category
-
-<!-- Approved by Enrico 2026-06-24. The thesis adopts the best (model × granularity)
-configuration PER category rather than one global setting — consistent with the
-specialised-models finding. Numbers from _05_results_srq1/tuned_summary.md. -->
-
-Because the granularity gain is category-dependent (§6.5.2), the thesis does **not**
-impose a single global representation. Instead it selects, for each category, the
-(model × granularity) configuration with the lowest test WMAPE — a per-category
-specialisation directly consistent with the SRQ1 finding that category-specific
-models outperform a one-size-fits-all setup. The retained configurations are:
-
-| Category | Selected model | Selected granularity | Test WMAPE |
-|---|---|---|---|
-| CSD | XGBoost | brand × month | **16.5%** |
-| danskvand | XGBoost | brand × chain | **22.0%** |
-| energidrikke | XGBoost | brand × month | **11.4%** |
-| RTD | XGBoost | brand × month | **31.0%** |
-
-XGBoost is the model of choice in every category; three categories forecast best at
-the aggregated brand×month level, while danskvand benefits from the finer
-brand×chain representation. Both matrix granularities are retained in the
-repository (`_03`, `_04`) so each category is trained on its selected one; the
-pipeline and feature set are identical across categories, so the comparison remains
-controlled. This mixed-granularity selection is a deliberate methodological choice,
-stated as such, not an inconsistency.
+- **The ≤15% accuracy target cannot yet be scored.** The source's metric is
+  unverified (§6.4.3); if it refers to plain or median MAPE rather than WMAPE, no
+  category meets it. Pending NotebookLM verification.
+- The tuning protocol is not nested, so every cross-validation figure above is
+  optimistically biased by an unquantified amount (§6.3.5).
+- ARIMA and Prophet use a fixed specification per series rather than a per-series
+  order search, on cost grounds. Their figures are a competent baseline, not the
+  best attainable from those families.
+- `fig4_ram_budget` is stale and contradicts §6.5.6.
 
 ---
 
-### 6.5.7 Forecast stability across seeds *(current — added 2026-08-23)*
+
+### 6.5.9 Forecast stability across seeds
 
 Chapter 2 motivates evaluating the modelling substrate on accuracy, computational
 efficiency **and stability**, and SRQ1's scope names stability as its fourth axis. This

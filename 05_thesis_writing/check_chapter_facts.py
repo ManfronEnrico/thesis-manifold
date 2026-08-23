@@ -154,14 +154,18 @@ def build_checks(g: dict) -> list[tuple]:
     # 31.8% before 2026-08-23).
     stale = {"17.1": "CSD", "32.6": "danskvand", "16.5": "CSD",
              "23.8": "danskvand", "11.4": "energidrikke", "31.0": "RTD"}
+    # The number alone is ambiguous: the same digits legitimately appear as another
+    # category's figure, or in a different column (CV score vs test WMAPE). Require
+    # the line to name the category the value is stale FOR, so a stale figure in its
+    # own row still trips while a coincidental match elsewhere does not.
     for num, cat in stale.items():
         cur = g["wmape"].get(cat, {})
         if cur and abs(cur["wmape"] - float(num)) > 0.05:
             checks.append(
-                (rf"\b{num}\s*%",
+                (rf"(?i)\b{cat}\b.*\b{num}\s*%|\b{num}\s*%.*(?i:\b{cat}\b)",
                  "ERROR",
-                 f"quotes {num}% for {cat}; re-tuning on the post-EDA matrices "
-                 f"gives {cur['wmape']}% ({cur['model']})."))
+                 f"quotes {num}% on a line naming {cat}; re-tuning on the post-EDA "
+                 f"matrices gives {cur['wmape']}% ({cur['model']})."))
     return checks
 
 
