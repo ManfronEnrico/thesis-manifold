@@ -2,10 +2,22 @@
 name: literature-review-audit
 description: Audit of Chapter 2's literature claims against what the modelling has since found, plus the citation-validation areas beyond the modelling that need NotebookLM attention.
 created: 2026_08_22-22_00
-updated: 2026_08_22-22_00
+updated: 2026_08_24-10_00
 ---
 
 # Literature review audit — what else needs source validation
+
+> **SUPERSEDED 2026-08-24 for NotebookLM use.** This file's claim list was written from
+> an audit rather than from a line-by-line read of the chapters. That read has now been
+> done, and it found 10 bibliographic errors, 4 sources cited in Ch2 but absent here, a
+> Ch1-vs-Ch2 contradiction about M5, and a fabricated citation. The corrected,
+> upload-ready pack is:
+>
+> **`05_thesis_writing/notebookLM/01-Literature Review/Literature_Review-00-MASTER-verification-brief.md`**
+>
+> Use that for verification. This file is retained for its reasoning and for the
+> decisions it records (D1 ensemble, D3 stability), which the brief does not duplicate.
+
 
 Brian, 2026-08-22, having started the NotebookLM workflow with 22 sources:
 *"Are there any other source validation areas we should look into apart from the

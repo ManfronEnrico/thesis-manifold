@@ -2,10 +2,22 @@
 name: source-list-for-notebooklm
 description: Every paper cited in Ch1/Ch2, the specific claim each supports, and what must be verified. Download list for NotebookLM.
 created: 2026_08_22-23_00
-updated: 2026_08_23-21_00
+updated: 2026_08_24-10_00
 ---
 
 # Source list — download these, and what to check in each
+
+> **SUPERSEDED 2026-08-24 for NotebookLM use.** This file's claim list was written from
+> an audit rather than from a line-by-line read of the chapters. That read has now been
+> done, and it found 10 bibliographic errors, 4 sources cited in Ch2 but absent here, a
+> Ch1-vs-Ch2 contradiction about M5, and a fabricated citation. The corrected,
+> upload-ready pack is:
+>
+> **`05_thesis_writing/notebookLM/01-Literature Review/Literature_Review-00-MASTER-verification-brief.md`**
+>
+> Use that for verification. This file is retained for its reasoning and for the
+> decisions it records (D1 ensemble, D3 stability), which the brief does not duplicate.
+
 
 **39 sources cited in Chapter 2, plus the gaps where no source exists at all.**
 
