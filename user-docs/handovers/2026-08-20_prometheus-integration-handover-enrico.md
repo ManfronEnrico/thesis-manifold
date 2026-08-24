@@ -5,7 +5,7 @@ category: reference
 applies-to: [srq4, srq1, prometheus, scenario-design]
 triggers: [picking up the Prometheus integration, reviewing the five-scenario design]
 created: 2026_08_20-18_00
-updated: 2026_08_20-18_00
+updated: 2026_08_21-15_00
 ---
 
 # Handover — Prometheus integration and the five-scenario ladder
@@ -127,10 +127,21 @@ favour** — the worst class of confound, one that flatters our contribution.
 So the template build is mandatory before any D run is scored. Cost of learning
 this: a fraction of a cent, versus a full build cycle.
 
-**E2B cost is otherwise a non-issue:** 3.08s per sandbox lifecycle, ~$0.0001 per
-run. Even assuming the full 600s timeout across a multi-turn conversation, 60 D-runs
-lands under $1. The OpenAI side (~$42 for the full design) remains the only cost
-that matters.
+**E2B cost is otherwise a non-issue**, though the figure moved once the template
+existed. Measured on the built `prometheus` template: **36.3s per sandbox
+lifecycle**, against 3.08s on the bare image -- ~12x, on an identical workload. That
+is import cost, not compute (`prophet`/`statsmodels` pull in `cmdstanpy` and
+`scipy`), and it is paid **once per sandbox**, which the engine reuses across a
+conversation. 60 D-runs is ~36 sandbox-minutes, still under a dollar of my $5. The
+OpenAI side (~$42 for the full design) remains the only cost that matters.
+
+**One risk this introduces, worth flagging before any scored run:** a 28-second
+first import is long enough to collide with a *per-execution* timeout, which is a
+different limit from `AsyncSandbox.create(..., timeout=600)`. If the executor caps
+single calls below ~30s, D's first tool call fails on cold start and the trace reads
+as "the LLM wrote bad code" when it is really a startup timeout -- depressing D and
+inflating D -> E in our favour. I am checking `code_executor.py` for this before
+running anything scored.
 
 ---
 
@@ -232,24 +243,41 @@ which is a finding about the Danish market, not an arbitrary restriction.
 ## 6. Where it stands, and what is next
 
 **Done:** engine inspected, tool API verified, data access understood, credentials
-confirmed, E2B cost measured, template requirement established.
+confirmed, E2B cost measured, **template built and verified**, **engine environment
+built**.
 
-**Next (Brian, tomorrow):**
+The `prometheus` template is live and the alias resolves, so nothing in the engine
+config needs rewiring. All five packages confirmed present (`pyodbc`, `sqlalchemy`,
+`statsmodels`, `xgboost`, `prophet`) against all five missing on the base image.
+Template id `fxe7gzkqjupdhbx4uvpr`, and I set `skip_cache: false` in
+`prometheus.yaml` so future rebuilds reuse layers.
 
-1. Build the template — `python build_template.py --config templates/prometheus.yaml`
-   with `E2B_API_KEY` set in the shell.
-2. Re-probe with `--template prometheus` to confirm the five packages landed.
-3. Get the engine running locally.
+Worth knowing if you ever rebuild: the first attempt died with a `CancelledError` in
+its log poller, and **the build did not survive the disconnect** -- probing the id
+returned `404: tag 'default' does not exist`, i.e. the template record existed with
+no completed build. Re-running under python 3.13 rather than 3.14 worked first time.
 
-**One decision needed on the environment.** The engine wants **python 3.11**,
-`e2b_code_interpreter==2.0.0` and `pydantic-ai==1.73.0`; our thesis venv is 3.14.2
-with `e2b-code-interpreter==2.9.1`. The engine's shipped `.venv` is unusable — it is
-a Linux venv whose interpreter points at `/home/niks/miniconda3/bin/python3`.
+**Next (Brian):**
 
-Recommendation: **a separate environment for the engine** (`uv sync --frozen`
-against its `pyproject.toml` + `uv.lock`, both of which ship), rather than
-downgrading the thesis venv — that would force `e2b-code-interpreter` to 2.0.0,
-which `B_data` also imports, risking breaking B to fix D/E.
+1. Get the engine running locally on the shipped Prometheus project.
+2. Check `code_executor.py` for a per-call timeout (see the cold-start risk above).
+3. Port `forecast_demand` to the verified tool API.
+
+**The environment question is settled.** The engine now has its **own** venv, built
+with `uv sync --frozen --python 3.13` against the shipped `uv.lock`. Both hard pins
+are satisfied -- `e2b_code_interpreter==2.0.0`, `pydantic-ai==1.73.0` -- and the
+thesis venv keeps 2.9.1, which `B_data` imports. Downgrading the shared venv would
+have meant breaking a working scenario to enable an unbuilt one.
+
+Two corrections to what I said earlier: the engine requires **`>=3.12`**, not 3.11
+(that came from the archived blueprint), so the python version was never the blocker
+-- the `==` pins are. And I picked 3.13 specifically because your shipped `.venv`
+records `version_info = 3.13.2`, so it is the version the engine is known to run on
+at your end.
+
+Your shipped `.venv` was replaced: it was a Linux venv pointing at
+`/home/niks/miniconda3/bin`, unusable on Windows and fully reconstructible from
+`uv.lock`.
 
 **Budget.** Full stratified design at 5 repeats is **$41.85** on the OpenAI side, of
 which `A_plain` alone is $25.46 (61%) — it is the most expensive scenario despite

@@ -142,14 +142,139 @@ Known-stale regardless of whether the API matches:
 | 1 | Verify the engine's real tool API against the archived blueprint | 1 | -- | **done** (F13) |
 | 2 | Locate `prometheus.py`, `langgraph.json`, and the tool-registration path | 1 | -- | **done** (F13) |
 | 3 | Determine how data access is configured; confirm local-snapshot support | 1 | -- | **done** (F18, F35) |
-| 3b | Build the `prometheus` E2B template -- **required**, base image is bare (F38) | 1 | -- | pending |
-| 4 | Get the engine running locally on the shipped Prometheus project | 2 | 3b | pending |
+| 3b | Build the `prometheus` E2B template -- **required**, base image is bare (F38) | 1 | -- | **done** (F42) |
+| 4 | Get the engine running locally on the shipped Prometheus project | 2 | 3b | **in_progress** -- env built + verified (F46); per-call timeout ruled out (F45); engine not yet launched |
 | 5 | Run `D_prometheus` on the SRQ4 prompt with logging + cost capture | 2 | 4 | pending |
 | 6 | Port `forecast_demand` to the verified API; drop `chain`; repoint via PATHS | 3 | 1, 4 | pending |
 | 7 | Register the tooled project and run `E_prometheus_model` | 3 | 6 | pending |
 | 8 | Analyse D->E against B->C; check the two agree in direction | 4 | 5, 7 | pending |
 | 9 | Measure the engine's real RAM footprint (see below) | 4 | 4 | pending |
 | 10 | Write up; fold into the SRQ4 results section | 4 | 8, 9 | pending |
+| 11 | Seed sweep on the per-brand pooled analysis -- is LightGBM's null stable? | 5 | -- | pending |
+| 12 | Build `F_ensemble` -- pooled + specialised served together, C->F measures whether disagreement helps | 5 | 11 | **decided** (F55) |
+| 13 | Add both metrics (WMAPE + medMAPE) for model and benchmark to the payload | 2 | -- | **done** (F56) |
+| 14 | Add brand volume tercile + within-tercile model accuracy to the payload | 3 | 13 | pending -- now part of task 18 |
+| 18 | Context-and-predictions factorial: 5 cells, PILOT FIRST | 5 | 13, 15 | **designed** -- see `context_experiment_design.md` |
+| 19 | Serve "n/a" instead of implausible error rates in the payload | 2 | -- | **done** (F64) |
+| 20 | Ch6: regenerate all accuracy numbers; add benchmarks, pooled, Ridge, CV protocol | 1 | 15 | pending (F66) |
+| 21 | Fix `fig4_ram_budget` -- hardcoded 512 MB vs measured 3-4 MB | 1 | -- | pending (F66) |
+| 22 | Ch3: remove the judge protocol where it is SPECIFIED, not just referenced | 2 | -- | pending (F66) |
+| 23 | Ch8 rewrite -- structure assumes a two-arm judge-scored design | 4 | 5, 7 | pending (F66) |
+| 24 | Ch9/Ch10: SRQ3 integration framing + inherited vocabulary | 4 | 23 | pending (F66) |
+| 25 | Add NUMBER-level rules to check_chapter_facts.py | 3 | 20 | pending (F66) |
+| 15 | Re-tune with expanding-window CV, 100 trials, dual objective | 2 | -- | **done** (F65, F67) |
+| 16 | Ridge reporting: publish clipped + unclipped both | 3 | -- | **done** -- DEC-RIDGE-BOTH; refuted F57, see F63 |
+| 17 | Verify every citation in the writing notes against the actual sources | 5 | -- | pending (F59) |
+
+### Task 15 -- CV re-tune (running 2026-08-22)
+
+`srq1_benchmark_cv.py --trials 100 --folds 4`. 16 studies x 100 trials x 4 folds
+~= 6,400 fits. Outputs `cv_metrics.csv`, `cv_convergence.csv`, `cv_params.json`,
+`cv_summary.md`.
+
+**When it finishes, check three things:**
+1. `plateau_trial` -- if most studies plateau well before 100, the budget is
+   justified empirically and that is what the write-up should say (there is no
+   citable convention for trial count; see F59).
+2. Whether tuning for medMAPE selects a different model than tuning for WMAPE. If
+   not, the objective choice was immaterial and that is reportable.
+3. Whether CV-tuned test scores differ materially from the single-split scores in
+   `tuned_metrics.csv`. A large gap means the single split was lucky or unlucky and
+   the old numbers should be superseded rather than reported alongside.
+
+### Task 17 -- citation verification (BLOCKING for submission)
+
+Brian requires an academic source at every best-practice decision. F59 lists what is
+safely citable and, importantly, **what is not**: the "50-200 trials" convention
+(folklore, no source), the 3x extrapolation bound (invented here), and the
+`confidence` index (arbitrary weights).
+
+Every reference in the writing notes is a LEAD TO VERIFY. Page numbers, exact titles
+and whether the claim appears where stated must be checked against the real sources.
+Do not submit with an unverified citation.
+
+### Task 11 -- seed sweep (no API spend)
+
+F51 found the brand-level "pooling helps small brands" mechanism holds for XGBoost
+(win-rate 68/59/54 across volume terciles) and is flat for LightGBM (46/45/46,
+corr = -0.014 against training rows). Single seed, single split, so the null could
+be stable or a one-seed artifact.
+
+Run `srq1_pooled_perbrand.py` across ~5 seeds and check whether LightGBM's flat
+win-rate persists. Cheap, no API spend. **Only worth doing if the brand-level
+mechanism becomes load-bearing in the prose** -- the category-level result (F49),
+which is the actual SRQ1 deliverable, does not depend on it.
+
+A hypothesis worth testing at the same time: LightGBM grows trees leaf-wise and its
+`min_child_samples` may let a POOLED model carve brand-specific leaves, which would
+blur the pooled/specialised distinction that XGBoost's depth-wise growth preserves.
+If true, the tuned `num_leaves`/`min_child_samples` for the pooled LightGBM should
+be markedly different from the per-category ones -- checkable from
+`pooled_params.json` without refitting anything.
+
+### Task 12 -- `F_ensemble` as a sixth scenario (DECIDED 2026-08-22)
+
+Brian's proposal (2026-08-22): have `forecast_demand` return BOTH the pooled and
+the per-category prediction, with accuracy context, so the agent has more than one
+model datapoint. **Explicitly not a model-selection choice** -- both values are
+returned unconditionally, so the agent is not asked to pick.
+
+**In favour.** It does not break the SRQ4 ladder as a selection choice would: the
+agent makes no additional decision, it receives a richer observation, so `B->C`
+still measures "what does trained-model access buy?". Disagreement between the two
+models is itself an uncertainty signal that neither model's own conformal interval
+captures -- the same logic `srq2_synthesis.py` already applies to inter-model
+agreement. Under SRQ2 this is a defensible interface-design contribution: a single
+point estimate understates model risk.
+
+**Against.** It changes what `C_model` and `E_prometheus_model` ARE. Today C is
+"the artefact this thesis built, served"; with two model families plus agreement
+signals it becomes a stronger but different artefact, and the SRQ4 methodology text
+describing C needs rewriting. With ~1 month to submission, every payload field added
+is a field whose effect on the B->C and D->E deltas is unmeasured -- if C improves,
+attribution across the added fields is not possible.
+
+**Constraint if adopted:** it must land BEFORE any scored run, never between runs,
+and as one deliberate documented change rather than incremental additions.
+
+**RESOLVED (Brian, 2026-08-22): make it a separate scenario, not a change to C.**
+
+That removes the objection above entirely -- `C_model` stays exactly as specified,
+and the ensemble becomes its own rung with its own measurement:
+
+| Scenario | Serves |
+|----------|--------|
+| `C_model` | specialised model: prediction + interval + accuracy context |
+| `F_ensemble` | pooled AND specialised, each with WMAPE + medMAPE, plus agreement |
+
+`C -> F` isolates one variable: does exposing model disagreement improve the agent's
+forecast? Publishable either way -- a null says one well-calibrated estimate
+suffices.
+
+Brian's structural argument: the thesis already runs specialised-vs-pooled at the
+data/model layer (F49); running it again at the serving layer asks the same question
+one level up, making it a through-line across two RQs rather than a bolt-on.
+
+**Scope:** one orchestrator only -- the question is about the interface, not the
+engine, so no Prometheus twin.
+
+**Cost:** ~$8-10 at 5 repeats. **Sequence LAST**, after B/C/D/E lock and A_plain
+runs. An un-started scenario drops for free; a half-integrated ensemble inside C
+would contaminate the cleanest comparison in the thesis.
+
+See F55 for the full rationale, F56 for what the payload should and should not
+carry (statistics yes, extra point predictions no).
+
+### Task 13 -- both metrics in the payload (F56)
+
+Add medMAPE alongside WMAPE for the served model AND the benchmark, and consider
+reporting both baselines rather than one. Rationale: `_track_record` currently picks
+the best baseline by medMAPE, which for RTD selects Naive (44.1%) and reports
++7.4pp improvement; selecting by WMAPE would pick SeasonalNaive (27.3%) and show the
+model **losing by 6.3pp**. Same data, opposite story. Disclose the choice rather
+than letting it read as neutral.
+
+Must land BEFORE any scored run.
 
 Tasks 1-3 are **read-only and free** and decide the entire cost estimate.
 

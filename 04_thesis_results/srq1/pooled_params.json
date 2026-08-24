@@ -1,0 +1,82 @@
+{
+  "pooled/LightGBM": {
+    "n_estimators": 568,
+    "learning_rate": 0.11382191490582945,
+    "num_leaves": 96,
+    "min_child_samples": 33,
+    "subsample": 0.7486047172998385,
+    "colsample_bytree": 0.6023608329968149
+  },
+  "percat/CSD/LightGBM": {
+    "n_estimators": 1184,
+    "learning_rate": 0.05334039610851347,
+    "num_leaves": 128,
+    "min_child_samples": 10,
+    "subsample": 0.9457213572975876,
+    "colsample_bytree": 0.8383156807221036
+  },
+  "percat/danskvand/LightGBM": {
+    "n_estimators": 359,
+    "learning_rate": 0.013417809194583028,
+    "num_leaves": 73,
+    "min_child_samples": 8,
+    "subsample": 0.9563602131410641,
+    "colsample_bytree": 0.6393722557105117
+  },
+  "percat/energidrikke/LightGBM": {
+    "n_estimators": 609,
+    "learning_rate": 0.059074797529301774,
+    "num_leaves": 120,
+    "min_child_samples": 14,
+    "subsample": 0.6432843750827978,
+    "colsample_bytree": 0.8960939152332761
+  },
+  "percat/RTD/LightGBM": {
+    "n_estimators": 1010,
+    "learning_rate": 0.11546094439318927,
+    "num_leaves": 49,
+    "min_child_samples": 15,
+    "subsample": 0.6590377634683946,
+    "colsample_bytree": 0.6829185931957623
+  },
+  "pooled/XGBoost": {
+    "n_estimators": 854,
+    "learning_rate": 0.028866831340554695,
+    "max_depth": 9,
+    "min_child_weight": 4.219903462121629,
+    "subsample": 0.8120205538121489,
+    "colsample_bytree": 0.6904044024494076
+  },
+  "percat/CSD/XGBoost": {
+    "n_estimators": 836,
+    "learning_rate": 0.021227872632739744,
+    "max_depth": 9,
+    "min_child_weight": 4.885155758808358,
+    "subsample": 0.9512279002567109,
+    "colsample_bytree": 0.9171979198143886
+  },
+  "percat/danskvand/XGBoost": {
+    "n_estimators": 1076,
+    "learning_rate": 0.04215759656946094,
+    "max_depth": 10,
+    "min_child_weight": 5.4687677264752255,
+    "subsample": 0.9362473501299261,
+    "colsample_bytree": 0.9614426953771829
+  },
+  "percat/energidrikke/XGBoost": {
+    "n_estimators": 944,
+    "learning_rate": 0.06935226950495818,
+    "max_depth": 7,
+    "min_child_weight": 3.242378146805419,
+    "subsample": 0.8030648356787291,
+    "colsample_bytree": 0.850198167067571
+  },
+  "percat/RTD/XGBoost": {
+    "n_estimators": 258,
+    "learning_rate": 0.10440040750544663,
+    "max_depth": 7,
+    "min_child_weight": 5.956508044572319,
+    "subsample": 0.608233797718321,
+    "colsample_bytree": 0.9879639408647978
+  }
+}

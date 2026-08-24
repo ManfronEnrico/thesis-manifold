@@ -5,7 +5,7 @@ category: reference
 applies-to: [srq4, methodology, ch7, ch8]
 triggers: [writing the SRQ4 methodology, defending scenario design, RAM budget figure]
 created: 2026_08_20-00_00
-updated: 2026_08_20-00_00
+updated: 2026_08_22-10_00
 ---
 
 # Prometheus scenarios D and E — design rationale
@@ -141,22 +141,39 @@ as a gap an examiner will look for, not an optional extra.**
 
 ## The feature intersection is a finding, not a limitation
 
-Pooling requires a common feature set. Measured across the four
-`*_feature_matrix_h3.parquet` files:
+Pooling requires a common feature set. Two different intersections matter here, and
+an earlier version of this note conflated them.
 
-| | Count |
-|---|---|
-| Columns present in all four categories | **33** |
-| Union | 51 |
-| Missing from at least one | 18 |
+**At the matrix level**, measured across the four `*_feature_matrix_h3.parquet`
+files: 33 columns present in all four, 51 in the union, 18 missing from at least one.
 
-**Write this up as a substantive result, because that is what it is.** The 18
-non-shared columns are one coherent family — `baseline_*`, `promo_*`, and the
-`weighted_distribution_*` promo/feature/display variants — and they are absent for
-a real reason: **danskvand and RTD carry no promotional signal at all** (the
-promo-zero finding). The intersection is therefore a *consequence of the Danish
-beverage market's structure as Nielsen measures it*, not an arbitrary modelling
-restriction.
+**At the model level — which is what actually governs the comparison — the
+intersection is 12 of 13.** The models never consume the matrix; they consume
+`srq1_benchmark_tuned.py::FEATURES`, which is 13 columns of lags, rolling statistics
+and calendar terms. Of those, only `promo_intensity` is category-dependent.
+
+| Category | model features present | missing |
+|----------|------------------------|---------|
+| CSD | 13/13 | — |
+| energidrikke | 13/13 | — |
+| danskvand | 12/13 | `promo_intensity` |
+| RTD | 12/13 | `promo_intensity` |
+
+**Both framings are worth writing up, for different reasons.**
+
+The *matrix* figure is the substantive market finding: the 18 non-shared columns are
+one coherent family — `baseline_*`, `promo_*`, and the `weighted_distribution_*`
+promo/feature/display variants — absent for a real reason. **Danskvand and RTD carry
+no promotional signal at all** (the promo-zero finding). That is a consequence of the
+Danish beverage market's structure as Nielsen measures it, not an arbitrary
+modelling restriction.
+
+The *model* figure is what licenses the pooled comparison: **pooling costs exactly
+one low-importance feature** (`promo_intensity`, 11th of 13 by mean absolute SHAP in
+CSD, 0.041). Because the handicap is negligible, the measured accuracy differences
+are attributable to pooling itself rather than to a crippled feature set. Quoting
+33/51 in the context of the pooled result would overstate the sacrifice by an order
+of magnitude.
 
 The framing that follows: a pooled model across these categories is necessarily
 restricted to non-promotional features, because promotion is not measured
@@ -177,9 +194,20 @@ distinguish "cross-category learning helped" from "the model rebuilt the
 specialization we were testing against." That is a construct-validity failure, not
 a prediction-quality one, and the intersection removes it.
 
+**Status note:** this argument remains valid as *justification for the design
+choice*, but it no longer describes a hazard that was live at runtime. The
+implemented comparison drops `promo_intensity` outright, so there are no NaNs left
+for a tree to split on. Present it as the reason the design is what it is, not as a
+near-miss that was caught.
+
 ## The cost of dropping promo is measurably small
 
-From `04_thesis_results/srq1/shap_importance.csv` (mean absolute SHAP):
+From `04_thesis_results/srq1/shap_importance.csv` (mean absolute SHAP).
+**These figures predate the 2026-08-20 regeneration and are retained only to show
+the ordering that motivated the design.** After regeneration `weighted_distribution`
+is absent entirely (it was dropped from model inputs in `f4779a7`) and CSD's
+`promo_intensity` reads 0.041 at 11th rather than 0.100 at 7th. Do not cite this
+table in the thesis; cite the regenerated artifact.
 
 | Category | 1st | 2nd | `promo_intensity` |
 |----------|-----|-----|-------------------|

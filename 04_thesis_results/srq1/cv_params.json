@@ -1,0 +1,130 @@
+{
+  "CSD/LightGBM/wmape": {
+    "n_estimators": 374,
+    "learning_rate": 0.03183782304822723,
+    "num_leaves": 120,
+    "min_child_samples": 14,
+    "subsample": 0.813425036254743,
+    "colsample_bytree": 0.6407381789620397
+  },
+  "CSD/LightGBM/medmape": {
+    "n_estimators": 350,
+    "learning_rate": 0.013674307993331263,
+    "num_leaves": 21,
+    "min_child_samples": 18,
+    "subsample": 0.820464879587609,
+    "colsample_bytree": 0.9539294595471999
+  },
+  "CSD/XGBoost/wmape": {
+    "n_estimators": 1040,
+    "learning_rate": 0.09779365256976717,
+    "max_depth": 10,
+    "min_child_weight": 4.120686229728571,
+    "subsample": 0.6117148395256338,
+    "colsample_bytree": 0.6011205831937796
+  },
+  "CSD/XGBoost/medmape": {
+    "n_estimators": 691,
+    "learning_rate": 0.011824664004095478,
+    "max_depth": 3,
+    "min_child_weight": 2.9881225131916707,
+    "subsample": 0.6934355836712721,
+    "colsample_bytree": 0.6199072647304845
+  },
+  "danskvand/LightGBM/wmape": {
+    "n_estimators": 985,
+    "learning_rate": 0.05512091790365044,
+    "num_leaves": 73,
+    "min_child_samples": 6,
+    "subsample": 0.8159272077369937,
+    "colsample_bytree": 0.8065640040695014
+  },
+  "danskvand/LightGBM/medmape": {
+    "n_estimators": 315,
+    "learning_rate": 0.017618048282195653,
+    "num_leaves": 40,
+    "min_child_samples": 5,
+    "subsample": 0.8409916534100207,
+    "colsample_bytree": 0.6198774070732769
+  },
+  "danskvand/XGBoost/wmape": {
+    "n_estimators": 922,
+    "learning_rate": 0.056054798588722685,
+    "max_depth": 4,
+    "min_child_weight": 1.6343651492491322,
+    "subsample": 0.9441633002161459,
+    "colsample_bytree": 0.9088400896157095
+  },
+  "danskvand/XGBoost/medmape": {
+    "n_estimators": 624,
+    "learning_rate": 0.04463321102881564,
+    "max_depth": 4,
+    "min_child_weight": 3.231506896234599,
+    "subsample": 0.7953972564033042,
+    "colsample_bytree": 0.808669176046841
+  },
+  "energidrikke/LightGBM/wmape": {
+    "n_estimators": 614,
+    "learning_rate": 0.01781569796651739,
+    "num_leaves": 61,
+    "min_child_samples": 10,
+    "subsample": 0.7933144058935337,
+    "colsample_bytree": 0.825940234113106
+  },
+  "energidrikke/LightGBM/medmape": {
+    "n_estimators": 344,
+    "learning_rate": 0.01000768405385534,
+    "num_leaves": 34,
+    "min_child_samples": 24,
+    "subsample": 0.6397549772956537,
+    "colsample_bytree": 0.7664587818042015
+  },
+  "energidrikke/XGBoost/wmape": {
+    "n_estimators": 387,
+    "learning_rate": 0.04658176746245298,
+    "max_depth": 10,
+    "min_child_weight": 2.537108080736097,
+    "subsample": 0.8239910335590717,
+    "colsample_bytree": 0.808425464313805
+  },
+  "energidrikke/XGBoost/medmape": {
+    "n_estimators": 474,
+    "learning_rate": 0.040205808353385844,
+    "max_depth": 6,
+    "min_child_weight": 1.9322723858290696,
+    "subsample": 0.9387309475862713,
+    "colsample_bytree": 0.8820566466315298
+  },
+  "RTD/LightGBM/wmape": {
+    "n_estimators": 845,
+    "learning_rate": 0.09850622551530623,
+    "num_leaves": 117,
+    "min_child_samples": 7,
+    "subsample": 0.8186204309690769,
+    "colsample_bytree": 0.9062362727349
+  },
+  "RTD/LightGBM/medmape": {
+    "n_estimators": 332,
+    "learning_rate": 0.010978024076533949,
+    "num_leaves": 101,
+    "min_child_samples": 6,
+    "subsample": 0.9665215128768646,
+    "colsample_bytree": 0.6461991725813057
+  },
+  "RTD/XGBoost/wmape": {
+    "n_estimators": 610,
+    "learning_rate": 0.05348918698242682,
+    "max_depth": 6,
+    "min_child_weight": 1.9281418150054923,
+    "subsample": 0.7080499527413737,
+    "colsample_bytree": 0.814844939410923
+  },
+  "RTD/XGBoost/medmape": {
+    "n_estimators": 333,
+    "learning_rate": 0.019597466077946088,
+    "max_depth": 7,
+    "min_child_weight": 1.6254751144905324,
+    "subsample": 0.7668252576344432,
+    "colsample_bytree": 0.6205635446369995
+  }
+}

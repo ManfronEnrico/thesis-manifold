@@ -5,7 +5,7 @@ category: reference
 applies-to: [literature-curation, ch3-methodology, ch6-model-benchmark]
 triggers: [srq1, model benchmark, forecasting accuracy, memory efficiency, category specialisation]
 created: 2026_04_20-00_00
-updated: 2026_08_11-00_00
+updated: 2026_08_22-19_00
 ---
 
 # SRQ1: Lightweight Forecasting Models & Efficiency
@@ -33,11 +33,14 @@ constraints?") was generic. v4 narrows it on three axes:
 
 ## Scope
 
-1. **Lightweight model families**: statistical baselines, linear models, tree ensembles
+1. **Lightweight model families**: simple benchmarks (naive, seasonal-naive, drift),
+   statistical baselines (ARIMA, Prophet), linear models (Ridge), tree ensembles
+   (LightGBM, XGBoost) — eight methods across six families
 2. **Accuracy**: error metrics appropriate to intermittent/volatile FMCG demand
 3. **Memory efficiency**: peak RAM under a fixed budget; profiling methodology
 4. **Forecast stability**: run-to-run and revision stability, not accuracy alone
-5. **Category specialization**: per-category vs pooled modelling across the five categories
+5. **Category specialization**: per-category vs pooled modelling across the four categories
+   (Totalbeer excluded on compute grounds, 2026-08-01)
 
 ## Paper Selection Criteria
 
@@ -55,6 +58,26 @@ Exclude papers on:
   outside the delimitation and only cited as excluded-on-RAM-grounds context
 - Pure classification problems
 - Purely theoretical complexity analysis without empirical evaluation
+
+## Answered as of 2026-08-22
+
+Two of the three trade-off axes now have measured answers. Recorded here so the
+scope file does not read as an open question after the work is done.
+
+**Category specialization.** Neither strategy dominates. Specialisation pays only
+where a category has enough history; below that a pooled model borrowing
+cross-category structure is more accurate. The crossover sits between roughly 750 and
+1000 brand-month training observations, and the sign flips once, at the same place,
+for both model families. See `05_thesis_writing/notes/srq1-pooled-vs-per-category.md`.
+
+**A benchmark beats the tuned models on one category.** On RTD, seasonal-naive
+(27.3% WMAPE) outperforms every tuned model (31.8–36.1%). This is the M4 finding
+reproduced on this data and is reported, not buried. See
+`05_thesis_writing/notes/srq1-model-ladder-and-baselines.md`.
+
+**A recurring measurement caveat.** WMAPE (volume-weighted) and median MAPE
+(per-series) disagree repeatedly across three separate analyses in this project. Any
+accuracy claim must name its metric.
 
 ## Key Concepts to Track
 
