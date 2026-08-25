@@ -2,10 +2,38 @@
 name: literature-review-verification-brief
 description: NotebookLM briefing pack — every claim Ch1/Ch2 attribute to a downloaded paper, quoted verbatim, with the falsification test for each. Upload with the Section_A–F PDFs.
 created: 2026_08_24-10_00
-updated: 2026_08_24-10_00
+updated: 2026_08_25-00_00
 ---
 
 # Literature Review — Source Verification Brief
+
+> **✅ COMPLETED 2026-08-25.** NotebookLM has run this brief and returned five reports,
+> filed alongside this file as `Literature_Review-Section_{A,B,C,D,F}-*.md`. **All findings
+> have been applied to `ch1-introduction.md` and `ch2-literature-review.md`.** This document
+> is retained as the record of what was asked; the reports are the record of what was found.
+>
+> **Five claims came back Contradicted**, each corrected in the chapters:
+>
+> | ID | Claim | What the source actually says |
+> |---|---|---|
+> | LR-02 | Ceran et al. use a ≤15% MAPE benchmark | They *reject* MAPE (zero-inflation) and use WRMSSE. **No 15% benchmark exists.** The thesis-wide accuracy target was withdrawn as a result — see Ch6 §6.4.3 |
+> | LR-04b | M4 supports simple-beats-complex on irregular series | M4 **excluded** intermittent and low-volume series. The claim now rests on M5 |
+> | LR-13 | Goodwin et al.: intervals reduce newsvendor cost | The opposite — intervals did **not** improve decisions (p=0.330) and degraded response to asymmetric loss (83.8% → 44.1%). §2.3 rebuilt around the real finding, which is a *stronger* argument for the thesis |
+> | LR-27 | ANAH classifies "entity substitution, numerical imprecision, unsupported causal attribution" | Fabricated categories. The real taxonomy is No Hallucination / Contradictory / Unverifiable / No Fact |
+> | LR-32 | Levi et al. validate isotonic calibration on LightGBM and XGBoost | They evaluate **only** neural networks (MLP, DenseNet). Never touch tree models |
+>
+> **LR-01b confirmed the fabrication.** "Bürger & Pauli (2024)" does not exist — the title
+> belongs to González-Potes et al. (2026), and the Obsidian note's quoted findings were
+> invented. Purged from `project-overview.md`, `gap_analysis_v4.md`, and the Obsidian note
+> (replaced with a warning stub, since wikilinks point at it).
+>
+> **LR-31 exposed a gap the brief had not anticipated:** Kuleshov et al. is CDF recalibration,
+> *not* conformal prediction — so Ch2 had no conformal literature at all while the artefact
+> serves split-conformal intervals. §2.5 now carries that strand (Lei et al., 2018; Barber
+> et al., 2023).
+>
+> **Eleven in-text citations** were corrected for authorship or year. Reference-list entries
+> were updated provisionally and will regenerate from Zotero on refresh.
 
 **For NotebookLM.** Upload the PDFs in `Section_A` through `Section_F`, then work through
 this document. Every claim below is quoted from the thesis chapters as they stand on

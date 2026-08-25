@@ -34,7 +34,7 @@ updated: 2026-06-23
   [[executable_code_actions]], [[langgraph_2024]], [[calibrated_regression_uncertainty]] (Kuleshov),
   [[calibrating_uncertainty_regression]] (Levi).
 - **SRQ3 — integration readiness (from a real deployed system)**: [[llms_supply_chain]],
-  [[hybrid_ai_llm_industrial]] (González-Potes/Bürger — closest architectural blueprint),
+  [[hybrid_ai_llm_industrial]] (González-Potes et al., 2026 — closest architectural blueprint),
   [[anah_hallucination_eval]], [[agent_noise_bench]], [[agentops_taxonomy]].
 - **SRQ4 — dedicated ML vs code-as-action LLM**: [[infiagent_dabench]], [[airepr_reproducibility]],
   [[specialised_ml_outperform_llms_cost]], [[executable_code_actions]], [[clear_enterprise_agentic_eval]],

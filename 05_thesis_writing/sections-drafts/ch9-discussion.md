@@ -15,7 +15,7 @@ Tuned **XGBoost was the best model in every category**, ahead of LightGBM, Ridge
 and the SeasonalNaive baseline, confirming that gradient boosting over engineered
 lag/rolling/calendar features is the strongest lightweight family for this monthly
 FMCG panel. The selected per-category configurations reach test WMAPE of 16.5%
-(CSD), 22.0% (danskvand), **11.4% (energidrikke, near the ≤15% industry target)**
+(CSD), 22.0% (danskvand), **11.4% (energidrikke)**
 and 31.0% (RTD). RTD remains hardest — short, volatile, promotion-blind series. A
 central and somewhat counter-intuitive result is that **finer granularity does not
 uniformly help**: disaggregating to a retail-chain dimension multiplied training
