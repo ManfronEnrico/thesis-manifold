@@ -1,34 +1,48 @@
 ---
 title: "Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes"
-authors: Fabian Bürger, Josef Pauli (et al.)
-year: 2024
-venue: Engineering Applications of Artificial Intelligence (Elsevier)
-url: https://www.sciencedirect.com/science/article/pii/S0952197624013988
+authors: González-Potes, A., Mata-Rivera, M. F., Espinosa-Oviedo, J. A., Castellanos-Velasco, E., Alvarado-Nava, O., & Rodríguez-Reséndiz, J.
+year: 2026
+venue: AI (MDPI), 7(2), 51
 tier: 1 — Core Essential
 score: 10
 angles: [Multi-Indicator + LLM/Agent, Prediction Quality]
 srqs: [SRQ1, SRQ2, SRQ3, SRQ4]
 note: CLOSEST PAPER TO THIS THESIS
+status: CONTENT WITHDRAWN 2026-08-25 — see warning below
 ---
 
-## Core argument
-A hybrid architecture combining physics-based process models, lightweight ML predictors, and an LLM orchestration agent can deliver real-time decision support in industrial batch processes (CIP case study), outperforming both pure data-driven and pure rule-based approaches.
+> [!DANGER] The previous contents of this note were fabricated. Do not cite from memory of it.
+>
+> Until 2026-08-25 this note attributed the paper above to **"Fabian Bürger, Josef Pauli
+> (et al.), 2024, Engineering Applications of Artificial Intelligence"**, with a ScienceDirect
+> URL. **No such paper exists.** The title belongs to González-Potes et al. (2026), published
+> in *AI* (MDPI) — a real paper the thesis cites separately.
+>
+> The note also carried a **fabricated direct quotation**: *"The system reduces CIP process
+> duration by 12–18% and chemical consumption by up to 20% relative to experienced human
+> operators, while achieving 100% regulatory compliance."* Those figures appear nowhere in
+> the real paper and contradict the figures Chapter 1 attributes to it. Its described method
+> (a 3-layer symbolic/physics + LSTM architecture) was invented as well: the real system is a
+> deterministic rule-based supervisor wrapped by a retrieval-augmented conversational layer
+> running a locally hosted Qwen 2.5 7B model.
+>
+> Verified against the source PDF via NotebookLM. See
+> `05_thesis_writing/notebookLM/01-Literature Review/Literature_Review-Section_D-reliability_and_evaluation.md`
+> (claim LR-01b).
 
-## Method
-3-layer system: (1) symbolic/physics layer encoding domain constraints and regulatory rules; (2) lightweight ML models (gradient boosting, LSTM variants) trained on sensor streams for process state prediction; (3) LLM agent that interprets predictions, retrieves contextual history, and generates actionable operator recommendations in natural language. Real industrial sensor data from a dairy production facility.
+## What the real paper establishes
 
-## Key finding
-The hybrid LLM-agent architecture reduces CIP process time by 12–18% and water/chemical consumption by up to 20% vs manual operator decisions, while maintaining regulatory compliance.
+Use the source PDF, not this note. Verified findings, from the NotebookLM audit:
 
-## Key quote
-> "The system reduces CIP process duration by 12–18% and chemical consumption by up to 20% relative to experienced human operators, while achieving 100% regulatory compliance."
-
-## Relevance to thesis
-- **The closest architectural blueprint in the literature** — directly analogous system transposed from industrial process control to business analytics
-- SRQ1: lightweight ML under real-time constraints
-- SRQ2: multi-agent coordination of predictive models
-- SRQ3: contextual process history improving recommendations
-- SRQ4: outperforms traditional manual/rule-based decision-making
-
-## Gap / limitation
-Domain-specific to industrial process control — well-defined physical constraints and sensor ontologies. Does not address heterogeneous, unstructured business data; multi-criteria trade-off decisions; or scalability across diverse business units. No computational budget constraint (RAM/CPU). → All gaps addressed by this thesis.
+- **State specification consistency $\Gamma_s \geq 0.98$** — the rule-based severity label
+  matched actual process conditions in >98% of cases. This is a property of the *labelling
+  layer*; it is **not** a rate of compliant process operation, which averaged 58% on the
+  degraded alkaline stages (CIP 3 was 0% compliant).
+- **Median LLM numerical error below 3%** when summarising buffered time-series variables.
+- **Architecture**: deterministic supervisory/HMI panel + RAG conversational layer (Qwen 2.5 7B,
+  locally hosted).
+- **Domain**: clean-in-place batch process at an operating beverage plant.
+- **Not addressed** (thesis-author observation, *not* an authors' stated limitation): predictive
+  forecasting over historical tabular data; SME resource or cost constraints. The authors' own
+  stated limitations are the single-site process scope and the formal verification that
+  regulated pharmaceutical manufacturing would require.

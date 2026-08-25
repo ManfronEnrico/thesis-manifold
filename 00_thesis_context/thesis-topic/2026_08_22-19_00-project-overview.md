@@ -51,10 +51,15 @@ Five gaps, whose intersection has not been addressed:
 | G4 | Integration readiness criteria for agentic systems adopting predictive capabilities have not been empirically derived or validated |
 | G5 | No replicable RAM profiling methodology for multi-component AI pipelines combining ML forecasting + LLM synthesis |
 
-**Closest paper:** Bürger & Pauli (2024, EAAI) — *Hybrid AI and LLM-Enabled Agent for Industrial
-Batch Processes*, an architecturally analogous system applied to dairy CIP process control. The
-thesis is the retail FMCG transposition of this blueprint, under explicit RAM constraints and
-with a production-extension rather than greenfield framing.
+**Closest paper:** González-Potes et al. (2026, *AI* / MDPI) — *Hybrid AI and LLM-Enabled
+Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes*, an
+architecturally analogous system applied to clean-in-place process control at a beverage
+plant. The thesis is the retail FMCG transposition of this blueprint, under explicit RAM
+constraints and with a production-extension rather than greenfield framing.
+
+> Until 2026-08-25 this entry credited the paper to "Bürger & Pauli (2024, EAAI)". That
+> reference is fabricated — no such paper exists; the title belongs to González-Potes et al.
+> Verified against the source PDF via NotebookLM (LR-01b).
 
 → Full gap analysis, novelty statement and corpus mapping:
 [`gap_analysis_v4.md`](../../01_thesis_research/literature/gap_analysis_v4.md)

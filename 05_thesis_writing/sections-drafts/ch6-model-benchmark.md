@@ -5,8 +5,10 @@
 > a grain that DEC-GRAIN/P0035 removed from code, paths and results. Every figure in
 > §6.5 is now traceable to a named file in `04_thesis_results/srq1/`.
 >
-> **Open:** the ≤15% accuracy target cannot be scored until the source's metric is
-> verified (§6.4.3); `fig4_ram_budget` is stale (§6.5.6).
+> **Resolved 2026-08-25:** the ≤15% accuracy target has been **withdrawn**. Source-level
+> verification found no such benchmark in the cited paper — Ceran et al. explicitly
+> *reject* MAPE for zero-inflation and report WRMSSE instead (§6.4.3).
+> **Open:** `fig4_ram_budget` is stale (§6.5.6).
 >
 > **Every citation in §6.1–6.4 is `VERIFIED` in the register** unless explicitly marked
 > otherwise. Do not add a citation here that has not been source-checked.
@@ -279,10 +281,17 @@ Irregular series are handled by **categorisation rather than removal** — see �
 
 ### 6.4.3 Targets
 
-- **Accuracy target: ≤15% WMAPE**, taken from the retail demand-forecasting literature.
-  ⚠️ **The source's metric is not yet verified.** If the cited benchmark refers to plain
-  or median MAPE rather than WMAPE, this thesis meets it on no category. Until that is
-  confirmed, no claim that the target is met should be written
+- **Accuracy target: none imported from the literature.** Earlier drafts carried a
+  ≤15% WMAPE target attributed to Ceran et al. (2024). Source-level verification
+  (2026-08-25) found **no such benchmark in that paper**: the authors explicitly reject
+  MAPE because their panel contains too many zero-demand observations for a percentage
+  error to be well defined, and report WRMSSE, RMSE and MAE instead. The target is
+  therefore withdrawn, and **no claim that an external accuracy target is met or
+  approached should be written anywhere in the thesis**
+- **What replaces it: the simple benchmarks of §6.2.0**, scored on this thesis's own
+  test rows (§6.5.2). This is the stricter test and needs no cross-study metric
+  alignment — a target borrowed from a daily product-store study with a 15-day horizon
+  was never comparable to brand × month at H=3 in any case
 - **Calibration target: ≥85% empirical coverage** for a nominal 90% interval —
   **and interval width must be reported alongside**, since an arbitrarily wide interval
   attains perfect coverage while carrying no decision-relevant information
@@ -553,9 +562,10 @@ claim.** At the 80% level danskvand additionally undercovers, at 70.7%.
 
 ### 6.5.8 Remaining gaps
 
-- **The ≤15% accuracy target cannot yet be scored.** The source's metric is
-  unverified (§6.4.3); if it refers to plain or median MAPE rather than WMAPE, no
-  category meets it. Pending NotebookLM verification.
+- **The ≤15% accuracy target has been withdrawn, not scored.** Verification found the
+  benchmark does not exist in the cited source (§6.4.3). Accuracy is therefore assessed
+  against the simple benchmarks of §6.5.2 alone, on which two of four categories are
+  beaten outright.
 - The tuning protocol is not nested, so every cross-validation figure above is
   optimistically biased by an unquantified amount (§6.3.5).
 - ARIMA and Prophet use a fixed specification per series rather than a per-series
@@ -675,8 +685,8 @@ outcome of one seed. §6.6 states the conclusion this supports instead.
 
 **Genuinely open:**
 
-- **Which metric the ≤15% benchmark refers to.** If the source reports plain or median
-  MAPE rather than WMAPE, no category meets the target. Blocks any claim in §6.4.3
+- ~~Which metric the ≤15% benchmark refers to.~~ **Closed 2026-08-25**: the benchmark is
+  not in the cited source at all; the target is withdrawn (§6.4.3)
 - **Whether ARIMA should be order-searched.** The fixed SARIMAX(1,1,1) is a floor for
   the family, not its best performance, and the baseline comparison is weaker for it
 - **Whether the ensemble scenario runs**, which determines whether §6.6's combination

@@ -18,7 +18,7 @@ with the dedicated-model layer justified over both classical and template baseli
 on the decision-relevant dimensions. The sub-questions resolve as follows.
 
 - **SRQ1 (models & efficiency).** Tuned XGBoost is the best lightweight model in
-  every category (test WMAPE 11.4–31.0%; energidrikke near the ≤15% target),
+  every category (test WMAPE 11.4–31.0%),
   beating LightGBM, Ridge and SeasonalNaive. Category specialisation matters:
   the best *representation* differs by category (brand×month for CSD/energidrikke/
   RTD, brand×chain for danskvand), so "more data" via finer granularity is not
