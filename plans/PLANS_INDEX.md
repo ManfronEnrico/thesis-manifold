@@ -4,7 +4,7 @@
 > New plans: `plans/P{NNNN}_YYYY-MM-DD_HH-mm_<slug>/`
 > Archived plans: `plans/.archive/`
 > Status tracked in plan frontmatter only — no outcome files, no folder movement on status change.
-> Next available P-ID: **P0041**
+> Next available P-ID: **P0043**
 
 ---
 
@@ -14,6 +14,8 @@
 
 | P-ID | Folder | Status | Detail |
 |------|--------|--------|--------|
+| **P0042** | `P0042_2026-08-25_12-45_funded-testing-and-review-sequencing/` | **focus** | **Sequencing for the funded phase.** Two parallel workstreams: (A) NotebookLM review rounds — methodology verification against the 14 Saunders chapters, then per-section *improvement* questions (a different exercise from verification, which cannot find uncited claims or wrong framing); (B) the remaining scenario runs. **Corrects a sequencing error:** the A/B/C ladder is already delivered, so funding unblocks D/E + the optional scale-up, not the first result. Names three gates: freeze D/E scope in writing first, use measured costs not estimates, and decide now what a D→E / B→C disagreement would mean. |
+| **P0041** | `P0041_2026-08-22_16-00_citation-sourcing/` | in_progress | **Citation verification — literature + modelling rounds complete and merged (2026-08-25).** Five Contradicted claims corrected in Ch1/Ch2; the unsourced ≤15% accuracy target withdrawn from Ch6/Ch9/Ch10; the fabricated "Bürger & Pauli (2024)" purged from the live docs. Ch2 and Ch6 now pass `check_chapter_facts.py` clean. Remaining: the methodology round (see P0042 A1) and a second download batch for Ouyang/Atıl/Schwartz/Chen, cited in §2.5 with no PDF. |
 | **P0040** | `P0040_2026-08-20_prometheus-scenarios-d-e/` | **focus** | **Prometheus access landed 2026-08-20.** Extends the SRQ4 ladder from three scenarios to five by adding the real Graph Engine: `D_prometheus` (as shipped, code-as-action) and `E_prometheus_model` (same engine + the `forecast_demand` tool). **D->E is the contribution measured inside the production agent**, and it independently replicates B->C — the same intervention on two different orchestrators. Splitting D from E avoids confounding engine with tool (DEC-SCENARIO-SPLIT, Brian). Engine never enters the repo: proprietary, located via `PROMETHEUS_ROOT` in `.env` (DEC-PROMETHEUS-VENDORING). Data comparability holds — the RU warehouse refreshes monthly and currently sits at July 2026, same as the local snapshot (DEC-PROMETHEUS-DATA, F4). An integration blueprint exists in `.archive/thesis_agents_preintegration/` but **predates engine access** — treat as hypothesis (F1). Also replaces the fabricated `fig4_ram_budget` with real measurement (F5). Tasks 1-3 are free and read-only. 10 tasks. |
 | **P0039** | `P0039_2026-08-19_01-45_srq4-system-a-vs-b/` | in_progress | **The A/B/C ladder — delivered.** 18 paid runs, $3.44: `C_model` beat `B_data` on every run (7.7% vs 13.5% median APE), ~28x cheaper and ~22x faster. Tasks 1-6 discharged 2026-08-19; the in-file task table still reads all-pending and is stale. DEC-VENDOR settled: `gpt-5.5-2026-04-23`. Remaining: the optional scale-up (5 brands x 10 repeats, ~$35), an unmeasured Coca Cola `A_plain` (~$1.27), a cheap `C_model` re-run on the re-tuned models (~$0.04), and task 7 (write-up). **Now lower priority than P0040** — the scale-up strengthens a result already established in direction, whereas D/E is the only result nobody else could produce. |
 | **P0037** | `P0037_2026-08-12_15-28_serving-interface-refinement/` | in_progress | Tasks 3, 4, 7 delivered 2026-08-19 — `build_service()` runs end to end (230 forecasts), every response carries a trace block, and conformal calibration moved off test residuals. Remaining is cleanup: tasks 2, 6, 8, 9. **Note:** its out-of-scope line "Prometheus/Graph Engine integration (pending NDA)" has expired — that work is P0040, not a reopening of this plan's scope. |
@@ -41,7 +43,7 @@ See `plans/.archive/README.md` for the full list. Archived: P0006-P0018, P0022-P
 
 ## How to Create a New Plan
 
-1. Next P-ID: **P0041**
+1. Next P-ID: **P0043**
 2. Create folder: `plans/P0023_YYYY-MM-DD_HH-mm_<slug>/`
 3. Create files: `task_plan.md`, `findings.md`, `progress.md` (use `/planning-with-files` skill)
 4. Add to this index
