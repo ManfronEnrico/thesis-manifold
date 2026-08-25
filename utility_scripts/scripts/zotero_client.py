@@ -25,7 +25,9 @@ SCHOLARLY_ITEM_TYPES = _SCHOLARLY_TYPES
 
 
 def _load_env() -> dict:
-    env_path = Path(__file__).resolve().parents[1] / ".env"
+    # Repo root is parents[2] (utility_scripts/scripts/ -> utility_scripts/ -> root).
+    # Was parents[1] pre-P0028, when this script lived one level higher.
+    env_path = Path(__file__).resolve().parents[2] / ".env"
     load_dotenv(env_path)
     api_key = os.environ.get("ZOTERO_API_KEY")
     group_id = os.environ.get("ZOTERO_GROUP_ID", "6479832")
@@ -263,7 +265,9 @@ def get_citations(group_id: str | None = None, sync_files: bool = True) -> list[
 
 def _write_citation_files(entries: list[dict]) -> None:
     """Write bibtex.bib as source of truth, then derive citations.json."""
-    lit_dir = Path(__file__).resolve().parents[1] / "docs" / "literature"
+    # Canonical citation output, per the P0028 tier structure.
+    # Was utility_scripts/docs/literature/ pre-P0028.
+    lit_dir = Path(__file__).resolve().parents[2] / "05_thesis_writing" / "citations"
     lit_dir.mkdir(parents=True, exist_ok=True)
 
     # Write BibTeX as source of truth
