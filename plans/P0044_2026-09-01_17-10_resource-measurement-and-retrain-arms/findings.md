@@ -955,3 +955,74 @@ globbing the directory or loading by convention rather than through the index.
 Both removed. **Not fixed in code** -- the writer should prune non-referenced
 `{cat}_model.*` files after writing the index, and that is a small change worth
 making before the next flip silently recreates the situation.
+
+## F31 — MEASURED (task 22): parameter drift over 7 months is INCONCLUSIVE, and honestly so
+
+Brian: *"technically the refitting would drift eventually when we keep on using
+non re-tuned parameters, lets say if we are 8 months outside of the current train
+period, wouldnt the saved parameters at some point drift?"*
+
+The right question, and nothing measured before it addressed it -- every earlier
+cutoff sat within ~5 months of the tuning window, so a slow decay was invisible
+by construction.
+
+Design: tune ONCE on data through 2025-12 (2,470 rows, 20 trials x 2-fold CV,
+81 s), freeze those params (`num_leaves=93, n_est=435`), then walk 7 months
+forward. At each month, refit on frozen params vs refit on freshly-tuned params;
+gap = frozen - fresh, so positive means the frozen params are worse.
+
+| months out | target | frozen | fresh | gap (pp) | fresh num_leaves |
+|---|---|---|---|---|---|
+| 1 | 2026-01 | 15.10% | 15.10% | 0.00 | 93 |
+| 2 | 2026-02 | 19.78% | 20.46% | **-0.69** | 66 |
+| 3 | 2026-03 | 17.00% | 16.42% | +0.58 | 57 |
+| 4 | 2026-04 | 6.83% | 10.57% | **-3.74** | 16 |
+| 5 | 2026-05 | 11.44% | 11.44% | 0.00 | 93 |
+| 6 | 2026-06 | 15.28% | 15.28% | 0.00 | 93 |
+| 7 | 2026-07 | 17.56% | 13.96% | **+3.60** | 74 |
+
+`04_thesis_results/srq1/param_drift.csv`.
+
+**Mean gap -0.04pp. Correlation with distance +0.42, slope +0.414 pp/month.**
+
+### Why this does NOT establish drift, despite the positive slope
+
+Three reasons, and all three should be stated rather than the slope quoted alone:
+
+1. **The mean gap is essentially zero (-0.04pp)** across 7 months. If frozen
+   params decayed, the average would be positive.
+2. **The slope is driven by one point.** Month 7 (+3.60pp) and month 4 (-3.74pp)
+   are near-equal and opposite. Remove either and the trend reverses. A +0.42
+   correlation on n=7 with two dominating outliers is not evidence.
+3. **Three months show a gap of exactly 0.00pp** because re-tuning *rediscovered
+   num_leaves=93* -- the frozen value. On those months the two arms are the same
+   model, so they are not independent observations of anything.
+
+The fresh `num_leaves` sequence (93, 66, 57, 16, 93, 93, 74) is the same
+instability documented in F21: the search is not converging on a stable optimum
+at 20 trials, so "freshly tuned" is partly a random draw. Measuring frozen-vs-
+fresh when fresh is itself noisy cannot resolve a slow drift.
+
+### What can honestly be said
+
+- **No detectable decay over 7 months** at this data scale. The frozen params
+  neither clearly degrade nor clearly hold; the experiment lacks the power to
+  separate them.
+- The thesis should state this as a **limitation and a future-work item**, not
+  as a validated property in either direction.
+- Brian's concern remains **theoretically sound and untested at the horizon that
+  matters**. 46 months of data caps the probe at ~8 months of distance; a
+  production system runs for years. The honest position is that per-query refit
+  is validated on cost (F28: 2.93 s vs 417 s, 142x) and that a **periodic
+  re-tune cadence is prudent but unquantified**.
+
+### Recommended design consequence
+
+Refit per query; re-tune **on a schedule** (e.g. quarterly) rather than never or
+per-query. This is defensible without the drift measurement: at 417 s a
+quarterly re-tune is trivially affordable, and it removes the unbounded-drift
+risk that this experiment could not rule out. Ch9 should say the cadence was not
+empirically optimised.
+
+**Do not cite the +0.414 pp/month slope.** It is an artefact of two outliers on
+seven points.

@@ -3,7 +3,7 @@ pid: P0044
 created: 2026-09-01 17:10:00
 updated: 2026-09-01 17:10:00
 status: in_progress
-focus_detail: "Phase 1 DONE: tracemalloc understated XGBoost 266x (0.1 -> 26.6 MB RSS); profiler now measures RSS per model in isolated subprocesses. Next: phase 2 writing-surface hygiene, then Ch1 reframing on the corrected numbers."
+focus_detail: "Phases 1,2,5 done. Option A executed: training + selection now read the CV study, which also removed selection-on-test (RTD flipped to LightGBM). Measured: refit 2.93s vs re-tune 417s (142x); 7-month param drift inconclusive. REMAINING: Ch1 rewrite on the 4 GB measured bound, then scenarios F/G."
 ---
 
 # P0044 — Resource measurement + retrain-in-sandbox arms
