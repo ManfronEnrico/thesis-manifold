@@ -685,3 +685,208 @@ inner validation, several seeds per configuration, and a convergence check
 (does best-value plateau as trials increase). That is a genuine SRQ1 sub-study.
 It is NOT required to justify refit-on-stored-params, which stands on cost
 alone.
+
+## F25 — the "what do we do about noisy tuning" problem was already solved by srq1_benchmark_cv.py
+
+Brian: *"What is the alternative? just leaving trials at 30?! How many trials do
+we have in our current model training that we did before we served the trained
+models? Also 30?!"*
+
+**No -- production tuning uses 100 trials with expanding-window CV.** My
+refit-vs-retune test used a weaker setup than the project's own, which is a flaw
+in my test, not in the pipeline.
+
+| | my F19 test | `srq1_benchmark_cv.py` (production) |
+|---|---|---|
+| trials | 30 | **100** |
+| validation | single 95-row month | **expanding-window time-series CV, 4 folds** |
+| objectives | wMAPE only | wMAPE **and** medMAPE |
+| convergence evidence | none | **`cv_convergence.csv`, 1,600 rows** |
+
+`srq1_benchmark_cv.py`'s own docstring anticipated exactly this critique ("an
+examiner asking 'how many trials, and did you cross-validate?' would get a weak
+answer") and fixed it, citing Hyndman & Athanasopoulos §5.10 and Tashman (2000)
+for rolling-origin evaluation, and Bergstra et al. (2011) for TPE.
+
+### The answer to "how many trials" is empirical, and already recorded
+
+The docstring's position is correct and worth quoting in Ch3/Ch6:
+
+> **There is no citable "correct" number of trials.** Any source claiming one is
+> being misread: the requirement depends on the search space.
+
+So the budget is justified by **convergence evidence** instead. Trial at which
+the running best comes within 1% of its final value, from `cv_convergence.csv`:
+
+| category | model | wMAPE plateau | medMAPE plateau |
+|---|---|---|---|
+| CSD | LightGBM | 58 | 34 |
+| CSD | XGBoost | 83 | 43 |
+| RTD | LightGBM | 69 | 44 |
+| RTD | XGBoost | 21 | 54 |
+| danskvand | LightGBM | 52 | 82 |
+| danskvand | XGBoost | 74 | 87 |
+| energidrikke | LightGBM | 74 | 70 |
+| energidrikke | XGBoost | 66 | 51 |
+
+Worst case plateaus at **trial 87 of 100**. So 100 is justified by evidence --
+enough for every configuration to converge, with headroom -- and this is a
+stronger argument than citing a convention. **That is the answer to "what are we
+supposed to do": nothing. It is already done, and done well.**
+
+### Consequence for F19/F21
+
+My test's instability (seeds giving num_leaves 74-116) is now explained: 30
+trials against a single month is roughly a third of the budget that the
+convergence curve shows is needed, evaluated on a fold design the project had
+already rejected as under-powered. **The instability was an artefact of my
+harness, not a property of the pipeline.** F21's retraction stands and is
+reinforced -- that comparison should not be cited for anything but the cost
+ratio.
+
+## F26 — Brian's arithmetic on the re-tune cost is correct
+
+Brian: *"realistically we could test only 1 cutoff ... and increase the number of
+trials to way above 30 ... and then it would only take half the total time e.g.
+40 seconds, as before you summed and did not average."*
+
+Correct on every step. 84.4 s was 5 cutoffs summed. An on-demand retrain faces
+**one** cutoff -- the month being predicted -- so the relevant figure is the
+per-cutoff cost, ~16.9 s at 30 trials (~0.56 s/trial).
+
+Scaling to a defensible budget on a single cutoff:
+
+| trials | est. time (single cutoff) |
+|---|---|
+| 30 | ~17 s |
+| 60 | ~34 s |
+| **100** (production, convergence-justified) | **~56 s** |
+
+Against ~1 s for a refit that is ~56x, not 12x -- but on a single cutoff the
+absolute number is under a minute, which is a very different proposition from
+the "84 s" figure I kept quoting without saying it was a sum.
+
+**So per-query re-tuning is NOT obviously infeasible**, and the earlier framing
+("re-tuning is dead") was wrong on the arithmetic as well as on the accuracy
+(F21). A ~56 s re-tune is slow for an interactive agent but plausible for an
+overnight or on-demand-with-progress workflow.
+
+Note the estimate ignores that CV multiplies cost by fold count; the honest
+figure needs measuring, not extrapolating -- see task 21.
+
+## F27 — RED FLAG (Brian's catch): the served models use the WEAKER tuning, and cv_params.json is orphaned
+
+Brian: *"why the fuck is it not in sync? Isnt that a red flag? The real training
+sounds way more sophisticated and should propagate to the stored parameters, why
+is that not the case?"*
+
+**It is a red flag, and he is right.** Verified:
+
+| file | written | method | consumed by |
+|---|---|---|---|
+| `tuned_params.json` | **2026-08-19 20:11** | 30 trials, single validation split, wMAPE only | **`train_and_persist.py:208`** -> the served models; `training_report.py`; `srq1_profiling.py` |
+| `cv_params.json` | **2026-08-24 20:13** | **100 trials, 4-fold expanding-window CV, wMAPE + medMAPE** | **nothing** -- reported only |
+
+`srq1_benchmark_cv.py` was written specifically to fix the three weaknesses of
+`srq1_benchmark_tuned.py` (its docstring says so, citing P0040 F58). It ran five
+days later, produced better hyperparameters with convergence evidence, and its
+output was **never propagated into training**. Every served model, every SRQ4
+scenario using `forecast_demand`, and the profiling table are all built on the
+30-trial single-split parameters the project itself had already judged
+"methodologically correct but under-powered".
+
+Divergence on CSD/LightGBM is not cosmetic:
+
+| param | tuned_params (served) | cv_params (better method) |
+|---|---|---|
+| n_estimators | 1192 | 374 |
+| num_leaves | 63 | 120 |
+| min_child_samples | 5 | 14 |
+| colsample_bytree | 0.867 | 0.641 |
+
+A 3x difference in tree count and a 2x difference in leaves. These are different
+models, not variants.
+
+### Why this happened (not an excuse, a mechanism)
+
+The two scripts write to different filenames. Nothing reads `cv_params.json`, so
+nothing broke, no test failed, and no error surfaced. The CV script's outputs are
+named `cv_*` throughout (`cv_metrics.csv`, `cv_summary.md`, `cv_params.json`),
+which reads as "an additional analysis" rather than "the replacement". The
+handover note (`2026-08-19_preprocessing-pipeline-handover-enrico.md:256`) also
+flags that `tuned_params.json` predated the EDA-corrected data -- a *second*
+staleness problem on the same file, already known and also unresolved.
+
+### Consequences to state plainly
+
+1. **SRQ1's reported best-model selection may not match the served model.** Ch6
+   reports CV results; the artefact uses the older params.
+2. **The profiling table (F1) profiled the served config**, so its RAM/time
+   figures describe what is actually deployed. That is the right choice for a
+   deployment claim, but it must not be presented as profiling "the tuned model"
+   without saying which tuning.
+3. **My F19 refit test used `tuned_params.json`** -- so it compared a 30-trial
+   stored config against a fresh 30-trial search. Both arms were under-powered.
+   This further weakens F19 (already retracted in F21) but does not affect the
+   cost measurements.
+
+### Recommendation -- needs Brian's decision, do not act unilaterally
+
+**Option A (preferred): repoint training at `cv_params.json` and re-persist.**
+The CV params are better by the project's own stated criteria and carry
+convergence evidence justifying the budget. Cost: re-run `train_and_persist.py`
+(free, minutes) and re-run profiling. Risk: every downstream SRQ4 number was
+produced against the old models, so results referencing `forecast_demand` output
+would need regenerating -- which collides with the P0042 frozen design if blocks
+have already run.
+
+**Option B: keep the served params, and say so explicitly.** Document that the
+served artefact uses the 30-trial config while Ch6 reports the CV study, and
+justify it as "the deployed model was frozen before the CV study completed".
+Honest but weak, and an examiner may well ask why the better parameters were
+computed and then not used.
+
+**Timing matters:** if blocks 1-3 have NOT yet run, Option A is nearly free and
+clearly correct. Once they run against the current models, switching invalidates
+them. **This should be settled before spending the API budget.**
+
+## F28 — MEASURED (task 21): a single-cutoff re-tune at production settings costs 417 s, not 56 s
+
+F26 accepted Brian's arithmetic and projected ~56 s for a 100-trial single-cutoff
+re-tune. **Measured, that projection was 7x too low**, because it ignored that
+expanding-window CV multiplies every trial by the fold count.
+
+Single cutoff (2026-06, 3,040 train rows -> 95 predicted), CSD/LightGBM:
+
+| operation | time | peak RSS | test wMAPE | ratio |
+|---|---|---|---|---|
+| **refit on stored params** | **2.93 s** | 35.0 MB | **12.57%** | 1x |
+| re-tune, 30 trials x 4-fold CV | 107.9 s | 86.6 MB | 15.27% | **37x** |
+| re-tune, 100 trials x 4-fold CV | **417.3 s** | 65.3 MB | 16.77% | **142x** |
+
+`04_thesis_results/srq1/retune_single_cutoff.csv`.
+
+**Every projection I made about re-tuning cost was wrong, in both directions.**
+The 12x from F19 was too low (it compared a no-CV search); the ~100x from F20
+was arithmetic that happened to land near the true 142x for the wrong reason;
+the ~56 s in F26 was 7x optimistic. Only this measurement should be cited.
+
+**On accuracy, note the direction:** the re-tuned models scored *worse* on the
+held-out month (15.27% and 16.77% vs 12.57%). Per F21 this must NOT be read as
+"re-tuning is worse" -- a single cutoff with ~4pp of seed noise cannot support
+that. It does, however, mean there is no evidence anywhere in this project that
+re-tuning per query buys accuracy.
+
+### What this settles
+
+**Per-query re-tuning is infeasible for an interactive agent**, now on a
+measured basis: 7 minutes per query at the production tuning design, versus 3
+seconds to refit. That is the number that justifies DEC-REFIT-NOT-RETUNE, and it
+does not depend on any accuracy claim.
+
+The refit arm (G) remains viable: 2.93 s and 35.0 MB, comfortably inside the
+measured 4 GB sandbox (~0.9%).
+
+**Caveat:** measured on one category, one model, one cutoff. The 142x is a
+cost ratio at *this* data scale; it will grow with more data since CV cost scales
+with both folds and rows.

@@ -128,6 +128,14 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
       D_prometheus already needs. Sequence AFTER blocks 1-3, which have no
       template dependency.
 
+- [ ] **21. DECIDE: repoint training at cv_params.json, or document why not (F27).**
+      `train_and_persist.py:208` reads `tuned_params.json` (30 trials, single
+      split, 2026-08-19). `cv_params.json` (100 trials, 4-fold expanding CV,
+      2026-08-24) is consumed by NOTHING. The served models use the weaker
+      tuning the project itself called under-powered. **Settle this BEFORE
+      spending API budget on blocks 1-3** -- afterwards, switching invalidates
+      the runs.
+
 - [ ] **15. Log RSS inside the sandbox per run**, so the arms produce a real
       occupancy number against the 8 GB budget rather than an assertion.
 
