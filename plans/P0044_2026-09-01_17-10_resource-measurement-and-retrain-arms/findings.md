@@ -640,3 +640,48 @@ production sandbox" beats "fits in an assumed 8 GB budget".
 **Do not global-replace until Brian confirms.** The alternative reading -- that
 he wants the whole thesis re-anchored on 4 GB, retiring the SME-budget argument
 entirely -- is also coherent, and is his call, not mine.
+
+## F24 — glossary + what the refit/retune experiment can and cannot answer
+
+Terms used loosely earlier, defined once:
+
+- **cutoff** — a date splitting history from future, simulating "retrain today".
+  Five were used: 2026-02 .. 2026-06. At cutoff 2026-04, train on everything up
+  to March, predict April. Five simulated retrain events, nothing more.
+- **trial** — one hyperparameter combination Optuna tests. 30 trials = 30
+  combinations tried, best kept.
+- **what was executed** — 30 trials x 5 cutoffs = **150 tuning runs**, plus 5
+  refits. Wall clock: **84.4 s total** for all tuning (~16.9 s per cutoff,
+  ~0.56 s per trial) vs **7.0 s total** for all refits (~1.06 s each).
+- **the 12x ratio** — 84.4 / 7.0. Measured.
+- **the ~100x figure** — arithmetic, NOT measured: 200 trials x 0.56 s ~ 110 s
+  against ~1 s to refit. A projection from the measured per-trial cost. It must
+  be labelled as such wherever it appears.
+
+### How many trials would be necessary? Unknown, and this design cannot say.
+
+30 is demonstrably too few: five seeds returned num_leaves 74, 99, 110, 114,
+116 (F21). A converged search returns approximately the same optimum regardless
+of seed; this one does not, so it has not converged.
+
+But raising the trial count does not fix the underlying problem. The inner
+validation set is **95 rows -- a single month**. More trials search harder
+against a target too small to distinguish a genuinely better configuration from
+a lucky one, so the extra compute buys precision on a noisy estimate.
+
+**What this experiment CAN support:**
+- the cost ratio (a timing measurement, noise-independent)
+- that refit is not *detectably* worse at this data scale
+- that hyperparameter tuning on a one-month validation window is unstable --
+  itself a legitimate Ch6 caveat
+
+**What it CANNOT support:**
+- that re-tuning is worse (retracted, F21)
+- an optimal trial count
+- any accuracy ranking finer than ~4pp, the observed seed-only spread
+
+**To answer the trial-count question properly** would need a multi-month rolling
+inner validation, several seeds per configuration, and a convergence check
+(does best-value plateau as trials increase). That is a genuine SRQ1 sub-study.
+It is NOT required to justify refit-on-stored-params, which stands on cost
+alone.

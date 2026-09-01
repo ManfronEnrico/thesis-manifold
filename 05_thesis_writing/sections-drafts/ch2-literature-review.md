@@ -6,6 +6,15 @@
      Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
 
 # Chapter 2 — Literature Review: Forecast-Informed Agentic Decision-Support under Constraints
+
+> **P0044 OPEN (2026-09-01): RAM figure needs reconciling.** This file states an
+> 8 GB budget. That number is a project assumption, not a sourced one -- Ng (2017)
+> argues memory is the binding design variable, not that SMEs get 8 GB. Manifold's
+> production Prometheus E2B template is provisioned at a **measured 4096 MB**
+> (`fxe7gzkqjupdhbx4uvpr`, verified live 2026-09-01). Prefer the measured figure.
+> All results hold under the tighter bound (serving 36.8 MB, refit ~37 MB).
+> See `plans/P0044_2026-09-01_17-10_resource-measurement-and-retrain-arms/findings.md` F22-F23.
+
 > Status: PROSE DRAFT — written 2026-04-12; §2.2 reframed 2026-06-27 to separate Ng's raw-data-volume constraint (platform scale) from the thesis's binding deployment-cost constraint (the aggregated modelling set is small; the 8GB budget binds model selection, not the realised footprint)
 > Author: Claude Code (Sonnet 4.6) — requires human review before finalisation
 > Word count target: ~22 standard CBS pages (~50,050 chars excl. spaces)
