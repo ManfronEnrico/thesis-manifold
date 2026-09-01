@@ -890,3 +890,68 @@ measured 4 GB sandbox (~0.9%).
 **Caveat:** measured on one category, one model, one cutoff. The 142x is a
 cost ratio at *this* data scale; it will grow with more data since CV cost scales
 with both folds and rows.
+
+## F29 — Option A executed, and it surfaced a second, worse defect: selection on the test set
+
+Brian chose Option A. `train_and_persist.py` now reads `cv_params.json`
+(100 trials, 4-fold expanding CV) with `tuned_params.json` retained as a
+fallback so a missing entry degrades rather than crashes.
+
+Repointing `best_model_for()` exposed a defect worse than the stale params.
+The old selection was:
+
+```python
+t = pd.read_csv("tuned_metrics.csv")
+r = t.sort_values("test_wmape").iloc[0]      # <-- the TEST set
+```
+
+**The served model was chosen by ranking candidates on the held-out test set** --
+the same data the thesis then reports that model's performance against. That is
+selection on test, and it optimistically biases every downstream number that
+flows from the served model, including SRQ4's Scenario C.
+
+`cv_metrics.csv` carries `cv_score`, the expanding-window validation score, which
+never touches test. Selection now uses it, so the test set is genuinely held out.
+
+### What changed in the artefact
+
+| category | old (test_wmape) | new (cv_score) | model changed |
+|---|---|---|---|
+| CSD | XGBoost 14.87% | XGBoost 16.05% | no |
+| danskvand | XGBoost 19.96% | XGBoost 17.07% | no |
+| energidrikke | XGBoost 14.25% | XGBoost 10.56% | no |
+| **RTD** | **XGBoost 33.63%** | **LightGBM 27.92%** | **YES** |
+
+Re-persisted successfully; RTD is now LightGBM. Note the two score columns are
+not comparable (test vs CV) -- only the *selection* is being compared.
+
+The RTD flip matters: had selection been unbiased from the start, RTD would
+always have served LightGBM. Any SRQ4 result citing RTD's served model was built
+on a model chosen by peeking at test.
+
+### Honest caveat
+
+`cv_metrics.csv` also reports `test_wmape`, and for CSD/LightGBM it is 14.54%
+against the served config's 15.59% -- so the CV params also look better on test.
+That comparison is offered as corroboration only; it is not what selection uses,
+and must not become a new justification for selecting on test.
+
+## F30 — `train_and_persist.py` leaves orphaned model files when the selected model changes format
+
+Re-persisting after the RTD flip (XGBoost -> LightGBM) left two stale artefacts:
+
+```
+orphaned (not referenced by index.json):
+  RTD_model.json            <- the old XGBoost model
+  danskvand_model.joblib    <- from some earlier flip
+```
+
+XGBoost persists to `.json`, LightGBM/Ridge to `.joblib`, and the writer never
+removes the previous file when the format changes. `index.json` is authoritative
+and pointed correctly (`RTD -> RTD_model.joblib`), so serving was never wrong --
+but a stale `RTD_model.json` sitting beside the live model is a trap for anyone
+globbing the directory or loading by convention rather than through the index.
+
+Both removed. **Not fixed in code** -- the writer should prune non-referenced
+`{cat}_model.*` files after writing the index, and that is a small change worth
+making before the next flip silently recreates the situation.

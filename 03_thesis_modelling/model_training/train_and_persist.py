@@ -111,11 +111,31 @@ def best_model_for(cat: str) -> str:
     # linear baseline, SeasonalNaive the floor. Both are candidates ONLY if they
     # beat the best tuned model, and that comparison is unavailable, so they are
     # included from metrics.csv with an explicit margin requirement below.
+    cvf = THESIS_RESULTS_SRQ1_DIR / "cv_metrics.csv"
     tf = THESIS_RESULTS_SRQ1_DIR / "tuned_metrics.csv"
     mf = THESIS_RESULTS_SRQ1_DIR / "metrics.csv"
     best, best_wmape = "XGBoost", float("inf")
 
-    if tf.is_file():
+    # P0044 F27/F29: select from the CV study when available, on its CROSS-
+    # VALIDATED score rather than on test_wmape.
+    #
+    # Two changes, and the second matters more than the first. tuned_metrics.csv
+    # ranked candidates by `test_wmape` -- the held-out test set -- so the served
+    # model was chosen using the same data the thesis then reports it against.
+    # That is selection on the test set, and it optimistically biases every
+    # downstream number. cv_metrics.csv carries `cv_score`, the expanding-window
+    # validation score, which never touches test. Selecting on it keeps the test
+    # set genuinely held out.
+    #
+    # `tuned_for == "wmape"` filters to the objective the thesis reports.
+    if cvf.is_file():
+        c = pd.read_csv(cvf)
+        c = c[(c.category == cat) & (c.tuned_for == "wmape") & c.cv_score.notna()]
+        if len(c):
+            r = c.sort_values("cv_score").iloc[0]
+            best, best_wmape = r["model"], float(r["cv_score"])
+
+    if best_wmape == float("inf") and tf.is_file():
         t = pd.read_csv(tf)
         t = t[(t.category == cat) & t.test_wmape.notna()]
         if len(t):
@@ -205,11 +225,35 @@ def train_category(cat: str, slug: str) -> dict | None:
 
     model_name = best_model_for(cat)
     params = {}
-    pf = THESIS_RESULTS_SRQ1_DIR / "tuned_params.json"
-    if pf.is_file():
-        # Ridge is the untuned baseline and has no entry; it uses its defaults.
-        params = json.loads(pf.read_text(encoding="utf-8")).get(
-            f"brand/{cat}/{model_name}", {})
+    # P0044 F27: prefer cv_params.json (srq1_benchmark_cv.py -- 100 trials,
+    # 4-fold expanding-window CV, dual objective, convergence curve saved) over
+    # tuned_params.json (srq1_benchmark_tuned.py -- 30 trials, ONE validation
+    # split, wMAPE only).
+    #
+    # The CV script exists precisely to fix the tuned script's three documented
+    # weaknesses, and it produced better held-out numbers: on CSD/LightGBM,
+    # test wMAPE 14.54% (CV) against 15.59% (served). Its output was nevertheless
+    # consumed by nothing for two weeks, because the two scripts write different
+    # filenames and nothing read the newer one -- so no test failed and no error
+    # surfaced. The served models were built on the weaker tuning throughout.
+    #
+    # Key schemas differ: "{cat}/{model}/{objective}" here vs
+    # "brand/{cat}/{model}" in the old file. wMAPE is the objective the thesis
+    # reports against, so that variant is used. tuned_params.json remains as a
+    # fallback so a missing CV entry degrades instead of crashing.
+    cvf = THESIS_RESULTS_SRQ1_DIR / "cv_params.json"
+    if cvf.is_file():
+        params = json.loads(cvf.read_text(encoding="utf-8")).get(
+            f"{cat}/{model_name}/wmape", {})
+    if not params:
+        pf = THESIS_RESULTS_SRQ1_DIR / "tuned_params.json"
+        if pf.is_file():
+            # Ridge is the untuned baseline and has no entry; it uses its defaults.
+            params = json.loads(pf.read_text(encoding="utf-8")).get(
+                f"brand/{cat}/{model_name}", {})
+            if params:
+                print(f"  {cat:14s} NOTE: no CV entry for {model_name}; "
+                      f"falling back to tuned_params.json")
 
     tracemalloc.start()
     t0 = time.perf_counter()
