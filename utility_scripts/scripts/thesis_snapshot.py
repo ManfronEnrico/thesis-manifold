@@ -25,14 +25,15 @@ actionable, "the thesis differs" is not.
 
 WHAT IT WRITES
 --------------
-    05_thesis_writing/snapshots/YYYY-MM-DD/
+    05_thesis_writing/docx-exported-snapshots/YYYY-MM-DD_HH-mm/
         thesis_full.docx          verbatim copy of the source
         thesis_full.md            whole-document text
         chapters/ch3-methodology.md   one file per Heading 1
         comments.md               every Word comment + the text it is anchored to
-        MANIFEST.md               what was captured, and the drift table
+        comments/ch1-introduction.md  the same comments, split per chapter
+        MANIFEST.md               what was captured, sha256, and the drift table
 
-THE SNAPSHOT IS READ-ONLY. Never edit a file under snapshots/ and never convert
+THE SNAPSHOT IS READ-ONLY. Never edit a file under docx-exported-snapshots/ and never convert
 one back. Editing them creates a fourth version of the thesis and reintroduces
 exactly the ambiguity the snapshot exists to remove. The working surfaces are
 05_thesis_writing/sections-drafts/*.md (live) and the OneDrive .docx (prose).
@@ -41,11 +42,14 @@ Usage:
     python utility_scripts/scripts/thesis_snapshot.py
     python utility_scripts/scripts/thesis_snapshot.py --source "C:/path/to.docx"
     python utility_scripts/scripts/thesis_snapshot.py --no-drift
+
+See docx-exported-snapshots/README.md for copy-paste commands and the workflow.
 """
 from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import hashlib
 import re
 import shutil
 import sys
@@ -66,7 +70,7 @@ DEFAULT_SOURCE = (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SNAP_ROOT = REPO_ROOT / "05_thesis_writing" / "snapshots"
+SNAP_ROOT = REPO_ROOT / "05_thesis_writing" / "docx-exported-snapshots"
 DRAFTS = REPO_ROOT / "05_thesis_writing" / "sections-drafts"
 
 # Heading 1 text -> the sections-drafts basename it should be compared against.
@@ -240,8 +244,104 @@ def read_docx(path: Path) -> dict:
     }
 
 
+def _sha256(path: Path) -> str:
+    """Provenance for the snapshot: the .docx itself is gitignored (a large
+    binary git cannot diff), so this hash is what proves which source file the
+    tracked .md files came from."""
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def _words(s: str) -> int:
     return len(s.split())
+
+
+def _render_comments(rows: list[dict], title: str, src_name: str,
+                     has_ext: bool, scoped: bool) -> str:
+    """One comments file: index table, then a section per comment.
+
+    The index exists because 14 comments already need scrolling; the goal of
+    this export is fast orientation, not archival completeness. Each comment
+    carries a stable `<a id="cNN">` anchor so a draft or plan can cite one
+    specific objection by URL fragment rather than by quoting it.
+    """
+    out = [f"# {title}", "",
+           f"Extracted {_dt.date.today()} from `{src_name}`.",
+           f"{len(rows)} comment(s). "
+           f"Resolved status {'available' if has_ext else 'UNAVAILABLE'}.",
+           "",
+           "> **Read-only extract.** Reply in Word, not here — this file is "
+           "regenerated on every snapshot and any edit is lost.", ""]
+
+    if not rows:
+        out += ["*(no comments in this chapter)*", ""]
+        return "\n".join(out)
+
+    out += ["## Index", "",
+            "| # | " + ("section" if scoped else "chapter") + " | opens with |",
+            "|---|---|---|"]
+    for c in rows:
+        where = (c["heading_path"].split(" > ")[-1] if scoped
+                 else c["chapter"] or "(unanchored)")
+        first = " ".join(c["text"].split())[:90]
+        flag = " ✔" if c["resolved"] else ""
+        out.append(f"| [{c['id']}](#c{c['id']}) | {where[:45]}{flag} | {first}… |")
+    out += ["", "---", ""]
+
+    for c in rows:
+        flags = []
+        if c["resolved"]:
+            flags.append("RESOLVED")
+        if c["is_reply"]:
+            flags.append("reply")
+        out.append(f'<a id="c{c["id"]}"></a>')
+        out.append("")
+        out.append(f"## [{c['id']}] {c['author']} — {c['chapter'] or '(unanchored)'}"
+                   + (f"  `{' · '.join(flags)}`" if flags else ""))
+        out.append("")
+        if c["heading_path"]:
+            out.append(f"- **Section:** {c['heading_path']}")
+        out.append(f"- **Date:** {c['date']}")
+        if c["anchor"]:
+            out.append(f"- **On:** “{c['anchor'][:400]}”")
+        out += ["", c["text"], ""]
+    return "\n".join(out)
+
+
+def _write_comments(d: dict, src: Path, out_dir: Path) -> None:
+    """Write the combined comments file plus one per chapter.
+
+    Per-chapter files are the point (F16): they put a chapter's prose and the
+    objections raised against it one directory apart, so either can be handed
+    to NotebookLM as a single scoped source. NotebookLM ingests text, not
+    .xlsx, which is why this export is markdown rather than a spreadsheet.
+    """
+    rows = d["comments"]
+    has_ext = d["has_commentsExtended"]
+
+    (out_dir / "comments.md").write_text(
+        _render_comments(rows, "Word comments — all chapters", src.name,
+                         has_ext, scoped=False), encoding="utf-8")
+
+    # Group by the chapter each comment is anchored in, reusing the same slug
+    # map the chapter split uses so comments/chN.md pairs with chapters/chN.md.
+    by_slug: dict[str, list[dict]] = {}
+    for c in rows:
+        by_slug.setdefault(_slug(c["chapter"]) if c["chapter"] else "unanchored",
+                           []).append(c)
+
+    cdir = out_dir / "comments"
+    cdir.mkdir(exist_ok=True)
+    for slug, group in sorted(by_slug.items()):
+        (cdir / f"{slug}.md").write_text(
+            _render_comments(group, f"Comments — {group[0]['chapter'] or slug}",
+                             src.name, has_ext, scoped=True), encoding="utf-8")
+
+    print(f"  wrote   comments.md + comments/  "
+          f"({len(rows)} comments over {len(by_slug)} chapter file(s))")
 
 
 def write_snapshot(src: Path, out_dir: Path, do_drift: bool) -> None:
@@ -272,33 +372,18 @@ def write_snapshot(src: Path, out_dir: Path, do_drift: bool) -> None:
 
     for ch in d["chapters"]:
         body = "\n\n".join(ch["paras"])
+        # The header is not decoration: editing a snapshot instead of the
+        # source is how a fourth version of the thesis appears (F10).
         (chap_dir / f"{ch['slug']}.md").write_text(
+            "<!-- DO NOT EDIT. Regenerated by thesis_snapshot.py from the"
+            " OneDrive .docx. Edit the .docx or sections-drafts/*.md"
+            " instead. -->\n\n"
             f"# {ch['title']}\n\n{body}\n", encoding="utf-8")
     print(f"  wrote   chapters/  ({len(d['chapters'])} files)")
 
     # --- comments -------------------------------------------------------
-    cm = ["# Word comments", "",
-          f"Extracted {_dt.date.today()} from `{src.name}`.",
-          f"{len(d['comments'])} comment(s). "
-          f"Resolved status {'available' if d['has_commentsExtended'] else 'UNAVAILABLE'}.",
-          "", "> Read-only extract. Reply in Word, not here.", ""]
-    for c in d["comments"]:
-        flags = []
-        if c["resolved"]:
-            flags.append("RESOLVED")
-        if c["is_reply"]:
-            flags.append("reply")
-        cm.append(f"## [{c['id']}] {c['author']} — {c['chapter'] or '(unanchored)'}"
-                  + (f"  `{' · '.join(flags)}`" if flags else ""))
-        cm.append("")
-        if c["heading_path"]:
-            cm.append(f"- **Section:** {c['heading_path']}")
-        cm.append(f"- **Date:** {c['date']}")
-        if c["anchor"]:
-            cm.append(f"- **On:** \u201c{c['anchor'][:400]}\u201d")
-        cm += ["", c["text"], ""]
-    (out_dir / "comments.md").write_text("\n".join(cm), encoding="utf-8")
-    print(f"  wrote   comments.md  ({len(d['comments'])} comments)")
+    _write_comments(d, src, out_dir)
+
 
     # --- manifest + drift ----------------------------------------------
     man = ["# Snapshot manifest", "",
@@ -306,6 +391,7 @@ def write_snapshot(src: Path, out_dir: Path, do_drift: bool) -> None:
            f"- **Captured:** {_dt.datetime.now():%Y-%m-%d %H:%M:%S}",
            f"- **Source modified:** {_dt.datetime.fromtimestamp(src.stat().st_mtime):%Y-%m-%d %H:%M:%S}",
            f"- **Size:** {src.stat().st_size:,} bytes",
+           f"- **SHA-256:** `{_sha256(dst_docx)}`",
            f"- **Words:** {_words(full):,}",
            f"- **Chapters (Heading 1):** {d['h1_count']}",
            f"- **Comments:** {len(d['comments'])}",
@@ -342,8 +428,8 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--source", default=DEFAULT_SOURCE,
                     help="path to the shared .docx (default: the OneDrive copy)")
-    ap.add_argument("--date", default=None,
-                    help="snapshot folder name (default: today, YYYY-MM-DD)")
+    ap.add_argument("--stamp", "--date", dest="stamp", default=None,
+                    help="snapshot folder name (default: now, YYYY-MM-DD_HH-mm)")
     ap.add_argument("--no-drift", action="store_true",
                     help="skip the drift table against sections-drafts/")
     a = ap.parse_args()
@@ -353,7 +439,7 @@ def main() -> int:
         print(f"ERROR: source not found:\n  {src}", file=sys.stderr)
         return 2
 
-    out = SNAP_ROOT / (a.date or _dt.date.today().isoformat())
+    out = SNAP_ROOT / (a.stamp or _dt.datetime.now().strftime("%Y-%m-%d_%H-%M"))
     print(f"snapshot -> {out.relative_to(REPO_ROOT)}")
     write_snapshot(src, out, not a.no_drift)
     print("\ndone. Snapshot is read-only; edit the OneDrive .docx or the drafts.")

@@ -1,9 +1,10 @@
 # Snapshot manifest
 
 - **Source:** `C:\Users\brian\OneDrive\Documents\02-Areas\MSc. Data Science\2026-03 - CBS Master Thesis\Drafts\MSc. Data Science - 175888 and 176171 - Master Thesis.docx`
-- **Captured:** 2026-09-01 16:24:26
+- **Captured:** 2026-09-01 18:50:57
 - **Source modified:** 2026-09-01 16:16:19
 - **Size:** 913,764 bytes
+- **SHA-256:** `2ce1b0cd28c807131d98d9cb7665a46678718e4e018f8b0195f7e5d42406ff22`
 - **Words:** 31,870
 - **Chapters (Heading 1):** 17
 - **Comments:** 14

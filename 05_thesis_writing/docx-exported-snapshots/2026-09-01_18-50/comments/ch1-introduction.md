@@ -1,9 +1,32 @@
-# Word comments
+# Comments — Chapter 1 - Introduction
 
 Extracted 2026-09-01 from `MSc. Data Science - 175888 and 176171 - Master Thesis.docx`.
 14 comment(s). Resolved status available.
 
-> Read-only extract. Reply in Word, not here.
+> **Read-only extract.** Reply in Word, not here — this file is regenerated on every snapshot and any edit is lost.
+
+## Index
+
+| # | section | opens with |
+|---|---|---|
+| [15](#c15) | 1.1 Background and Motivation | We didnt really add any enrichment (e.g. Holiday Calendar).… |
+| [16](#c16) | 1.1 Background and Motivation | Again we did not enrich… |
+| [17](#c17) | 1.1 Background and Motivation | This premise is not supported. Seems to be an artifact from previous RQ iterations. If we … |
+| [18](#c18) | 1.1 Background and Motivation | This is a bit difficutl/useless. In the beginning we wanted to go that angle, however, we … |
+| [19](#c19) | 1.1 Background and Motivation | Again this might not be really accurate. Training the models in the cloud yes. Deploying t… |
+| [20](#c20) | 1.1 Background and Motivation | That is true, if we taling about hosting an LLM locally or on a server. But Manifold is no… |
+| [21](#c21) | 1.1 Background and Motivation | This is not verified, or must be confirmed.… |
+| [22](#c22) | 1.1 Background and Motivation | The overall premise of our thesis soudns promising, but the RAM contstraint is not properl… |
+| [25](#c25) | 1.3 Research Questions | We currently have the accuracy, and category specialitation somewhat answered. But the mem… |
+| [26](#c26) | 1.3 Research Questions | This oversvability and traceability I am unsure of whether it was implemented well at this… |
+| [27](#c27) | 1.3 Research Questions | Not sure if it is alright to have such a long sub research question to be honest. But the … |
+| [28](#c28) | 1.3 Research Questions | Unsure whether we will actually provide the whole thesis repository via Git. We must be ca… |
+| [30](#c30) | 1.4 Delimitation | A good claim, we must verify and showcase that in our code however. Currently we are plann… |
+| [31](#c31) | 1.4 Delimitation | This is decent, but we are kind of already teasing at infromation that should be part of d… |
+
+---
+
+<a id="c15"></a>
 
 ## [15] Brian Rohde — Chapter 1 - Introduction
 
@@ -13,6 +36,8 @@ Extracted 2026-09-01 from `MSc. Data Science - 175888 and 176171 - Master Thesis
 
 We didnt really add any enrichment (e.g. Holiday Calendar).
 
+<a id="c16"></a>
+
 ## [16] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.1 Background and Motivation
@@ -21,6 +46,8 @@ We didnt really add any enrichment (e.g. Holiday Calendar).
 
 Again we did not enrich
 
+<a id="c17"></a>
+
 ## [17] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.1 Background and Motivation
@@ -28,6 +55,8 @@ Again we did not enrich
 - **On:** “This thesis takes up that direction by incorporating exogenous predictors into its forecasting substrate”
 
 This premise is not supported. Seems to be an artifact from previous RQ iterations. If we want to maintain that, we must enrich (Holiday Calendar, or other exogenous variables
+
+<a id="c18"></a>
 
 ## [18] Brian Rohde — Chapter 1 - Introduction
 
@@ -39,6 +68,8 @@ This is a bit difficutl/useless. In the beginning we wanted to go that angle, ho
 
 So we must revisit why we even talk about resource limits, or what I lean towards, remove that part from our promise and only focus on imrpoving the models.
 
+<a id="c19"></a>
+
 ## [19] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.1 Background and Motivation
@@ -46,6 +77,8 @@ So we must revisit why we even talk about resource limits, or what I lean toward
 - **On:** “Enterprise cloud deployments capable of running large deep learning models at scale are economically inaccessible to small and medium-sized AI providers”
 
 Again this might not be really accurate. Training the models in the cloud yes. Deploying them in a trained status consumes barely anyhting.
+
+<a id="c20"></a>
 
 ## [20] Brian Rohde — Chapter 1 - Introduction
 
@@ -57,6 +90,8 @@ That is true, if we taling about hosting an LLM locally or on a server. But Mani
 
 Manifold is not running anything. The 8 GB RAM cloud sandbox budget is for the cloud code executions and the conversation, not runnign the model.
 
+<a id="c21"></a>
+
 ## [21] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.1 Background and Motivation
@@ -64,6 +99,8 @@ Manifold is not running anything. The 8 GB RAM cloud sandbox budget is for the c
 - **On:** “working with four terabytes of Nielsen weekly scanner data”
 
 This is not verified, or must be confirmed.
+
+<a id="c22"></a>
 
 ## [22] Brian Rohde — Chapter 1 - Introduction
 
@@ -81,6 +118,8 @@ Because currently the whole RAM discussion has no impact, as we train outside of
 
 Also our premise of the thesis is also to investigate which benefits a multi-indicator ML model serving approach will ahve on the prediciton quality, cost, and latency of AI agents. Something which is not really elaborated or highlighted properly so far. The main focus is only the limited RAM environemnt, which as said before is currently underutilized in the actual code base or experiments
 
+<a id="c25"></a>
+
 ## [25] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.3 Research Questions
@@ -91,6 +130,8 @@ We currently have the accuracy, and category specialitation somewhat answered. B
 
 We must implement that, especially if we slightly pivot the experiment and align them with one of our main premisises (8 GB RAM), then we must logg and record the training time, memory usage etc.
 
+<a id="c26"></a>
+
 ## [26] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.3 Research Questions
@@ -99,6 +140,8 @@ We must implement that, especially if we slightly pivot the experiment and align
 
 This oversvability and traceability I am unsure of whether it was implemented well at this point
 
+<a id="c27"></a>
+
 ## [27] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.3 Research Questions
@@ -106,6 +149,8 @@ This oversvability and traceability I am unsure of whether it was implemented we
 - **On:** “SRQ4: To what extent does giving an agentic decision-support system access to dedicated lightweight forecasting models improve the correctness, consistency, and replicability of forecast-informed decision-support outputs, at justified cost and latency, relative to the same system with only data access and code execution (a code-as-action baseline), and does that improvement hold in a production ag”
 
 Not sure if it is alright to have such a long sub research question to be honest. But the content is quite good
+
+<a id="c28"></a>
 
 ## [28] Brian Rohde — Chapter 1 - Introduction
 
@@ -117,6 +162,8 @@ Unsure whether we will actually provide the whole thesis repository via Git. We 
 
 That said, we might be able to create a new „clean“ repository which has neither of them, or just placeholders instead. A repo that we can provide the reviewers with, while at the same time dodging AI or confidentiality scandals.
 
+<a id="c30"></a>
+
 ## [30] Brian Rohde — Chapter 1 - Introduction
 
 - **Section:** Chapter 1 - Introduction > 1.4 Delimitation
@@ -124,6 +171,8 @@ That said, we might be able to create a new „clean“ repository which has nei
 - **On:** “which allows the benchmark to test whether the modelling findings generalise across heterogeneous category structures.”
 
 A good claim, we must verify and showcase that in our code however. Currently we are planning to include this in the experiment design. But this is up for verification.
+
+<a id="c31"></a>
 
 ## [31] Brian Rohde — Chapter 1 - Introduction
 
