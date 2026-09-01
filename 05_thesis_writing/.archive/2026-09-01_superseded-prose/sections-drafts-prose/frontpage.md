@@ -1,10 +1,3 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
-     Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
-     This file is a PLANNING surface: bullets, structure, status and provenance.
-     Do not paste prose back in -- two live copies is the drift this removes.
-     Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
-
 # Front Page Template
 > CBS requirement: front page does NOT count toward 120-page limit
 > Last updated: 2026-03-14
@@ -66,6 +59,8 @@ Master of Science in [Programme]
 | "Augmenting Retail Demand Forecasting with a Resource-Constrained Multi-Agent AI Framework" | Concise, punchy | Loses SRQ specificity |
 | "From Descriptive to Predictive: A Multi-Agent AI Framework for FMCG Retail Demand Forecasting" | SRQ4 foregrounded | May overstate SRQ4 as the primary contribution |
 | "AI-Augmented Demand Forecasting at the Edge: A Multi-Agent Framework for SME Retail" | Catchy, practical framing | "Edge" may mislead (≤8GB RAM, not IoT edge) |
+
+**Recommendation**: use version 1 for submission; version 2 for presentations.
 
 ---
 

@@ -1,10 +1,3 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
-     Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
-     This file is a PLANNING surface: bullets, structure, status and provenance.
-     Do not paste prose back in -- two live copies is the drift this removes.
-     Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
-
 # AI Use Declaration
 > CBS requirement: Autumn 2025 rules — must declare use of AI when required by course/programme
 > Placement: confirm with supervisor — likely in front matter (before abstract) or as a mandatory appendix
@@ -16,6 +9,7 @@
 ## Draft text (bullet form — NOT prose yet)
 
 ### Heading
+"Use of Artificial Intelligence in This Thesis"
 
 ### What AI was used for (declaration bullets)
 - **Claude claude-sonnet-4-6 (Anthropic)** was used as a research component:
@@ -45,6 +39,8 @@
 | A | Front matter (before abstract) | Maximum visibility; signals transparency | May be unusual format for CBS programme |
 | B | End of Chapter 3 (Methodology) | Contextually appropriate; fits research design | Buried; examiners may miss it |
 | C | Mandatory appendix | Doesn't use page budget | CBS may require it in main text |
+
+**Recommended**: Option A — place in front matter, before abstract, clearly labelled.
 
 ---
 

@@ -136,3 +136,152 @@ Recording these so the Ch1 rewrite does not "fix" things that are not broken:
   What is missing is not the logging but an *evaluation* of it: no metric scores
   whether a trace is auditable. If Ch1 promises observability as a **measured**
   property, that is the gap; as an **implemented** property, it is satisfied.
+
+---
+
+## F9 — CORRECTION: "tuned params are stable" was asserted, not verified — and the data argues against it
+
+Brian: *"The pre-tuned parameters, and refitting with known params and not
+re-tune, is that okay to do? I mean I am unsure whether 'Tuned params are stable
+across a month of new data; the coefficients are what go stale' is true at all."*
+
+He is right to distrust it. I asserted that premise without evidence, and the
+files on disk point the other way. `cv_params.json` stores tuned params per
+category, model **and metric**:
+
+```
+CSD/LightGBM/wmape    -> n_estimators 374, lr 0.032, num_leaves 120
+CSD/LightGBM/medmape  -> n_estimators 350, lr 0.014, num_leaves  21
+```
+
+Same data, same model, different objective — and `num_leaves` moves 120 -> 21,
+nearly 6x. `tuned_params.json` separately gives CSD/LightGBM `n_estimators=1192`
+against `cv_params.json`'s 374.
+
+Tuned params are therefore demonstrably **not** stable under small changes in
+the fitting condition. Stability across a *month of new data* is a different
+question, but that volatility is reason to lower confidence, not raise it.
+
+**Do not write refit-not-retune into the thesis as a premise.** Measure it
+(task 16). Either outcome is publishable: if refit tracks re-tune, the cheap
+architecture is validated; if it drifts, then on-demand retraining requires
+re-tuning, which changes the cost story and is a more interesting finding.
+
+### What refitting actually means (Brian asked)
+
+- **Hyperparameters** are set *before* training: how many trees, how deep,
+  learning rate. Optuna searches for them.
+- **Coefficients / tree splits** are what training *learns* from the data.
+
+Refit keeps the hyperparameters and relearns the splits on data now including
+the newest month. The premise is that hyperparameters describe the *problem*
+(series length, noise, seasonality) while splits describe the *data*. Plausible,
+unverified, and weakened by the metric-sensitivity above.
+
+## F10 — CORRECTION: the retrain arms are NOT blocked on building a template
+
+Brian: *"arent those already part of the graph engines template? Or am I trippin?"*
+
+Not tripping — this was my error. P0040 F38 records that the engine ships
+`prometheus.yaml`, which builds a template carrying the ODBC driver and the
+scientific stack, registering under Brian's own E2B account as
+`PROMETHEUS_TEMPLATE_ID=prometheus`.
+
+What `measure_e2b_cost.py` probed was E2B's **default base image** (no template
+id), which lacks pyodbc/sqlalchemy/statsmodels/xgboost/prophet. Those are
+different artefacts and I conflated them: "the default image lacks X" does not
+imply "no template provides X".
+
+**Revised blocker:** not "build a template", but "confirm the existing template
+alias resolves" — which P0040 flagged as written-but-never-run. Much smaller.
+
+## F11 — timing also shifted, though timing was never the broken instrument
+
+Brian: *"did this also understated the training time necessary?"*
+
+Yes, though not for the reason the memory number was wrong. `perf_counter` was
+always correct.
+
+| Model | old fit (s) | new fit (s) |
+|---|---|---|
+| Ridge | 0.075 | 0.102 |
+| LightGBM | 2.039 | **3.011** |
+| XGBoost | 0.968 | **2.187** |
+| ARIMA | 0.085 | 0.075 |
+
+Two causes, both favouring the new numbers: `tracemalloc` hooks every allocation
+and slows the process it measures, and the old run profiled all four models in
+one warm process (shared imports, warm caches) where each now gets a cold
+subprocess. The new figures are the honest ones.
+
+**Refit cost is ~3 s, not ~2 s.** Still cheap, but earlier statements quoting
+2.0 s were quoting the contaminated run.
+
+## F12 — CORRECTION: the fixed measurement does not favour either architecture
+
+Brian: *"how is that cutting toward our arms though? Having such an absurdly low
+number before is whats cutting the reliability and trust into our training
+process."*
+
+Correct, and my phrasing was wrong. The broken instrument damaged trust in the
+*measurement*; repairing it restores that and nothing more. Pre-trained vs.
+refitted stays an open engineering decision on cost, latency and code
+complexity — which is what the arms exist to settle. Claiming the fix supports
+one side was reaching.
+
+## F13 — the feature-engineering pipeline is the real feasibility risk, not RAM
+
+Brian: *"for re-training on demand, it would need to have all the feature
+engineering and EDA data cleaning pipeline applied once again, which might not
+be suitable anyways with no human intervention (time within the cloud
+environment & context bloat when transferring all of the code snippets)."*
+
+This is a stronger objection than the RAM question and should be recorded as a
+first-class risk. An on-demand refit needs the full preprocessing chain — load,
+aggregate, calendar-fill, engineer features, split — reproduced inside the
+sandbox. Two distinct costs:
+
+1. **Wall clock**: the pipeline is many steps over the raw extract, not the
+   3 s fit. The fit is the cheap tail of an expensive chain.
+2. **Context**: shipping enough code for the agent to reproduce feature
+   engineering faithfully is a large prompt payload, and any divergence
+   silently produces a differently-featured matrix — a correctness risk, not
+   just a cost one.
+
+**Design implication:** the credible on-demand architecture ships the
+*preprocessing as a callable artefact* (a pinned module or prebuilt image
+layer), not as code-in-context for the agent to re-derive. Worth stating in Ch9
+regardless of whether the arms run.
+
+## F14 — Optuna is automatic, so tuning cost is measurable too
+
+Brian: *"could we not also test and measure the resources and time necessary to
+tune each model? Because I believe Optuna is a automatic algorithm to tune ML
+models, am I correct?"*
+
+Correct — Optuna TPE, `study.optimize(objective, n_trials=trials)`
+(`srq1_benchmark_tuned.py:163-164`), fully automatic, no human in the loop. So a
+re-tune arm needs no human either, and its cost is measurable with the same
+RSS instrument.
+
+Worth measuring precisely because it can *invalidate* refit-not-retune: if a
+re-tune is a few hundred trials at ~3 s each, per-query re-tuning is
+infeasible and refit becomes the only viable on-demand path. That rules the
+alternative out with a number instead of ignoring it.
+
+## F15 — the template yaml was NOT found at the engine root this session
+
+F10 rests on P0040 F38's record that the engine ships `prometheus.yaml`. A search
+of the engine tree this session (`find -maxdepth 3 -name prometheus.yaml -o -name
+e2b.toml`) returned **nothing**.
+
+This does not overturn F10 — the search was shallow (depth 3) and the engine
+arrived as a zip that may have been re-extracted since P0040 — but it does mean
+the template is **unconfirmed on disk right now**. Do not plan the retrain arms
+on the assumption that it is present.
+
+**Verification is cheap and free** (task 20): locate the yaml, or list the
+templates registered against the E2B account, before committing to any arm that
+needs the scientific stack in-sandbox. If it is genuinely absent, the fallback
+in P0040 F29 stands: build from the engine's Dockerfile, or run against a local
+snapshot instead.

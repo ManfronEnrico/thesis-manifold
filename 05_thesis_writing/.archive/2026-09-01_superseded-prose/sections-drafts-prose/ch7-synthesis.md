@@ -1,10 +1,3 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
-     Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
-     This file is a PLANNING surface: bullets, structure, status and provenance.
-     Do not paste prose back in -- two live copies is the drift this removes.
-     Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
-
 # Chapter 7 — Context-Aware Decision Synthesis
 > Status: SKELETON + §7.2.3 DETERMINISTIC SYNTHESIS RESULTS written from real
 > outputs (2026-06-24; scripts/srq2_synthesis.py → thesis/data/_06_results_srq2/).
@@ -37,21 +30,25 @@
 
 ### 7.2.2 Synthesis pipeline
 
+**Step 1 — Model consensus scoring**
 - Compute inter-model agreement: std(point_forecasts) / mean(point_forecasts) = relative disagreement metric
 - High agreement (low spread) → higher base confidence
 - Assign inverse-MAPE weights to each model's forecast: w_i = (1/MAPE_i) / Σ(1/MAPE_j)
 - Weighted ensemble point forecast = Σ(w_i × forecast_i)
 
+**Step 2 — Interval calibration**
 - Apply Kuleshov et al. (2018) post-hoc calibration to ensemble prediction intervals
 - Calibration set: validation period actuals vs. stated intervals
 - Output: calibrated 90% prediction interval with empirically validated coverage
 
+**Step 4 — Confidence score computation**
 - Composite confidence score (0–100):
   - 40% weight: calibrated interval width (narrower = higher confidence)
   - 30% weight: inter-model agreement (lower spread = higher confidence)
 - Map to 3-tier natural language: High (≥70), Moderate (40–69), Low (<40)
 - Cite: Kuleshov et al. 2018, Do Forecasts as Prediction Intervals Improve Planning (2010)
 
+**Step 5 — LLM recommendation generation**
 - LLM (claude-sonnet-4-6 via API) receives structured synthesis context:
   - Ensemble forecast + calibrated interval
   - Confidence score + tier
@@ -63,6 +60,14 @@
 ### 7.2.3 Deterministic synthesis results
 
 <!-- Factual, from scripts/srq2_synthesis.py; results thesis/data/_06_results_srq2/.
+Models trained per the Ch6 §6.5.6 selected configuration; ensemble = inverse-
+validation-WMAPE weights; interval = split-conformal 90% on the ensemble. -->
+
+The non-LLM core of the Synthesis Agent was implemented and run on the test set for
+all four categories: per (brand[, chain], month) it produces an inverse-WMAPE-weighted
+ensemble forecast, an inter-model agreement score, a split-conformal 90% interval,
+and a composite confidence score (30% agreement + 40% interval tightness + 30% model
+accuracy) mapped to a High/Moderate/Low tier.
 
 | Category | n series-months | mean confidence | Moderate / Low | 90% interval coverage |
 |---|---|---|---|---|
@@ -70,6 +75,19 @@
 | danskvand | 966 | 43.6 | 70% / 30% | 97.8% |
 | energidrikke | 205 | 47.1 | 75% / 25% | 80.0% |
 | RTD | 324 | 38.5 | 45% / 55% | 90.7% |
+
+Two observations. First, the conformal ensemble interval is **well-to-conservatively
+calibrated** (empirical coverage 80–98% against the 90% nominal), so the uncertainty
+the agent communicates is trustworthy. Second, the composite confidence skews to the
+**Moderate** tier with no High-confidence forecasts under the current thresholds —
+because the (deliberately wide) 90% interval keeps the tightness term low. This is a
+property of the scoring weights, not of the forecasts; the tier cut-offs are a
+calibration choice to revisit. Operationally the engine already supports the SRQ2
+goal: it triages each forecast by confidence so the agentic layer can surface
+reliable forecasts and route Low-confidence ones (notably the more volatile RTD,
+55% Low) to human review. The natural-language recommendation and the LLM-as-Judge
+quality assessment (§7.3, §7.6) sit on top of this structured output and require an
+LLM API; they are run in the agentic-harness phase.
 
 ---
 
@@ -129,6 +147,16 @@ Generate a recommendation.
 ### 7.6.1 Result
 
 <!-- Factual, from scripts/srq2_agent.py (N=50, claude-sonnet-4-6 + GPT-4o judge,
+temp 0); results _06_results_srq2/. -->
+
+The protocol was executed (N=50, claude-sonnet-4-6 synthesis, GPT-4o judge, temp 0).
+The LLM synthesis outscored the rule-based baseline on four of five dimensions —
+actionability 4.00 vs 2.14, relevance 4.00 vs 3.28, clarity 4.34 vs 3.46,
+calibration 3.74 vs 3.46 — with the baseline ahead only on accuracy (3.42 vs 2.96).
+Mean score 3.81 (LLM) vs 3.15 (baseline). The LLM thus adds clear value in turning
+a number-plus-interval into an actionable, well-framed recommendation, at the cost
+of a small accuracy penalty from its added interpretation. Full results and the
+discussion of this trade-off are in Ch8 §8.3.4.
 
 ---
 

@@ -1,10 +1,3 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
-     Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
-     This file is a PLANNING surface: bullets, structure, status and provenance.
-     Do not paste prose back in -- two live copies is the drift this removes.
-     Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
-
 # Chapter 8 — Experimental Evaluation
 > Status: SKELETON + LEVEL 1 (§8.2.5) and LEVEL 3 (§8.4.4) RESULTS written from real
 > runs (2026-06-24; _05_results_srq1/). Level 2 (§8.3, LLM-as-Judge) and the
@@ -44,6 +37,19 @@
 ### 8.2.5 Results (Level 1 — SRQ1)
 
 <!-- Factual, from scripts/srq1_benchmark*.py + srq1_baselines_stat.py on the
+corrected DVH EXCL. HD matrices; results thesis/data/_05_results_srq1/. Approved
+configuration per Ch6 §6.5.6. Metric = WMAPE (volume-weighted); see §6.5.1 on why
+mean-MAPE is omitted. -->
+
+On the selected per-category configuration (Ch6 §6.5.6), tuned **XGBoost** is the
+best model in every category. Test WMAPE: CSD 16.5%, danskvand 22.0%, energidrikke
+**11.4%** (≈ the ≤15% industry target), RTD 31.0%. Against the traditional
+baselines, the ML model beats ARIMA (CSD 24.2%, danskvand 33.4%, energidrikke
+15.7%, RTD 48.2%) in three of four categories; for danskvand an additive
+Prophet model (16.9%) is competitive. Every model beats the SeasonalNaive
+baseline (e.g. CSD 39.9%, RTD 58.8%), confirming genuine learned skill rather than
+trend persistence. SHAP attributes the forecasts chiefly to `lag_1` (last-month
+sales) and `weighted_distribution` (shelf availability) across all categories.
 
 ---
 
@@ -69,15 +75,49 @@
 ### 8.3.3 SRQ4 baseline — code-as-action agent (Prometheus), not a human analyst
 
 <!-- Scope change 2026-06-24 (Enrico): the human-analyst baseline is REMOVED from
+scope — not feasible within the timeline and never strictly in scope. The SRQ4
+comparator is the production code-as-action agent (Prometheus / Graph Engine),
+which the v4 RQs already designate as the baseline. -->
+
+The SRQ4 baseline is **not** a human analyst (that comparison is out of scope —
+infeasible within the project timeline). It is the **production code-as-action
+agent, Prometheus** (the Manifold/Royal Unibrew Graph Engine): a LangGraph +
+PydanticAI agent whose coder writes and executes SQL/Python in an E2B sandbox in an
+investigate-and-verify loop to answer a data/forecasting brief. SRQ4 therefore
+compares the **dedicated-model integration** (this thesis: an LLM that *delegates*
+forecasting to pre-trained XGBoost models exposed as a structured tool) against the
+**code-as-action baseline** (Prometheus: an LLM that *writes its own* forecasting
+code), on correctness, consistency, replicability, cost and latency over a common
+prompt set. Both run on the same Nielsen categories (CSD, danskvand, energidrikke,
+RTD); execution is local + sandbox, with no human-in-the-loop baseline.
 
 ### 8.3.4 Results (Level 2 — SRQ2)
 
 <!-- Factual, from scripts/srq2_agent.py (claude-sonnet-4-6 synthesis, GPT-4o judge,
+N=50 stratified, temp 0); results _06_results_srq2/{recommendations,judge_scores,
+llm_summary}.csv/md. The human-baseline comparison (§8.3.3) is not run. -->
+
+On N=50 stratified test cases, GPT-4o (LLM-as-Judge, independent model family)
+scored the Synthesis-Agent recommendation against a rule-based template baseline on
+five Likert(1–5) dimensions:
 
 | System | accuracy | calibration | actionability | relevance | clarity | mean |
 |---|---|---|---|---|---|---|
 | LLM synthesis | 2.96 | 3.74 | **4.00** | **4.00** | **4.34** | **3.81** |
 | Rule-based baseline | **3.42** | 3.46 | 2.14 | 3.28 | 3.46 | 3.15 |
+
+The LLM synthesis clearly adds value on **actionability** (4.00 vs 2.14),
+**relevance** (4.00 vs 3.28), **clarity** (4.34 vs 3.46) and **calibration**
+(3.74 vs 3.46) — answering the SRQ2 "does the LLM add value over a template?"
+question affirmatively on four of five dimensions. The baseline edges out the LLM
+only on **accuracy** (3.42 vs 2.96): the template merely restates the forecast
+number, so it cannot contradict its inputs, whereas the LLM's added interpretation
+occasionally drifts from a strict reading of the numbers — a precision/usefulness
+trade-off worth stating. Interval calibration is empirically validated separately
+(§8.3.2 / Ch6 §6.5.4: ensemble conformal coverage 80–98% against the 90% nominal).
+The human-analyst comparison (§8.3.3) requires a Manifold team member and is not run
+here; the SRQ4 code-as-action comparator requires an execution sandbox (E2B key not
+configured) and is deferred.
 
 ---
 
@@ -102,6 +142,21 @@
 ### 8.4.4 Results (Level 3 — operational)
 
 <!-- Factual, from scripts/srq1_profiling.py; results _05_results_srq1/profiling.*. -->
+
+Peak RAM (tracemalloc) is in the **tens of MB** for every model — Ridge 1.5,
+LightGBM 18.7, XGBoost 0.2, ARIMA 0.5 MB — i.e. three orders of magnitude below
+the 8 GB ceiling; the constraint is non-binding at this data scale (a different
+result from the hypothesised 4–6 GB, because the corrected matrices are far
+smaller than the all-markets ones). Training latency is seconds, not minutes
+(XGBoost ~1.7 s, LightGBM ~7.7 s with its tuned `n_estimators`); inference is
+~16 ms for XGBoost. The Synthesis Agent adds only structured arithmetic plus,
+optionally, one LLM API call (~1–3 s, no local RAM). The end-to-end pipeline
+therefore runs comfortably within the operational budget. Note: tracemalloc
+captures Python-level allocations; native LightGBM/XGBoost C++ buffers are
+additional but small at this scale.
+
+*(Failure-mode analysis §8.4.3 — API timeout / fallback — is part of the agentic
+harness evaluation and is run with the LLM-dependent layer.)*
 
 ---
 

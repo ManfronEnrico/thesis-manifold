@@ -81,16 +81,16 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
 
 ### Phase 2 — writing surface hygiene
 
-- [ ] **6. Delete `05_thesis_writing/sections-final/`.** All 6 files frozen
+- [x] **6. Delete `05_thesis_writing/sections-final/`.** All 6 files frozen
       2026-07-11; 4 of 10 chapters never exported. Superseded by the OneDrive
       document. Verified stale, not merely suspected.
 
-- [ ] **7. Strip prose from `sections-drafts/*.md`, archive the prose.**
+- [x] **7. Strip prose from `sections-drafts/*.md`, archive the prose.**
       Ch1 draft (3,615 w) and snapshot (3,395 w) are the same text -- they agree
       only because nobody has edited either since the export. That luck expires
       the moment comment [17] gets acted on.
 
-- [ ] **8. Write the surface-authority rule** into `.claude/rules/`:
+- [x] **8. Write the surface-authority rule** into `.claude/rules/`:
       OneDrive .docx = authoritative prose; `docx-exported-snapshots/` =
       read-only mirror; `sections-drafts/` = bullets only; `sections-final/` = gone.
 
@@ -130,6 +130,36 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
 
 - [ ] **15. Log RSS inside the sandbox per run**, so the arms produce a real
       occupancy number against the 8 GB budget rather than an assertion.
+
+### Phase 5 — validate the claims the arms rest on (free; no API cost)
+
+- [ ] **16. Test refit-not-retune rather than asserting it (F9).** Walk forward:
+      refit on stored params through month t, compare against a full Optuna
+      re-tune at t, across several months. If accuracy tracks, the cheap
+      architecture is validated; if it drifts, on-demand retraining needs
+      re-tuning and the cost story changes. Either result is a Ch6 finding.
+      Brian's doubt is well founded -- cv_params.json shows num_leaves moving
+      120 -> 21 between two metrics on the same data.
+
+- [ ] **17. Measure the cost of a full Optuna re-tune** (time + RSS, same
+      instrument). Optuna is fully automatic (F14), so this needs no human. It
+      may rule per-query re-tuning out with a number, which is what makes
+      refit-not-retune defensible instead of merely convenient.
+
+- [ ] **18. Time the full preprocessing chain, not just the fit (F13).** The 3 s
+      fit is the cheap tail of load -> aggregate -> calendar-fill -> engineer ->
+      split. On-demand refit pays the whole chain. This is the real feasibility
+      question, more than RAM.
+
+- [ ] **19. Cost the two on-demand designs against each other**: preprocessing
+      shipped as a pinned callable artefact vs. code-in-context for the agent to
+      re-derive. The second risks a silently different feature matrix -- a
+      correctness risk, not just a cost one.
+
+- [ ] **20. Confirm the E2B template exists before planning on it (F15).**
+      `prometheus.yaml` was NOT found in the engine tree this session. Locate it,
+      or list templates registered to the E2B account. Free. Do this before any
+      arm that needs the scientific stack in-sandbox.
 
 ## Related
 

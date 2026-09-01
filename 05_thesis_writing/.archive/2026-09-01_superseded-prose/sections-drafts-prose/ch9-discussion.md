@@ -1,10 +1,3 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
-     Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
-     This file is a PLANNING surface: bullets, structure, status and provenance.
-     Do not paste prose back in -- two live copies is the drift this removes.
-     Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
-
 # Chapter 9 — Discussion
 > Status: DRAFT written from real results 2026-06-24 (§9.1 interpretation; §9.2/§9.4
 > aligned to actual findings). Grounded in thesis/data/_05_results_srq1/ and
@@ -18,11 +11,70 @@
 
 ### 9.1.1 SRQ1: Forecasting accuracy under constraints
 
+Tuned **XGBoost was the best model in every category**, ahead of LightGBM, Ridge,
+and the SeasonalNaive baseline, confirming that gradient boosting over engineered
+lag/rolling/calendar features is the strongest lightweight family for this monthly
+FMCG panel. The selected per-category configurations reach test WMAPE of 16.5%
+(CSD), 22.0% (danskvand), **11.4% (energidrikke)**
+and 31.0% (RTD). RTD remains hardest — short, volatile, promotion-blind series. A
+central and somewhat counter-intuitive result is that **finer granularity does not
+uniformly help**: disaggregating to a retail-chain dimension multiplied training
+rows roughly sixfold yet improved accuracy only for danskvand, while CSD,
+energidrikke and RTD forecast better at the aggregated brand level. This is a
+signal-to-noise effect — more rows of noisier per-chain demand do not beat fewer
+rows of a cleaner aggregate — and it motivates the per-category representation
+choice (Ch6 §6.5.6). On the operational axis the **≤8 GB constraint is non-binding**
+at this data scale: peak RAM is in the tens of MB for every model and inference is
+sub-second, so the accuracy-optimal model also fits the budget with no compromise.
+SHAP attributes forecasts chiefly to last-month sales (`lag_1`) and shelf
+availability (`weighted_distribution`), which is consistent with retail demand
+dynamics and lends face validity to the models. *Connect to: Edge AI / Efficient &
+Green LLMs (the constraint is easily met); gradient-boosting-for-retail literature.*
+
 ### 9.1.2 SRQ2: Synthesis quality
+
+The deterministic synthesis core produced **well-to-conservatively calibrated**
+ensemble intervals (empirical coverage 80–98% against a 90% nominal), so the
+uncertainty the system communicates is trustworthy. The composite confidence score
+skewed to the Moderate tier with no High-confidence forecasts under the current
+thresholds — an artefact of weighting interval *tightness* heavily while the
+conformal 90% interval is deliberately wide; the tier cut-offs, not the forecasts,
+are what need recalibration. On recommendation quality, the **LLM synthesis added
+clear value over a rule-based template**: GPT-4o (LLM-as-Judge, N=50) scored it
+higher on actionability (4.00 vs 2.14), relevance (4.00 vs 3.28), clarity (4.34 vs
+3.46) and calibration (3.74 vs 3.46), with the template ahead only on accuracy
+(3.42 vs 2.96). The weakest LLM dimension is therefore accuracy: turning numbers
+into prose occasionally drifts from a strict reading of the inputs — a
+usefulness/precision trade-off, and the clearest target for prompt hardening.
+*Connect to: Kuleshov 2018 (calibration); AI-augmented decision-making DSR 2024.*
 
 ### 9.1.3 SRQ3: Integration readiness
 
+SRQ3 is addressed as an **integration-readiness assessment**, not a live
+integration: production access to the Prometheus platform was not available and was
+not required for the thesis, which runs entirely on a local Nielsen snapshot. The
+forecasting substrate is nonetheless integration-ready in the senses Ch3/Ch5
+specify — it is exposed through a structured, reproducible interface (committed
+scripts, deterministic seeds, versioned artefacts) and emits point forecasts plus
+calibrated intervals and a confidence tier suitable for an agent tool-call. The
+remaining gap to active integration is operational (credentials, a dev-merge into
+the Graph Engine), not architectural. *Connect to: Ch3/Ch5 integration-readiness
+specification.*
+
 ### 9.1.4 SRQ4: dedicated ML vs the LLM/traditional baselines
+
+Against the **traditional statistical baseline**, dedicated ML (XGBoost) beats
+ARIMA in three of four categories (by 7.7, 4.3 and 17.2 pp WMAPE for CSD,
+energidrikke, RTD), with only danskvand better served by an additive Prophet model
+— so dedicated lightweight ML is, on balance, justified over classical forecasting.
+The **code-as-action LLM baseline** central to the v4 SRQ4 — an LLM that writes and
+self-corrects its own forecasting code — was *not* executed: it requires a secure
+execution sandbox (E2B) that is not configured. This is the principal open piece of
+the empirical SRQ4 answer and is carried as future work; what the present results
+establish is the prior, weaker comparison (dedicated ML vs traditional, and LLM
+synthesis vs template), both favouring the dedicated/structured approach on the
+decision-relevant dimensions. *Connect to: Humans vs. LLMs (IJF 2024); code-as-action
+(Wang et al. 2024).*
 
 ---
 

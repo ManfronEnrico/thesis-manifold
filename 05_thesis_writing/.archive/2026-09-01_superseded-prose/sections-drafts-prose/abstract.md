@@ -1,10 +1,3 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
-     Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
-     This file is a PLANNING surface: bullets, structure, status and provenance.
-     Do not paste prose back in -- two live copies is the drift this removes.
-     Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
-
 # Abstract
 > CBS requirement: max 1 standard page (≤2,275 characters including spaces)
 > Counts toward total page limit AND character count
@@ -16,6 +9,7 @@
 ---
 
 ## Purpose
+The abstract summarises the entire thesis in one page. CBS examiners read it first — it must communicate problem, method, findings, and contribution clearly.
 
 ---
 
