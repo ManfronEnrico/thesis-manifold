@@ -103,3 +103,16 @@ graph-engine/
 # Thesis snapshots: the .docx copies are large binaries git cannot diff.
 # The extracted .md files ARE tracked -- they are the diffable record.
 05_thesis_writing/docx-exported-snapshots/*/thesis_full.docx
+
+# Trained models: regenerable artefacts, not source.
+# `train_and_persist.py` rebuilds every one in ~30s from the feature matrices
+# and cv_params.json, so committing them buys nothing and costs a lot: the
+# LightGBM/Ridge .joblib files are opaque binaries git rewrites wholesale on
+# every re-persist (RTD alone is 10.3 MB), and a re-persist happens whenever
+# tuning or selection changes. Same argument that keeps thesis_full.docx out.
+#
+# The metadata JSONs ARE tracked -- they are small, diffable, and record which
+# model was served with which features, train boundary and q90, which is the
+# provenance the thesis needs.
+04_thesis_results/srq1/models/*_model.json
+04_thesis_results/srq1/models/*_model.joblib
