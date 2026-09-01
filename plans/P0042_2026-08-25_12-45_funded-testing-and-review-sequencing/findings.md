@@ -90,3 +90,77 @@ cannot see. `measure_e2b_cost.py` exists specifically to measure it.
 **Do not commit a D/E repeat count before running it.** Assuming D is as cheap as
 C would repeat, in a more expensive place, exactly the estimate-vs-billed error
 F1 documents.
+
+## F7. E2B sandbox cost MEASURED — negligible, and not the D/E cost driver (2026-09-01)
+
+`measure_e2b_cost.py` run against E2B's **default base image** (no template):
+
+```
+[1] sandbox created in   0.69s
+[2] code executed in     0.99s
+[4] sandbox killed in    0.21s
+BILLABLE WALL CLOCK:     1.88s for one sandbox lifecycle
+```
+
+Converted at E2B's published per-second rates (vCPU $0.000014/s + RAM
+$0.0000045/GiB/s):
+
+| Sandbox | Rate/s | 1.88s lifecycle | held 120s | held 600s (max) |
+|---|---:|---:|---:|---:|
+| base 2vCPU/1GiB | $0.0000325 | $0.00006 | $0.0040 | $0.0196 |
+| prometheus 4GiB | $0.0000740 | $0.00014 | $0.0090 | $0.0445 |
+
+**Even the worst case — a 4GiB template sandbox left idle for the full 600s
+timeout — costs under 4.5 cents per run.** Against `A_plain` at $0.4277 and
+`B_data` at $0.2664, E2B is not a cost driver. It is noise.
+
+**Conclusion for gate 1:** E2B does not constrain the D/E repeat count. Choose it
+to match the B/C core block (3 brands x 10 reps) for comparability, and budget
+D/E on **LLM tokens**, which is where the money actually is. This supersedes F6's
+caution — the number now exists.
+
+## F8. The default sandbox is missing every library Prometheus needs (2026-09-01)
+
+The probe's availability check, which is the more consequential half of the run:
+
+```
+pandas 2.2.3          <- present
+MISSING pyodbc        <- warehouse driver
+MISSING sqlalchemy
+MISSING statsmodels
+MISSING xgboost
+MISSING prophet
+```
+
+Only `pandas` and `numpy` exist in the base image. **`pyodbc` absent means the RU
+warehouse is unreachable from a default sandbox** — a warehouse query would fail
+*inside* the sandbox rather than at connection time, which is the hard-to-diagnose
+failure mode F27 warned about.
+
+**Implication:** `PROMETHEUS_TEMPLATE_ID` (or an equivalent custom template) is
+**required** for `D_prometheus` if D is to query the warehouse. F29's correction
+(that `AsyncSandbox.create(None, ...)` is legal and the template is optional) is
+true about the *API* but not about *capability* — the call succeeds and yields a
+sandbox that cannot do the work.
+
+The template build cost (apt-get + five pip layers on a 4GiB box) is a one-off and
+still unmeasured. It is the remaining E2B unknown, not per-run cost.
+
+## F9. `E_prometheus_model` requires no sandbox at all — E is not D-minus-tokens
+
+Corrects a loose phrasing from this session's discussion. `forecast_demand` runs
+**in-process**, not in the sandbox (P0040 F27's table states this explicitly):
+
+| Scenario | Needs E2B? | Why |
+|---|---|---|
+| `D_prometheus` | **yes** | code-as-action *is* sandbox execution |
+| `E_prometheus_model` | **no** | the tool executes in-process |
+
+So E's saving over D is **not** a shorter sandbox lifetime — it is the absence of
+a sandbox plus the collapse in reasoning tokens (C spent 20 reasoning tokens
+against B's 5,634, a 280x drop). E should mirror that.
+
+**Watch for this during B4:** if `E_prometheus_model` creates a sandbox anyway,
+the engine is provisioning one per conversation regardless of whether the tool
+path uses it. That would be a finding about the engine's architecture, and it
+should be logged rather than optimised away.
