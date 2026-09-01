@@ -1,12 +1,16 @@
-# SRQ1 operational profiling (CSD brand×chain; tuned configs)
+# SRQ1 operational profiling (CSD brand×month; tuned configs)
 
-Peak RAM (tracemalloc, Python-object allocations) and wall-clock per model. Supports the ≤8 GB sequential-execution constraint. ARIMA is per-series (univariate); tabular models train on the full matrix in one fit.
+Peak **process RSS** and wall-clock per model, each measured in isolation. Supports the ≤8 GB sequential-execution constraint. ARIMA is per-series (univariate); tabular models train on the full matrix in one fit.
 
-| Model | fit (s) | predict (ms) | peak RAM fit (MB) | peak RAM predict (MB) | n_train | n_features |
-|---|---|---|---|---|---|---|
-| Ridge | 0.075 | 2.8 | 5.5 | 0.15 | 2470 | 13 |
-| LightGBM | 2.039 | 15.9 | 8.0 | 0.09 | 2470 | 13 |
-| XGBoost | 0.968 | 9.3 | 0.1 | 0.06 | 2470 | 13 |
-| ARIMA(per-series) | 0.085 | 7.0 | 0.3 | 0.08 | 26 | 1 |
+Environment: 8 logical cores, 17.0 GB system RAM, XGBoost `n_jobs=-1`. Native buffers scale with core count, so these figures are machine-dependent and the core count is part of the result.
 
-All models fit comfortably within the ≤8 GB budget (peak RAM in the tens-of-MB range). Note tracemalloc captures Python-level allocations; native library buffers (LightGBM/XGBoost C++) are additional but small at this data scale.
+| Model | fit (s) | predict (ms) | peak RSS fit (MB) | peak RSS predict (MB) | tracemalloc fit (MB) | model size (MB) | n_train | n_features |
+|---|---|---|---|---|---|---|---|---|
+| Ridge | 0.102 | 2.6 | 5.4 | 0.02 | 5.5 | 0.0 | 2470 | 13 |
+| LightGBM | 3.011 | 27.2 | 36.8 | 0.1 | 23.0 | 7.64 | 2470 | 13 |
+| XGBoost | 2.187 | 12.0 | 26.6 | 0.51 | 0.1 | 3.7 | 2470 | 13 |
+| ARIMA(per-series) | 0.075 | 5.9 | 2.2 | 0.11 | 0.3 | nan | 26 | 1 |
+
+**Reading the two memory columns.** RSS is what the operating system charges the process and is the figure the 8 GB budget is denominated in. tracemalloc counts Python-object allocations only. The gap between them is native (C/C++) allocation: LightGBM and XGBoost build their ensembles outside the Python heap, so tracemalloc is structurally blind to the dominant term for exactly the two models that allocate most. An earlier version of this table reported tracemalloc alone and put XGBoost at 0.1 MB -- below Ridge, and impossible for a 926-tree depth-7 ensemble. That figure was not small, it was unmeasured. Both columns are kept so the correction is auditable rather than silent.
+
+Model size on disk is a third, independent witness, measured by serialisation rather than by either profiler, and so shares neither one's blind spot.
