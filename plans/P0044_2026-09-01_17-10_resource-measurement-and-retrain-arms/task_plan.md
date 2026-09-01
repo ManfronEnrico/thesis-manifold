@@ -136,6 +136,26 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
       spending API budget on blocks 1-3** -- afterwards, switching invalidates
       the runs.
 
+- [x] **22. Test whether frozen params drift as data moves away (F31).** DONE --
+      inconclusive over 7 months. Report as a limitation, not as a result.
+
+- [ ] **23. Re-check Ch6's model-training prose against the new artefact (F32).**
+      Notes written into `sections-drafts/ch6-model-benchmark.md`. SRQ4 is NOT
+      affected -- all runs to date are CSD, RTD was never exercised.
+
+- [ ] **24. Drop scenario F; build scenario G only (F33).** F ("pre-trained
+      served") duplicates C. G changes ONE variable against C: the model is
+      refit on data through the query month instead of loaded pre-trained.
+      C -> G isolates freshness.
+      Engineering, not API spend, is the cost: G needs a warehouse connection
+      inside the sandbox, re-derivation of the pinned `peak_months`, and a
+      redefinition of the test-split guard (which currently refuses any month
+      outside the fixed test window -- a per-query refit moves that boundary).
+
+- [ ] **25. Prune orphaned model files in `train_and_persist.py` (F30).**
+      XGBoost writes `.json`, LightGBM/Ridge `.joblib`; the writer leaves the
+      previous file when a category's format changes.
+
 - [ ] **15. Log RSS inside the sandbox per run**, so the arms produce a real
       occupancy number against the 8 GB budget rather than an assertion.
 

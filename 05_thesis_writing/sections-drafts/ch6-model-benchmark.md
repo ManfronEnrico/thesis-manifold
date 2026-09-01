@@ -400,3 +400,74 @@
 - ~~Which metric the ≤15% benchmark refers to.~~ **Closed 2026-08-25**: the benchmark is
 - **Whether ARIMA should be order-searched.** The fixed SARIMAX(1,1,1) is a floor for
 - **Whether the ensemble scenario runs**, which determines whether §6.6's combination
+
+---
+
+## OPEN: MODEL-TRAINING PROSE MUST BE RE-CHECKED (P0044, 2026-09-01)
+
+The served artefact changed on 2026-09-01. Every claim in this chapter about
+*which model is served* and *what it costs* was written against the previous
+configuration and needs verifying against the current one.
+
+### What changed and why
+
+- **Hyperparameters.** `train_and_persist.py` now reads `cv_params.json`
+  (100 trials, 4-fold expanding-window CV, dual objective) instead of
+  `tuned_params.json` (30 trials, ONE validation split, wMAPE only). The CV
+  script was written specifically to fix the older design and its output had
+  been consumed by nothing for two weeks (P0044 F27).
+- **Selection was biased.** `best_model_for()` ranked candidates on
+  `test_wmape` -- the held-out test set -- so the served model was chosen using
+  the data this chapter then reports it against. Now selects on `cv_score`
+  (expanding-window validation), so test is genuinely held out (F29).
+- **RTD flipped: XGBoost -> LightGBM.** The other three categories keep XGBoost.
+
+### Checks required in this chapter
+
+| # | Check | Status |
+|---|---|---|
+| 1 | Any sentence naming the served model per category -- RTD is now LightGBM | TODO |
+| 2 | The profiling table in §6.5 -- regenerated 2026-09-01, and the memory column now measures **process RSS**, not tracemalloc | TODO |
+| 3 | The `fig4_ram_budget` figure -- already flagged stale; now also wrong on the RAM instrument | TODO |
+| 4 | Any statement that the served config is "tuned" -- must say tuned **how** (30-trial vs CV), since both files exist | TODO |
+| 5 | Selection-on-test: if the chapter describes the selection protocol, it must describe the CORRECTED one, and the bias should be disclosed as a fixed defect | TODO |
+
+**The CV tables themselves are unaffected** -- they derive from `cv_metrics.csv`,
+which did not change. Only claims about the *served artefact* need revisiting.
+
+### Already correct -- do not "fix"
+
+Line ~269 reports RTD LightGBM 27.9% vs XGBoost 28.0% in CV, and line ~358
+already records RTD's selection as **"flips"** across seeds. The chapter had
+identified RTD as the unstable category before the change; the flip is
+consistent with what it already says.
+
+### Memory instrument correction (F1)
+
+The previous profiling table used `tracemalloc`, which sees only Python-level
+allocations and reported **XGBoost at 0.1 MB** -- less than Ridge, and below the
+3.7 MB the same model pickles to. LightGBM and XGBoost allocate in C++. Measured
+by process RSS in isolated subprocesses:
+
+| model | tracemalloc | **RSS** | pickled |
+|---|---|---|---|
+| Ridge | 5.5 MB | 5.4 MB | 0.0 MB |
+| LightGBM | 23.0 MB | **36.8 MB** | 7.64 MB |
+| XGBoost | **0.1 MB** | **26.6 MB** | 3.70 MB |
+| ARIMA | 0.3 MB | 2.2 MB | n/a |
+
+Any prose quoting the old figures, or claiming models fit in "tens of MB on
+Python allocations", must be rewritten. The constraint claim survives easily:
+36.8 MB is ~0.9% of the measured 4 GB sandbox.
+
+### On-demand retraining (F28, F31) -- if this chapter or Ch9 discusses it
+
+- refit on stored params: **2.93 s, 35.0 MB**
+- re-tune, 100 trials x 4-fold CV, single cutoff: **417 s** -- **142x**
+- Do **not** claim re-tuning is less accurate. Retracted (F21): varying only the
+  Optuna seed on identical data moves test wMAPE by 3.97pp.
+- 7-month parameter drift: **inconclusive** (F31). Mean gap -0.04pp; the
+  +0.414 pp/month slope is carried by two opposite outliers on seven points and
+  must not be cited.
+- Defensible design: refit per query, re-tune on a schedule. State that the
+  cadence was not empirically optimised.

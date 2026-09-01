@@ -1026,3 +1026,91 @@ empirically optimised.
 
 **Do not cite the +0.414 pp/month slope.** It is an artefact of two outliers on
 seven points.
+
+## F32 — RTD staleness: no SRQ4 result is affected. Ch6 already documented the flip.
+
+Brian asked this be noted. Checked all four SRQ4 run files:
+
+| file | rows | categories |
+|---|---|---|
+| `runs.csv` | 6 | CSD only |
+| `run_2026-08-19_dkk-confound/runs.csv` | 18 | CSD only |
+| `run_2026-08-19_scenarioA_units/runs.csv` | 3 | CSD only |
+| `run_2026-08-19_scenarioA_cocacola/runs.csv` | 6 | CSD only |
+
+**Every SRQ4 run to date is CSD.** RTD's served model was never exercised, so
+nothing in SRQ4 is invalidated by the flip. My earlier flag was over-cautious.
+
+Ch6 is also already correct on this. Line 269 reports RTD LightGBM 27.9% against
+XGBoost 28.0% in CV, and line 358 records RTD's selection as **"flips"** across
+seeds. The chapter had already identified RTD as the unstable category; the
+selection change is consistent with what it says rather than contradicting it.
+
+**Still needs checking (Brian: "all of the model training prose must be checked
+either way"):** Ch6's numbers were written against the OLD served configuration.
+The CV tables themselves are unaffected -- they come from `cv_metrics.csv`, which
+did not change -- but any sentence asserting *which model is served* for a
+category, and the profiling table reproduced in §6.5, now describe a different
+artefact. Task 23.
+
+## F33 — can Prometheus refit in-sandbox? Not without work, and the reason is architectural
+
+Brian: *"are you recommending to re-fit for scenario C and E every time, because
+it is inexpensive? Is that even possible for the prometheus sandbox?"*
+
+**No -- and C/E cannot refit as currently built.** `forecast_demand()`
+(`forecast_tool.py:337`) does not train. It:
+
+1. loads a **pre-persisted** model via `_load(category)`
+2. reads the **pre-computed** feature matrix parquet
+3. selects the requested held-out row and predicts
+
+There is no fitting anywhere in the call path. Scenarios C and E consume this
+tool, so "refit every time" is not a configuration change -- it is a different
+tool with a different contract.
+
+Three obstacles, in increasing severity:
+
+1. **No warehouse connection in the tool path.** The tool reads a local parquet.
+   An on-demand refit needs `aggregate_brand_month_from_db(category, conn, ...)`,
+   which needs RU warehouse credentials *inside the sandbox*. The template has
+   `pyodbc` (F22), so this is possible, but it is new plumbing.
+2. **The feature matrix is pre-computed, and its derived parameters are pinned
+   into it** (F17: `peak_months` is empirical). Refitting from fresh data means
+   re-deriving those, which is the silent-divergence risk F18 warns about.
+3. **The test-split guard would have to be rethought.** The tool deliberately
+   refuses any month outside the test split, because "the model was trained
+   through the validation period, so a forecast for an earlier month is recall,
+   not prediction". A model refit on data *through last month* has a different
+   train boundary per call, so this guard -- which is what makes the evaluation
+   honest -- would need redefining per request.
+
+Point 3 is the one that matters for the thesis. It is not an engineering detail:
+the current design's integrity rests on a fixed train/test boundary, and
+per-query refit makes that boundary move.
+
+### Recommendation: keep C and E as they are; make refit a SEPARATE scenario
+
+Do **not** convert C/E to refit-on-every-call. Three reasons:
+
+- It would change the meaning of the arms mid-experiment. C is defined as
+  "the same LLM given a dedicated forecasting tool", and the P0042 design is
+  frozen around that. Redefining C invalidates the comparison with B.
+- The evaluation's honesty depends on the fixed test boundary (point 3).
+- It would conflate two variables -- dedicated model, and refit freshness --
+  in one arm, which is exactly the confound the ladder design exists to avoid.
+
+**Scenario G (refit) should be an ADDITIONAL rung**, changing one variable
+against C: same tool, same data, same prompts, but the model is refit on data
+through the query month rather than loaded pre-trained. Then C -> G isolates the
+value of freshness, which is the question Brian actually wants answered.
+
+**Scenario F is unnecessary.** F was defined as "pre-trained served", which is
+what C already is. Adding it would duplicate an existing arm. The retrain
+comparison needs one new arm, not two.
+
+### Cost, now that the arms are one rather than two
+
+G at n=3, matching the A-floor logic: ~3 runs at roughly B-like token cost, plus
+2.93 s of refit each. Well under $5. The engineering, not the API spend, is the
+real cost -- points 1-3 above.
