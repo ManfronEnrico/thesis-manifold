@@ -587,3 +587,56 @@ Two consequences:
   sandbox work is 4 GB. Ch1 should not claim 8 GB for the sandbox without
   reconciling this -- refit at ~37 MB is comfortable either way, but the stated
   budget must match the provisioned one.
+
+## F23 — 8 GB vs 4 GB: these are two different budgets, and conflating them would be a new error
+
+Brian: *"then lets change everything to that template number, which was supported
+by the actual template that came with the production level copy of prometheus."*
+
+Before doing a global replace: the two figures do **not** describe the same thing,
+and the 8 GB claim is load-bearing in 30 files including the RQs, the gap analysis
+and the project overview.
+
+| | figure | what it bounds | evidence |
+|---|---|---|---|
+| **Thesis deployment budget** | ≤ 8 GB | the SME cloud instance hosting the forecasting substrate | asserted from the SME-cost argument; motivated by Ng (2017) |
+| **Prometheus E2B sandbox** | **4096 MB** | one code-execution sandbox in the production engine | **measured** (`GET /templates`, F22) |
+
+The 8 GB figure is the *deployment* envelope for the whole system. The 4 GB figure
+is what Manifold actually provisions for a *single code-execution sandbox*. A
+sandbox is one component inside a deployment, so 4 GB does not replace 8 GB --
+it sits inside it.
+
+**Why a global replace would be wrong.** It would rewrite the SME cloud-budget
+argument (Ch1 §1.1, the delimitation, G1, the RQs) into a claim about E2B sandbox
+provisioning, which is not what those passages argue and not what Ng (2017)
+supports. It would also make the thesis assert a number for *its own artefact's*
+deployment on the basis of *someone else's* sandbox configuration.
+
+**Why the finding still matters.** Comment [20] is right that the 8 GB was being
+justified with a wrong mechanism (hosting an LLM locally). The measured 4096 MB
+is the first *hard, verifiable* RAM number in the whole project, and it is the
+figure that actually constrains any code the agent runs -- including an
+on-demand refit.
+
+### Recommendation (needs Brian's call)
+
+Keep both, and say which is which:
+
+1. **≤ 4 GB — measured, binding on sandbox execution.** Manifold's own template,
+   `fxe7gzkqjupdhbx4uvpr`, 4096 MB. Use this wherever the claim is about what the
+   *agent* can execute: the refit arm, code-as-action, Ch5's architecture, Ch6's
+   operational profiling. This is the number that has evidence.
+2. **≤ 8 GB — the SME deployment envelope.** Keep in Ch1/Ch2/gap analysis where
+   the argument is about SME cloud economics, but restate it as a *design
+   assumption* rather than an empirical constraint, and drop the
+   GPU-instance/LLM-hosting justification comment [20] correctly rejects.
+
+Net effect on the results: none. Serving is 36.8 MB and refit ~37 MB, which is
+~1% of 4 GB. The claim gets *stronger* under the tighter, measured bound --
+which is the better rhetorical position anyway: "fits in a measured 4 GB
+production sandbox" beats "fits in an assumed 8 GB budget".
+
+**Do not global-replace until Brian confirms.** The alternative reading -- that
+he wants the whole thesis re-anchored on 4 GB, retiring the SME-budget argument
+entirely -- is also coherent, and is his call, not mine.

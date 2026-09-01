@@ -10,7 +10,7 @@ model. Both choices are load-bearing:
   version of this script reported XGBoost at 0.1 MB peak -- less than Ridge,
   and impossible for a 926-tree depth-7 ensemble. That number was not small;
   it was unmeasured. RSS is what the OS actually charges the process, which is
-  what an 8 GB budget is denominated in.
+  what the sandbox budget is denominated in.
 * one subprocess per model, because RSS never returns to baseline in-process:
   allocators retain freed pages, so a sequential in-process loop attributes
   earlier models' retained memory to later ones. A fresh interpreter gives each
@@ -24,7 +24,10 @@ Threads matter for the same reason: XGBoost runs n_jobs=-1, so per-thread
 native buffers scale with core count. The core count is recorded with the
 results or the numbers are not reproducible on another machine.
 
-Supports the thesis's ≤8 GB operational constraint claim (Ch6 §6.4) and SRQ4.
+Supports the operational constraint claim (Ch6 §6.4) and SRQ4. The binding
+figure is the MEASURED 4096 MB of Manifold's Prometheus E2B template
+(fxe7gzkqjupdhbx4uvpr), not the thesis's assumed 8 GB SME deployment envelope --
+those are different budgets (P0044 F23).
 Measures, per model, tracemalloc peak memory and wall-clock for fit and predict
 on a representative dataset (CSD brand×month). Tabular models
 use the tuned configs; ARIMA is profiled on a single representative brand series.
@@ -268,7 +271,8 @@ def _write_report(df):
     # published table carried a stale label naming a grain that no longer exists.
     lines = ["# SRQ1 operational profiling (CSD brand×month; tuned configs)", "",
              "Peak **process RSS** and wall-clock per model, each measured in isolation. "
-             "Supports the ≤8 GB sequential-execution constraint. ARIMA is per-series "
+             "Supports the ≤4 GB sequential-execution constraint (the measured Prometheus "
+             "sandbox template). ARIMA is per-series "
              "(univariate); tabular models train on the full matrix in one fit.", "",
              f"Environment: {n_cores} logical cores, {total_gb:.1f} GB system RAM, "
              f"XGBoost `n_jobs=-1`. Native buffers scale with core count, so these "
@@ -281,7 +285,7 @@ def _write_report(df):
                      f"{x['model_size_MB']} | {int(x['n_train'])} | {int(x['n_features'])} |")
     lines += ["",
               "**Reading the two memory columns.** RSS is what the operating system charges "
-              "the process and is the figure the 8 GB budget is denominated in. tracemalloc "
+              "the process and is the figure the sandbox budget is denominated in. tracemalloc "
               "counts Python-object allocations only. The gap between them is native "
               "(C/C++) allocation: LightGBM and XGBoost build their ensembles outside the "
               "Python heap, so tracemalloc is structurally blind to the dominant term for "
