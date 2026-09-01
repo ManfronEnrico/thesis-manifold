@@ -1,9 +1,9 @@
 ---
 pid: P0042
 created: 2026-08-25 12:45:00
-updated: 2026-08-25 12:45:00
+updated: 2026-09-01 00:00:00
 status: focus
-focus_detail: "Sequencing plan for the funded phase. Two workstreams that must not block each other: (A) NotebookLM review rounds, run in the browser, no API budget; (B) the remaining SRQ4 scenario runs in a cloud session. IMPORTANT: the A/B/C ladder is ALREADY DELIVERED (2026-08-19, $4.92) -- C beat B on every run of both brands. Funding unblocks D_prometheus/E_prometheus_model plus the optional scale-up, which externally replicate an existing result rather than producing the first one. This plan does NOT duplicate P0039/P0040 task tables -- it orders them and states the go/no-go gates."
+focus_detail: "Sequencing plan for the funded phase. Two workstreams that must not block each other: (A) NotebookLM review rounds, run in the browser, no API budget; (B) the remaining SRQ4 scenario runs. IMPORTANT: the A/B/C ladder is ALREADY DELIVERED (2026-08-19, $4.92). 2026-09-01: gate 1 discharged for the A/B/C half -- sampling design frozen in 2026-09-01_DOC-srq4-sampling-design.md at 111 runs / ~$40 realistic, allocated inversely to per-run cost (A n=3, B/C n=10 stratified, C-only cross-category). Gate 1 for D/E remains OPEN pending measure_e2b_cost.py. This plan does NOT duplicate P0039/P0040 task tables -- it orders them and states the go/no-go gates."
 ---
 
 # P0042 — Funded testing and review sequencing
@@ -136,9 +136,27 @@ because **a scope difference between the two ladders weakens the B→C / D→E c
 that B5 exists to make**. Commit the choice either way, in writing, first.
 
 **Gate 2 — cost is already measured, so use the real figures.** A/B/C cost $4.92 for 18
-runs; E2B is ~$0.0001/run (F38). These are measurements, not estimates. The optional
-scale-up is ~$35. Decide the D/E repeat count against these numbers rather than
-re-deriving them.
+runs. These are measurements, not estimates. Decide the D/E repeat count against these
+numbers rather than re-deriving them.
+
+> **Revised 2026-09-01.** Two corrections to this gate:
+>
+> 1. **The billed/estimate multiplier is scenario-specific** (findings F1). Web
+>    search is billed on `A_plain` only and the Code Interpreter container on
+>    `B_data` only, so `C_model` carries no surcharge. Applying the observed
+>    4.47x uniformly overstates C's cost by ~2 orders of magnitude. Measured
+>    per-run: **A $0.4277 / B $0.2664 / C $0.0068** (F2).
+> 2. **The "~$0.0001/run" E2B figure above is not a measurement** — F6.
+>    `measure_e2b_cost.py` has not been run. `D_prometheus` executes code in a
+>    sandbox billed on *runtime*, which the harness cannot see. **Run it before
+>    committing any D/E repeat count**, or gate 2 repeats the estimate-vs-billed
+>    error it exists to prevent.
+
+**The A/B/C half of the design is now frozen** — see
+`2026-09-01_DOC-srq4-sampling-design.md`. 111 runs, $11.06 estimated, ~$40
+realistic, against Brian's ~$50 ceiling. Allocation is inversely proportional to
+per-run cost (A costs ~63x C), so repeats concentrate on the contested B->C
+increment rather than spreading evenly across arms.
 
 **Gate 3 — decide before B5 what a disagreement means.** If D→E contradicts B→C in
 direction, that is a finding and must be reported as one. Write that commitment down now,
@@ -210,13 +228,18 @@ measured 3–4 MB — P0040 t21.
 | 2 | Apply S1–S10 + A1 findings to Ch3/Ch4 as one edit | A | 1 | pending |
 | 3 | Run A2 improvement rounds, section by section | A | — | pending |
 | 4 | Consolidate every `corpus gap` into one download decision | A | 3 | pending |
-| 5 | Freeze the D/E scope in writing (**gate 1**) | B | — | pending |
+| 5 | Freeze the D/E scope in writing (**gate 1**) | B | 16 | **partial** — A/B/C half frozen 2026-09-01 (`2026-09-01_DOC-srq4-sampling-design.md`); D/E half blocked on task 16 |
+| 16 | Run `measure_e2b_cost.py` — measure E2B sandbox cost before any D/E spend | B | — | pending |
+| 17 | Run block 1 (A floor, 6 runs, ~$11) | B | 5 | pending |
+| 18 | Run block 2 (B vs C core, 60 runs, ~$28) — **the CI block** | B | 5 | pending |
+| 19 | Run block 3 (C breadth, 45 runs, ~$0.50) | B | 5 | pending |
+| 20 | Write the sampling-allocation rationale into Ch3 + Ch9 limitations | A | 5 | pending |
 | 6 | B1: get the Prometheus engine running locally | B | — | pending |
 | 7 | B2: run + log `D_prometheus` | B | 5, 6 | pending |
 | 8 | B3–B4: port `forecast_demand`; run `E_prometheus_model` | B | 6 | pending |
 | 9 | B5: check D→E agrees with B→C; measure engine RAM | B | 7, 8 | pending |
 | 10 | B6: write the SRQ4 results section | B | 9 | pending |
-| 15 | *(optional)* P0039 scale-up + Coca Cola A_plain + C_model re-run | B | 9 | pending |
+| 15 | ~~*(optional)* P0039 scale-up + Coca Cola A_plain + C_model re-run~~ | B | — | **superseded** by tasks 17–19, which fold all three into the frozen design |
 | 11 | Rewrite Ch7/Ch8 against real results | A | 10 | pending |
 | 12 | Run A3 chapter reviews for Ch7/Ch8/Ch9/Ch10 | A | 11 | pending |
 | 13 | Regenerate `fig4_ram_budget` | B | — | pending |
@@ -226,6 +249,8 @@ measured 3–4 MB — P0040 t21.
 
 ## Related
 
+- `2026-09-01_DOC-srq4-sampling-design.md` — **the frozen sampling design** (gate 1, A/B/C half)
+- `findings.md` — F1 (scenario-specific cost multiplier), F2 (measured per-run cost), F6 (E2B unmeasured)
 - `plans/P0039_2026-08-19_01-45_srq4-system-a-vs-b/` — SRQ4 A/B/C task detail
 - `plans/P0040_2026-08-20_prometheus-scenarios-d-e/` — Prometheus D/E task detail + findings F1–F67
 - `05_thesis_writing/notebookLM/00-REVIEW-METHOD-and-improvement-questions.md` — A2 input
