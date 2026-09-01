@@ -133,7 +133,7 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
 
 ### Phase 5 — validate the claims the arms rest on (free; no API cost)
 
-- [ ] **16. Test refit-not-retune rather than asserting it (F9).** Walk forward:
+- [x] **16. Test refit-not-retune rather than asserting it (F9).** Walk forward:
       refit on stored params through month t, compare against a full Optuna
       re-tune at t, across several months. If accuracy tracks, the cheap
       architecture is validated; if it drifts, on-demand retraining needs
@@ -141,17 +141,17 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
       Brian's doubt is well founded -- cv_params.json shows num_leaves moving
       120 -> 21 between two metrics on the same data.
 
-- [ ] **17. Measure the cost of a full Optuna re-tune** (time + RSS, same
+- [x] **17. Measure the cost of a full Optuna re-tune** (time + RSS, same
       instrument). Optuna is fully automatic (F14), so this needs no human. It
       may rule per-query re-tuning out with a number, which is what makes
       refit-not-retune defensible instead of merely convenient.
 
-- [ ] **18. Time the full preprocessing chain, not just the fit (F13).** The 3 s
+- [x] **18. Time the full preprocessing chain, not just the fit (F13).** The 3 s
       fit is the cheap tail of load -> aggregate -> calendar-fill -> engineer ->
       split. On-demand refit pays the whole chain. This is the real feasibility
       question, more than RAM.
 
-- [ ] **19. Cost the two on-demand designs against each other**: preprocessing
+- [x] **19. Cost the two on-demand designs against each other**: preprocessing
       shipped as a pinned callable artefact vs. code-in-context for the agent to
       re-derive. The second risks a silently different feature matrix -- a
       correctness risk, not just a cost one.

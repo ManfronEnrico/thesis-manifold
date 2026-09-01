@@ -285,3 +285,210 @@ templates registered against the E2B account, before committing to any arm that
 needs the scientific stack in-sandbox. If it is genuinely absent, the fallback
 in P0040 F29 stands: build from the engine's Dockerfile, or run against a local
 snapshot instead.
+
+---
+
+## F16 — the download worry dissolves: the agent never needs the 38 GB raw extract
+
+Brian: *"just having access to the warehouse via a live connection /= having it
+available to insert engineered features, for which the agent would need to
+download the dataset (perhaps I am wrong here), and that process took
+significant time."*
+
+Measured:
+
+| Artefact | Size |
+|---|---|
+| `_00_raw/` (full scanner extract) | **38 GB** |
+| step-1 aggregate, CSD (brand × month) | **0.81 MB** on disk |
+| CSD engineered feature matrix (h3) | **1.08 MB** on disk, 2.12 MB in memory |
+| shape | 4,370 rows x 51 cols, 95 brands x 46 periods |
+
+The aggregation is a **~47,000x reduction**, and it happens *inside the
+warehouse query*, not on the client. `engineer_features.py:95`
+`aggregate_brand_month_from_db(category, conn, target_market)` pulls
+facts x dim_product x dim_period x dim_market and returns the data already
+aggregated to (brand, period_year, period_month). What crosses the wire is
+~1 MB, not 38 GB.
+
+So the premise behind the worry -- that the agent must download the dataset --
+does not hold for this pipeline. Aggregation is pushed down to SQL. Measured
+client-side load of the aggregate is **0.066 s / 17 MB RSS**.
+
+**This significantly de-risks the on-demand refit.** The chain is not
+38 GB -> features; it is `SELECT ... GROUP BY` -> 1 MB -> features -> 3 s fit.
+
+## F17 — but the remaining chain is NOT just the fit, and one step is a real obstacle
+
+The full sequence is seven steps, not two. Steps 0-1 log separately; 2-6 run
+inside the orchestrator:
+
+| Step | What it does | On-demand? |
+|---|---|---|
+| 0 validate cache | one-off, 23.7 s (first build only) | not needed (DB path) |
+| 1 load + aggregate | **5.25 s**, 4,209 rows out | pushed to SQL |
+| 2 build calendar | reindex to full brand x month grid, fill gaps | deterministic, cheap |
+| 3 filter series | drop series failing coverage rules | deterministic, cheap |
+| **4 engineer features** | lags, rolling, calendar, promo_intensity, zero-runs | deterministic, cheap |
+| 5 apply split | train/val/test by date cutoff | deterministic, cheap |
+| 6 save outputs | write parquet + manifest | trivial |
+
+Steps 2-6 are pure deterministic transforms over a ~1 MB frame. Nothing here is
+expensive. Total on-demand cost is dominated by the SQL round-trip plus the ~3 s
+fit (F11), not by data movement.
+
+**The obstacle is not cost, it is step 3 (`derive_params` / filtering).**
+`engineer_features(...)` takes `peak_months` as a **required keyword-only
+argument**, and `peak_months` is *derived from the data* by an earlier EDA step
+(the archived `pre_csd_1.5_eda.py` computed `HOLIDAY_MONTHS` as months at or
+above the 75th percentile of sales). Several pipeline parameters are empirical,
+not constants.
+
+That is the genuine reproducibility risk, and it is sharper than context bloat:
+an agent re-deriving these parameters from a *different* data window can compute
+*different* peak months, and then silently produce a differently-featured matrix
+that is not comparable to the trained model's feature space. This is a
+correctness failure that no error message announces.
+
+## F18 — critical evaluation: guidelines-not-code is the WORSE of the two options
+
+Brian: *"we could simply send instructions / guidelines to the AI agent in those
+scenarios, with information regarding the dataset qualities, EDA steps taken in
+the past, features engineered in each, and the AI agent would then re-produce the
+steps with less upfront context bloat, compared to sending all code snippets as
+they are."*
+
+The instinct (reduce context) is right; the conclusion does not follow, because
+it optimises the cheap axis and sacrifices the expensive one.
+
+**Context is not the binding constraint.** `engineer_features.py` is ~800 lines;
+the transform itself is a few dozen. At current pricing that is cents per call
+against A_plain at $0.4277/run. Trading correctness for a context saving of that
+size is a bad exchange.
+
+**Guidelines make divergence undetectable.** If the agent is *told* "we used lags
+1,2,3,4,8,13 and rolling windows 4 and 13, and a binary peak-month flag", it will
+produce *a* feature matrix. Whether it produces *the same* matrix -- same column
+order, same NaN handling, same `min_periods` on the rolling windows, same
+zero-run definition, same peak months -- is unverifiable without comparing
+against the reference implementation, which is the very thing the guidelines were
+supposed to avoid shipping. And the model being served expects exactly the
+reference feature space. A mismatch does not raise; it silently degrades
+predictions, which is the failure mode hardest to detect in an LLM pipeline and
+the one most damaging to a thesis about *reliability and traceability*.
+
+**It also contradicts SRQ2.** The thesis argues for a structured tool interface
+that preserves reliability and traceability precisely *because* free-form LLM
+code generation does not. Having the agent re-derive feature engineering from
+prose is the code-as-action baseline (Scenario B), which the thesis positions as
+the weaker design. Adopting it for the retrain arm would argue against the
+thesis's own claim.
+
+### Recommendation
+
+**Ship preprocessing as a pinned callable artefact, not as prose or as code.**
+The sandbox image already carries the scientific stack; add the preprocessing
+module to it, and expose one entry point:
+
+```
+build_feature_matrix(category, as_of_date) -> DataFrame
+```
+
+The agent calls it. It does not reimplement it. Properties this buys:
+
+- **byte-identical features** to those the model was trained on, by construction
+- **near-zero context**: one function signature instead of prose or 800 lines
+- **traceable**: the call appears in the tool trace like any other, which is
+  exactly what SRQ2 asks for
+- **derived params are pinned**, not re-derived, so F17's silent-divergence risk
+  disappears
+
+This is the same argument the thesis already makes for `forecast_demand`: the
+value of a structured tool is that the agent cannot get it subtly wrong. The
+retrain arm should use a structured tool for preprocessing for the identical
+reason -- and that consistency is a point in the thesis's favour rather than an
+awkward exception.
+
+**What the arms then actually compare** is a cleaner question than "can the agent
+rebuild the pipeline":
+
+- **F (pre-trained served)**: model trained offline, served. ~27-37 MB, ~0 s.
+- **G (on-demand refit)**: `build_feature_matrix(as_of)` then refit on stored
+  params. ~1 MB over the wire, ~3 s fit, ~37 MB peak.
+
+That is a real architectural comparison on freshness vs. latency, which is what
+Brian wanted to test, and it no longer depends on the agent reproducing
+undocumented empirical parameters.
+
+---
+
+## F19 — MEASURED (task 16): refit-not-retune holds on accuracy, for a reason neither of us predicted
+
+Walk-forward on CSD, 5 monthly cutoffs, LightGBM, wMAPE on held-out next month.
+"refit" = stored tuned params; "retune" = fresh Optuna (30 TPE trials) at each
+cutoff. `04_thesis_results/srq1/refit_vs_retune.csv`.
+
+| cutoff | refit wMAPE | retune wMAPE | delta | retuned num_leaves |
+|---|---|---|---|---|
+| 2026-02 | 14.26% | 14.82% | **-0.56pp** | 35 |
+| 2026-03 | 15.58% | 10.95% | +4.63pp | 16 |
+| 2026-04 | 13.49% | 11.44% | +2.05pp | 93 |
+| 2026-05 | 11.69% | 14.49% | **-2.80pp** | 74 |
+| 2026-06 | 12.57% | 14.49% | **-1.92pp** | 128 |
+| **mean** | **13.52%** | **13.24%** | **+0.28pp** | stored = 63 |
+
+**Refit costs 0.28pp of wMAPE on average and 12x less time (7.0s vs 84.4s).**
+
+But the mean conceals the real finding, and the real finding is the stronger
+one: **re-tuning wins in only 2 of 5 cutoffs and LOSES in 3**, twice by more
+than 1.9pp. If re-tuning were reliably better, the sign would be consistent.
+It is not.
+
+### Why: the hyperparameters are unstable, and that is the argument FOR refit
+
+Re-tuned `num_leaves` across five consecutive months: **16, 35, 74, 93, 128** --
+an 8x spread on essentially the same data, one month apart. The stored value
+(63) sits mid-range.
+
+Brian's doubt in F9 was therefore **correct on the premise and inverted on the
+conclusion**. Tuned params are *not* stable -- confirmed, and more starkly than
+cv_params.json suggested. But instability is not evidence that you must re-tune
+constantly; it is evidence that the tuning objective is **noisy at this sample
+size** (~3,100 rows, 46 months, one month of inner validation). Optuna is
+faithfully fitting that noise, then carrying it into the test month. A stored
+parameter set, chosen once over the full history, is *more* robust than a fresh
+search over a short, noisy validation window.
+
+This is a known effect (over-tuning on small validation sets) and it means the
+cheap architecture is also the better-behaved one here. That is a real Ch6
+finding, not a convenience.
+
+### Caveats to state, not bury
+
+- One category (CSD), one model (LightGBM), five cutoffs, 30 trials. Enough to
+  refute "refit is clearly worse"; not enough to claim "refit is better". The
+  honest claim is **equivalent within noise, at 12x lower cost**.
+- 30 trials is far below the production tuning budget. A larger budget with a
+  proper inner CV would likely stabilise the re-tune arm. That would *raise* the
+  cost ratio well past 12x, which strengthens the same conclusion.
+- The inner validation is a single month. This is the weakest part of the design
+  and the most likely source of the noise diagnosed above.
+
+**Verdict: the thesis may state refit-not-retune as a measured design choice**,
+with the 12x cost ratio and the +0.28pp accuracy cost, and should report the
+sign inconsistency and the num_leaves spread as the evidence. It must NOT claim
+refit is more accurate.
+
+## F20 — MEASURED (task 17): a re-tune costs ~12x a refit, and that is a floor
+
+30 TPE trials = **16.9s median** per cutoff vs **1.06s** for a refit (the 2.65s
+first refit is import/JIT warm-up, discounted).
+
+Extrapolating to a realistic budget: 200 trials at the same per-trial cost is
+~110s of pure tuning per query, against ~1s for a refit -- roughly **100x**.
+Per-query re-tuning is therefore infeasible in an interactive agent regardless
+of the accuracy question, which is exactly the number needed to rule the
+alternative out rather than ignore it (F14).
+
+Optuna needs no human (TPE, `n_trials`), so this is a cost argument, not an
+automation one.
