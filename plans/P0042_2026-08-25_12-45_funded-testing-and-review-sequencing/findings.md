@@ -164,3 +164,57 @@ against B's 5,634, a 280x drop). E should mirror that.
 the engine is provisioning one per conversation regardless of whether the tool
 path uses it. That would be a finding about the engine's architecture, and it
 should be logged rather than optimised away.
+
+## F10 — VERIFIED in the engine source: sandbox creation is lazy, inside the tool (2026-09-01)
+
+Brian challenged F9's claim that `E_prometheus_model` needs no sandbox, on the
+understanding that the Graph Engine launches an E2B sandbox regardless of the job.
+**Checked against the engine source rather than reasoned from the B/C analogy.**
+
+Only **two** call sites create a sandbox in the whole engine (everything else is
+inside `.venv`):
+
+| File | Line | Reachable? |
+|---|---|---|
+| `data_agents/tools/code_executor.py` | 123 | **yes** — the live path |
+| `data_agents/utils/sandbox_management.py` | 32 | **no** — `get_sandbox()` has zero callers in `data_agents/`; dead code |
+
+`code_executor.py:97-126` is the whole mechanism:
+
+```python
+code_interpreter = None
+code_interpreter_id = ctx.deps.state.get("code_interpreter_id")
+if code_interpreter_id:
+    code_interpreter = await AsyncSandbox.connect(code_interpreter_id)   # reuse
+if not code_interpreter:
+    code_interpreter = await AsyncSandbox.create(template, ..., timeout=600)  # create
+    ctx.deps.state["code_interpreter_id"] = code_interpreter.sandbox_id
+execution = await code_interpreter.run_code(code)
+```
+
+**Creation happens inside the `execute_code` tool body, on first use.** There is no
+sandbox provisioning at agent start, at graph construction, or in any session-setup path.
+No sandbox exists until the agent decides to call `execute_code`.
+
+**Conclusion: F9 stands, but for a sharper reason than it gave.** It is not that "E is
+like C so it needs no sandbox" — it is that *the engine only ever creates a sandbox
+inside the code-execution tool*. Therefore:
+
+- **`D_prometheus`** calls `execute_code` -> sandbox created -> billed.
+- **`E_prometheus_model`** routes to `forecast_demand` -> `execute_code` never fires ->
+  **no sandbox, zero E2B cost**.
+
+**But the conditional is real and must be measured, not assumed.** E's E2B cost is zero
+*if and only if the agent actually routes to the tool rather than writing code*. Nothing
+in the engine forces that choice — it is the LLM's, exactly as `args_match_request` exists
+to check in the A/B/C harness. A partial route (tool call *and* some exploratory code)
+creates a sandbox and is a legitimate finding about tool adoption, not a failure.
+
+**Action for B4:** log `code_interpreter_id` presence per E run. Its absence across all
+runs is the evidence that E is sandbox-free; its presence quantifies how often the agent
+reaches for code anyway. Either outcome is reportable.
+
+**Note on the 600s timeout:** `timeout=600` is a *ceiling*, not a hold. The sandbox is
+reused across a conversation via `ctx.deps.state`, so per-D-run cost tracks conversation
+wall-clock up to 600s — which at the measured rates (F7) is at most $0.0196–$0.0445 even
+in the pathological case.
