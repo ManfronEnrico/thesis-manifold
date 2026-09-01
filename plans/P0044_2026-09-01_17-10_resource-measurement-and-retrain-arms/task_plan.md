@@ -156,7 +156,7 @@ framing** -- otherwise the new promise sits on the same sand as the old one.
       re-derive. The second risks a silently different feature matrix -- a
       correctness risk, not just a cost one.
 
-- [ ] **20. Confirm the E2B template exists before planning on it (F15).**
+- [x] **20. Confirm the E2B template exists before planning on it (F15).**
       `prometheus.yaml` was NOT found in the engine tree this session. Locate it,
       or list templates registered to the E2B account. Free. Do this before any
       arm that needs the scientific stack in-sandbox.

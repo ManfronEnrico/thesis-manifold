@@ -492,3 +492,98 @@ alternative out rather than ignore it (F14).
 
 Optuna needs no human (TPE, `n_trials`), so this is a cost argument, not an
 automation one.
+
+---
+
+## F21 — CORRECTION to F19: "re-tuning is worse" was overstated. Brian caught the flaw.
+
+Brian: *"What did you ACTUALLY do to 're-tune'? Did you do an updated data pull?
+Because if you didnt, should the re-tuning with the same data, same seed, not
+yield the exact same results?"*
+
+The seed WAS fixed (42) at every cutoff, so the search is deterministic given
+identical data. The data was not identical -- `tr = d[d.date <= cut]` grows a
+month per cutoff and the inner validation month changes -- so the params moving
+was not an RNG artefact. That part of F19 stands.
+
+**But the question exposed a missing control**, and running it changes the
+conclusion. Holding the cutoff FIXED (identical data) and varying only the
+Optuna seed:
+
+| optuna seed | num_leaves | n_est | val wMAPE | **test wMAPE** |
+|---|---|---|---|---|
+| 0 | 99 | 986 | 7.53% | **13.11%** |
+| 1 | 110 | 1099 | 8.03% | **16.64%** |
+| 7 | 116 | 729 | 8.71% | **17.08%** |
+| 42 | 74 | 676 | 8.13% | **14.49%** |
+| 2024 | 114 | 724 | 7.95% | **13.43%** |
+
+Same data, same everything except the search seed: **num_leaves spans 74-116 and
+test wMAPE spans 3.97pp**. Determinism confirmed separately (seed 42 twice ->
+identical).
+
+**So the across-month spread in F19 was NOT mostly "the data changed".** Search
+randomness alone reproduces most of it. The correct diagnosis is that the tuning
+objective cannot resolve these hyperparameters at this sample size (95-row
+validation month), so the "re-tune" arm's per-cutoff results were substantially
+seed noise -- and F19's headline that re-tuning "loses in 3 of 5 months" was
+reading that noise as signal.
+
+**Retracted:** "re-tuning is worse on accuracy". Not supported. A 5-cutoff
+comparison where a single seed change moves test wMAPE by 3.97pp cannot separate
+arms differing by 0.28pp on average.
+
+**Still supported, and unaffected:**
+- The **12x cost ratio** (7.0s vs 84.4s) is a timing measurement, not a noise-
+  sensitive accuracy claim. ~100x at a 200-trial budget.
+- Refit is **not detectably worse** than re-tune. The honest statement is that
+  the two are indistinguishable at this sample size, and refit is 12x cheaper.
+- Validation-set noise is real and is itself a Ch6-worthy caveat about tuning on
+  short monthly panels.
+
+**What the thesis may say:** refit-on-stored-params is chosen because re-tuning
+costs 12-100x for no *measurable* accuracy gain at this data scale. NOT because
+re-tuning is worse.
+
+**What would settle it properly** (not required for the arms, but honest to
+list): multi-seed runs per cutoff, a multi-month inner validation window, and
+more cutoffs. That is a bigger SRQ1 study; the cost argument alone is already
+sufficient to justify the architecture.
+
+## F22 — RESOLVED (task 20): the template exists and carries the full stack
+
+Brian: *"those credentials are saved into .env are they not? What is blocking
+you?"* Nothing was. F15's "not found" came from a shallow filesystem search for
+`prometheus.yaml`; the right check is to ask the E2B API what is registered.
+
+`.env` carries `thesis_manifold_e2b_sandbox` (44 chars). Querying
+`GET https://api.e2b.dev/templates` with it returns:
+
+```
+templateID=fxe7gzkqjupdhbx4uvpr  aliases=['prometheus']  cpu=1  mem=4096MB  public=False
+```
+
+Probed live (`AsyncSandbox.create("prometheus")`, 2.42s create, 37.95s total):
+
+| package | status |
+|---|---|
+| pandas 2.2.3, numpy 2.3.5, sklearn 1.6.1 | OK |
+| **pyodbc** | **OK** |
+| sqlalchemy 2.0.52 | OK |
+| statsmodels 0.14.6 | OK |
+| xgboost 3.4.1, lightgbm 4.7.0 | OK |
+| prophet 1.4.0 | OK |
+| **optuna 4.9.0** | OK |
+
+Every package the default base image lacked (P0042 F8) is present. **F15 is
+withdrawn** and the retrain arms are unblocked: no template build, no fallback to
+a local snapshot.
+
+Two consequences:
+- `PROMETHEUS_TEMPLATE_ID=prometheus` should be added to `.env`; it is currently
+  absent, so any code path reading it falls back to the default base image --
+  precisely the image that lacks pyodbc.
+- The template is **4096 MB**, not 8 GB. The RAM ceiling actually in force for
+  sandbox work is 4 GB. Ch1 should not claim 8 GB for the sandbox without
+  reconciling this -- refit at ~37 MB is comfortable either way, but the stated
+  budget must match the provisioned one.
