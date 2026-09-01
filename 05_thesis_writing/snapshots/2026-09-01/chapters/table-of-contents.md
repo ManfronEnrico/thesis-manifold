@@ -1,0 +1,349 @@
+# Table of Contents
+
+# Table of Contents
+
+Table of Contents	2
+
+Table of Figures	9
+
+Table of Tables	9
+
+Abstract	9
+
+Purpose	9
+
+Bullet skeleton (to be converted to prose after empirical results available)	9
+
+Problem	9
+
+Method	9
+
+Key findings (TBD - fill after empirical results)	10
+
+Contribution	10
+
+Scope note	10
+
+Character count target	10
+
+Outstanding	10
+
+Chapter 1 - Introduction	11
+
+1.1 Background and Motivation	11
+
+1.2 Research Problem	14
+
+1.3 Research Questions	14
+
+1.4 Delimitation	17
+
+1.5 Thesis Structure	19
+
+References cited in this chapter	20
+
+Chapter 2 - Literature Review: Forecast-Informed Agentic Decision-Support under Constraints	21
+
+2.0 Chapter Introduction	21
+
+2.1 Forecasting as Predictive Substrate in FMCG	23
+
+2.2 Lightweight ML under Computational and Deployment Constraints	25
+
+2.3 From Descriptive BI to Forecast-Informed Decision-Support	26
+
+2.4 LLM Agents and Tool-Mediated Reasoning	29
+
+2.5 Reliability, Traceability, Uncertainty, and Evaluation of Agentic Outputs	31
+
+2.6 Production-Oriented Agentic Systems and Integration Readiness	33
+
+2.7 Research Gap: Forecast-Informed Extension of Non-Predictive Agentic Systems	35
+
+2.8 Design Science Research	37
+
+2.9 Chapter Summary and Transition to Methodology	38
+
+References cited in this chapter	39
+
+Chapter 3 - Methodology	41
+
+3.1 Philosophy of Science	41
+
+3.2 Research Design: Design Science Research	43
+
+3.3 Research Strategy	44
+
+3.4 Data Sources	46
+
+3.5 Analytical Approach	46
+
+3.6 Validity and Reliability	48
+
+3.7 Limitations	49
+
+References cited in this chapter	51
+
+Chapter 4 - Data Assessment	51
+
+4.1 Overview and Data Strategy	51
+
+4.2 The Nielsen Scanner Panel (core forecasting input)	52
+
+4.2.1 Source, Type, and Access	52
+
+4.2.2 Schema and Structure	52
+
+4.2.3 Overall Suitability	54
+
+4.2.4 Precise Suitability	55
+
+4.2.5 Forecasting Suitability	55
+
+4.3 CSD - Worked Category (EDA and Parameters)	56
+
+4.3.1 Scope and Filtering	56
+
+4.3.2 Stationarity	56
+
+4.3.3 Seasonality	57
+
+4.3.4 Autocorrelation and Lag Structure	57
+
+4.3.5 Parameter Summary	58
+
+4.3.6 Per-category EDA - danskvand, energidrikke, RTD	58
+
+4.4 Feature Engineering (forecasting substrate)	59
+
+4.5 Train, Validation, and Test Split	61
+
+4.6 Key Risks and Mitigations	62
+
+References cited in this chapter	63
+
+Chapter 5 - Predictive-Extension Architecture	63
+
+5.1 Design Objectives and Constraints	63
+
+5.2 Architectural Overview	64
+
+5.3 The Forecasting Substrate (SRQ1)	65
+
+5.4 The Structured Forecast-Tool Interface (SRQ2)	66
+
+5.5 The Bounded Tool-Using Agentic Layer	67
+
+5.6 Integration Readiness (SRQ3)	67
+
+5.7 The Code-as-Action Baseline (SRQ4)	68
+
+5.8 Memory, Cost, and Latency Budget	68
+
+5.9 Technology Choices and Justification	69
+
+5.10 Summary	70
+
+References cited in this chapter	71
+
+Chapter 6 - Model Benchmark & Selection	72
+
+6.1 Rationale for model selection	72
+
+6.2 Model descriptions	72
+
+6.2.0 Simple benchmarks	72
+
+6.2.1 ARIMA	73
+
+6.2.2 Prophet (Meta)	73
+
+6.2.3 LightGBM	73
+
+6.2.4 XGBoost	73
+
+6.2.5 Ridge regression	73
+
+6.3 Experimental setup	74
+
+6.3.1 Grain and data split	74
+
+6.3.2 Feature engineering	74
+
+6.3.3 Execution protocol	74
+
+6.3.4 Validation scheme	74
+
+6.3.5 Hyperparameter optimisation	75
+
+6.4 Evaluation metrics	75
+
+6.4.1 Why WMAPE is the primary metric	76
+
+6.4.2 Scorability, and what is excluded from what	76
+
+6.4.3 Targets	77
+
+6.4.4 Demand-pattern categorisation	77
+
+6.5 Results	78
+
+6.5.1 Tabular-model benchmark	78
+
+6.5.2 The simple benchmarks, and where they win	79
+
+6.5.3 Scaled error (MASE)	80
+
+6.5.4 Pooled versus per-category training	81
+
+6.5.5 Results by demand pattern	82
+
+6.5.6 Operational profile	82
+
+6.5.7 Prediction-interval calibration	83
+
+6.5.8 Remaining gaps	84
+
+6.5.9 Forecast stability across seeds	84
+
+6.6 Model selection decision	85
+
+6.7 Connection to SRQs	86
+
+Outstanding decisions	86
+
+Chapter 7 - Context-Aware Decision Synthesis	87
+
+7.1 The synthesis problem	87
+
+7.2 Architecture of the Synthesis Agent	87
+
+7.2.1 Inputs to the Synthesis Agent	87
+
+7.2.2 Synthesis pipeline	88
+
+7.2.3 Deterministic synthesis results	88
+
+7.3 LLM prompt design	89
+
+7.3.1 System prompt (Synthesis Agent)	89
+
+7.3.2 User prompt structure	90
+
+7.4 Design principles applied	90
+
+7.5 Computational footprint	90
+
+7.6 Evaluation (SRQ2 operationalisation)	91
+
+7.6.1 Result	91
+
+7.7 Connection to SRQs	91
+
+Outstanding decisions	92
+
+Chapter 8 - Experimental Evaluation	92
+
+8.1 Evaluation overview	92
+
+8.2 Level 1 - ML accuracy evaluation (SRQ1)	92
+
+8.2.1 Benchmark design	92
+
+8.2.2 Metrics	93
+
+8.2.3 Baselines	93
+
+8.2.5 Results (Level 1 - SRQ1)	93
+
+8.3 Level 2 - Recommendation quality evaluation (SRQ2)	93
+
+8.3.1 LLM-as-Judge protocol	93
+
+8.3.2 Calibration check	94
+
+8.3.3 SRQ4 baseline - code-as-action agent (Prometheus), not a human analyst	94
+
+8.3.4 Results (Level 2 - SRQ2)	94
+
+8.4 Level 3 - Agent behaviour evaluation (SRQ1 + SRQ2)	95
+
+8.4.1 RAM profiling	95
+
+8.4.2 Latency profiling	95
+
+8.4.3 Failure mode analysis	96
+
+8.4.4 Results (Level 3 - operational)	96
+
+8.5 Threats to validity	96
+
+8.6 Connection to SRQs	97
+
+Outstanding decisions	97
+
+Chapter 9 - Discussion	98
+
+9.1 Interpretation of findings	98
+
+9.1.1 SRQ1: Forecasting accuracy under constraints	98
+
+9.1.2 SRQ2: Synthesis quality	98
+
+9.1.3 SRQ3: Integration readiness	99
+
+9.1.4 SRQ4: dedicated ML vs the LLM/traditional baselines	99
+
+9.2 Theoretical contributions	100
+
+9.2.1 Design knowledge contribution (DSR framing)	100
+
+9.2.2 Design principles (generalised from thesis findings)	100
+
+9.2.2 Novelty claims	101
+
+9.2.3 Contribution to IS literature	101
+
+9.3 Practical implications	102
+
+9.4 Limitations	102
+
+9.5 Future research directions	102
+
+Outstanding decisions	102
+
+Chapter 10 - Conclusion	103
+
+10.1 Summary of contributions	103
+
+10.2 Theoretical contribution (design principles)	104
+
+10.3 Practical recommendations for Manifold AI	104
+
+10.4 Limitations recap	105
+
+10.5 Future research	105
+
+10.6 Final statement	105
+
+Outstanding decisions	106
+
+Reference List	106
+
+AI Use Declaration	111
+
+Draft text (bullet form - NOT prose yet)	111
+
+Heading	111
+
+What AI was used for (declaration bullets)	111
+
+What AI was NOT used for	111
+
+Transparency note	112
+
+Placement options (confirm with supervisor)	112
+
+Outstanding	112
+
+Appendix	114

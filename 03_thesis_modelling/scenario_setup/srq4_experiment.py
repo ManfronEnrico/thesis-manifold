@@ -70,12 +70,20 @@ for _env in (ROOT / ".env", REPO_ROOT / ".env"):
 # The .env stores these under their OpenAI dashboard labels rather than the
 # names the SDK and the costs endpoint expect. Map them, without clobbering a
 # value already exported in the real environment.
-#   thesis_manifold_prompts       -> OPENAI_API_KEY   (project key: inference)
-#   thesis_manifold_prompts_admin -> OPENAI_ADMIN_KEY (admin key: billing)
+#   thesis_manifold_openai_prompts       -> OPENAI_API_KEY   (project key: inference)
+#   thesis_manifold_openai_prompts_admin -> OPENAI_ADMIN_KEY (admin key: billing)
 # The two scopes are disjoint -- the project key returns 403 on
 # /v1/organization/costs and the admin key returns 403 on /v1/models -- so both
 # are required: one to run the experiment, one to price it.
-for _src, _dst in (("thesis_manifold_prompts", "OPENAI_API_KEY"),
+#
+# Both spellings are accepted, `openai` included and omitted. The dashboard
+# label carries the `openai` segment; an earlier version of this mapping did
+# not, so every run required OPENAI_API_KEY to be exported by hand and the
+# .env was silently ignored. Listing both spellings is cheaper than a rename
+# that would break whichever copy of the file is not edited. First match wins.
+for _src, _dst in (("thesis_manifold_openai_prompts", "OPENAI_API_KEY"),
+                   ("thesis_manifold_prompts", "OPENAI_API_KEY"),
+                   ("thesis_manifold_openai_prompts_admin", "OPENAI_ADMIN_KEY"),
                    ("thesis_manifold_prompts_admin", "OPENAI_ADMIN_KEY")):
     if os.environ.get(_src) and not os.environ.get(_dst):
         os.environ[_dst] = os.environ[_src]

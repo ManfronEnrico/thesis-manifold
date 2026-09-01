@@ -99,3 +99,7 @@ build/
 graph-engine/
 *.jsonl
 **\settings.local.json
+
+# Thesis snapshots: the .docx copies are large binaries git cannot diff.
+# The extracted .md files ARE tracked -- they are the diffable record.
+05_thesis_writing/snapshots/*/thesis_full.docx
