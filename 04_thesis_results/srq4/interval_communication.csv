@@ -1,0 +1,4 @@
+run,scenario,states_interval,interval_faithful,states_confidence,gives_recommendation,score
+A_plain__CSD_COCA_COLA__rep0,A - no firm data,True,False,True,True,3
+A_plain__CSD_COCA_COLA__rep1,A - no firm data,True,False,True,False,2
+A_plain__CSD_COCA_COLA__rep2,A - no firm data,True,False,True,False,2

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 SRQ4 experiment harness — does model availability improve an LLM's forecasts?
 
@@ -35,6 +36,24 @@ Usage:
   python 03_thesis_modelling/scenario_setup/srq4_experiment.py --demo
   python 03_thesis_modelling/scenario_setup/srq4_experiment.py --demo --scenarios A,B
   python 03_thesis_modelling/scenario_setup/srq4_experiment.py --full --repeats 5
+
+RESULT CACHE
+------------
+Runs cost money, so a completed run is treated as a cache entry keyed by
+(prompt schema, category, brand, scenario, repeat).
+
+    default     fill only the gaps. Re-running an identical command sends
+                nothing and costs nothing. This is how a block is extended:
+                ask for 10 repeats when 6 exist, and only 4 are sent.
+    --append    add repeats ALONGSIDE the cached ones, numbered past the
+                highest already stored. Use to deliberately grow n.
+    --refresh   re-run cached cells and replace them. Spends again on work
+                already paid for; use only when a run is suspect.
+
+Only rows carrying the CURRENT prompt schema id count as cache hits. Change any
+prompt string and the id changes, so older rows stop matching automatically and
+answers to different questions are never pooled. A failed run is not a cache
+hit either -- it is retried.
 """
 import argparse, json, os, re, sys, time, warnings
 from pathlib import Path
@@ -94,6 +113,15 @@ import importlib.util
 # instrument and must be inspectable and diffable on their own.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import prompts as P
+
+# Rows written before prompt-schema tracking existed. They were produced by the
+# v2 question (units named, no recommendation request, no output exemplar), so
+# they are NOT poolable with current runs and must not be silently treated as
+# though they were. Tagging them explicitly is what keeps that decision visible
+# in the data rather than resting on someone's memory of when a file was
+# written.
+LEGACY_SCHEMA = "v2-units-no-recommendation"
+
 
 # Scenario C's tool comes from the serving interface. Loaded by explicit path
 # because 03_thesis_modelling/ has no __init__.py, so it is not an importable
@@ -798,7 +826,7 @@ def _select_brands(per_cat=(4, 4, 4, 3), categories=None, brands=None,
 
 def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=None,
              budget_usd=None, categories=None, brands=None, rep_offset=0,
-             dry_run=False, strategy="volume"):
+             dry_run=False, strategy="volume", mode="resume"):
     """Run the experiment and write runs.csv + summary.md.
 
     Checkpoints after every brand: a crash 40 runs in should not cost the
@@ -809,40 +837,74 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
     scenarios = scenarios or SCENARIOS
     pairs = _select_brands(brands_per_cat, categories, brands, strategy)
     t_start = time.time()
-    n_total = len(pairs) * repeats * len(scenarios)
+    schema = P.schema_id()
+    n_req = len(pairs) * repeats * len(scenarios)
+
+    todo, skipped, base = _plan_runs(pairs, scenarios, repeats, rep_offset,
+                                     OUT, schema, mode)
+
     print(f"SRQ4: {len(pairs)} brands x {repeats} repeats x {len(scenarios)} scenarios "
-          f"= {n_total} runs, model={MODEL}")
+          f"= {n_req} requested, model={MODEL}")
     print("      " + ", ".join(f"{c}/{b}" for c, b in pairs))
-    if rep_offset:
-        print(f"      repeat numbering starts at {rep_offset} "
-              "(continuing an earlier run)")
+    print(f"      prompt schema: {schema}")
+    print(f"      cache mode:    {mode}")
+    if mode == "resume" and skipped:
+        print(f"      CACHED:        {skipped} run(s) already complete at this "
+              f"schema -- not re-sent")
+    if mode == "append" and base != rep_offset:
+        print(f"      appending:     repeat numbering starts at {base}")
+    elif rep_offset:
+        print(f"      repeat numbering starts at {rep_offset}")
+    print(f"      TO RUN:        {len(todo)} run(s)")
     if budget_usd:
-        print(f"      budget cap: ${budget_usd:.2f} (estimated spend; stops mid-run)")
+        print(f"      budget cap:    ${budget_usd:.2f} (estimated spend; stops mid-run)")
     print()
+
+    if not todo:
+        print("Nothing to run: every requested cell is already cached at this "
+              "prompt schema. Use --refresh to re-run them, or --append to add "
+              "repeats alongside them.")
+        df = _load_runs(OUT)
+        if len(df):
+            _write_summary(df[df.schema == schema] if "schema" in df.columns else df,
+                           OUT, repeats, pairs, t_start)
+        return df
 
     if dry_run:
         # Per-run estimates from measured 2026-08-19 runs. Rough by design --
         # the point is to catch "this costs 4x what I expected" before spending.
+        # Costed over what will ACTUALLY be sent, so the cache saving is visible.
         est = {"A_plain": 0.4243, "B_data": 0.2664, "C_model": 0.0068}
-        total = sum(est.get(n, 0.2) for n, _ in scenarios) * len(pairs) * repeats
-        print(f"\nDRY RUN -- nothing was sent.")
-        print(f"  {n_total} calls, estimated ${total:.2f} "
+        by_scen = {}
+        for _, _, sysname, _, _ in todo:
+            by_scen[sysname] = by_scen.get(sysname, 0) + 1
+        total = sum(n * est.get(k, 0.2) for k, n in by_scen.items())
+        print("DRY RUN -- nothing was sent.")
+        print(f"  {len(todo)} calls to send, estimated ${total:.2f} "
               f"(from measured per-run costs)")
-        for n, _ in scenarios:
-            print(f"    {n:10s} {len(pairs)*repeats:3d} runs x ${est.get(n,0.2):.4f} "
-                  f"= ${len(pairs)*repeats*est.get(n,0.2):6.2f}")
+        for k, n in sorted(by_scen.items()):
+            print(f"    {k:10s} {n:3d} runs x ${est.get(k, 0.2):.4f} "
+                  f"= ${n * est.get(k, 0.2):6.2f}")
+        if skipped:
+            print(f"  {skipped} cached run(s) skipped -- not re-sent.")
         return None
 
     rows = []
     spent = 0.0
     stopped = False
-    for cat, brand in pairs:
-        _, actual, target = _brand_history(cat, brand)
-        if not actual:
-            print(f"  skip {cat}/{brand}: no held-out actual")
-            continue
-        for sysname, fn in scenarios:
-            for rep in range(rep_offset, rep_offset + repeats):
+    _hist = {}
+    # One flat pass over the planned cells. The plan already excludes anything
+    # cached, so the loop never has to reason about what has been paid for.
+    for cat, brand, sysname, fn, rep in todo:
+        if True:
+            if (cat, brand) not in _hist:
+                _, a, t = _brand_history(cat, brand)
+                _hist[(cat, brand)] = (a, t)
+            actual, target = _hist[(cat, brand)]
+            if not actual:
+                print(f"  skip {cat}/{brand}: no held-out actual")
+                continue
+            if True:
                 try:
                     r = fn(cat, brand)
                 except Exception as e:
@@ -882,6 +944,7 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
                 # one implausible answer would otherwise destroy it (P0038 F72).
                 ape = (abs(fc - actual) / actual * 100) if cls == "ok" else None
                 rows.append(dict(
+                    schema=schema,
                     category=cat, brand=brand, system=sysname, rep=rep,
                     actual=actual, forecast=fc, ape=ape, outcome=cls,
                     latency_s=r.get("latency_s"),
@@ -913,12 +976,130 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
                 break
         if stopped:
             break
-        pd.DataFrame(rows).to_csv(OUT / "runs.csv", index=False)  # checkpoint per brand
+        # Checkpoint as we go: a crash 40 runs in must not cost the completed
+        # runs, and a paid experiment is not worth re-running for want of a flush.
+        if len(rows) % 5 == 0:
+            _merge_runs(rows, OUT)
 
-    df = pd.DataFrame(rows)
-    df.to_csv(OUT / "runs.csv", index=False)
+    # Summarise everything on disk, not just this block: the appendix and the
+    # summary must describe the whole experiment, not the most recent slice.
+    df = _merge_runs(rows, OUT)
     _write_summary(df, OUT, repeats, pairs, t_start)
     return df
+
+
+# ---------------------------------------------------------------------------
+# Result cache: never pay twice for the same run
+# ---------------------------------------------------------------------------
+# Runs are expensive and are executed in blocks across sessions. Three things
+# follow, and all three are handled here rather than left to the operator:
+#
+#   1. A completed run is a CACHE ENTRY. Re-running the same configuration
+#      should cost nothing by default.
+#   2. Whether an entry counts as "the same run" depends on the PROMPT. Answers
+#      to different questions cannot be pooled, so every row records the prompt
+#      schema id and only rows sharing the current id are reusable.
+#   3. Extending an experiment means filling the gap between what exists and
+#      what is now asked for -- not repeating the whole block.
+#
+# The unit of caching is a CELL: (schema, category, brand, scenario, rep).
+
+CACHE_KEYS = ["schema", "category", "brand", "system", "rep"]
+
+
+def _load_runs(OUT):
+    f = OUT / "runs.csv"
+    if not f.is_file():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(f)
+    except Exception:
+        return pd.DataFrame()
+    # Rows written before schema tracking existed are tagged with the schema
+    # that was live when they were produced, rather than being silently treated
+    # as current. Backfilling them as "unknown" would make them look poolable
+    # with runs they cannot be pooled with.
+    if len(df) and "schema" not in df.columns:
+        df["schema"] = LEGACY_SCHEMA
+    return df
+
+
+def _cached_cells(OUT, schema):
+    """Which (category, brand, system, rep) cells already exist at THIS schema."""
+    df = _load_runs(OUT)
+    if not len(df) or "schema" not in df.columns:
+        return set()
+    d = df[df.schema == schema]
+    if not len(d):
+        return set()
+    cols = ["category", "brand", "system", "rep"]
+    if not all(c in d.columns for c in cols):
+        return set()
+    # A failed run is not a usable cache entry: it should be retried, not
+    # counted as done. Only `ok` rows suppress a re-run.
+    if "outcome" in d.columns:
+        d = d[d.outcome == "ok"]
+    return {tuple(r) for r in d[cols].astype(object).values}
+
+
+def _plan_runs(pairs, scenarios, repeats, rep_offset, OUT, schema, mode):
+    """Decide which cells to execute, and report what the cache covers.
+
+    Returns (todo, n_skipped) where todo is a list of (cat, brand, sysname, fn, rep).
+
+    mode:
+      "resume"  -- default. Execute only cells absent from the cache at this
+                   schema. Re-running an identical config sends nothing.
+      "refresh" -- execute every requested cell and replace the cached rows.
+      "append"  -- execute every requested cell at repeat numbers past the
+                   highest already stored, adding to the cache instead of
+                   matching against it.
+    """
+    cached = _cached_cells(OUT, schema) if mode != "refresh" else set()
+
+    base = rep_offset
+    if mode == "append":
+        df = _load_runs(OUT)
+        if len(df) and "rep" in df.columns and "schema" in df.columns:
+            d = df[df.schema == schema]
+            if len(d):
+                base = max(rep_offset, int(d.rep.max()) + 1)
+
+    todo, skipped = [], 0
+    for cat, brand in pairs:
+        for sysname, fn in scenarios:
+            for rep in range(base, base + repeats):
+                if mode == "resume" and (cat, brand, sysname, rep) in cached:
+                    skipped += 1
+                    continue
+                todo.append((cat, brand, sysname, fn, rep))
+    return todo, skipped, base
+
+
+def _merge_runs(new_rows, OUT):
+    """Merge this batch into runs.csv rather than replacing the file.
+
+    Blocks run days apart and repeats are added later, so a writer that replaced
+    the file would destroy results that were already paid for.
+
+    A row is identified by (schema, category, brand, system, rep). A re-run of
+    the same cell REPLACES its row -- retrying a failure should correct it, not
+    duplicate it -- while every other row on disk survives untouched. Rows at a
+    different schema are never touched: they answer a different question and are
+    kept for the record, not for pooling."""
+    new = pd.DataFrame(new_rows)
+    f = OUT / "runs.csv"
+    old = _load_runs(OUT)
+    if len(old) and all(k in old.columns for k in CACHE_KEYS) \
+            and all(k in new.columns for k in CACHE_KEYS):
+        old_idx = pd.MultiIndex.from_frame(old[CACHE_KEYS].astype(str))
+        new_idx = pd.MultiIndex.from_frame(new[CACHE_KEYS].astype(str))
+        old = old[~old_idx.isin(new_idx)]
+        combined = pd.concat([old, new], ignore_index=True)
+    else:
+        combined = pd.concat([old, new], ignore_index=True) if len(old) else new
+    combined.to_csv(f, index=False)
+    return combined
 
 
 def _write_summary(df, OUT, repeats, brands, t_start):
@@ -1039,10 +1220,28 @@ def main():
     ap.add_argument("--categories", nargs="+", default=None,
                     help="restrict to these categories (default: all four)")
     ap.add_argument("--rep-offset", type=int, default=0,
-                    help="start repeat numbering here, to extend an earlier run "
-                         "without overwriting its files")
+                    help="start repeat numbering here, to ADD repeats to an "
+                         "existing run. runs.csv is merged, not replaced, so "
+                         "earlier blocks survive; a cell with the same "
+                         "(category, brand, scenario, rep) is replaced rather "
+                         "than duplicated. Use this to scale up once the real "
+                         "per-run cost is known -- but only if the PROMPT is "
+                         "unchanged, since answers to different questions "
+                         "cannot be pooled.")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the plan and its estimated cost; send nothing")
+    cache = ap.add_mutually_exclusive_group()
+    cache.add_argument("--refresh", action="store_true",
+                       help="re-run cells that are already cached at this prompt "
+                            "schema, replacing their rows. Use when a run is "
+                            "suspect, not to extend one -- it SPENDS again on "
+                            "work already paid for.")
+    cache.add_argument("--append", action="store_true",
+                       help="add these repeats ALONGSIDE the cached ones, "
+                            "numbering them past the highest already stored, "
+                            "rather than treating a matching cell as done. Use "
+                            "to deliberately grow n. Without it (the default), "
+                            "an identical request costs nothing.")
     ap.add_argument("--brand-strategy", choices=["volume", "stratified"],
                     default="volume",
                     help="volume: top-N by units (default). stratified: "
@@ -1086,7 +1285,8 @@ def main():
         run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget,
                  categories=a.categories, brands=a.brands,
                  rep_offset=a.rep_offset, dry_run=a.dry_run,
-                 strategy=a.brand_strategy)
+                 strategy=a.brand_strategy,
+                 mode=("refresh" if a.refresh else "append" if a.append else "resume"))
         return
 
     # Demo: one brand, one repeat, every selected scenario. This is the smoke test --

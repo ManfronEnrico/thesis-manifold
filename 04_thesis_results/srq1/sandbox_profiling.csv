@@ -1,0 +1,4 @@
+template,model,fit_s,peak_fit_RSS_MB,container_limit_mb,pct_of_limit,baseline_rss_mb,cpus,n_train,n_features
+prometheus,Ridge,0.524,1.4,4122.251264,0.034,156.4,1,2470,13
+prometheus,LightGBM,2.092,28.2,4122.251264,0.684,156.4,1,2470,13
+prometheus,XGBoost,1.426,6.5,4122.251264,0.158,156.4,1,2470,13

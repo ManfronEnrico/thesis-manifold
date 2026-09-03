@@ -112,3 +112,191 @@
 - Wang, Y., et al. (2025). ScoreFlow: Mastering LLM agent workflows via score-based preference optimization. *arXiv preprint arXiv:2502.04306*. [PREPRINT]
 - Ye, J., Wang, Y., Huang, Y., Chen, D., Zhang, Q., Moniz, N., Gao, T., Geyer, W., Huang, C., Chen, P.-Y., Chawla, N. V., & Zhang, X. (2024). Justice or prejudice? Quantifying biases in LLM-as-a-judge. *arXiv preprint arXiv:2410.02736*. [PREPRINT, peer-review status uncertain, verify]
 - Zheng, G., Almahri, S., Xu, L., Minaricova, M., & Brintrup, A. (2025). LLMs in supply chain management: Opportunities and a case study. *IFAC-PapersOnLine*, *59*(10), 2951–2956. https://doi.org/10.1016/j.ifacol.2025.09.496
+
+
+---
+
+## OPEN AUDIT NOTES (P0044, 2026-09-03)
+
+> Companion to the Ch3 notes of the same date. Bullets only.
+
+### N9. The Goodwin asymmetry -- Sec 2.3 argues for something SRQ4 does not measure
+
+- Sec 2.3 makes Goodwin et al. (2010) a centrepiece, and correctly: bare prediction
+  intervals **degraded** newsvendor decisions, with correct cost-asymmetry
+  discrimination falling from ~84% (point forecast) to 44% (95% interval).
+- The chapter then draws the right conclusion -- "the interpretive step between the
+  interval and the decision ... is the part that carries the decision value. That step
+  is precisely what an agentic layer is positioned to supply."
+- **But SRQ4 scores APE.** It measures whether the forecast was right, never whether the
+  agent made the interval actionable. The literature review argues for a capability the
+  evaluation is silent on.
+- This is the single largest coherence gap between Ch2 and the experiment design.
+- Options and cost are set out in N10. **Decision pending.**
+
+### N10. Closing the Goodwin gap -- three options
+
+**Option 1 -- scope Goodwin down to motivation (zero cost)**
+- Keep Goodwin as justification for *why the artefact emits a decision-oriented
+  recommendation rather than a bare interval*, and say plainly that whether this improves
+  human decisions was not tested.
+- Add to Sec 3.7 limitations and Ch10 further work.
+- Honest, cheap, and leaves the strongest claim in Ch2 unevidenced.
+
+**Option 2 -- add an interval-actionability dimension to SRQ4 (low cost, no new API spend)**
+- Every scenario-C run already returns `forecast_units` **plus interval and confidence
+  tier** from `forecast_tool.py`; the answer text is already stored per run.
+- So the data needed to score "did the agent USE the interval" is **already being logged**.
+  This can be scored retrospectively on runs already paid for.
+- Deterministic, rule-based checks -- no judge needed (consistent with N5):
+  - does the answer state the interval at all;
+  - is the stated interval numerically faithful to the tool payload (same
+    check `args_match_request` performs for the point forecast);
+  - does the answer name the confidence tier;
+  - does it give a directional recommendation rather than only a number.
+- Yields a 4-part **interval-communication score**, reportable per scenario. A is expected
+  to score near zero (no tool, no interval), which makes it a real ladder result.
+- **This directly evidences the Sec 2.3 claim and the Sec 2.5 ANAH-derived validation
+  principle, and it costs nothing beyond writing the scorer.**
+
+**Option 3 -- human decision experiment (out of scope)**
+- Goodwin's actual design: give planners forecasts under asymmetric costs, measure order
+  quantities. Needs participants, ethics approval (cf. MR-10), and a pilot.
+- Not feasible in the remaining timeline. Name it as further work.
+
+**Recommendation: Option 2, with Option 1's limitation paragraph as backstop.**
+- Option 2 converts a rhetorical claim into a measured one for the price of a scorer,
+  and it strengthens rather than weakens the deterministic-scoring position from N5b.
+- It does NOT claim improved human decisions -- only that the artefact communicates the
+  interval that Goodwin shows a bare number fails to convey. State that boundary explicitly.
+
+### N11. Sec 2.2 -- the 8 GB figure
+
+- "on the order of eight gigabytes in this thesis's deployment setting" -> 4 GB measured.
+- See Ch3 note N3 for the full occurrence list and the reasoning that must be rewritten
+  rather than find-replaced.
+
+### N12. Missing reference
+
+- **Taylor, S. J., & Letham, B. (2018). Forecasting at scale. *The American Statistician*,
+  72(1), 37-45.** Prophet is benchmarked in Ch6 and reported in Appendix A.4, but the
+  source is absent from the Ch2 reference list. Required by NLM audit Section J.
+
+
+---
+
+## GOODWIN GAP -- CLOSED (P0044, 2026-09-03, session 2)
+
+### N22. The Sec 2.3 / SRQ4 asymmetry is now measured
+
+- Built `03_thesis_modelling/scenario_setup/score_interval_communication.py`.
+- **Zero new API spend.** Every scenario-C run already logs the tool payload
+  (`forecast_units`, `interval_90`, `confidence`, `confidence_tier`) and the answer text,
+  so communication is scored **retrospectively** on runs already paid for.
+- **No judge** -- every check is deterministic, consistent with the N5b position.
+
+Four criteria:
+
+| # | Criterion | What it catches |
+|---|-----------|-----------------|
+| 1 | States a range | silence about uncertainty |
+| 2 | **Range matches the tool output** (5% tol) | an invented but plausible interval |
+| 3 | States confidence | a range with no reliability attached |
+| 4 | Gives a recommendation | a number with no decision attached |
+
+- Criterion 2 is the **ANAH principle from Sec 2.5** applied to the interval: a generated
+  statement is assessable only against an explicitly retrieved source. It is the same
+  check `args_match_request` performs for the point forecast.
+- Scenario A cannot satisfy criterion 2 by construction -- no tool, no source. **That is a
+  ladder result, not a bug.**
+
+**First pilot output (scenario A, n=3):** states a range **100%**, matches tool output
+**0%**, states confidence **100%**, gives a recommendation **33%**.
+
+- This is *precisely* Goodwin's failure mode: a confident-sounding range, ungrounded in
+  any model, with no decision attached. Strong material for the discussion.
+
+### N23. What this does and does NOT claim -- state the boundary explicitly
+
+- **Does:** measure whether the artefact *communicated* the interval, and whether what it
+  said was faithful to what the model produced.
+- **Does NOT:** show human decisions improved. That needs Goodwin's own design --
+  participants, asymmetric costs, measured order quantities, ethics approval (cf. MR-10).
+- Both the caption and the generated `.md` state this boundary. **Keep it in the prose.**
+- Ch10 further work: the human decision experiment.
+
+### N24. Consequence for the Sec 2.7 contribution list
+
+- SRQ2's contribution currently reads "traceability treated as an explicit design
+  objective." With N4 (args-match logging) and N22 (interval faithfulness) both
+  implemented and measured, that can be upgraded from *objective* to *evidenced*.
+- This is the strongest available answer to the "designed; evaluation pending" framing
+  that currently marks three of the four contributions.
+
+
+---
+
+## GOODWIN -- SCOPE DECISION PENDING (P0044, 2026-09-03, session 3)
+
+### N34. Confirmed: we do NOT test human decision improvement
+
+- Agreed explicitly with Brian, 2026-09-03. Recording it so it is not re-litigated.
+- **What we measure:** whether the artefact *communicated* the interval, and whether what
+  it stated was faithful to what the model produced.
+- **What we do not measure:** whether that communication improves a human planner's
+  decisions. That requires Goodwin's own design -- participants, asymmetric costs,
+  measured order quantities, ethics approval (cf. NLM finding MR-10).
+- Already stated in: the scorer docstring, the generated `.md`, and the appendix caption.
+- **Must also appear in:** Ch2 sec 2.3 (where Goodwin is introduced), Ch3 sec 3.7 (limitations),
+  and Ch10 (further work). Verify all three when revising.
+
+### N35. The "recommendation" criterion was dropped -- and why that matters for Sec 2.3
+
+- The scorer originally had a fourth criterion, "gives a recommendation". **Removed.**
+- Reason: the shared prompt asks only for a number, a range, and a confidence. It never
+  asks for a recommendation, so scoring one measured our own prompt, not the scenario.
+- **This exposes a live tension in Sec 2.3.** The chapter argues that the interpretive step
+  between the interval and the decision "is precisely what an agentic layer is positioned
+  to supply" -- but the experiment never asks the agent to supply it.
+- **Two coherent resolutions (decide before the paid runs):**
+  1. **Add a recommendation request to the shared question.** All three scenarios get the
+     identical addition, so the single-variable design survives. Goodwin becomes a
+     measured dimension rather than a motivating citation.
+  2. **Scope Goodwin down.** Keep it as justification for *why the artefact carries
+     uncertainty at all*, and state that the decision step was not evaluated.
+- Option 1 is the stronger thesis. Option 2 is honest and free. **Either is defensible;
+  silently keeping the Sec 2.3 rhetoric while measuring neither is not.**
+
+
+---
+
+## GOODWIN -- RESOLVED (P0044, 2026-09-03, session 4)
+
+### N42. Option 1 taken: the experiment now measures the decision step
+
+- **Decided (Brian, 2026-09-03).** The shared question now asks for a recommendation,
+  identically in all three scenarios. See Ch3 note N36.
+- **Sec 2.3 no longer over-claims.** The chapter argues the interpretive step from interval
+  to decision "is precisely what an agentic layer is positioned to supply" -- and the
+  experiment now asks for that step and scores whether it was supplied.
+- Scored deterministically (label match, then recommendation verbs), no judge.
+- **The N34 boundary still holds and must stay in the prose:** we measure what the system
+  *communicated*, never whether human decisions improved.
+
+### N43. New citation required -- Brown et al. (2020)
+
+- The one-shot prompting design needs grounding. **Brown, T. B., et al. (2020). Language
+  models are few-shot learners. *Advances in Neural Information Processing Systems 33*.**
+- Used for: most of the in-context-learning gain arrives with the first example, with
+  diminishing returns after -- which justifies *one* exemplar rather than several.
+- **Not currently in the Ch2 reference list.** Add it, alongside Taylor & Letham (2018)
+  from N12.
+- Where it belongs: Sec 2.4 (LLM agents and tool-mediated reasoning) sits closest, since
+  the prompting method is part of how the agent is instructed.
+
+### N44. Reference-list gaps now standing at two
+
+| Reference | Needed for | Raised in |
+|---|---|---|
+| Taylor & Letham (2018), *The American Statistician*, 72(1), 37-45 | Prophet is benchmarked and reported | N12 |
+| Brown et al. (2020), NeurIPS 33 | one-shot prompting design | N43 |
