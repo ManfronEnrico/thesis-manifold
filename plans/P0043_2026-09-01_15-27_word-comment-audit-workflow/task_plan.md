@@ -1,9 +1,10 @@
 ---
 pid: P0043
 created: 2026-09-01 15:27:00
-updated: 2026-09-01 17:00:00
+updated: 2026-09-05 20:05:00
 status: in_progress
-focus_detail: "SNAPSHOT HANDOVER 2026-09-01 (findings F12-F18): thesis_snapshot.py built, committed, run. Task 1 CLEARED -- real .docx located, 14 comments, commentsExtended.xml present so resolved-status is testable. Tasks 10/11 partial. || Build a Word->Excel comment audit workflow for the shared 114-page stitched thesis .docx. TWO AUTHORS ONLY (Brian + Enrico), no supervisor -- comments are the two of them talking to each other, so the band-3 triage merge and `author`/`owner` split matter more than `resolved`, which co-authors tend to bypass by deleting settled comments (F12). Adopted 2026-09-01: the snapshot contract (F13) -- one dated folder per snapshot capturing prose AND comments in one parse, split on Heading-1 into read-only per-chapter .md, diffed sentence-wise against the WIP sections-drafts/*.md. Extraction is stdlib-only (F5 prototype works); openpyxl is the sole new dependency. Gitignore the snapshot .docx, keep the sha256 in manifest.json. BLOCKER task 1: the OneDrive path to the stitched .docx."
+focus_detail: "THREAD HANDOVER 2026-09-05 (findings F26-F28; the 'Ledger addendum' section at the END of task_plan.md is the spec). WORD PASS IS DONE -- snapshot 2026-09-05_17-23 has 217 comments over 8 chapters, 200 Brian / 17 Guest User (Enrico), 27 replies. Extraction is hardened (styles.xml heading levels, sanity guards, markdown tables). || THE FINDING THIS SESSION (F26): read_docx() parses w15:paraIdParent into parent_by_para then DISCARDS it, keeping only a boolean is_reply. The extract knows THAT a comment is a reply, not WHAT it replies to. So c54/c55 and c56/c57/c58 render as flat siblings when they are conversations, and a thread's CONCLUSION lives in its last message -- a per-comment ledger files the answer separately from the question. ~190 threads, not 217 items. Enrico's 17 are almost all replies (already-delivered answers), so per-comment `owner` would be wrong on arrival. || DECISION: the ledger's unit is the THREAD, keyed by root comment id, replies nested inside. TASK 23 (emit parent_comment_id + thread_id + reply_count) BLOCKS EVERYTHING -- seeding per-comment and re-keying later means re-filing every decision by hand. || TABULAR, settled (F27): adopt the table as a GENERATED VIEW (INDEX.md, task 26 -- per-thread status table with a gist, NO resolution prose), reject it as storage. Ledger stays markdown: must read beside the prose, and threads are dialogue that no cell holds. || F28: w15:done is live after all, contra F12 -- keep `word_resolved` as a field distinct from ledger `status` (stopped arguing != thesis changed). || TASK/FINDING NUMBERS 18-22 and F19-F23 were double-allocated by two parallel sessions; the ledger set was renumbered to 23-28 and F24/F25. || NEXT: task 23, then 24-26, then seed ch6 (48) and ch4 (42) -- 41% of load, results-bearing. NOT ch1: premise-level, blocked on results."
+
 ---
 
 # P0043 — Word comment audit workflow (docx → Excel)
@@ -197,9 +198,14 @@ snapshot instead of the source is how a fourth version appears (F10).
 | 15 | **Split `comments.md` per chapter** into `comments/chN.md`, sharing the slug map so it pairs with `chapters/chN.md` | 11 | **DONE 2026-09-01** (F16) |
 | 16 | Index table per comments file (id · section · opening line) + stable `<a id="cNN">` anchors | 15 | **DONE 2026-09-01** (F16) |
 | 17 | *(added 2026-09-01)* `DO-NOT-EDIT` header on chapter files; **SHA-256 in the manifest** — closes the outstanding items on tasks 10 and 11 | 10, 11 | **DONE 2026-09-01** (F17) |
-| 12 | **Test the heading→filename map.** The ch1/ch10 prefix collision shipped despite F11 explicitly warning about it — care was not enough (F16) | 11 | pending |
+| 12 | **Test the heading→filename map.** The ch1/ch10 prefix collision shipped despite F11 explicitly warning about it — care was not enough (F16) | 11 | **partly covered 2026-09-05** — task 19's duplicate-slug guard now aborts on that exact collision, but there is still no test file |
 | 13 | Decide snapshot retention — every run writes a dated folder, nothing prunes; 20 `.md` each | 10 | pending |
-| 14 | Investigate **Ch6's −1,911-word drift**, the only signal F17 leaves standing | 9 | pending |
+| 14 | ~~Investigate **Ch6's −1,911-word drift**~~ → **investigate `ch3-methodology` at −1,991** instead, the only genuine negative drift row (F23) | 9 | **REFRAMED 2026-09-05** — the Ch6 figure was a parser artifact (F19); ch6 now reads **+709** |
+| 18 | *(added 2026-09-05)* **Resolve heading levels from `word/styles.xml`** (outlineLvl → basedOn → name) instead of hardcoded style names | — | **DONE 2026-09-05** (F19) |
+| 19 | *(added 2026-09-05)* **`_sanity_warnings()`** — abort/warn on a structurally implausible parse; record the resolved style table in the manifest | 18 | **DONE 2026-09-05** (F20) |
+| 20 | *(added 2026-09-05)* **Reconcile the comments into the F18 ledger.** Word pass complete: **217 comments over 8 chapters** at snapshot `2026-09-05_17-23`. Start with **ch6 (48)** and **ch4 (42)** — 41 % of the load, both results-bearing (F23) | 18, 19, 21 | **pending — next** |
+| 21 | *(added 2026-09-05)* **Render `w:tbl` as markdown tables** + cell/row separators in comment anchor text (28 tables, 4 table-anchored comments) | — | **DONE 2026-09-05** (F21) |
+| 22 | *(added 2026-09-05)* Merged cells (`w:gridSpan` padding) are **untested** — confirmed by Brian as unused, and `gridSpan: 0 / vMerge: 0` at 17:23 (F22) | 21 | **deferred — out of scope**, no action unless a merged cell appears |
 
 ~~**Task 1 is the gate.**~~ **Cleared 2026-09-01** — the real reviewed document is
 located, readable and parsed, so no synthetic fixture is needed and task 7 can validate
@@ -247,3 +253,170 @@ folders, `DO-NOT-EDIT` headers) goes beyond what shipped.
 - `05_thesis_writing/notebookLM/` — the *other* review channel, deliberately separate
 - `.claude/rules/repo-tier-structure.md` — why the script goes in `utility_scripts/`, not a thesis tier
 - `plans/P0042_.../` — the review-rounds workstream this tooling serves
+
+---
+
+## Ledger addendum (2026-09-05) — the writable half
+
+**Read F19 and F20 in `findings.md` before touching this section.**
+
+The extraction half of this plan is built and working. What was missing is a place for
+**band 3** (`triage_status`, `owner`, `action_taken`, `commit_ref`) to live: it was
+specified as spreadsheet columns, and when task 4 deferred the spreadsheet nothing inherited
+the job. The snapshot extract cannot hold it — it is regenerated on every run by contract.
+
+**Decision (F20): a writable per-chapter ledger at
+`05_thesis_writing/comment-ledger/chN.md`**, mirroring the existing `comments/chN.md` split.
+Not a centralised hub — see F20 for why the hub was rejected.
+
+### Artifact authority, extended
+
+| Artifact | Job | Hand-edited? |
+|---|---|---|
+| OneDrive `.docx` | prose as submitted; where comments are **written and replied to** | yes, in Word |
+| `docx-exported-snapshots/*/comments/chN.md` | read-only extract of what the comments **say** | **no** — regenerated |
+| `comment-ledger/chN.md` | **what we decided to do about each one** | **yes** — this is the writable surface |
+| `sections-drafts/chN.md` | live working state; bullets, status, provenance | yes |
+
+The ledger is to the comment extract what `sections-drafts/` is to the prose snapshot: the
+mutable sibling of a read-only derivative. Same division-of-authority principle as F10 and
+`.claude/rules/writing-surface-authority.md`.
+
+### Ledger entry format
+
+**Revised 2026-09-05 for threads (F26).** The unit is a *thread*, keyed by its root
+comment id — not a comment. Replies are nested inside the entry, never promoted to siblings.
+
+```markdown
+## T56 — Is NotebookLM use declarable?
+- **status:** OPEN | ACCEPTED | DONE | REJECTED | DEFERRED | NEEDS-ENRICO
+- **owner:** Brian
+- **section:** Literature Review
+- **anchor:** "The search was conducted using Google Scholar and NotebookLM…"
+- **scope:** LOCAL | SECTION | CHAPTER | THESIS-WIDE
+- **related:** T22, T25
+- **word_resolved:** false        <- w15:done, the reviewers' own marker (F28)
+- **thread:**
+  - C56 Brian 09-01: flags the tooling admission as possibly not defensible
+  - C57 Enrico 09-02: same for me, thought NLM was fine since Abid advised it
+  - C58 Brian 09-03: declare it, and specify exactly what it was used for
+- **resolution:**
+- **commit:**
+```
+
+Two fields earn their place beyond band 3:
+
+- **`scope` / `related`** — C18/19/20/22/25 are *one* argument (the RAM premise is unearned)
+  spanning Ch1, Ch3 §3.7, Ch5 §5.1 and Ch10. One decision, four chapters.
+- **`word_resolved`** — distinct from `status` (F28). Word-resolved means *the authors
+  stopped arguing*; ledger `DONE` means *the thesis was changed*. The gap between the two
+  is worth being able to see.
+
+`scope` and `related` are the fields that earn the format. C18/19/20/22/25 are **one
+argument** — the RAM premise is unearned — spanning Ch1, Ch3 §3.7, Ch5 §5.1 and Ch10.
+Resolving them one at a time would produce four inconsistent edits.
+
+### Reconcile contract (non-negotiable)
+
+`--reconcile` **upserts and never destroys**:
+
+| Situation | Behaviour |
+|---|---|
+| thread root in snapshot, not in ledger | append a stub, `status: OPEN` |
+| root in both | leave `status`, `owner`, `resolution`, `commit` **untouched**; refresh only the machine-owned `thread:` block and `word_resolved` |
+| root in ledger, gone from snapshot | flag `GONE (verify)` — **do not delete** |
+| **new reply on an existing thread** | append the reply line to `thread:`; leave `status` alone but mark the entry `↻ new reply since last reconcile` |
+
+The last row is load-bearing: F12 established that the two authors delete settled comments
+rather than resolving them, so a disappearance means "check whether this was handled", not
+"this is done".
+
+### New tasks
+
+> **Renumbered 2026-09-05.** A parallel session allocated tasks 18–22 to the
+> extraction-hardening work. The ledger tasks below were originally numbered 18–21 and are
+> now **23–28**. Findings `F19`/`F20` written in this section were likewise renumbered to
+> **F24/F25**.
+
+| # | Task | Depends on | Status |
+|---|---|---|---|
+| 23 | **Carry threading through the extract.** `read_docx()` already parses `w15:paraIdParent` into `parent_by_para` and then discards it, keeping only `is_reply` as a boolean (F26). Emit `parent_comment_id`, a derived `thread_id` (root comment of the chain) and `reply_count` — all three were specified in band 2 and never implemented. **Blocks everything else here** | 21 | **DONE 2026-09-05** (F30) |
+| 24 | **Render threads as threads** in `comments/chN.md`: one `##` section per *thread*, replies nested beneath the root with author and date, rather than 217 flat sibling sections | 23 | **DONE 2026-09-05** (F30) |
+| 25 | Add `--reconcile` — upsert snapshot **threads** into `comment-ledger/chN.md` per the contract below. Non-destructive; safe to re-run | 23 | **pending — next**; threading now available (F30), and task 29's constraint applies |
+| 26 | `INDEX.md` generator — **a real per-thread status table** (F27), not just counts: thread id, chapter, section, owner, status, replies, one-line gist. Generated from ledger front-matter on every reconcile; carries **no `resolution` prose** | 25 | **DONE 2026-09-05** (F31) |
+| 27 | Seed the ledger from snapshot `2026-09-05_17-23`. Start with **ch6 (48)** and **ch4 (42)** — 41 % of the load and both results-bearing (F23). Link the RAM cluster via `related` | 25 | pending |
+| 28 | Document in `user-docs/integration/`; extend `.claude/rules/writing-surface-authority.md` with the authority table above so the rule covers comments, not only prose | 25, 26 | pending |
+| 29 | ~~Do not build the reconcile contract on Word-resolved status~~ — **WITHDRAWN 2026-09-05** (F35): Brian resolved a test comment and it round-trips correctly; resolve is now the preferred workflow over delete | 25 | **withdrawn** |
+| 30 | *(added 2026-09-05)* **Preserve bold/italic** through the conversion (458 bold + 153 italic runs were being dropped); suppress inside headings and superscripts | 21 | **DONE 2026-09-05** (F32) |
+| 31 | *(added 2026-09-05)* **`--label` / `--slug`** — name a snapshot (`--label "First Complete Audit"` → `2026-09-05_18-04_first-complete-audit`); recorded in `MANIFEST.md` so milestone runs are distinguishable from routine and test runs | — | **DONE 2026-09-05** |
+| 32 | *(added 2026-09-05)* **Key threads on `w14:paraId`, not `w:id`** — `w:id` is a position and is renumbered on every insertion (F33). `para_id` / `thread_para_id` now carried through the extract | 23 | **DONE 2026-09-05** (F33) |
+| 33 | *(added 2026-09-05)* **Build the claim ledger** per F34: `comment-ledger/chN.md`, one entry per thread keyed on root `paraId`, carrying **was / is / should** + status + `related`. Supersedes the F25 schema, which keyed on the unstable `w:id` | 32 | pending — **the next real piece of work** |
+| 34 | *(added 2026-09-05)* `--reconcile`: upsert threads into the ledger; freeze `was` once, refresh `is` every run, mark `DRIFTED` when they diverge, `GONE (verify)` when a thread disappears. **Never infer status from the document** (F29, F12) | 33 | pending |
+| 36 | *(added 2026-09-05)* **Reconcile keys on `resolved`** as the primary handled-signal (F35), with `GONE (verify)` demoted to the anomalous case. Word-resolved ≠ ledger `DONE` — keep both | 33 | pending |
+| 37 | **Terminology convention** — `Term` character style for model names / metrics / domain terms; exporter renders them as `` `code` `` | — | **ADOPTED 2026-09-05** (F37). Style applied to 5 runs so far; the ~200-instance pass is Brian's, in Word |
+| 38 | *(added 2026-09-05)* **Parse Brian's review keyword vocabulary** (VERIFY / PROSE / SOURCE / OUTDATED / …) into typed tags; surface per comment, per thread, and as a **Work type by chapter** matrix in `INDEX.md` | — | **DONE 2026-09-05** (F38) |
+| 39 | *(added 2026-09-05, from Brian's review notes)* **Cross-chapter duplication check.** Insights repeated across chapters with weak handovers. The per-chapter loop **entrenches** this by improving chapters in isolation, so it needs its own pass — **after ch6 + ch4, before the rest are rewritten** around text that may move | 42 | pending — sequencing matters |
+| 40 | *(added 2026-09-05)* Route the ledger by tag: **VERIFY/OUTDATED/INCORRECT** → repo-checkable (Claude); **SOURCE** → NotebookLM/Zotero; **PROSE/ACADEMIC/WATERMARK** → human writing. The split fell out of F38's data | 33, 38 | pending |
+| 41 | *(added 2026-09-05)* **Anchor excerpt raised to 2,000 chars** with head+tail and an explicit elision note — the anchored passage IS the work item for a PROSE/VERIFY thread; 400 chars cut 78 of 268 mid-passage (F39) | — | **DONE 2026-09-05** |
+| 42 | *(added 2026-09-05)* **Chapter working loop** per F40: read `comments/chN.md` beside `chapters/chN.md` → resolve VERIFY/OUTDATED/INCORRECT from the repo → draft PROSE in the same pass → record in ledger → Brian applies + resolves in Word → re-snapshot to confirm `was != is`. **Start with ch6** (48 threads, 39 VERIFY, 23 PROSE, 18 SOURCE) | 33 | pending — the main work |
+| 43 | *(added 2026-09-05)* **De-watermark + humanise pipeline.** Order is draft → `watermarks-remover` → human pass, and must stay in that order: a human rewrite after stripping reintroduces text that must be re-stripped. **The tool is hygiene, not disguise** — it removes provenance marks, not AI voice; the human pass is what ships (F40) | 42 | pending |
+| 44 | *(added 2026-09-05, Brian's design)* **`sections/` — heading tree as nested folders**, one file per leaf section (154 files: 63 leaf-H2 + 70 H3 + preambles/intros). Enables precise cross-snapshot section diffs; `chapters/` unchanged | 41 | **DONE 2026-09-05** (F41) |
+| 45 | *(added 2026-09-05)* **`writing-notes/` enters the revision loop.** 8 files, ~2,900 lines, `applies-to` frontmatter maps them to chapters. Precedence: **repo artefacts > writing-notes > thesis prose** — the notes declare their own staleness | 42 | pending — fold into the chapter loop |
+| 46 | *(added 2026-09-05)* Revisit the F34 ledger's `was`/`is`: Brian wants **agent-readable before/after**, not deterministic comparison (F41). Store them as **snapshot pointers**, not copies of the text | 33, 44 | pending — simplifies task 33 |
+| 47 | **Keyword dictionary committed to the repo** — `05_thesis_writing/writing-notes/review_comment_keywords.md`: Brian's definitions verbatim, measured distribution, the who-resolves-what split, verification precedence, and how the exporter parses tags | 38 | **DONE 2026-09-05** (F46) |
+| 48 | *(added 2026-09-05)* **`comments/sections/` mirror** of `chapters/sections/`, same relative key, cross-linked both ways; 138 of 154 leaves carry comments | 44 | **DONE 2026-09-05** (F43) |
+| 49 | *(added 2026-09-05)* **Verification precedence is a rule** (F44): script code > generated artefacts > writing-notes > thesis prose. A VERIFY resolution must cite the script or artefact, never the note | 45 | pending — governs the chapter loop |
+| 35 | ~~Verify `w14:paraId` survives a non-desktop-Word round-trip~~ | 32 | **CLOSED 2026-09-05** — Brian: work finishes in desktop Word as-is; no round-trip will occur |
+
+### The tabular question, settled (F27)
+
+Brian raised tabular processing again. The framing *markdown vs. table* is the wrong
+question — **a status roll-up and a decision record are two artifacts with two jobs**, and
+forcing one file to do both is why either option feels inadequate:
+
+| Need | Right shape | Written by |
+|---|---|---|
+| "what is left, where, whose" | table — counts, filters, sort | **generated**, never hand-edited |
+| "what did we decide about this thread and why" | prose under a stable key | **hand-written** |
+
+**Adopt the table as a generated view; reject it as the storage format.** `INDEX.md`
+(task 26) becomes a real per-thread status table rather than the "counts" it was originally
+specified as. Because it is derived, it cannot drift and costs nothing to regenerate.
+
+**It must not carry `resolution` text.** The moment a decision's wording lives in two places
+they diverge — the exact failure `writing-surface-authority.md` exists to prevent. Keys,
+status and a one-line gist only.
+
+Why the storage format stays markdown, at 217 comments and not 14:
+
+- The ledger must read **beside the prose**; a spreadsheet is a different application from
+  the one holding the comment and the paragraph.
+- Comment text is long-form and now **dialogue**. A spreadsheet's answer to a thread is one
+  row per message (losing the thread) or a merged mega-cell (losing the rows).
+
+### Sequencing
+
+**Superseded 2026-09-05.** The gate has cleared — the Word pass is done: **217 comments,
+8 chapters, 200 Brian / 17 Enrico, 27 replies** at snapshot `2026-09-05_17-23`.
+
+1. ~~Finish the Word comment pass~~ — **done**.
+2. ~~Re-snapshot~~ — **done** (`2026-09-05_17-23`).
+3. **Task 23 first, and it is not optional.** Threading must reach the extract before
+   anything reconciles. Seeding a per-comment ledger and re-keying it to threads later means
+   re-filing every decision by hand.
+4. Then 24 → 25 → 26, then seed (27) starting with **ch6 (48)** and **ch4 (42)**.
+5. **Resolve thread by thread, chapter by chapter**, working `comments/chN.md` (what was
+   said), `chapters/chN.md` (the prose it was said about) and `comment-ledger/chN.md` (what
+   we decided) side by side.
+
+**Do not start at ch1.** It is the most-commented early chapter but its comments are
+premise-level (the RAM cluster) and depend on decisions the results have not yet settled.
+Ch6 and ch4 are results-bearing and answerable now.
+
+Seeding Ch1 (task 20) before step 1 validates the mechanism only — it is not the audit.
+
+### Deliberately still out of scope
+
+- Writing decisions **back** into the `.docx` as replies. Read-only remains the contract.
+- Inferring priority or sentiment from comment text (already rejected in the column schema
+  above — it would present a guess about a co-author's words as data).
