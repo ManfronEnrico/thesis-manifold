@@ -1,0 +1,13 @@
+{
+  "id": "8",
+  "subject": "Rebuild ch4-data-assessment bullets (6 hollow, -1,707 w)",
+  "description": "Fill 6 of 17 hollow sections from docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch4-data-assessment.md (3,889 w vs draft 2,182 w). Wire [[sample-size-and-tool-interface-rationale]] -- the 9M -> 2,552 funnel argument, sample-size adequacy per model class, the three leakage defects and the cross-category asymmetry all belong here and are currently orphaned. Add Open blocks for P0043 threads 134 (INCORRECT: wrong scope-out reason), 183/185 (INCORRECT: split is proportional and not locked) and 137 (OUTDATED: proportional split). Verify: 0 hollow; leakage-control bullets present.",
+  "activeForm": "Rebuilding ch4-data-assessment bullets",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

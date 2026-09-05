@@ -1,0 +1,13 @@
+{
+  "id": "5",
+  "subject": "Fill ch9-discussion hollow interpretation sections (6 hollow)",
+  "description": "Fill 9.1.1-9.1.4 in sections-drafts/ch9-discussion.md, currently bare headings. Source from docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch9-discussion.md (1,214 w) and [[srq4-first-results-and-interpretation]] for the B-vs-C reading and what n=6 can and cannot claim. PRESERVE the DP1/DP2/DP4/DP5 design-principles table, novelty claims and limitations -- ch9 is the reference implementation of the target form (F2), so change as little as possible. Flag in Open: the 8GB figures in the DP1 row and the LLM-as-judge N=50 limitation are both stale. Verify: 9.1.x populated; existing tables byte-identical.",
+  "activeForm": "Filling ch9-discussion interpretation sections",
+  "status": "completed",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

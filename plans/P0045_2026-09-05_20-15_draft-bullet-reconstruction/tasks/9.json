@@ -1,0 +1,13 @@
+{
+  "id": "9",
+  "subject": "Fill ch7-synthesis and ch8-evaluation hollow sections (2 + 3)",
+  "description": "Fill hollow sections in sections-drafts/ch7-synthesis.md and ch8-evaluation.md from the matching snapshot chapters (ch7-decision-synthesis.md 1,211 w; ch8-experimental-evaluation.md 1,360 w). Wire [[prometheus-scenarios-design-rationale]] and [[sample-size-and-tool-interface-rationale]] into ch7; [[srq4-experiment-design-rationale]] and [[srq4-first-results-and-interpretation]] into ch8. Both chapters still describe LLM-as-judge, which was dropped -- add an Open block in each (P0043: ch7 x7, ch8 x10; the staleness audit calls ch8 the most stale chapter, needing restructuring not patching). Verify: 0 hollow in both; judge Open block present in each.",
+  "activeForm": "Filling ch7-synthesis and ch8-evaluation sections",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

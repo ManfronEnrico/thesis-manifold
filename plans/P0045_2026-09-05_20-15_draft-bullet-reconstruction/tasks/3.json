@@ -1,0 +1,13 @@
+{
+  "id": "3",
+  "subject": "Rebuild ch2-literature-review bullets (12 hollow, -3,036 w)",
+  "description": "Rebuild sections-drafts/ch2-literature-review.md from docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch2-literature-review.md (6,286 w vs draft 3,250 w) -- the largest absolute content loss. 12 of 26 sections hollow. Each themed subsection becomes Claims (what the literature establishes) + Warrant (which papers, why they bear on this thesis) + Evidence (citation). Do NOT restate abstracts; state the claim this thesis draws from each strand. Cross-reference P0043 comment threads 55/58/61/63/66/69/71/72/73 rather than re-deriving those objections. Verify: 0 hollow; every retained citation still traceable to the References block.",
+  "activeForm": "Rebuilding ch2-literature-review bullets",
+  "status": "completed",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

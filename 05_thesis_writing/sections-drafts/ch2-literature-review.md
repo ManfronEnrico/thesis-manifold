@@ -1,6 +1,6 @@
-<!-- PROSE STRIPPED 2026-09-01 (P0044).
+<!-- PROSE STRIPPED 2026-09-01 (P0044); ARGUMENT BULLETS REBUILT 2026-09-05 (P0045).
      Authoritative prose lives in the OneDrive .docx; the read-only mirror is
-     docx-exported-snapshots/2026-09-01_18-50/chapters.
+     docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters.
      This file is a PLANNING surface: bullets, structure, status and provenance.
      Do not paste prose back in -- two live copies is the drift this removes.
      Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
@@ -15,6 +15,10 @@
 > All results hold under the tighter bound (serving 36.8 MB, refit ~37 MB).
 > See `plans/P0044_2026-09-01_17-10_resource-measurement-and-retrain-arms/findings.md` F22-F23.
 
+> **P0045 (2026-09-05):** §2.2 in the 19-52 snapshot now reads "on the order of four
+> gigabytes", so the .docx half of N11 is done. This file's own 8 GB references are the
+> remaining half. Bullets below were rebuilt from that snapshot; 12 hollow sections filled.
+
 > Status: PROSE DRAFT — written 2026-04-12; §2.2 reframed 2026-06-27 to separate Ng's raw-data-volume constraint (platform scale) from the thesis's binding deployment-cost constraint (the aggregated modelling set is small; the 8GB budget binds model selection, not the realised footprint)
 > Author: Claude Code (Sonnet 4.6) — requires human review before finalisation
 > Word count target: ~22 standard CBS pages (~50,050 chars excl. spaces)
@@ -25,33 +29,299 @@
 
 ## 2.0 Chapter Introduction
 
+**Claims**
+- The chapter establishes a design space and identifies an **under-addressed
+  intersection**, not a single missing result -- this framing matters, because the
+  gap claim is otherwise easy to attack
+- Six strands are reviewed, each mapped to an SRQ, then intersected in 2.7
+
+**Warrant**
+- Framing the contribution as an intersection is defensible where a "nobody has done
+  X" claim would not be: each strand individually is well populated
+
 ---
 
 ## 2.1 Forecasting as Predictive Substrate in FMCG
+
+*Maps to SRQ1*
+
+**Claims**
+- Relative model performance depends on series characteristics: temporal regularity,
+  exogenous feature availability, training-set size, inference-time compute
+- The five-model substrate (ARIMA, Prophet, LightGBM, XGBoost, Ridge) spans classical
+  statistical to gradient-boosted, chosen to cover the accuracy-efficiency frontier
+- Three substrate choices follow from the competition evidence: **benchmark multiple
+  models** rather than pre-select one, **include LightGBM** as a primary candidate,
+  **incorporate exogenous features where available**
+- Stability is a production-relevant criterion **alongside** accuracy, not after it
+
+**Warrant**
+- **M4 (Makridakis et al. 2020)**: combining beats any single best model; hybrids of
+  statistical structure + ML win. *Scope bound stated precisely*: low-volume and
+  intermittent series were **excluded** from M4, and the authors caution the findings
+  are for continuous business series
+- Therefore evidence on irregular series here rests on **M5, not M4** -- this is a
+  deliberate correction (NotebookLM returned the earlier M4-on-intermittent claim as
+  Contradicted)
+- **M5 (Makridakis et al. 2022)**: all top-50 used LightGBM; all beat the best
+  statistical benchmark by >14%; exogenous promo/calendar features outperformed
+  sales-history-only; **cross-learning beat series-by-series at lower cost** -- the
+  direct precedent for SRQ1's pooled-vs-per-category comparison
+- **Ceran et al. (2024)**: LightGBM + Optuna on ~14M daily series, wRMSSE 0.83 -> 0.81
+  ensembled. They **reject MAPE** because too many zero-demand observations make a
+  percentage error undefined. Ch6 hits the same problem on the Nielsen panel
+- **Ma et al. (2025)**: beverage sector; no single model dominates across demand
+  patterns -> motivates category-specialised evaluation
+- **Al-Karkhi & Rzadkowski (2025)**: 120+ papers; LightGBM/XGBoost suit short-horizon
+  forecasting with limited observations -- this thesis's regime (~3 years monthly)
+- **Ahrens et al. (2025)**: stacking diverse learners lowers MSPE. *Transfer stated
+  honestly*: their setting is double ML for causal inference, so it transfers as a
+  general argument for pooling estimators against misspecification, **not** as direct
+  forecasting evidence
+- **Klee & Xia (2025)**: stability = CV of forecasts under identical inputs, seed varied.
+  *Direction is easily inverted and must not be*: ARIMA is deterministic and therefore
+  trivially stable (CV=0); deep forecasters vary by seed. Their contribution is that
+  ensembling recovers stability to <5% without costing accuracy
+
+**Evidence**
+- Substrate justification and why the ladder narrows -> [[srq1-model-ladder-and-baselines]]
+- Pooled vs per-category result and the metric disagreement it exposes
+  -> [[srq1-pooled-vs-per-category]]
+
+**Open**
+- P0043 thread 66/69: this section is read as an argument **for** exogenous enrichment
+  that the thesis does not deliver. Either narrow the claim to promo+calendar (which
+  are real) or add the enrichment. See Ch1 OPEN REWRITE NOTES item 2
+- Any model with a stochastic fitting procedure -- gradient-boosted trees included --
+  must have seed sensitivity **measured, not assumed**. P0044 F21 measured 3.97pp of
+  seed-driven wMAPE movement, which is larger than several effects the thesis reports
 
 ---
 
 ## 2.2 Lightweight ML under Computational and Deployment Constraints
 
+*Maps to SRQ1 and Main RQ*
+
+**Claims**
+- Computational efficiency is a **binding consideration, not an afterthought**
+- The relevant budget for an SME provider is a modest cloud instance, not data-centre
+  scale as much of the agent literature assumes
+- The budget constrains the **model-selection space** -- ruling out transformer and
+  locally-hosted options at design time -- rather than being a limit the selected
+  models approach in practice
+- Accessing the LLM through an external API rather than loading it locally is the
+  viable pattern under a small fixed budget
+
+**Warrant**
+- **Ng (2017)** establishes memory as a legitimate, domain-grounded design variable in
+  retail scanner analysis. *Two levels must be distinguished, and the chapter does so*:
+  Ng's constraint is **raw-data volume** at full-panel platform scale; this thesis
+  aggregates to a few thousand rows per category, where volume no longer binds. What
+  binds here is **deployment cost**
+- This distinction is what keeps the Ng citation honest -- it supports "a memory budget
+  is legitimate", not "SMEs get N gigabytes"
+- **Liu et al. (2025)**: quantisation/distillation preserve accuracy at sharply reduced
+  footprints
+- **Semerikov et al. (2025)**: even aggressively compressed LLMs need ~1-4 GB --
+  therefore local LLM inference cannot share a small budget with data + models
+
+**Open**
+- **N11 (below) is still live**: the section states the budget as "on the order of four
+  gigabytes", which now matches the measured production template (P0044 F22-F23). Confirm
+  every remaining 8 GB mention in this chapter is gone
+- P0043 threads 71/72/73: the hosting-cost argument describes a situation Manifold is
+  **not** in -- it calls the OpenAI API and hosts no LLM. Thread 73 notes this makes the
+  preceding hosting claims "a bit less" relevant. The cost-asymmetry passage needs to
+  argue the *selection-space* point, not a hosting bill the project never pays
+
 ---
 
 ## 2.3 From Descriptive BI to Forecast-Informed Decision-Support
+
+*Maps to Main RQ and SRQ4*
+
+**Claims**
+- Predictive models create value **primarily through their connection to downstream
+  decisions**
+- But that literature couples prediction and decision **tightly** -- differentiable
+  optimization against a formally specified objective, presuming a single well-defined
+  program
+- Managerial FMCG decision-support rarely presents such a program: decisions are
+  open-ended, context-dependent, human-mediated
+- This thesis therefore investigates a **loose, agent-mediated** coupling: conventionally
+  trained models, surfaced to a layer that reasons over them
+- An interval handed to a planner as a bare numeric range is **not self-interpreting**;
+  the interpretive step between interval and decision is where the decision value sits
+
+**Warrant**
+- **Elmachtoub & Grigas (2022)**, smart predict-then-optimize: minimising prediction
+  error is *not* equivalent to maximising decision quality
+- **Mandi et al. (2024)** (JAIR survey): zero prediction loss implies zero decision loss,
+  **but not the converse**; no method dominates
+- **Rinaldi et al. (2025)** DSS4EX: explanatory layers improve perceived decision quality.
+  *Two boundaries matter for the 2.7 gap*: it explains point forecasts and does **not**
+  represent uncertainty, and it is a dashboard, not an autonomous tool-invoking agent
+- **Pathirannehelage et al. (2025)** (ADR, 3 orgs): communicating uncertainty is a
+  **precondition of trust** for non-technical users
+- **Goodwin et al. (2010)** -- the crucial counterweight, and the one most easily
+  misreported: 50%/95% intervals alongside a point forecast **did not** improve
+  newsvendor decision quality, and *actively degraded* responsiveness to cost asymmetry.
+  Correct discrimination fell from ~84% (point only) to **44%** (95% intervals);
+  participants anchored on the interval midpoint
+
+**Evidence**
+- Goodwin is a **caution, not an endorsement**, and does not license withholding
+  uncertainty -- Pathirannehelage makes uncertainty a trust precondition and the
+  calibration literature (2.5) makes an uncommunicated interval useless
+
+**Open**
+- The Goodwin asymmetry was the chapter's largest open problem across four P0044
+  sessions. **Resolved** -- see the GOODWIN blocks below (N22, N42): the experiment now
+  measures the decision step. Do not reopen without reading N34/N35/N42 first
 
 ---
 
 ## 2.4 LLM Agents and Tool-Mediated Reasoning
 
+*Maps to SRQ2*
+
+**Claims**
+- The distinction between LLM-as-language-model and LLM-as-tool-using-agent underpins
+  the SRQ2 interface design
+- **Tool delegation can partially compensate for model scale** -- the central mechanism
+  this thesis relies on
+- The artefact is a **bounded tool-using AI agent with human-in-the-loop**, not a
+  multi-agent Agentic AI system (Sapkota et al. 2026 taxonomy)
+- The action *format* is itself a design dimension: JSON function-calling is chosen for
+  the artefact; code-as-action becomes the SRQ4 **baseline**, not a rejected option
+
+**Warrant**
+- **Schick et al. (2023)** Toolformer: a 6.7B model with tool access outperforms a far
+  larger one -- delegation substitutes for scale
+- **Ma et al. (2024)** SciAgent: domain tools substantially improve precision-sensitive
+  reasoning -> the LLM should orchestrate, not forecast
+- **Paranjape et al. (2023)** ART: structured decomposition beats single-shot prompting
+  -> motivates a *structured* tool-invocation sequence
+- **Wang et al. (2024)**: executable code can beat JSON tool calls on some benchmarks,
+  enabling dynamic composition and self-debugging. The thesis chooses JSON anyway, for
+  reliability and reproducibility -- and states the trade-off rather than hiding it
+- Multi-agent strand (**Liu et al. 2024 DyLAN; Li et al. 2024 AutoFlow; Wang et al. 2025
+  ScoreFlow**) is read as **design context and a promising direction, not prescribed
+  practice** -- empirical architecture results, not an established standard
+
+**Open**
+- P0043 thread 58: "THIS IS NOT ACCEPTABLE" -- flags a passage as something the thesis
+  cannot and should not claim. Resolve before prose is finalised
+
 ---
 
 ## 2.5 Reliability, Traceability, Uncertainty, and Evaluation of Agentic Outputs
+
+*Maps to SRQ2 and SRQ4*
+
+**Claims**
+- Three reliability risks bear on a forecast-informed agent: **hallucination**,
+  **input-noise sensitivity**, **coordination failure**
+- A generated statement is assessable **only against an explicitly retrieved source** --
+  for this artefact, the reference fragment is the forecast value returned by the tool
+- This motivates the validation step in the SRQ2 interface: a misstated figure becomes a
+  *contradictory* statement against a known reference, not an unverifiable one
+- Traceability is treated as a **design objective**, not a fully implemented capability
+- **Conformal prediction, not isotonic recalibration**, is the approach adopted -- and
+  the reason is a scope limit in the recalibration evidence
+
+**Warrant**
+- **Ji et al. (2024)** ANAH: sentence-level hallucination taxonomy. *Scope stated*:
+  built for QA, not numerical reporting, so it supplies no category for a misstated
+  figure -- what transfers is the source-grounded assessability principle
+- **Wang et al. (2026)** AgentNoiseBench: tool-using agents degrade under structured
+  input noise -> disciplined validation of data passed to the tool
+- **Kartik et al. (2025)** AgentCompass: traceability reduces debugging effort --
+  *asserted from deployment experience, not measured against an untraced control*, and
+  read here as design rationale
+- **Dong et al. (2024)** AgentOps: the artefacts an auditable agent must capture
+- **Kuleshov et al. (2018)** / **Levi et al. (2022)**: isotonic post-hoc recalibration
+  works -- but Levi's evaluation covers **neural architectures only**, so it cannot be
+  read as validating calibration of the tree models used here
+- **Lei et al. (2018)** split conformal: distribution-free finite-sample coverage under
+  exchangeability, model-agnostic, therefore applicable to GBTs directly
+- Its guarantee is **marginal** (an average over the calibration population, not a
+  promise about any individual forecast), and **exchangeability is violated by temporal
+  data**; **Barber et al. (2023)** bound the resulting coverage loss rather than
+  eliminating it -> Ch6 measures coverage empirically instead of assuming it
+- **Ouyang et al. (2025)**: LLM code output for an identical prompt varies across runs
+  (half to three quarters of tasks yield no two identical outputs)
+- **Atil et al. (2025)**: non-determinism persists **even at temperature zero** --
+  directly relevant to Ch5's reproducibility claim
+- **Schwartz et al. (2020)** / **Chen et al. (2024)**: cost is a first-class evaluation
+  criterion; inference costs differ by orders of magnitude
+
+**Open**
+- The passage still specifies "a separate judge model with bias awareness and a human-
+  rated subset" (Gu et al. 2025; Ye et al. 2024; Mehta 2025). **LLM-as-judge was
+  dropped** -> [[srq4-experiment-design-rationale]] §7. The evaluation-design sentence
+  must be rewritten; the judge-bias citations may survive only as context for *why* it
+  was dropped
 
 ---
 
 ## 2.6 Production-Oriented Agentic Systems and Integration Readiness
 
+*Maps to SRQ3*
+
+**Claims**
+- Production-oriented settings sharpen the reliability/traceability requirements into an
+  **integration-readiness** question -- what capabilities a production agentic system
+  must possess to incorporate forecast-informed decision-support
+- Four capabilities synthesised: structured interface for invoking external predictive
+  models; observability and traceability; explicit reliability/uncertainty handling;
+  operation within bounded cost, latency, memory
+- The thesis treats integration as a **design-and-readiness question**, assessed against
+  a real production case -- not a completed deployment
+
+**Warrant**
+- **Gonzalez-Potes et al. (2026)** is the closest published exemplar: deterministic
+  rule-based supervisor wrapped by a RAG conversational layer, local 7B model, live
+  beverage plant. >98% state specification consistency, <3% median numerical error
+- *The qualification is essential and must not be dropped*: 98% is a property of the
+  **labelling layer**, not a rate of correct process operation, which was substantially
+  lower on degraded stages
+- **Two boundaries bear on this thesis** -- and they are observations about scope, not
+  limitations the authors state: (1) it monitors a **live process** and has no predictive
+  component projecting a series forward over a historical record; (2) it runs on
+  dedicated industrial infrastructure and does **not** treat cost as a design constraint
+- **Dong et al. (2024)**: the operational vocabulary -- registries, traces, guardrails,
+  monitoring
+- **Mehta (2025)** CLEAR: single-run success **overstates** reliability relative to
+  multi-run consistency; operational dependability governs deployment readiness
+- **Zheng et al. (2025)**: enterprise LLM/supply-chain integration -- appetite and friction
+
+**Open**
+- P0043 threads 79/82/83: whether these capabilities are actually implemented needs
+  verifying. P0044 F8: observability **is** implemented but never **evaluated**
+
 ---
 
 ## 2.7 Research Gap: Forecast-Informed Extension of Non-Predictive Agentic Systems
+
+**Claims**
+- The gap is an **under-addressed intersection of four literatures**, not a single
+  missing result -- each strand individually is well populated
+  1. forecast-to-decision value is established but assumes **tight** coupling, does not
+     address open-ended managerial support, and does not concern LLM agents
+  2. agent/tool-use shows delegation substitutes for scale; an emerging strand exposes
+     pre-trained statistical models as agent tools (Chen & Bibi 2026) but only as small,
+     **non-peer-reviewed** proofs of concept, not addressing forecasting, reliability or
+     production constraints
+  3. reliability/evaluation establishes the risks and the need for bias-aware,
+     multidimensional methods -- but not the integration
+  4. production exemplars prove feasibility, but are built for **real-time supervision
+     on dedicated infrastructure**; neither predictive extension over a historical
+     tabular record nor SME resource constraints fall in scope
+- The methodological contribution is **transferable design knowledge**, explicitly not a
+  claim of a fully deployed or fully evaluated production system
+
+**Contributions** (stated at system-class level; designed vs planned distinguished)
 
 - **Predictive substrate (SRQ1): designed; benchmark to be built.** A memory-profiled benchmark of lightweight forecasting models across multiple FMCG beverage categories, characterising the accuracy–efficiency–specialization trade-off under a constrained compute budget.
 - **Structured forecast-tool interface (SRQ2): designed.** A tool/action interface exposing forecasts and uncertainty to a tool-using agent, with traceability treated as an explicit design objective.
@@ -62,9 +332,48 @@
 
 ## 2.8 Design Science Research
 
+*Maps to all research questions*
+
+**Claims**
+- The thesis's questions are **constructive** -- how a system can be designed, what
+  capabilities its design requires -- not tests of pre-existing theory
+- DSR fits for two reasons: the central contribution **is an artefact**, and the intended
+  contribution extends beyond it to **transferable design knowledge**
+- DSR framing also **disciplines the evaluation**: the artefact must be assessed against
+  defined criteria in a relevant context
+
+**Warrant**
+- **Hevner et al. (2004)**: distinguishes building an artefact from behavioural study of
+  existing systems; requires the artefact be both demonstrably useful and a source of
+  generalisable knowledge
+- **Peffers et al. (2007)**: the six-step process model structuring the project as an
+  ordered, justifiable sequence
+
+**Evidence**
+- This section establishes only the paradigm and its fit; the applied DSR process --
+  artefact definition, evaluation design, validation against the empirical case -- is Ch3
+
+**Open**
+- P0043 thread 88: why is the Saunders methodology book not cited here? It is used
+  elsewhere. Reconcile -- see also the Ch3 threads on the same question
+
 ---
 
 ## 2.9 Chapter Summary and Transition to Methodology
+
+**Claims**
+- 2.1-2.2 support a benchmark of lightweight, category-specialised models on accuracy,
+  efficiency and **stability** under a memory budget
+- 2.3 establishes prediction-to-decision value on peer-reviewed evidence, while showing
+  the connection has been studied as **tight, optimization-level coupling**
+- 2.4-2.6 supply the mechanism (tool-mediated reasoning), the governing requirements
+  (reliability, traceability, evaluation) and the operational capabilities
+- 2.7 names the under-addressed intersection; 2.8 frames the response as DSR
+
+**Evidence**
+- Transition: Ch3 operationalises the paradigm -- artefact, benchmark, tool interface,
+  readiness assessment, and the evaluation comparing dedicated-model agentic
+  decision-support against the code-as-action baseline, with its bounding limitations
 
 ---
 
@@ -300,3 +609,15 @@ Four criteria:
 |---|---|---|
 | Taylor & Letham (2018), *The American Statistician*, 72(1), 37-45 | Prophet is benchmarked and reported | N12 |
 | Brown et al. (2020), NeurIPS 33 | one-shot prompting design | N43 |
+
+---
+
+## Writing-notes wired into this chapter (P0045)
+
+- [[srq1-model-ladder-and-baselines]] — §2.1 why the substrate contains these five models
+- [[srq1-pooled-vs-per-category]] — §2.1 the M5 cross-learning precedent, and the metric
+  disagreement the comparison exposed
+- [[srq4-experiment-design-rationale]] — §2.5 LLM-as-judge dropped (§7 of that note),
+  which invalidates this chapter's stated evaluation design
+- [[sample-size-and-tool-interface-rationale]] — §2.5 what the intervals can and cannot
+  claim at this sample size

@@ -1,0 +1,13 @@
+{
+  "id": "2",
+  "subject": "Rebuild ch5-framework-design bullets (60% hollow)",
+  "description": "Rebuild sections-drafts/ch5-framework-design.md. 6 of 10 sections hollow (5.1, 5.3, 5.5, 5.6, 5.7, 5.10). Source arguments from docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch5-framework-design.md (2,161 w vs draft 1,003 w). Apply the bullet contract. Wire [[srq1-model-ladder-and-baselines]] into 5.3, [[sample-size-and-tool-interface-rationale]] into 5.4, [[srq4-experiment-design-rationale]] into 5.7. PRESERVE the P0044 RAM blockquote and the 5.8/5.9 tables verbatim. Verify: 0 hollow sections; no bullet over two lines.",
+  "activeForm": "Rebuilding ch5-framework-design bullets",
+  "status": "completed",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

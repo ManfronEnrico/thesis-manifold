@@ -1,0 +1,13 @@
+{
+  "id": "7",
+  "subject": "Merge ch6-model-benchmark and add the stale-numbers warning (F5)",
+  "description": "MERGE. Fill the 3 hollow sections of 37 from docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch6-model-benchmark.md. The critical work is an Open block at the top carrying the staleness audit finding: ch6 PASSES check_chapter_facts.py while every headline number is stale (CSD 16.5 -> 15.2, danskvand 23.8 -> 20.9, energidrikke 11.4 -> 13.0, RTD 31.0 -> 36.1, +5.1pp), because the checker matches phrases not numbers. Cite 04_thesis_results/srq1/cv_metrics.csv as the current source. Wire [[srq1-model-ladder-and-baselines]] and [[srq1-pooled-vs-per-category]]. Note P0043: 45 of ch6's 49 threads are bare VERIFY/SOURCE/PROSE stamps -- one batch instruction, not 45 decisions. Verify: warning present with all four corrected figures; draft does not shrink.",
+  "activeForm": "Merging ch6-model-benchmark and adding stale-numbers warning",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

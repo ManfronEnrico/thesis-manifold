@@ -1,0 +1,20 @@
+{
+  "id": "1",
+  "subject": "Survey drafts, snapshot and writing-notes; define bullet contract",
+  "description": "Measure hollow sections across sections-drafts/*.md, compare word counts against the 19-52 snapshot, and check which writing-notes are referenced by drafts. Record as F1-F6 in findings.md and the Claims/Warrant/Evidence/Open contract in task_plan.md.",
+  "activeForm": "Surveying the three writing surfaces",
+  "status": "completed",
+  "blocks": [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+  ],
+  "blockedBy": []
+}

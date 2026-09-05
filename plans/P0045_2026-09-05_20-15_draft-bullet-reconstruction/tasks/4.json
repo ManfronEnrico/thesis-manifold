@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Rebuild ch1-introduction bullets (4 hollow, -1,941 w)",
+  "description": "Rebuild sections 1.1, 1.2, 1.4, 1.5 of sections-drafts/ch1-introduction.md from docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch1-introduction.md (3,084 w vs draft 1,143 w). PRESERVE the existing OPEN REWRITE NOTES (P0044) block in full -- it is the most current decision record for this chapter and must not be summarised away. New bullets must not contradict it: RAM framing is 4 GB measured, exogenous enrichment narrowed to promo + calendar only. Cross-reference P0043 threads 15-51. Verify: 0 hollow; OPEN REWRITE NOTES intact.",
+  "activeForm": "Rebuilding ch1-introduction bullets",
+  "status": "completed",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

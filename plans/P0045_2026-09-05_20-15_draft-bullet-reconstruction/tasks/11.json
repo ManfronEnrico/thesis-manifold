@@ -1,0 +1,19 @@
+{
+  "id": "11",
+  "subject": "Verify wiring and re-run the hollow-section audit",
+  "description": "Re-run the hollow-section detector across all 13 sections-drafts files and confirm the count is 0 (from 56). Confirm every one of the 8 writing-notes is referenced by at least one draft (from 0/8). Confirm no draft file lost words against its pre-P0045 git state (git diff --stat). Confirm no prose crept in: flag any bullet over ~200 chars for review. Add a Related backlink in each writing-notes file to the chapters that now cite it. Record results in progress.md and set task_plan.md frontmatter to complete with an outcome_summary.",
+  "activeForm": "Verifying wiring and re-running hollow-section audit",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10"
+  ]
+}

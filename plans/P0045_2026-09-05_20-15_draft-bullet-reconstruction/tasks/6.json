@@ -1,0 +1,13 @@
+{
+  "id": "6",
+  "subject": "Merge ch3-methodology draft with snapshot (draft is +1,967 w LARGER)",
+  "description": "MERGE, do not rebuild. sections-drafts/ch3-methodology.md is 5,225 w vs docx-exported-snapshots/2026-09-05_19-52_complete-review-pass/chapters/ch3-methodology.md 3,258 w -- the draft holds planning content the .docx never had, so overwriting destroys it (F3). Fill only the 10 hollow sections of 54. Wire [[srq4-experiment-design-rationale]], [[srq1-tuning-and-validation-protocol]] and [[prometheus-scenarios-design-rationale]]. Add an Open block recording that LLM-as-judge was dropped but is still written up here (P0043 flags it 9x in this chapter; the staleness audit found it independently). Verify: draft word count does not DECREASE; 0 hollow.",
+  "activeForm": "Merging ch3-methodology draft with snapshot",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

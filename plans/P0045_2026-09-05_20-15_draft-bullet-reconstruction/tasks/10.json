@@ -1,0 +1,13 @@
+{
+  "id": "10",
+  "subject": "Fill abstract, ai-declaration and ch10-conclusion (4 hollow)",
+  "description": "Fill 2 hollow sections in abstract.md and 2 in ai-declaration.md; ch10-conclusion.md has 0 hollow so verify only and wire [[srq4-first-results-and-interpretation]] plus the [[sample-size-and-tool-interface-rationale]] limitations. Abstract bullets stay as placeholders where they depend on results not yet in -- mark Open, do not invent findings. ai-declaration: P0043 threads 455/457/458 question the relevance of several passages. Verify: 0 hollow across the three; no fabricated results in the abstract.",
+  "activeForm": "Filling abstract, ai-declaration and ch10-conclusion",
+  "status": "pending",
+  "blocks": [
+    "11"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}
