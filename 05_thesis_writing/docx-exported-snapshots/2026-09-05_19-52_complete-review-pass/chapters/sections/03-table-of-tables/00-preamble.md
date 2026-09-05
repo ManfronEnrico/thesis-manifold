@@ -1,0 +1,33 @@
+# Table of Tables
+
+> Section of **Table of Tables**
+>
+> Generated from the Word document -- **do not edit.** Edit the OneDrive `.docx`; this file is rewritten on every snapshot.
+
+---
+
+# Table of Tables
+**Table 1** - Per-category training structure, filtered to DVH EXCL. HD scope (2026-06-27)		51
+**Table 2** - EDA Parameter Overview		56
+**Table 3** - Per Category Correlation & Transformations		57
+**Table 4** - Feature Engineering Overview		58
+**Table 5** - Forward-chaining train/validation/test boundaries per category (locked, pre-registered)		59
+**Table 6** - Per-component budget, measured by RSS (psutil), 2026-06-27		66
+**Table 7** - Technology Choices and Justification		67
+**Table 8** - Simple Benchmark Evaluation Parameters		69
+**Table 9** - Exclud Zero-Actual Rows Decision		73
+**Table 10** - NO IDEA		74
+**Table 11** - Category Resulting Distribution (230 brands)		74
+**Table 12** - Performance Overview - Tuned WMAPE adn medMAPE		75
+**Table 13** - Four Categories x 5 Model Performance		76
+**Table 14** - Categories: MASE Comparison		77
+**Table 15** - Pooled vs Per Category Performance Differences		78
+**Table 16** - Seed Stabiltiy across Models and Categories		81
+**Table 17** - Modelling Contribution to Sub-Research Questions		82
+**Table 18** - Inputs to the Synthesis Agent		83
+**Table 19** - Deterministic Synthesis Results		84
+**Table 20** - Chapter 7 contributions to Sub-Research Questions		88
+**Table 21** - LLM Judge Scoring Likert Scale Results		91
+**Table 22** - Threats to Validity		93
+**Table 23** - Chapter 8: Results Connection to SRQs		93
+**Table 24** - Contributions - Design Principles		96

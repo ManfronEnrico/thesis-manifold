@@ -1,0 +1,10 @@
+# Research Problem
+
+> Section of **Introduction > Research Problem**
+>
+> Generated from the Word document -- **do not edit.** Edit the OneDrive `.docx`; this file is rewritten on every snapshot.
+
+---
+
+The commercial context motivating this research is Manifold AI, a Danish company building “AI Colleagues,” a conversational, production-oriented agentic decision-support system for retail analytics that currently operates at the descriptive level: it reports what has happened, including sales volumes, market shares, and weighted distribution, but does not forecast, anticipate, or recommend; this production system also serves as the empirical reference case for the thesis. Extending such a non-predictive agentic system with predictive capability raises four problems. First, the forecasting substrate must be accurate yet deployable within a tight computational budget, a trade-off the forecasting literature has only recently begun to measure systematically (Klee & Xia, 2025). Second, its forecasts must be exposed to the agentic layer through a structured tool interface that preserves reliability, uncertainty, and traceability. Third, the production agentic system itself must possess the architectural and operational capabilities required to integrate such a substrate. Fourth, the resulting decision-support outputs must demonstrably improve, at justified cost, on what a general-purpose LLM that writes and self-corrects its own code (a code-as-action baseline) would produce; the dedicated-model integration must earn its place against this strong LLM-only alternative.
+This thesis addresses these problems by extending a production-oriented agentic decision-support system with a lightweight forecasting substrate, exposed through a structured forecast-tool interface to a bounded tool-using agentic decision-support layer, and by specifying the integration-readiness capabilities such an extension requires, all designed to operate within the 8GB RAM budget characteristic of realistic SME cloud deployment.

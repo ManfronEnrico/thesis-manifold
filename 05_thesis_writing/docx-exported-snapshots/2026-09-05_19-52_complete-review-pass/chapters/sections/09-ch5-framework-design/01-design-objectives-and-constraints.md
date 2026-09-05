@@ -1,0 +1,14 @@
+# Design Objectives and Constraints
+
+> Section of **Predictive-Extension Architecture > Design Objectives and Constraints**
+>
+> Generated from the Word document -- **do not edit.** Edit the OneDrive `.docx`; this file is rewritten on every snapshot.
+
+**2 comment(s) on this section** -- METACOMMENT. Detail: `comments/sections/09-ch5-framework-design/01-design-objectives-and-constraints.md`
+
+---
+
+This chapter specifies the architecture of the thesis artefact: a predictive extension that equips a production-oriented, non-predictive agentic decision-support system with forecast-informed capability. Following the Design Science Research framing of Chapter 3 (Hevner et al., 2004; Peffers et al., 2007), the architecture is presented as a designed artefact whose components are justified against the research questions and the deployment constraint, and from which transferable design knowledge is drawn in Chapters 9 and 10.
+The architecture pursues four design objectives, each tied to a research question. First, it must produce reliable demand forecasts at brand-by-retailer granularity within a fixed memory budget (SRQ1). Second, it must expose those forecasts to an agentic layer through a structured tool and action interface that preserves reliability, uncertainty, and traceability (SRQ2). Third, it must specify the architectural and operational capabilities that a production-oriented agentic system requires in order to integrate forecast-informed decision-support (SRQ3). Fourth, it must permit a controlled comparison between the dedicated-model agentic approach and a general-purpose code-as-action baseline (SRQ4).
+Two constraints shape every choice. The first is a hard ceiling of approximately four gigabytes of total RAM across all simultaneously active components, treated as a formal design criterion rather than a convenience, reflecting the realistic cloud budget of a small or medium-sized AI Agent provider. The second is the processing mode: monthly batch forecasting over historical data, not real-time streaming. Consistent with the pragmatist stance of Chapter 3, the architecture is judged by whether it works within these constraints, not by architectural elegance for its own sake.
+A note on status: this is a design specification, but its lower layers are implemented and measured. The forecasting substrate is implemented and benchmarked across the five categories (Chapter 6), and its component memory figures are measured by RSS and reported in  **Table** **6**. The structured interface and the bounded agentic layer are realised in the lightweight Python coordinator (exercised in Chapter 7), while the cost and latency of the agentic and code-as-action paths are the secondary SRQ4 dimensions reported at pilot scale in Chapter 8. Where a figure depends on a layer still being hardened, this is stated explicitly rather than presented as a settled result.
