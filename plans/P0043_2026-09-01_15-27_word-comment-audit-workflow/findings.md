@@ -1689,3 +1689,98 @@ variant folding, thread-level union).
 VERIFY and 6 are PROSE alone; 254 threads, 214 tagged, 40 untagged; and **every one of the 17
 keys in `KEYWORDS` is documented** — a tag the script parses but the dictionary omits would be
 a tag a future session cannot act on. The file states that rule for whoever extends it.
+
+---
+
+## F47 — First complete review pass: the audit of the 19-52 snapshot (2026-09-05)
+
+Independent read of `2026-09-05_19-52_complete-review-pass` from a second session, done
+before F39-F46 were visible. Where it agrees with F39/F40 that is corroboration, not a
+restatement — the two arrived at "ch6 first" and "bare tags are the norm" separately. What
+follows is only what F39-F46 do **not** already carry.
+
+### The pass is complete, and that changed the shape of the corpus
+
+| | 17-23 snapshot | 19-52 snapshot |
+|---|---:|---:|
+| comments | 217 | **281** |
+| threads | ~190 | **254** |
+| chapters with comments | 8 | **13** |
+
+Every content chapter now carries comments, plus the abstract, AI declaration and
+reference list. The 8-chapter state was a review in progress; this one is finished.
+
+### Half the corpus is not a decision queue
+
+**124 of 254 threads (49%) are bare tag stamps** — the gist parses to tag words only, with
+no argument. Concentrated exactly where the volume is:
+
+| chapter | threads | bare | substantive |
+|---|---:|---:|---:|
+| Model Benchmark | 49 | 45 | **4** |
+| Data Assessment | 43 | 20 | 23 |
+| Experimental Eval | 23 | 17 | 6 |
+| Discussion | 17 | 15 | **2** |
+| Decision Synthesis | 18 | 11 | 7 |
+| **Methodology** | 32 | 2 | **30** |
+| **Introduction** | 16 | 0 | **16** |
+
+F39 establishes *why* the bare tags are legitimate (the instruction lives in the keyword
+notes, the anchor is the specification). This adds the consequence for the **ledger**:
+
+- Ch6 is not 49 decisions. It is **one instruction applied 45 times**. Filing 45 entries
+  with a `resolution:` field each produces 45 identical resolutions.
+- The ledger earns its keep on the **~130 substantive threads** — the ones carrying a
+  claim to accept, reject or verify. Seed those; give the 124 stamps a lightweight sweep
+  list keyed by section.
+- Otherwise the 130 threads that carry real arguments are buried among 124 that do not.
+
+This does **not** contradict F40's ch6-first ordering — ch6 is still the right place to
+start, because 45 stamps against results-bearing prose is a large, coherent, answerable
+work order. It changes only how those 45 are *recorded*.
+
+### Threading: engagement stops at chapter 2
+
+17 threads carry replies, **all of them in ch1 and ch2**. 27 replies; Enrico last voice on
+7. Chapters 3-10 have had exactly one reader.
+
+Consequence for the ledger's `owner` field and for F35: a `NEEDS-ENRICO` status is
+meaningful only in ch1/ch2 today. Elsewhere it would be an assumption, not a record.
+
+### `w15:done` is live but unused
+
+**1 word-resolved thread in 281 — and it is the test comment** (`Test Comment Resolved`,
+abstract c5). F28 established the field is parsed and rendered; this establishes nothing
+has actually been closed in Word yet. So the ledger's `status` is currently the *only*
+status, and F35's resolve-don't-delete convention has not started being exercised.
+
+### The four cross-chapter arguments
+
+The substantive threads cluster into four arguments, each spanning chapters. Ranked by
+whether the answer exists **today**:
+
+| # | argument | where | blocked on |
+|---|---|---|---|
+| 1 | **LLM-as-judge removed but still written up** | ch3 x9, ch7 x7, ch8 x10, ch9, ch10 | nothing — answer known |
+| 2 | **Grain / split misdescribed** | c183, c185 `INCORRECT`, c338 wrong grain | nothing — verifiable now |
+| 3 | **No exogenous enrichment** | ch1 x11, ch2 x6, ch4, ch5 c207 `MISSING: holiday api` | a scope decision |
+| 4 | **The RAM premise** | ch1 x17, all 10 chapters (~84 mentions) | P0044 |
+
+Plus three mechanical sweeps that are batch jobs, not threads: `FORMATTING: Could use a
+subtitle` on **every chapter opener** (9 identical), `WATERMARK` x6 (ch3 — already in
+F40's ordering), `APPENDIX` x8.
+
+**Argument 1 is the highest-value work in the corpus and is not blocked.** It is
+factually wrong text about the thesis's own method, in the chapters an examiner reads for
+method validity, and the correct answer is already known. P0045 independently found the
+same thing from the staleness audit, which reached it by a different route.
+
+**Argument 3 is the one that reaches outside the writing.** The holiday-API enrichment is
+not a prose fix — it changes feature engineering, and therefore model training and
+reported performance. It belongs to the experiment work, not to this plan. See P0046.
+
+### Related
+
+- P0045 — draft bullet reconstruction; F5 there records the ch6 stale-numbers problem
+  that this corpus's 45 ch6 VERIFY stamps are independently asking about
+- P0046 — the experiment-side half of argument 3

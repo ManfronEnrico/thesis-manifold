@@ -1,0 +1,13 @@
+{
+  "id": "5",
+  "subject": "If B/C: add the holiday feature behind a flag, defaulting off",
+  "description": "Add a Danish public-holiday feature to engineer_features.py behind an explicit flag that defaults OFF, so no existing result changes until the benchmark deliberately turns it on. Follow the temp-script pattern for the edit. It must be justified against peak_month, which already captures measured per-category seasonality -- a feature that merely agrees with peak_month where they overlap and is wrong where they diverge reintroduces the defect the 2026-08-18 rename removed (F1). Include a test that the feature is deterministic and adds no look-ahead.",
+  "activeForm": "Adding the holiday feature behind a flag",
+  "status": "pending",
+  "blocks": [
+    "6"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

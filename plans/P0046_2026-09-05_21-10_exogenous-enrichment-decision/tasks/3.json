@@ -1,0 +1,14 @@
+{
+  "id": "3",
+  "subject": "DECISION GATE (Brian): withdraw, build, or build-and-measure",
+  "description": "Brian chooses A (withdraw the claim, prose only), B (add the feature) or C (add it and report the delta whatever it is). Recommendation on file: C if the schedule permits, A if not; never B. The deciding question is schedule, not whether enrichment would help. Nothing downstream starts until this is set. Record the choice and its reason in progress.md.",
+  "activeForm": "Waiting on the enrichment decision gate",
+  "status": "pending",
+  "blocks": [
+    "4",
+    "5"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}

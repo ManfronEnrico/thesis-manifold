@@ -701,3 +701,24 @@ the vocabulary, `INDEX.md` shows the distribution.
 
 **Next:** ch6 — 48 threads, 39 VERIFY, 23 PROSE, 18 SOURCE, and a writing-note already
 stating it "passes the checker and is wrong throughout".
+
+## Session — 2026-09-05, second session (assessment only, no workflow code)
+
+Read `2026-09-05_19-52_complete-review-pass` cold and audited the comment corpus. No
+changes to `thesis_snapshot.py` or the export — this session's writing went to P0045 and
+P0046.
+
+- Recorded **F47** and a task_plan section: the review pass is complete (281 comments /
+  254 threads / 13 chapters, up from 217 / ~190 / 8).
+- **49% of threads are bare tag stamps.** Corroborates F39's account of why; adds the
+  ledger consequence — seed from the ~130 substantive threads, sweep-list the rest.
+- All 17 reply threads are in ch1-ch2; chapters 3-10 have had one reader.
+- 1 word-resolved thread in 281, and it is the test comment.
+- Four cross-chapter arguments identified and ranked by whether the answer exists today.
+  LLM-as-judge (ch3 x9, ch7 x7, ch8 x10, ch9, ch10) is unblocked and highest-value.
+- Split the holiday-API enrichment argument out to **P0046** — it is an experiment
+  change, not a prose fix.
+
+Arrived at "ch6 first" and "bare tags are the norm" independently of F39/F40, which were
+written in the parallel session and not visible at the time. Treated as corroboration;
+only the non-overlapping half was appended.

@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "subject": "Establish the live exogenous feature ground truth",
+  "description": "Read engineer_features.py and step_3_derive_params.py; record which features are endogenous, calendar-derived and genuinely exogenous. Confirm no holiday input exists anywhere outside .archive. Output: findings F3.",
+  "activeForm": "Establishing the exogenous feature ground truth",
+  "status": "completed",
+  "blocks": [
+    "2"
+  ],
+  "blockedBy": []
+}

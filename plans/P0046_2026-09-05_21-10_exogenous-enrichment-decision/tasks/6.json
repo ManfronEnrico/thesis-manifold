@@ -1,0 +1,13 @@
+{
+  "id": "6",
+  "subject": "If B/C: benchmark with and without; record the per-category delta",
+  "description": "Re-run the SRQ1 benchmark across all four categories with the flag off and on. Record the WMAPE delta per category and per model. Report whatever it is -- F1 and F2 both predict a small or null effect at monthly grain, which is a publishable finding rather than a failure. Check whether the holiday feature is merely re-encoding month/peak_month by comparing SHAP attributions between the two runs.",
+  "activeForm": "Benchmarking with and without enrichment",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "5"
+  ]
+}

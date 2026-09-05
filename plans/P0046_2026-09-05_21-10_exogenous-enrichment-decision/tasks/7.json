@@ -1,0 +1,13 @@
+{
+  "id": "7",
+  "subject": "If B/C: regenerate affected tables, figures and the staleness audit",
+  "description": "Every WMAPE in Ch6/Ch8/Ch9/Ch10 changes if the flag ships on. Regenerate the affected tables and figures, and update writing-notes/2026_08_22-21_00-chapter-staleness-audit.md, which is the record of which numbers are current. Coordinate with P0045 task 7, which carries the ch6 stale-numbers warning.",
+  "activeForm": "Regenerating tables, figures and the staleness audit",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "6"
+  ]
+}

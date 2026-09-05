@@ -1,0 +1,12 @@
+{
+  "id": "8",
+  "subject": "Close the five Word threads with the outcome",
+  "description": "Whichever branch ran, close ch1 15/18/20, ch2 66/69, ch3 127, ch4 177 and ch5 207 in the P0043 ledger with the decision and its reason. If A, the resolution is that the claim was withdrawn and why. If B/C, it is the measured delta. Do not close them as 'done' without a recorded reason -- these five are the clearest example in the corpus of a thread whose answer is a project decision rather than an edit.",
+  "activeForm": "Closing the enrichment threads",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "4",
+    "7"
+  ]
+}

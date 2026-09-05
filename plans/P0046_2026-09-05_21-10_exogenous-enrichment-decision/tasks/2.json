@@ -1,0 +1,13 @@
+{
+  "id": "2",
+  "subject": "Size Option C: feature + retrain + re-benchmark + regenerate",
+  "description": "Estimate the real cost of building a Danish holiday-calendar feature and reporting the with/without delta: source for the calendar, change to engineer_features.py, full SRQ1 re-benchmark across 4 categories, regeneration of every affected table and figure in Ch6/Ch8/Ch9/Ch10, and the staleness-audit update. Express as hours and as a position relative to the P0042 funded-run schedule. Do NOT build anything.",
+  "activeForm": "Sizing Option C",
+  "status": "pending",
+  "blocks": [
+    "3"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

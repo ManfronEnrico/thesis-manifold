@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "If A: narrow the enrichment claims and hand the prose to P0043",
+  "description": "Narrow every enrichment claim in the ch1/ch2/ch3/ch4/ch5 drafts to promotional + distribution + calendar features, which is what F3 shows the pipeline actually has. Keep the M4/M5 open-frontier quotation only if the thesis stops claiming to take up that direction wholesale. Add a specific future-work item to Ch10. Then hand the five threads to P0043 for the .docx edit.",
+  "activeForm": "Narrowing the enrichment claims",
+  "status": "pending",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

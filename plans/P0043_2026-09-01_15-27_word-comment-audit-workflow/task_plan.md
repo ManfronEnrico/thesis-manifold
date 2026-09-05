@@ -420,3 +420,48 @@ Seeding Ch1 (task 20) before step 1 validates the mechanism only — it is not t
 - Writing decisions **back** into the `.docx` as replies. Read-only remains the contract.
 - Inferring priority or sentiment from comment text (already rejected in the column schema
   above — it would present a guess about a co-author's words as data).
+
+---
+
+## First complete review pass — assessment (2026-09-05, second session)
+
+Findings F47. The Word pass is **done**: 281 comments, 254 threads, all 13 content
+chapters plus abstract / AI declaration / reference list. The 217-comment state was a
+review in progress.
+
+### What this adds to the F40 sequence
+
+F40's order stands. Two amendments, both about *recording* rather than ordering:
+
+1. **Seed the ledger from the ~130 substantive threads only.** 124 of 254 are bare tag
+   stamps (F47). They are legitimate work items — F39 explains why — but they are one
+   instruction repeated, not 124 decisions. Ch6 alone is 45 stamps and 4 arguments.
+   Give them a sweep list keyed by section; keep the ledger for threads that carry a
+   claim someone has to accept, reject or verify.
+
+2. **`owner: Enrico` / `NEEDS-ENRICO` is only meaningful in ch1-ch2.** All 17 reply
+   threads live there. Chapters 3-10 have had one reader, so an owner field elsewhere
+   records an assumption.
+
+### Suggested first three work items, by whether the answer exists today
+
+| | work | threads | blocked on |
+|---|---|---:|---|
+| 1 | Strip LLM-as-judge from ch3/7/8/9/10 | ~28 | nothing |
+| 2 | Fix grain / split descriptions | ~6 | nothing |
+| 3 | Mechanical sweeps (9 subtitles, 6 watermarks, 8 appendix) | ~23 | nothing |
+
+Item 1 is text that is factually wrong about the thesis's own method, in the chapters
+read for method validity, and the answer is already known. It is the cheapest large win
+in the corpus and it is independent of every pending result.
+
+Items 4-6 (exogenous enrichment, then the ch6/8/9 verify+source+prose bulk, then the RAM
+premise) are unchanged from F40's ordering and are blocked on a scope decision, on SRQ4
+results, and on P0044 respectively.
+
+### Handover note
+
+The enrichment argument (ch1 x11, ch2 x6, ch4, ch5 `MISSING: the holiday api
+enrichment`) is **not a writing task**. It changes feature engineering, hence model
+training, hence every reported number. It moved to **P0046**; do not attempt to resolve
+those threads from inside this plan.
