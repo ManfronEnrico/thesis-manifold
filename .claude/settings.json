@@ -1,5 +1,7 @@
 {
-  "model": "haiku",
+  "env": {
+    "PYTHONIOENCODING": "utf-8"
+  },
   "permissions": {
     "deny": [
       "Read(.env*)",
@@ -19,8 +21,9 @@
       "Write(secret*)"
     ]
   },
-  "env": {
-    "PYTHONIOENCODING": "utf-8"
-  },
-  "hooks": {}
+  "model": "haiku",
+  "hooks": {},
+  "enabledPlugins": {
+    "watermarks-remover@watermarks-remover": true
+  }
 }
