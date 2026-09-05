@@ -1,9 +1,9 @@
 {
   "id": "3",
   "subject": "DECISION GATE (Brian): withdraw, build, or build-and-measure",
-  "description": "Brian chooses A (withdraw the claim, prose only), B (add the feature) or C (add it and report the delta whatever it is). Recommendation on file: C if the schedule permits, A if not; never B. The deciding question is schedule, not whether enrichment would help. Nothing downstream starts until this is set. Record the choice and its reason in progress.md.",
+  "description": "DECIDED 2026-09-05: Option C -- build the holiday feature and report the delta whatever it is, BEFORE the funded runs finish. Brian: the deadline is the reason to do it now, not a constraint to schedule around. Task 2 now only confirms the retrain fits the P0042 schedule; Option A (withdraw the claim) is the fallback if it does not.",
   "activeForm": "Waiting on the enrichment decision gate",
-  "status": "pending",
+  "status": "completed",
   "blocks": [
     "4",
     "5"

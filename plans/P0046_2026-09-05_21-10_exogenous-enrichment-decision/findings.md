@@ -6,63 +6,72 @@ updated: 2026-09-05 21:10:00
 
 # Findings — P0046
 
-## F1 — This project already removed a fake holiday feature, for the reason that matters
+## F1 — CORRECTED. The 2026-08-18 rename is NOT evidence against a real holiday calendar
 
-**Read this before costing Option B or C.** On 2026-08-18 the pipeline renamed
-`holiday_month(s)` to `peak_months`, and the code comment explaining why is the single most
-relevant piece of evidence for this decision
-(`_shared_modules/step_3_derive_params.py:105-116`):
+**This finding originally claimed the project had "already run this experiment informally
+and got a negative answer". That was wrong, and Brian corrected it on 2026-09-05.**
+
+What actually happened on 2026-08-18 was a **naming fix**. The feature called
+`holiday_month(s)` was, underneath, computing *peak months* — months whose mean target
+exceeds the overall mean by 10%. It consulted no calendar. The rename made the name match
+the computation (`step_3_derive_params.py:105-116`):
 
 > The rule consults no holiday calendar -- there is no such input anywhere in the pipeline
-> -- so the old name asserted a cause the computation never established, and the evidence
-> frequently contradicts it: CSD peaks at quarter-ends (trade loading), Danskvand in summer
-> (weather), Energidrikke at quarter-ends with no December peak at all.
+> -- so the old name asserted a cause the computation never established.
 
-Two things follow.
+**That is evidence the old feature was mislabelled. It is not evidence that a real holiday
+calendar carries no signal.** A derived peak-month rule and an external holiday calendar are
+different inputs; the first has been tested and the second never has.
 
-**1. The seasonal structure in this panel is mostly not holidays.** Measured per category,
-the peaks are trade loading at quarter-ends and weather in summer. Energidrikke has **no
-December peak at all**. A Danish public-holiday calendar would mark December and Easter —
-months the data says are not where these categories peak.
+The seasonality observations in that comment (CSD peaks at quarter-ends, danskvand in
+summer, energidrikke with no December peak) remain true and remain useful — they describe
+where the *measured* peaks fall. But they were produced by the peak rule, so they cannot
+adjudicate what a holiday calendar would add. In particular:
 
-**2. The original defect survived review *because* of the name.** The notebook hardcoded
-`{1,4,6,10,12}` and called it holiday months; it reads as a plausible holiday list, but read
-as "peak months for soft drinks" it is obviously wrong, since **January is the weakest month
-of the year at -26.6%**.
+- A holiday calendar could mark months the peak rule misses entirely, precisely *because*
+  the peak rule only fires above a 10% uplift threshold.
+- Divergence between the two is not automatically the holiday feature being wrong. It could
+  be signal the peak rule threshold discards.
 
-So the project has already run this experiment informally and got a negative answer. That
-does not settle it — a *real* calendar is not the same as a hardcoded fake one, and holidays
-could still carry signal the peak rule misses. But it does mean:
+**What survives from the original finding, and it is worth keeping:**
 
-- Option B's upside is smaller than the Word comments assume
-- Option C's "measured negative result" is the **likely** outcome, not the fallback one
-- Any holiday feature must be justified **against `peak_month`**, which already captures
-  measured seasonality per category and is derived rather than assumed
+- The new feature must be **justified against `peak_month`**, which already exists and is
+  measured per category. The question to answer empirically is what a calendar adds *over*
+  the peak rule, not whether it correlates with sales.
+- Reporting an "enriched" ensemble without separating the two would repeat the original
+  defect's *shape* — a name asserting a cause the computation never established.
 
-**The trap to avoid:** adding a holiday feature that correlates with `peak_month` where they
-agree and is wrong where they disagree, then reporting the ensemble as "enriched". That
-reintroduces exactly the defect the rename removed, with a real API behind it.
+**Status: no prior art exists.** The enrichment question is genuinely open. Option C's
+delta is unknown rather than predictable, which strengthens the case for measuring it.
 
-## F2 — Monthly grain is the structural argument against holiday features
+## F2 — CORRECTED. The Prophet/grain argument is narrower than first stated
 
-Danish public holidays cluster in a handful of months. At **monthly** aggregation a holiday
-feature is close to a coarse re-encoding of month-of-year, which `month`, `quarter` and
-`peak_month` already carry. The information a holiday calendar adds over a month dummy is
-mostly *within-month timing* — which week Easter falls in, how many trading days a month
-has — and that is invisible at this grain.
+**Also corrected 2026-09-05.** The original F2 argued that a holiday calendar is
+structurally a weekly/daily instrument, and that claiming otherwise would contradict the
+thesis's own explanation of Prophet's weakness (`export_appendix.py:571-576`):
 
-The honest framing, whichever option is chosen: **a holiday calendar is a weekly- or
-daily-grain instrument.** The literature the thesis cites for enrichment (M5, Ma et al.
-2025) works at daily product-store grain. Applying its conclusion at brand x month is the
-step that needs justifying, and it is the same reasoning the thesis already uses to explain
-why Prophet underperforms here — monthly observations do not support the weekly-seasonality
-and holiday-window components the method is designed around
-(`export_appendix.py:571-576`).
+> monthly observations do not support the weekly-seasonality and holiday-window components
+> that the method is designed around
 
-**That existing argument cuts both ways, and consistency matters.** The thesis cannot
-explain Prophet's weakness by "monthly data does not support holiday windows" and then claim
-a holiday calendar materially improves the same monthly models. Either the grain supports
-holiday effects or it does not.
+**The consistency point is real but it is about holiday *windows*, not holiday months.**
+Prophet's holiday component models a window of days around a date — that genuinely cannot
+be expressed at monthly grain. A monthly holiday feature (a count of public-holiday days in
+the month, or trading-day count) is a different construct and is expressible.
+
+So the honest statement is:
+
+- Prophet's holiday-window machinery is unusable at monthly grain -> **still true**, keep it
+- Therefore a monthly holiday feature adds nothing -> **does not follow**, and was never
+  tested
+
+There remains a real question about how much a monthly holiday count adds over `month` and
+`quarter`, which already partition the year. But it is a question for measurement, not a
+settled argument. **Trading-day count in particular is not a re-encoding of month-of-year**
+— it varies year to year for the same calendar month, which is exactly the kind of variation
+a month dummy cannot carry.
+
+This nuance is going into `writing-notes/` (task 9) so the thesis does not accidentally
+argue the overreaching version in prose.
 
 ## F3 — What is actually exogenous today (the ground truth for Option A)
 

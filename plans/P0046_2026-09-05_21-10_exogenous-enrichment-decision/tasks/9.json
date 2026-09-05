@@ -1,0 +1,9 @@
+{
+  "id": "9",
+  "subject": "Record the corrected F1/F2 reasoning in writing-notes",
+  "description": "Write 05_thesis_writing/writing-notes/exogenous-enrichment-and-the-holiday-question.md so the thesis never argues the overreaching version of either trap: (1) the 2026-08-18 peak_months rename is a naming fix on a mislabelled feature, not a negative result about holiday calendars; (2) the Prophet grain argument is about holiday WINDOWS, not monthly holiday counts, and trading-day count is orthogonal to month-of-year. Include what may be claimed today about the live feature set, and both write-up branches depending on how the decision resolves.",
+  "activeForm": "Recording the corrected enrichment reasoning in writing-notes",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

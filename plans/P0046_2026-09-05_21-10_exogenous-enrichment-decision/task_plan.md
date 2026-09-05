@@ -55,10 +55,11 @@ calendar-derived.
 ### Option B — Add a Danish holiday calendar feature
 
 - New input: Danish public holidays (and plausibly school holidays, which move with them).
+  At monthly grain the constructible forms are a **count of public-holiday days per month**
+  and a **trading-day count**, not Prophet-style holiday windows (F2).
 - Cost: feature engineering + full retrain + re-benchmark + regenerate every affected table
   and figure, **before** the funded runs.
-- Risk: see F1. There is a specific, documented reason to expect this to add little at this
-  grain, and a specific way it could make the thesis worse.
+- Risk: reporting only a favourable result. Otherwise the risk is schedule, not validity.
 
 ### Option C — Add it as a measured negative result
 
@@ -71,14 +72,24 @@ Build the feature, benchmark with and without, and **report the delta whatever i
 - Costs the same as B, plus the writing. But it is the only option that converts the
   weakness into a contribution.
 
-## Recommendation
+## Recommendation — Option C, and DECIDED: it runs before the experiments
 
-**Option C if the schedule permits it, Option A if it does not.** Not B — building it and
-reporting only a favourable result is the one path with a real integrity problem.
+**Brian, 2026-09-05: enrichment goes in before the funded runs finish.** The deadline
+argument is the reason, not an obstacle to work around — spending ~$40 of credit against a
+feature set the thesis then abandons is the outcome to avoid.
 
-The deciding question is not "would enrichment help the models". It is **"does the thesis
-have room for another training cycle before the funded runs"**. That is Brian's call, and it
-is the reason this plan opens with a decision rather than a task list.
+Option C (build it, report the delta whatever it is) rather than B: the delta is genuinely
+unknown (F1 as corrected — no real calendar has ever been tested here), so committing in
+advance to reporting it either way is what keeps the result honest. A null result at monthly
+grain is publishable and answers the reviewer objection; a positive result improves the
+models. Both are usable; only "build it and mention it if it helps" is not.
+
+Option A (withdraw) stays on file as the fallback if task 2's sizing shows the retrain
+cannot fit before the funded runs.
+
+**What this changes about sequencing:** enrichment is now upstream of P0042 blocks 1-3, not
+parallel to them. Task 2 sizes it; if the size is compatible, tasks 5-7 run first and the
+funded runs use the final feature set.
 
 ## Tasks
 
@@ -86,7 +97,8 @@ is the reason this plan opens with a decision rather than a task list.
 |---|---|---|---|
 | 1 | Establish the ground truth: what IS exogenous in the live feature set today | — | complete |
 | 2 | Size Option C honestly — hours to feature, retrain, re-benchmark, regenerate tables | 1 | pending |
-| 3 | **DECISION GATE (Brian): A, B or C.** Nothing downstream starts until this is set | 2 | pending |
+| 3 | ~~DECISION GATE~~ **DECIDED 2026-09-05: Option C, before the funded runs.** Task 2 now only confirms it fits the schedule; if it does not, fall back to A | 2 | complete |
+| 9 | Record the corrected F1/F2 reasoning in `writing-notes/` so the thesis never argues the overreaching version | — | pending |
 | 4 | If A: narrow the claims in ch1/ch2/ch3/ch4/ch5 drafts, hand the prose to P0043 | 3 | pending |
 | 5 | If B/C: add the holiday feature to engineer_features.py behind a flag, defaults off | 3 | pending |
 | 6 | If B/C: re-run SRQ1 benchmark with and without; record the delta per category | 5 | pending |
@@ -101,6 +113,9 @@ is the reason this plan opens with a decision rather than a task list.
   at monthly grain is the question here, not whether the grain should change to expose it.
 - **Retro-fitting the claim.** If Option A is chosen, the claim is withdrawn, not softened
   into something that still implies enrichment.
+- **Arguing from the 2026-08-18 rename.** It was a naming fix on a mislabelled peak-month
+  rule, not a negative result about holiday calendars (F1, corrected). Do not cite it as
+  evidence either way.
 
 ## Related
 
