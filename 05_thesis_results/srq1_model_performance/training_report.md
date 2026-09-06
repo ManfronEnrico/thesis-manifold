@@ -118,32 +118,7 @@ A wide interval is not a failure of the model -- it is an honest statement about
 
 The exact payload handed back to the LLM for one brand. Every field beyond the number is provenance: SRQ2 defines traceability as a recorded mapping from tool call to forecast to recommendation, so these fields are the claim, not decoration.
 
-```json
-{
-  "status": "ok",
-  "category": "CSD",
-  "brand": "HARBOE",
-  "forecast_month": "2026-01",
-  "forecast_units": 4261390.0,
-  "interval_90": [
-    1305954.7,
-    13905098.6
-  ],
-  "confidence": 12.6,
-  "confidence_tier": "Low",
-  "model": "XGBoost(tuned)",
-  "model_file": "CSD_model.json",
-  "trained_on": "train+val",
-  "trained_through": "2025-12",
-  "calibrated_on": "val",
-  "calibrated_through": "2025-12",
-  "n_calibration_rows": 665,
-  "interval_method": "split conformal, 90% quantile of validation residuals",
-  "n_features": 13,
-  "serve_seconds": 0.4432,
-  "served_at_utc": "2026-08-19T18:27:39+00:00"
-}
-```
+_could not call the tool: FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\_dev-ssd\\thesis-manifold\\01_SRQ1_Model_Training\\02_thesis_modelling\\scenario_setup\\srq4_experiment.py'_
 
 ---
 

@@ -59,7 +59,8 @@ wcwidth==0.7.0
 # n_series=0 with nan metrics.
 scikit-learn==1.9.0
 xgboost==3.4.1
-# SHAP feature attribution for SRQ1 explainability (srq1_shap.py).
+# SHAP feature attribution for SRQ1 explainability
+# (srq1_generate_shap_figures.py).
 # Was missing until 2026-08-20, which is why shap_importance.csv sat 40 days
 # stale: the script simply could not run in a clean environment.
 shap==0.52.0
@@ -95,3 +96,21 @@ e2b
 optuna==4.7.0
 # Model persistence for non-XGBoost estimators (danskvand serves Ridge).
 joblib==1.5.2
+
+# ---------------------------------------------------------------------------
+# Figure/diagram generation (P0046, 2026-09-06)
+# ---------------------------------------------------------------------------
+# Found by RUNNING the generators rather than reading them: graphviz was neither
+# declared here nor installed, so `generate_architecture_diagrams.py` failed at
+# import and all six conceptual diagrams were unbuildable from a clean clone.
+#
+# NOTE: the Python binding below is NOT sufficient on its own -- graphviz also
+# needs a SYSTEM install providing the `dot` executable on PATH
+# (https://graphviz.org/download/). Without it the import succeeds and rendering
+# fails, which is the more confusing failure of the two.
+graphviz==0.21
+# matplotlib and statsmodels were imported throughout the pipeline but never
+# declared; they happened to be present in the dev venv. A clean clone would
+# have failed on both.
+matplotlib==3.10.7
+statsmodels==0.14.6

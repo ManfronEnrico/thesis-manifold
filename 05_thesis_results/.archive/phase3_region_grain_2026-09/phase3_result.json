@@ -1,0 +1,31 @@
+{
+  "baseline_wmape": 16.5,
+  "winner_model": "LightGBM",
+  "winner_wmape": 21.207979143258708,
+  "results": {
+    "XGBoost": {
+      "test_wmape": 21.234366634866987,
+      "val_wmape": 19.889286461508966,
+      "params": {
+        "n_estimators": 926,
+        "learning_rate": 0.03551730697584442,
+        "max_depth": 9,
+        "min_child_weight": 6.3191275026802485,
+        "subsample": 0.9078840380122636,
+        "colsample_bytree": 0.9489822199694118
+      }
+    },
+    "LightGBM": {
+      "test_wmape": 21.207979143258708,
+      "val_wmape": 20.26105550493552,
+      "params": {
+        "n_estimators": 1098,
+        "learning_rate": 0.038734598364453664,
+        "num_leaves": 128,
+        "min_child_samples": 31,
+        "subsample": 0.9506404929898924,
+        "colsample_bytree": 0.643111884552729
+      }
+    }
+  }
+}

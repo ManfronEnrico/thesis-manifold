@@ -293,7 +293,7 @@ pip list | grep -E "langgraph|pydantic|anthropic|lightgbm|prophet"
 
 ```bash
 # Generate all 6 architecture diagrams (SVG + PNG)
-python generate_figures.py
+python 05_thesis_results/generate_architecture_diagrams.py
 
 # Output location
 ls docs/thesis/figures/

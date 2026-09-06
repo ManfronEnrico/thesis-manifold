@@ -1,11 +1,11 @@
 ---
 name: exogenous-enrichment-and-the-holiday-question
-description: RULE - What the thesis may and may not claim about exogenous enrichment, why the 2026-08-18 peak_months rename is not evidence about holiday calendars, and the precise boundary of the Prophet grain argument.
+description: RULE - What the thesis may and may not claim about exogenous enrichment now that the DK holiday calendar has shipped, why the 2026-08-18 peak_months rename is not evidence about holiday calendars, and the precise boundary of the Prophet grain argument.
 category: reference
 applies-to: [ch1, ch2, ch3, ch4, ch5, ch6, ch10]
 triggers: [writing an enrichment claim, citing M4/M5 explanatory variables, explaining Prophet's weakness, describing the feature set, answering a reviewer on exogenous features]
 created: 2026_09_05-21_40
-updated: 2026_09_05-21_40
+updated: 2026_09_06-15_30
 ---
 
 # Exogenous enrichment and the holiday question
@@ -22,7 +22,8 @@ to the truth, and wrong** — both of which a first pass at this question produc
 | The feature set includes promotional and distribution signals | **True** — `promo_intensity`, `weighted_distribution` |
 | The feature set includes calendar features | **True** — `month`, `quarter`, `peak_month` |
 | The thesis "takes up" M4/M5's explanatory-variable direction | **Not as written** — see below |
-| The pipeline enriches with holiday, weather or macro data | **False** — no such input exists |
+| The pipeline enriches with a Danish public-holiday calendar | **True as of 2026-09-06** — Nager.Date; see "What shipped" |
+| The pipeline enriches with weather or macro data | **False** — no such input exists |
 | The 2026-08-18 rename showed holiday features do not help here | **False** — see Trap 1 |
 | Monthly grain rules out any holiday feature | **False** — see Trap 2 |
 
@@ -63,9 +64,10 @@ Two specific reasons the inference fails:
 - Divergence between the two is not automatically the calendar being wrong. It may be signal
   the threshold discards.
 
-**Do not write, in prose or in a reviewer response, that the project tested holiday features
-and found no effect.** It has not. As of 2026-09-05 the question is open and P0046 exists to
-answer it empirically.
+**Do not write, in prose or in a reviewer response, that the 2026-08-18 rename showed holiday
+features do not help.** It showed no such thing. Since 2026-09-06 a real calendar *has* been
+built and the question is being answered empirically — cite **that** measurement, never the
+rename.
 
 ## Trap 2 — the Prophet grain argument is about holiday *windows*, not holiday months
 
@@ -84,12 +86,27 @@ are:
 | construct | expressible monthly? | orthogonal to `month`? |
 |---|---|---|
 | Prophet-style holiday window (± days around a date) | **No** | — |
-| Count of public-holiday days in the month | Yes | Partly — Easter moves between March and April |
-| **Trading-day count** | Yes | **Yes** — varies year to year for the same calendar month |
+| Count of public-holiday days in the month | Yes | **Partly, and measurably so** |
 
-Trading-day count is the important row. A month dummy cannot carry it, because the same
-calendar month has a different number of trading days in different years. Whatever it
-contributes is information `month`, `quarter` and `peak_month` structurally cannot hold.
+The measured evidence is appendix table 92, and it settles the question better
+than the argument did. Holiday-days per calendar month, 2018–2027:
+
+| month | range |
+|---|---|
+| March | **0 – 4** |
+| April | **0 – 5** |
+| May | **2 – 5** |
+| December | **4 – 4** (flat) |
+
+December is the control: Christmas does not move, so `month` already captures it.
+March and April vary inversely as Easter moves between them, and May falls by one
+from 2024 when **Store Bededag was abolished** — a permanent structural break
+landing mid-panel. A month dummy is by construction identical in every year, so
+none of that variation is reachable from `month`, `quarter` or `peak_month`.
+
+Cite table 92 whenever the enrichment is challenged as month-of-year re-encoded.
+It makes the structural case; the SHAP before/after comparison makes the
+empirical one.
 
 **Consistency requirement.** The thesis must not argue both "monthly data cannot support
 holiday effects" (to explain Prophet) and "our holiday enrichment materially improved the
@@ -97,30 +114,79 @@ monthly models" (to answer the enrichment objection). The reconciliation is the 
 above: *windows* need sub-monthly grain, *counts* do not. State it once, explicitly, wherever
 Prophet's weakness is explained.
 
-## How to write it, depending on how P0046 resolves
+## What shipped (2026-09-06)
 
-**If enrichment ships (P0046 Option C):** report the with/without delta per category
-whatever it is. A null result at monthly grain is a finding — it says the seasonal structure
-in Danish beverage demand is trade-driven rather than holiday-driven, which the peak-month
-evidence already suggests and which nobody has published for this panel. Do not bury it.
+Option C was chosen and built: the feature exists, and the delta will be reported
+whatever it turns out to be. Source is **Nager.Date v3**, free public tier,
+`https://date.nager.at/api/v3/PublicHolidays/{year}/DK` — no API key. (The
+commercial `nagerholidays.com/api/pro/` paths return HTTP 401.) Provenance is
+appendix table 90; the fetch caches per year with a timestamp and per-year
+sha256.
 
-**If it does not ship (Option A):** narrow every claim to promotional + distribution +
-calendar. The M4/M5 "explanatory variables are the open frontier" quotation may stay **only**
-if the thesis stops saying it takes up that direction. Ch10 gets a specific future-work item
-naming the holiday calendar and the grain problem, not a generic "more features".
+Three features, all monthly, all from one join:
 
-Either way, the claim that must not survive is the current one in Ch1 §1.1: *"This thesis
-takes up that direction by incorporating exogenous predictors into its forecasting
-substrate"* — unqualified, it reads as the M5 sense of enrichment, which is not what the
-pipeline does.
+| feature | definition |
+|---|---|
+| `days_in_month` | calendar days |
+| `n_holidays` | public holiday-days in the month |
+| `non_holiday_days` | `days_in_month − n_holidays` |
+
+**Naming matters here and the reason is citable.** `non_holiday_days` is *not*
+"selling days" or "trading days". Danish retail is open at weekends (Lukkeloven
+liberalised 2012), and stores are not uniformly closed on public holidays
+either — so the column is a **proxy for trading exposure, not a measurement of
+it**, and its name must not claim otherwise. This is the same discipline as the
+2026-08-18 `holiday_months → peak_months` rename. State the proxy caveat once,
+wherever the feature is introduced.
+
+### Two things to state in the write-up
+
+1. **Reproducibility limitation.** The calendar is an external source that can be
+   revised upstream — Store Bededag's abolition is exactly such an event. The
+   cache and per-year hashes make a revision *detectable*, not impossible. This
+   is an accepted, stated risk, not a defect to hide.
+2. **Further enrichment as future work.** Weather, macro indicators and search
+   interest are all constructible at monthly grain and none were tested. School
+   holidays were considered and dropped: **no free API was found** (2026-09-06),
+   which is a data-availability boundary worth stating rather than leaving silent.
+
+## How to write it
+
+**Option C shipped**, so this is the branch that applies: report the with/without
+delta per category **whatever it is**. A null result at monthly grain is a
+finding, not a failure — it says the seasonal structure in Danish beverage demand
+is trade-driven rather than holiday-driven, which the peak-month evidence already
+suggests and which nobody has published for this panel. Do not bury it, and do
+not report the favourable categories only.
+
+The M4/M5 "explanatory variables are the open frontier" quotation can now stay,
+because the thesis genuinely does take up that direction — but only at the scale
+it actually did: **one calendar source, monthly grain, measured**. Ch10's
+future-work item stays specific (weather, macro, search interest; school holidays
+blocked on data availability), not a generic "more features".
+
+The Ch1 §1.1 claim still needs narrowing. *"This thesis takes up that direction by
+incorporating exogenous predictors into its forecasting substrate"* reads,
+unqualified, as the M5 sense of enrichment — many exogenous series, richly
+specified. What the pipeline has is promotional and distribution signals plus a
+public-holiday calendar. Name them; the precise version is more defensible than
+the vague one, and the vague one is what drew the five review comments.
+
+**Do not write** that the enrichment "improved accuracy" without the SHAP
+comparison behind it (see the Trap 2 table above) — that is the one claim a
+reviewer can dismantle in a sentence.
 
 ## Related
 
-- `plans/P0046_2026-09-05_21-10_exogenous-enrichment-decision/` — the decision, its findings
-  (F1 and F2 are the corrected versions of the two traps above), and the build tasks
+- `plans/P0046_2026-09-05_21-10_exogenous-enrichment-decision/` (plan **P0047**) — the
+  decision, its findings (F1/F2 are the corrected traps; F5 Store Bededag; F6 the naming;
+  F7 the anti-collinearity evidence), and the remaining build tasks
 - `plans/P0043_.../` — the five Word threads, in the comment corpus (F47)
 - `plans/P0045_.../` — ch1/ch2/ch5 drafts already carry the narrowed claim as an Open item
 - [[sample-size-and-tool-interface-rationale]] §8 — cross-category asymmetry, including
   which categories report promotional measures
-- `02_thesis_data/_02_preprocessing/nielsen/_shared_modules/step_3_derive_params.py` — the
-  rename and its rationale
+- `01_SRQ1_Model_Training/01_thesis_data/_02_preprocessing/nielsen/_shared_modules/step_3_derive_params.py`
+  — the rename and its rationale; also `derive_holiday_enrichment()`, contract v1.2
+- `01_SRQ1_Model_Training/01_thesis_data/_00_raw/holidays/` — fetch, cache, appendix generator
+- `05_thesis_results/appendix/9{0,1,2,3}_holiday_*` — provenance, annual counts,
+  monthly matrix, feature definitions

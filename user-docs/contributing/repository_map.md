@@ -61,7 +61,7 @@ thesis-manifold/
 │
 ├── 04_thesis_results/                 ← Final SRQ outputs (one folder per SRQ)
 │   ├── srq1/, srq2/, srq4/
-│   └── generate_figures.py            ← Thesis figure generator → 05_thesis_writing/figures/
+│   └── generate_architecture_diagrams.py  ← 6 conceptual diagrams → 05_thesis_results/diagrams/
 │
 ├── 05_thesis_writing/                 ← Thesis prose + figures
 │   ├── sections-drafts/               ← Chapter bullet skeletons (kebab-case .md)
