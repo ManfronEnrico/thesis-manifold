@@ -423,27 +423,243 @@ call sites rather than in `PATHS.py`, which is precisely the decentralisation
 this decision ends. It also means a future category with an awkward name has one
 place to be special-cased instead of several.
 
+## F14 — Tier 05 holds no artefacts at all (supersedes F11's second half)
+
+**Decided by Brian, 2026-09-06.** The curation layer proposed in F11 is dropped.
+`05_thesis_writing/` receives **no** figures, tables or diagrams. It holds only
+writing apparatus: `citations/` (Zotero), `docx-exported-snapshots/`,
+`notebookLM/`, `sections-drafts/`, `thesis_inspiration/`, `writing_notes/`.
+
+Every artefact lives exactly once, at the site that produces it, inside
+`04_thesis_results/`. Humans browse that tree and pick what to paste into the
+`.docx`.
+
+**Why this is better than the curation design it replaces** — and the reason is
+stronger than the one that motivated it:
+
+Brian's stated rationale was the clean-repo boundary (tier 05 is not shared, so
+artefacts must not be trapped in it). True, but that is a *side effect*. The
+structural gain is that **there is no second copy of any artefact**. F11's design
+had a curation script copying selected files into tier 05, which meant every
+promoted figure existed twice and something had to keep the two honest. A copy
+whose link to its producer is not machine-checked is exactly the
+`fig2_granularity` failure mode (F4) — a plausible file in a plausible folder
+with nothing tying it to live code. F11 proposed a MANIFEST to defend against
+that; F14 removes the need for the defence by removing the copy. The manifest
+survives as a useful index, but it is no longer load-bearing.
+
+Two further gains:
+
+- **The clean-repo rule becomes one line**: tiers 00-04 ship, tier 05 does not.
+  Under F11 it would have been "tier 05 minus some subfolders", which is a rule
+  someone eventually gets wrong.
+- **Tier 05 becomes semantically coherent for the first time.** Everything left
+  in it is writing apparatus — Zotero state, review passes, working notes.
+  Figures were the only occupant that was not.
+
+## F15 — Routing rule: producer tier decides, tier 04 receives
+
+**Decided by Brian, 2026-09-06.** Which folder a generator lives in is settled by
+what it is *about*; where it writes is always tier 04.
+
+| Producer lives in | Because it is about | Writes to |
+|-------------------|---------------------|-----------|
+| `02_thesis_data/` | data processing, EDA, feature engineering | `04_thesis_results/eda/{category}/` |
+| `03_thesis_modelling/` | training, serving, orchestration | `04_thesis_results/srq{N}/` |
+| `04_thesis_results/` (own scripts) | general/conceptual diagrams, cross-cutting tables | `04_thesis_results/diagrams/` |
+
+This is the same train-vs-serve-vs-scenario test `.claude/rules/repo-tier-structure.md`
+already applies to scripts, now extended to their outputs — one rule covering
+both, rather than two rules that can drift apart.
+
+It also resolves the Q3 thrash. Three homes were proposed for the two diagram
+generators in as many hours: `04_thesis_results/diagrams/` (F11),
+`00_thesis_context/diagrams/` (my revision, on the reasoning that the production
+tree is what assessors read), and now back to `04_thesis_results/diagrams/`.
+The revision was wrong for a specific reason worth recording: it optimised for
+*semantic fit within the shipped tree* while forgetting that tier 00 is not in
+the shipped tree either. Brian's constraint — assessors see tiers 00-04, and
+artefacts must be findable in one place — makes tier 04 the only destination that
+satisfies both. **Semantic fit is expressed by the producer's location and the
+subfolder name, not by which tier the output lands in.**
+
+### The one exception: EDA volume
+
+The ~240 EDA plots/tables are pipeline outputs, so F15's rule would route them
+wholesale into `04_thesis_results/eda/`. That would recreate, at 10x scale, the
+browsing problem F16 identifies. They stay written where the pipeline writes
+them (`02_thesis_data/.../pipeline_step_outputs/`), and only the EDA artefacts
+that are genuine thesis candidates get written to tier 04. This is the single
+place a promotion step still earns its keep — and unlike F11's version, it
+promotes *into* the shipped tree, not out of it.
+
+## F16 — `04_thesis_results/` is not currently browsable, which F14 requires
+
+F14/F15 promote tier 04 to "the tree humans browse to pick artefacts". It is not
+in a state to serve that role.
+
+`04_thesis_results/srq1/` holds **36 loose files at its top level** — 20 `.csv`,
+13 `.md`, 3 `.json` — while `srq1/figures/` holds only 4. Among them sit
+`metrics.csv`, `tuned_metrics.csv` and `cv_metrics.csv` side by side. Nothing in
+the naming says which one a chapter should cite. Compare `04_thesis_results/appendix/`
+(F7), which is uniform and readable.
+
+**Consequence for the plan:** centralising the *destination* without imposing a
+shape inside it centralises the location and keeps the disorder. Each results
+folder needs a consistent internal layout — `figures/`, `tables/`, `models/`,
+`raw/` — so that browsing is uniform regardless of which SRQ is open. Added as
+Phase 3b.
+
+Two leftovers found in the same sweep, both the same class as the F4 zombie —
+an output whose producing code is gone:
+
+- `04_thesis_results/phase3_region_grain_test/phase3_result.json` — P0035
+  archived the region-grain *script* to `.archive/grain_artifacts_p0035_2026-08/`
+  but left its *output* in place, in what is about to become the deliverable tree.
+- `04_thesis_results/__pycache__/` — build clutter in the same tree.
+
+## F17 — `fig2_granularity.png`: delete, on evidence
+
+**Decided 2026-09-06.** Verified before deciding, and the check changed my
+recommendation:
+
+- **It is committed in git** — `4c7a98b` ("feat: SRQ1 publication figures") and
+  again in the flatten `8329881`. `git show 4c7a98b:<path>` recovers it. An
+  archive folder duplicates what version control already does.
+- **No chapter cites the filename.** A repo-wide search for `fig2_granularity`
+  returns 9 files: the P0046 and P0035 plan docs, `PLANS_INDEX.md`, and the two
+  copies of `srq1_figures.py`. Zero chapters, zero snapshots. (The word
+  "granularity" appears in many chapters, but as ordinary methodology
+  vocabulary — not as a figure reference.)
+- **The decision survives elsewhere** — the `srq1_figures.py` docstring note, the
+  archived P0035 plan, and `.archive/grain_artifacts_p0035_2026-08/`. None of
+  those is the image.
+
+My earlier argument for archiving was "an examiner might ask about the dropped
+grain". Brian's clean-repo constraint kills it: tier 05's archive is not shared,
+so archiving there protects against a reader who by construction cannot see it.
+A folder that costs nothing and does nothing.
+
+## F18 — `ch1_research_questions_tree` → generator
+
+**Decided by Brian, 2026-09-06.** Added to the diagram generator as a seventh
+graphviz figure rather than redrawn by hand. The RQ set has already moved once;
+a node list is a cheap edit next time it moves, whereas a hand-drawn tree goes
+stale silently and nothing detects it.
+
+## F19 — The SRQ-aligned restructure (2026-09-06) and what it broke
+
+Brian restructured the repo between sessions: top-level folders now map
+one-to-one onto research questions.
+
+| Was | Now |
+|-----|-----|
+| `01_thesis_research/` | archived; `research-questions/` -> `00_thesis_context/` |
+| `02_thesis_data/` | `01_SRQ1_Model_Training/01_thesis_data/` |
+| `03_thesis_modelling/` | `01_SRQ1_Model_Training/02_thesis_modelling/` |
+| `03_thesis_modelling/scenario_setup/` | `04_SRQ4_Scenario_Experiment/scenario_setup/` |
+| `04_thesis_results/` | `05_thesis_results/` |
+| `05_thesis_writing/` | `06_thesis_writing/` |
+| — | `02_SRQ2_Tool_Interface/`, `03_SRQ3_Integration_Readiness/` (empty) |
+
+**This silently broke every pipeline script.** A probe of `PATHS.py` on the new
+tree found **32 of 34 directory constants resolving to non-existent paths** —
+including `THESIS_DATA_DIR`, `THESIS_RESULTS_DIR` and every raw/converted/
+engineered tier. 87 files import PATHS (about 40 live, the rest archived).
+
+`import PATHS` still succeeded, which is exactly why this was invisible: the
+constants are `Path` objects, and `Path` construction never validates. Nothing
+fails until a script actually reads or writes. **This vindicates
+DEC-P0046-PATHS more sharply than the original argument did**: the value of
+centralisation here was not tidiness, it was that one file had to be repaired
+instead of forty, and that a single probe could enumerate the whole blast radius.
+
+Worth adding to the plan's own practice: a `PATHS.py` self-check that asserts
+every `*_DIR` exists (excluding documented placeholders) turns this class of
+breakage from silent into loud. Proposed for Phase 6 alongside the manifest.
+
+### Three constants removed rather than repointed
+
+`model_serving_interface/` and its `system_a_forecast/`,
+`system_b_conversational/`, `srq2_synthesis/` subfolders no longer exist as live
+code — `forecast_service.py`, `srq2_synthesis.py` and `srq2_agent.py` are all in
+`.archive/superseded_scripts_2026-08/`. SRQ2's live surface is now
+`02_SRQ2_Tool_Interface/forecast_tool.py`. The constants were **removed**, not
+repointed, because there is no live directory to point at — and a constant
+resolving to a missing path is precisely how this breakage went unnoticed.
+`THESIS_DATA_ASSESSMENT_DIR` was removed for the same reason.
+
+## F20 — `05_thesis_results/` slugs and the SRQ4 run split (executed)
+
+Per Brian's instruction, results folders now carry descriptive slugs, and SRQ4's
+per-run material moved to live beside the harness that produced it:
+
+- `srq1/` -> `srq1_model_performance/`
+- `srq2/` -> `srq2_structured_tool_interface/`
+- `srq4/` -> `srq4_scenario_experiments/`
+- new: `srq3_integration_readiness/`, `diagrams/`, `eda/`
+- `srq4_scenario_experiments/{run_*,raw_responses}` ->
+  `04_SRQ4_Scenario_Experiment/runs/`
+
+This **settles the open question** from Session 2 (fold `srq4/` run folders under
+`raw/`, or not). Brian's answer is better than either option I offered: the runs
+do not belong in the results tier at all. `srq4_scenario_experiments/` now holds
+exactly the 5 aggregation files (`summary.md`, `runs.csv`,
+`interval_communication.{csv,md}`, `RESULTS_2026-08-19.md`), and the 4 run
+folders sit with the harness.
+
+The generalised rule (DEC-P0046-RUNS-WITH-EXPERIMENT): **raw per-run material
+lives with the experiment; only the aggregation across runs reaches the results
+tier.** This also answers what `raw/` would have contained for SRQ1/SRQ2, which I
+could not answer in Session 2 — the answer is nothing, because `raw/` was the
+wrong idea. The per-SRQ shape is `figures/`, `tables/`, `models/`; no `raw/`.
+
+## F21 — EDA split: .csv stays, .md and .png promote
+
+**Decided by Brian, 2026-09-06.** My Session 2 proposal (keep all ~240 EDA files
+at the pipeline, promote a hand-picked few) was the wrong cut. Brian's cut is by
+*file type*, and it follows from what consumes each:
+
+- **`.csv` stays in `pipeline_step_outputs/`** — downstream EDA steps read them
+  (structural breaks, ADF-per-brand feed data-handling decisions). They are
+  pipeline plumbing.
+- **`.md` tables and `.png` plots promote to `05_thesis_results/eda/{category}/`**
+  — they are generated *to be read*, i.e. report material.
+
+Volume: ~30 `.md` + 8 `.png` = 38 per category, ~150 across four categories. Not
+the ~240 I feared, because the CSVs are the bulk of it.
+
+Why this is better than my version: my "promote only thesis candidates" required
+a human decision per file *before* the citation sweep, which is the wrong order.
+A type-based rule is mechanical, needs no judgement, and still leaves the picking
+to humans browsing the results tier — which is the whole point of F14.
+
+## F22 — Clean-repo boundary corrected
+
+I wrote in F14 that the rule reduces to "tiers 00-04 ship, tier 05 does not".
+**Wrong.** Brian: tier 00 is the AI-guided writing harness and is excluded too.
+
+The correct boundary, after the F19 renumbering:
+
+- **Ships**: `01_SRQ1_...` through `05_thesis_results/` — the four SRQ tiers and
+  the results.
+- **Excluded**: `00_thesis_context/` (research questions, methodology notes,
+  compliance working notes) and `06_thesis_writing/` (Zotero, snapshots,
+  notebookLM, drafts).
+
+The shipped set is exactly *the work*: the SRQs and what they produced. The
+excluded set is exactly *the apparatus for writing about the work*. That is a
+cleaner line than the one I drew, and it strengthens F14 rather than weakening
+it — the artefact rule matters more, not less, when two tiers are excluded.
+
 ## Open questions for Brian
 
-Q1 (curation vs. move) and the PATHS question are **settled** — see F11 and F13.
-Q2 is **reframed** by F12: no longer one bulk verdict but 18 per-file
-restore-or-retire calls, and it needs Phase 5's citation sweep as input before it
-can be answered. Remaining:
+1. **Deferred to Phase 5** — the 18-row restore-or-retire table (F12), fillable
+   once the citation sweep says which figures the chapters cite. Note these files
+   are now at `06_thesis_writing/analysis/figures{,_agentic}/`.
 
-1. **`ch1_research_questions_tree`** — no producer, and its content (the RQ/SRQ
-   tree) has changed. Redraw by hand, or add it to the diagram generator as a
-   seventh graphviz figure? The latter costs ~40 lines and makes it permanently
-   self-updating; given the RQ set has already moved once, I lean that way.
-
-2. **Zombie deletion** — confirm `fig2_granularity.png` is deleted outright
-   rather than archived. My argument for delete: P0035 already preserved the
-   chain-grain evidence at `plans/P0035_.../preserved_chain_grain_results/`, so
-   archiving it again duplicates a preservation that already exists.
-
-3. **`04_thesis_results/diagrams/` as the production home** for the two diagram
-   generators (F11) — reasonable, or somewhere else? They are the only generated
-   artefacts with no tier-04 home, precisely because they were writing straight
-   into tier 05.
-
-4. **Deferred to Phase 5** — the 18-row restore-or-retire table (F12), fillable
-   once we know which figures the chapters actually cite.
+2. **New, from F19** — `srq1_model_performance/` and
+   `srq2_structured_tool_interface/` are, in Brian's assessment, stale to unknown
+   degrees (srq2 still carries LLM-as-Judge output from a dropped design). The
+   staleness triage is Phase 3b's real work; `appendix/` and
+   `srq4_scenario_experiments/` are believed current.

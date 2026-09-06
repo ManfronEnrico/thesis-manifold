@@ -1,7 +1,7 @@
 ---
 pid: P0046
 created: 2026-09-05 20:40:00
-updated: 2026-09-05 21:05:00
+updated: 2026-09-06 12:00:00
 ---
 
 # P0046 — Progress Log
@@ -97,21 +97,151 @@ Phase 2's leftover — the restore-or-retire table cannot be filled in without
 knowing what the chapters cite. A new Phase 6 holds the curation script and
 manifest; the style pass moved to Phase 7.
 
+## Session 2 — 2026-09-06
+
+**Goal:** settle the three open questions so Phase 3 can execute. All three
+settled; the answer to Q3 reversed the plan's architecture, so Phase 2's design
+is partly superseded before any of it was built. Nothing on disk changed.
+
+### What was decided
+
+1. **Q1 → generator** (F18). Straightforward; Brian agreed with the
+   recommendation.
+
+2. **Q2 → delete** (F17). Brian rejected archiving and asked me to help decide
+   rather than just assert. Checking changed my answer: the file is committed at
+   git `4c7a98b`, and a repo-wide search for the filename returns 9 files, all
+   plan docs and generator copies — no chapter. My archive argument had been
+   "an examiner might ask", which the clean-repo constraint kills outright: a
+   tier-05 archive is never shared, so it protects against a reader who cannot
+   see it.
+
+3. **Q3 → tier 04 is the single home** (F14/F15). This is the significant one.
+
+### The Q3 reversal, recorded honestly
+
+Three destinations were proposed for the diagram generators inside a few hours:
+
+| Proposal | By | Reasoning | Fate |
+|---|---|---|---|
+| `04_thesis_results/diagrams/` | me, F11 | one production site per writer | superseded, then re-adopted |
+| `00_thesis_context/diagrams/` | me, revised | tier 04 is "results"; diagrams are context, and the production tree is what assessors read | **wrong** — tier 00 is not shipped either |
+| `04_thesis_results/diagrams/` | Brian, F15 | tiers 00-04 all ship; artefacts must be findable in one place | adopted |
+
+The middle step is the instructive error. I optimised for semantic fit inside
+"the shipped tree" while getting the shipped tree's boundary wrong — the whole
+revision rested on a premise Brian corrected in one line. The lesson recorded in
+F15: **semantic fit is carried by the producer's location and the subfolder name,
+not by which tier the output lands in.**
+
+Brian's larger move was better than either of my proposals: drop the curation
+layer entirely, so tier 05 holds no artefacts. He justified it by the sharing
+boundary; the stronger justification (F14) is that it eliminates the second copy,
+which is what the F11 manifest existed to police. Removing the thing the defence
+was defending beats building the defence.
+
+### Consequences for the plan
+
+- Phase 3's destinations changed; three `THESIS_WRITING_*` constants dropped
+  before being written — they would have institutionalised what F14 removes.
+- **Phase 3b is new** (F16). Tier 04 is now the browse-and-pick tree, and it is
+  not fit for that: `srq1/` has 36 loose top-level files, three of them
+  differently-named metrics CSVs. Centralising the destination without a shape
+  inside it relocates disorder rather than fixing it.
+- Phase 6 shrank from "curation script + manifest" to "manifest as index". Its
+  invariant flipped usefully: instead of *every tier-05 file has a manifest row*,
+  it is now **every tier-04 artefact has a live producer** — which would catch
+  both the F4 zombie and the F16 leftover automatically.
+
+### Found while inspecting tier 04
+
+- `04_thesis_results/phase3_region_grain_test/phase3_result.json` — P0035
+  archived the region-grain script but left its output behind. Same class as the
+  zombie: an artefact whose producer is gone.
+- `04_thesis_results/__pycache__/` — clutter in what is about to be the
+  deliverable tree.
+
+### Errors
+
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| `grep -rl` over the repo timed out at 120s **again** | 2 | Same Z:-drive cause logged in Session 1, and I reached for `grep` anyway despite having written the fix down. Used the Grep tool; it returned in seconds. The background job later completed and agreed exactly with the tool's results. Worth a `/errors-log` entry: the fix is known, the failure is that it was not applied. |
+
+## Session 3 — 2026-09-06
+
+**Context:** Brian restructured the repo to SRQ-aligned tiers between sessions
+and asked for `PATHS.py` to be updated to match.
+
+### The thing that mattered most was not the thing that was asked
+
+The request was "update PATHS.py accordingly". Probing first turned up that
+**32 of 34 directory constants were resolving to non-existent paths** — every
+data tier, every results path, all of modelling. Every pipeline script in the
+repo was broken, and `import PATHS` still succeeded, because `Path()` never
+validates. Nothing would have failed until someone ran a pipeline and it wrote
+to, or failed to find, the wrong place.
+
+Checking before editing was what surfaced it; the request as phrased sounded
+like routine bookkeeping.
+
+### Done
+
+- **`PATHS.py` rewritten** for the new layout. 43 constants, verified: 3 misses
+  remain and all three are pre-existing SPSS placeholders documented as empty
+  since before this session.
+- **Removed rather than repointed**: `THESIS_MODELLING_SERVING_*` (x4) and
+  `THESIS_DATA_ASSESSMENT_DIR` — those directories are genuinely gone, their
+  scripts archived. Repointing them at plausible-looking paths would have
+  recreated exactly the silent-breakage pattern being fixed.
+- **New constants** for the SRQ tiers, the slugged results folders, the
+  diagrams/EDA/appendix destinations, and the writing-tier subfolders.
+- **New helpers**: `get_srq_results_dir()`, `get_category_eda_{plots,tables,results}_dir()`.
+- **On disk**: results folders slugged; `diagrams/`, `eda/`,
+  `srq3_integration_readiness/` created; SRQ4's 3 run folders + `raw_responses`
+  moved to `04_SRQ4_Scenario_Experiment/runs/`, leaving exactly the 5
+  aggregation files in the results tier.
+- Smoke-tested `srq1_figures.py` and `export_appendix.py` compile.
+
+### Where Brian's judgement beat mine, twice
+
+1. **EDA split** (F21). I proposed keeping all ~240 files at the pipeline and
+   promoting hand-picked candidates. Brian split by *file type*: `.csv` stays
+   (downstream steps consume it), `.md` and `.png` promote (they are generated to
+   be read). Better because it is mechanical — mine required a human decision per
+   file before the citation sweep, which is the wrong order. It is also less
+   volume than I feared: ~150, not ~240, since the CSVs are the bulk.
+
+2. **SRQ4 runs** (F20). I offered fold-under-`raw/` or keep-as-is. Brian's answer
+   was that runs do not belong in the results tier at all — they live with the
+   experiment. This also retro-answers the question I could not answer in Session
+   2 ("what would `raw/` hold for SRQ1?"): nothing, because `raw/` was the wrong
+   idea.
+
+And one correction: I had written the clean-repo boundary as "tiers 00-04 ship".
+Tier 00 is excluded too (F22). The corrected line — the four SRQ tiers plus
+results ship; context and writing do not — is cleaner than mine: the shipped set
+is the work, the excluded set is the apparatus for writing about it.
+
+### What F19 says about the plan's own thesis
+
+DEC-P0046-PATHS was argued on tidiness grounds. This session gave it a sharper
+justification: because the paths were centralised, **one file needed repair
+instead of forty**, and a single probe enumerated the entire blast radius. The
+counterfactual — 40 scripts each holding their own relative strings — would have
+been discovered one crash at a time over weeks.
+
+Proposed for Phase 6 as a result: a `PATHS.py` self-check asserting every `*_DIR`
+exists apart from declared placeholders. That converts this class of breakage
+from silent to loud, and it is the same shape as the manifest's "every artefact
+has a live producer" invariant.
+
 ### Next session starts here
 
-**Phase 3 — `PATHS.py` constants.** Chosen as the entry point because it is the
-only phase that is purely additive: no artefact is moved, deleted or regenerated,
-so nothing is at risk if the approach needs adjusting. Everything destructive
-(Phase 4) waits until the constants exist.
+**Finish Phase 3** (the generator repointing — small, mechanical, now unblocked),
+then **Phase 3b**, which is the substantive work: the staleness triage of
+`srq1_model_performance/` and `srq2_structured_tool_interface/`. Brian believes
+`appendix/` and `srq4_scenario_experiments/` are current and the other two are
+not — srq2 still carries LLM-as-Judge output from a dropped design.
 
-Order within Phase 3:
-1. Add the eight constants/helpers (findings F13 table).
-2. Fix the stale `sections-final/` docstring line.
-3. Repoint the two generators that hard-code `"05_thesis_writing/figures"` —
-   this is the change that stops tier 05 being written by anything but curation.
-4. Delete the byte-identical shadow copy under `utility_scripts/scripts/`.
-
-Still open for Brian (findings "Open questions"): `ch1_research_questions_tree`
-redraw-vs-generate, zombie delete-vs-archive, and whether
-`04_thesis_results/diagrams/` is the right production home for the two diagram
-generators.
+Phase 4 must wait for 3b: regenerating into a layout that is about to change, or
+regenerating artefacts that should be dropped, wastes the run.

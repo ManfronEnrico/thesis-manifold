@@ -11,25 +11,35 @@ instead of hardcoded strings.
 
 Reference: PATHS_markdown.ipynb for detailed documentation with examples.
 
-Locked repo structure (P0028 restructure, 2026-07-11) — see
-.claude/rules/repo-tier-structure.md for the full authoritative reference:
+Repo structure — SRQ-ALIGNED RESTRUCTURE, 2026-09-06 (P0046). This SUPERSEDES
+the P0028 topic-oriented tiers. Top-level folders now map one-to-one onto the
+research questions, so a script's location states which SRQ it answers:
 
-    00_thesis_context/    thesis-topic/, formal-requirements/
-    01_thesis_research/   research-questions/, literature/
-    02_thesis_data/       _00_raw/ .. _03_engineered/ (pipeline tiers),
-                          preprocessing/ (per-category scripts, not data)
-    03_thesis_modelling/  model_training/ (SRQ1: trains the models),
-                          model_serving_interface/ (SRQ2: exposes them through a
-                          structured tool interface),
-                          scenario_setup/ (SRQ4: runs + logs the scenarios),
-                          .archive/ (superseded notebooks + SRQ2 prompt set)
-    04_thesis_results/    srq{N}/ subfolders — new SRQ results always go here,
-                          never a new top-level tier
-    05_thesis_writing/    sections-drafts/, sections-final/, figures/, analysis/
+    00_thesis_context/          research-questions/, thesis-topic/,
+                                formal-requirements/, methodology/,
+                                prometheus-integration/
+    01_SRQ1_Model_Training/     01_thesis_data/  (_00_raw .. _03_engineered)
+                                02_thesis_modelling/  (model_training/)
+    02_SRQ2_Tool_Interface/     forecast_tool.py, forecast_log.jsonl
+    03_SRQ3_Integration_Readiness/   (empty — SRQ3 not yet started)
+    04_SRQ4_Scenario_Experiment/     scenario_setup/, plus the runs and raw
+                                responses those scenarios produce
+    05_thesis_results/          srq{N}_{slug}/ — aggregated tables, figures and
+                                diagrams ONLY. Every artefact that could enter
+                                the thesis lives here, exactly once.
+    06_thesis_writing/          citations/, docx-exported-snapshots/,
+                                notebookLM/, sections-drafts/, writing_notes/
+
+CLEAN-REPO BOUNDARY (DEC-P0046-SHIP-SCOPE): tiers 01-05 ship to assessors.
+Tier 00 and tier 06 are the AI-guided writing harness and are excluded.
+
+ARTEFACT RULE (DEC-P0046-SINGLE-HOME): tier 06 holds NO figures, tables or
+diagrams. Producers live with their SRQ and write into 05_thesis_results/.
+There is no second copy of any artefact anywhere.
 
 Everything else at root (utility_scripts/, plans/, user-docs/, .claude/) is
-tooling/governance/docs, not thesis content, and is out of this numbered tier
-scheme by design.
+tooling/governance/docs, not thesis content, and is out of this numbered scheme
+by design.
 """
 
 
@@ -81,105 +91,216 @@ Example:
 
 THESIS_CONTEXT_DIR: Path = ROOT_DIR / "00_thesis_context"
 """
-Tier 00 — project context: thesis topic overview and formal/compliance requirements.
+Tier 00 — project context. NOT shipped to assessors (writing harness).
 
-Holds 'thesis-topic/' (frozen decisions, project-state.md) and
-'formal-requirements/' (CBS compliance notes). Research questions live in
-THESIS_RESEARCH_QUESTIONS_DIR (tier 01), not here.
+Holds 'research-questions/' (moved here 2026-09-06 when 01_thesis_research/ was
+archived), 'thesis-topic/', 'formal-requirements/', 'methodology/' and
+'prometheus-integration/'.
 
 Example:
     from PATHS import THESIS_CONTEXT_DIR
-    print(THESIS_CONTEXT_DIR.resolve())  # C:\\dev\\thesis-manifold\\00_thesis_context
+    print(THESIS_CONTEXT_DIR.resolve())
 """
 
-THESIS_RESEARCH_DIR: Path = ROOT_DIR / "01_thesis_research"
-"""
-Tier 01 — research questions and literature corpus.
+# REMOVED 2026-09-06 (P0046 SRQ restructure): THESIS_RESEARCH_DIR and
+# THESIS_RESEARCH_LITERATURE_DIR. The 01_thesis_research/ tier was archived; its
+# research-questions/ folder moved under 00_thesis_context/ (see
+# THESIS_CONTEXT_RESEARCH_QUESTIONS_DIR below) and the literature corpus now
+# lives with the writing apparatus at 06_thesis_writing/citations/ (see
+# THESIS_WRITING_CITATIONS_DIR). The tier number 01 was reused for
+# 01_SRQ1_Model_Training/, so leaving these constants pointing at
+# "01_thesis_research" would have silently resolved into an unrelated tree.
 
-Example:
-    from PATHS import THESIS_RESEARCH_DIR
-    print(THESIS_RESEARCH_DIR.resolve())  # C:\\dev\\thesis-manifold\\01_thesis_research
+THESIS_CONTEXT_RESEARCH_QUESTIONS_DIR: Path = THESIS_CONTEXT_DIR / "research-questions"
 """
-
-THESIS_RESEARCH_QUESTIONS_DIR: Path = THESIS_RESEARCH_DIR / "research-questions"
-"""
-Directory containing the thesis research questions (RQs, SRQs).
-
-Example:
-    from PATHS import THESIS_RESEARCH_QUESTIONS_DIR
-    rqs = THESIS_RESEARCH_QUESTIONS_DIR / "research-questions.md"
-"""
-
-THESIS_RESEARCH_LITERATURE_DIR: Path = THESIS_RESEARCH_DIR / "literature"
-"""
-Directory containing the working literature corpus (bibtex.bib, citations.json).
+The RQ/SRQ definitions. Moved from 01_thesis_research/research-questions/ on
+2026-09-06.
 
 Example:
-    from PATHS import THESIS_RESEARCH_LITERATURE_DIR
-    bib = THESIS_RESEARCH_LITERATURE_DIR / "bibtex.bib"
+    from PATHS import THESIS_CONTEXT_RESEARCH_QUESTIONS_DIR
+    rqs = THESIS_CONTEXT_RESEARCH_QUESTIONS_DIR / "2026_08_22-20_00-research-questions.md"
 """
 
-THESIS_RESULTS_DIR: Path = ROOT_DIR / "04_thesis_results"
+THESIS_CONTEXT_METHODOLOGY_DIR: Path = THESIS_CONTEXT_DIR / "methodology"
 """
-Tier 04 — SRQ outputs (forecasting, synthesis, code-as-action) and generated figures.
+Saunders research-onion notes and the SRQ4 evaluation protocol.
+"""
+
+THESIS_CONTEXT_REQUIREMENTS_DIR: Path = THESIS_CONTEXT_DIR / "formal-requirements"
+"""
+CBS compliance notes, citation-verification SOP, compliance reports.
+"""
+
+THESIS_RESULTS_DIR: Path = ROOT_DIR / "05_thesis_results"
+"""
+Tier 05 — THE single home for every figure, table and diagram that could enter
+the thesis. Shipped to assessors.
+
+Renumbered from 04_thesis_results/ on 2026-09-06. Per DEC-P0046-SINGLE-HOME no
+artefact is ever copied out of here into the writing tier: humans browse this
+tree and paste from it directly into the .docx.
+
+Per DEC-P0046-ROUTING, producers live with their SRQ (01_SRQ1_.., 04_SRQ4_..)
+and write their aggregated outputs here. Raw per-run material stays with the
+experiment that produced it, NOT here.
 
 Example:
     from PATHS import THESIS_RESULTS_DIR
-    print(THESIS_RESULTS_DIR.resolve())  # C:\\dev\\thesis-manifold\\04_thesis_results
+    print(THESIS_RESULTS_DIR.resolve())
 """
 
-THESIS_WRITING_DIR: Path = ROOT_DIR / "05_thesis_writing"
+THESIS_RESULTS_SRQ1_DIR: Path = THESIS_RESULTS_DIR / "srq1_model_performance"
 """
-Tier 05 — thesis prose: section drafts, final sections, references.
+SRQ1 — model performance: benchmark metrics, calibration, SHAP, demand classes.
+
+Renamed from "srq1" 2026-09-06 to carry a descriptive slug (DEC-P0046-SLUGS).
+NOTE: contents are known to be partly stale (P0046 F16/F19) and are pending the
+Phase 3b reorganisation into figures/ tables/ models/.
+"""
+
+THESIS_RESULTS_SRQ2_DIR: Path = THESIS_RESULTS_DIR / "srq2_structured_tool_interface"
+"""
+SRQ2 — structured tool interface results.
+
+Renamed from "srq2" 2026-09-06. NOTE: known to contain LLM-as-Judge outputs from
+a dropped design (P0046 F19); do not cite before the Phase 3b staleness triage.
+"""
+
+THESIS_RESULTS_SRQ3_DIR: Path = THESIS_RESULTS_DIR / "srq3_integration_readiness"
+"""
+SRQ3 — integration readiness. Placeholder: SRQ3 has not been started, so this
+directory may not exist on disk yet.
+"""
+
+THESIS_RESULTS_SRQ4_DIR: Path = THESIS_RESULTS_DIR / "srq4_scenario_experiments"
+"""
+SRQ4 — scenario comparison: AGGREGATED results only (summary tables, figures).
+
+Renamed from "srq4" 2026-09-06. Per DEC-P0046-RUNS-WITH-EXPERIMENT the per-run
+folders and raw LLM responses live at SRQ4_EXPERIMENT_DIR, not here — this holds
+the aggregation across runs.
+"""
+
+THESIS_RESULTS_APPENDIX_DIR: Path = THESIS_RESULTS_DIR / "appendix"
+"""
+Generated appendix tables (.md + .csv twins) written by
+04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py.
+
+Replaces that script's former inline `THESIS_RESULTS_DIR / "appendix"`.
+"""
+
+THESIS_RESULTS_DIAGRAMS_DIR: Path = THESIS_RESULTS_DIR / "diagrams"
+"""
+Conceptual/architecture diagrams (graphviz + matplotlib), produced by
+05_thesis_results/generate_figures.py.
+
+Created 2026-09-06 to give the diagram generators a home inside the results
+tier. They previously wrote straight into the writing tier's figures/ folder,
+which DEC-P0046-SINGLE-HOME forbids.
+"""
+
+THESIS_RESULTS_EDA_DIR: Path = THESIS_RESULTS_DIR / "eda"
+"""
+Per-category EDA artefacts promoted as thesis candidates: the markdown tables
+and PNG plots (~38 per category).
+
+Per DEC-P0046-EDA-SPLIT the .csv step outputs stay in the pipeline, because
+downstream EDA steps consume them; the .md tables and .png plots are report
+material and belong here.
+"""
+
+THESIS_WRITING_DIR: Path = ROOT_DIR / "06_thesis_writing"
+"""
+Tier 06 — the writing harness. NOT shipped to assessors.
+
+Renumbered from 05_thesis_writing/ on 2026-09-06. Holds ONLY writing apparatus:
+citations/ (Zotero), docx-exported-snapshots/, notebookLM/, sections-drafts/,
+thesis_inspiration/, writing_notes/.
+
+Per DEC-P0046-SINGLE-HOME this tier holds NO figures, tables or diagrams. If you
+are about to write an artefact here, it belongs in THESIS_RESULTS_DIR instead.
 
 Example:
     from PATHS import THESIS_WRITING_DIR
-    print(THESIS_WRITING_DIR.resolve())  # C:\\dev\\thesis-manifold\\05_thesis_writing
+    print(THESIS_WRITING_DIR.resolve())
 """
 
-THESIS_RESULTS_SRQ1_DIR: Path = THESIS_RESULTS_DIR / "srq1"
+THESIS_WRITING_CITATIONS_DIR: Path = THESIS_WRITING_DIR / "citations"
 """
-Forecasting benchmark results (tuned XGBoost, calibration, SHAP outputs).
-
-Example:
-    from PATHS import THESIS_RESULTS_SRQ1_DIR
-    print(THESIS_RESULTS_SRQ1_DIR.resolve())
+Zotero-backed literature corpus (bibtex.bib, citations.json). Was
+01_thesis_research/literature/ before the 2026-09-06 restructure.
 """
 
-THESIS_RESULTS_SRQ2_DIR: Path = THESIS_RESULTS_DIR / "srq2"
+THESIS_WRITING_DRAFTS_DIR: Path = THESIS_WRITING_DIR / "sections-drafts"
 """
-Synthesis engine + LLM-as-Judge results.
-
-Example:
-    from PATHS import THESIS_RESULTS_SRQ2_DIR
-    print(THESIS_RESULTS_SRQ2_DIR.resolve())
+Bullet skeletons, status headers and provenance notes — NOT prose. Prose lives
+in the OneDrive .docx (see .claude/rules/writing-surface-authority.md).
 """
 
-THESIS_RESULTS_SRQ4_DIR: Path = THESIS_RESULTS_DIR / "srq4"
+THESIS_WRITING_SNAPSHOTS_DIR: Path = THESIS_WRITING_DIR / "docx-exported-snapshots"
 """
-Code-as-action vs. dedicated-tool agentic comparison results. Placeholder —
-may be empty until SRQ4 experiments are run.
+Read-only diffable mirror of the .docx, regenerated by
+utility_scripts/scripts/thesis_snapshot.py. Never hand-edited.
+"""
 
-Example:
-    from PATHS import THESIS_RESULTS_SRQ4_DIR
-    print(THESIS_RESULTS_SRQ4_DIR.resolve())
+# ============================================================================
+# 0.2 SRQ TIER ROOTS (2026-09-06 SRQ-aligned restructure)
+# ============================================================================
+
+SRQ1_DIR: Path = ROOT_DIR / "01_SRQ1_Model_Training"
+"""
+SRQ1 — model training. Holds both the data pipeline and the modelling code,
+because the models are what the data pipeline exists to feed.
+"""
+
+SRQ2_DIR: Path = ROOT_DIR / "02_SRQ2_Tool_Interface"
+"""
+SRQ2 — the structured tool interface (forecast_tool.py, forecast_log.jsonl).
+
+NOTE: the former model_serving_interface/ subfolders (system_a_forecast/,
+system_b_conversational/, srq2_synthesis/) no longer exist as live code — those
+scripts are in .archive/superseded_scripts_2026-08/. Constants for them were
+removed rather than left dangling; see the note further below.
+"""
+
+SRQ3_DIR: Path = ROOT_DIR / "03_SRQ3_Integration_Readiness"
+"""
+SRQ3 — integration readiness. Currently empty; SRQ3 has not been started.
+"""
+
+SRQ4_DIR: Path = ROOT_DIR / "04_SRQ4_Scenario_Experiment"
+"""
+SRQ4 — scenario experiments: the harness, plus the runs and raw responses it
+produces. Aggregated results go to THESIS_RESULTS_SRQ4_DIR.
+"""
+
+SRQ4_SCENARIO_SETUP_DIR: Path = SRQ4_DIR / "scenario_setup"
+"""
+The SRQ4 harness: srq4_experiment.py, prompts.py, verify_setup.py,
+inspect_runs.py, export_appendix.py and the resource-measurement scripts.
+
+Was 03_thesis_modelling/scenario_setup/ before 2026-09-06.
+"""
+
+SRQ4_RUNS_DIR: Path = SRQ4_DIR / "runs"
+"""
+Per-run scenario outputs and raw LLM responses.
+
+Per DEC-P0046-RUNS-WITH-EXPERIMENT these live beside the harness that produced
+them, not in the results tier, which holds only the aggregation across runs.
 """
 
 # ============================================================================
 # 1.1 MODELLING SUBDIRECTORY
 # ============================================================================
 
-THESIS_MODELLING_DIR: Path = ROOT_DIR / "03_thesis_modelling"
+THESIS_MODELLING_DIR: Path = SRQ1_DIR / "02_thesis_modelling"
 """
-Directory containing all computational modelling work, notebooks, outputs, and figures.
-
-This folder holds all Jupyter notebooks, generated figures, prompt configurations,
-and modelling outputs organized by research question and category. It serves as
-the hub for all computational and analytical work on the thesis.
+Modelling code for SRQ1. Moved under 01_SRQ1_Model_Training/ on 2026-09-06.
 
 Example:
     from PATHS import THESIS_MODELLING_DIR
-    print(THESIS_MODELLING_DIR.resolve())  # C:\\dev\\thesis-manifold\\03_thesis_modelling
+    print(THESIS_MODELLING_DIR.resolve())
 """
 
 # REMOVED 2026-08-19: THESIS_MODELLING_NOTEBOOKS_DIR and
@@ -196,19 +317,11 @@ Example:
 # code rather than data, so they are diffable and reviewable alongside the
 # harness that sends them.
 
-THESIS_MODELLING_SCENARIO_DIR: Path = THESIS_MODELLING_DIR / "scenario_setup"
-"""
-Directory containing the scenario-testing harness for SRQ4.
-
-Holds the experiment orchestration, the prompt definitions, the pre-flight
-verification and the run-log inspection tooling. This is the third of the three
-modelling concerns: model_training/ trains, model_serving_interface/ serves, and
-scenario_setup/ runs scenarios against those models and logs what happened.
-
-Example:
-    from PATHS import THESIS_MODELLING_SCENARIO_DIR
-    prompts = THESIS_MODELLING_SCENARIO_DIR / "prompts.py"
-"""
+# MOVED 2026-09-06: THESIS_MODELLING_SCENARIO_DIR is now SRQ4_SCENARIO_SETUP_DIR
+# (03_thesis_modelling/scenario_setup/ -> 04_SRQ4_Scenario_Experiment/scenario_setup/).
+# Kept as an alias so existing imports keep working.
+THESIS_MODELLING_SCENARIO_DIR: Path = SRQ4_SCENARIO_SETUP_DIR
+"""Deprecated alias for SRQ4_SCENARIO_SETUP_DIR. Prefer the SRQ4_* name."""
 
 THESIS_MODELLING_ARCHIVE_DIR: Path = THESIS_MODELLING_DIR / ".archive"
 """
@@ -230,64 +343,24 @@ Example:
     script = THESIS_MODELLING_TRAINING_DIR / "srq1_benchmark.py"
 """
 
-THESIS_MODELLING_SERVING_DIR: Path = THESIS_MODELLING_DIR / "model_serving_interface"
-"""
-SRQ2 — the structured tool/action interface that exposes forecasting outputs to
-an agentic system while preserving reliability, uncertainty and traceability.
-
-Renamed from "model_serving" 2026-08-19 to name the research question it answers.
-This is where the interface CONTRACT lives: the typed tool schema, the payload
-that carries point forecast + calibrated interval + provenance, and the synthesis
-layer that assembles it. Training happens in model_training/ (SRQ1); running
-scenarios against the interface happens in scenario_setup/ (SRQ4).
-
-Example:
-    from PATHS import THESIS_MODELLING_SERVING_DIR
-    print(THESIS_MODELLING_SERVING_DIR.resolve())
-"""
-
-THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR: Path = (
-    THESIS_MODELLING_SERVING_DIR / "srq2_synthesis")
-"""
-SRQ2 synthesis layer: the deterministic engine that turns multiple model
-forecasts into a single confidence-scored payload, plus the LLM recommendation
-and judge scripts that consume it.
-
-Moved here from model_training/ 2026-08-19. `srq2_synthesis.py` does fit models,
-but training is a MEANS -- its output is the structured payload the tool
-interface carries (inter-model agreement, inverse-MAPE ensemble, split-conformal
-interval, confidence tier). `srq2_agent.py` trains nothing at all. Both answer
-SRQ2's interface question, not SRQ1's model-selection question.
-
-Example:
-    from PATHS import THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR
-    engine = THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR / "srq2_synthesis.py"
-"""
-
-THESIS_MODELLING_SERVING_SYSTEM_A_DIR: Path = THESIS_MODELLING_SERVING_DIR / "system_a_forecast"
-"""
-Directory containing System A: the dedicated ML forecast service ("Oracle").
-
-Example:
-    from PATHS import THESIS_MODELLING_SERVING_SYSTEM_A_DIR
-    service = THESIS_MODELLING_SERVING_SYSTEM_A_DIR / "forecast_service.py"
-"""
-
-THESIS_MODELLING_SERVING_SYSTEM_B_DIR: Path = THESIS_MODELLING_SERVING_DIR / "system_b_conversational"
-"""
-Directory containing System B: conversational LLM access to trained models
-(GPT fallback bridge, eventually Prometheus). Placeholder tier — may be empty.
-
-Example:
-    from PATHS import THESIS_MODELLING_SERVING_SYSTEM_B_DIR
-    print(THESIS_MODELLING_SERVING_SYSTEM_B_DIR.resolve())
-"""
+# REMOVED 2026-09-06 (P0046 SRQ restructure): THESIS_MODELLING_SERVING_DIR,
+# THESIS_MODELLING_SERVING_SRQ2_SYNTHESIS_DIR,
+# THESIS_MODELLING_SERVING_SYSTEM_A_DIR and
+# THESIS_MODELLING_SERVING_SYSTEM_B_DIR.
+#
+# 03_thesis_modelling/model_serving_interface/ no longer exists. Its scripts
+# (forecast_service.py, srq2_synthesis.py, srq2_agent.py) are archived under
+# 01_SRQ1_Model_Training/02_thesis_modelling/.archive/superseded_scripts_2026-08/,
+# and SRQ2's live surface is now 02_SRQ2_Tool_Interface/forecast_tool.py — see
+# SRQ2_DIR. These constants are removed rather than repointed because there is
+# no live directory for them to point at; a constant resolving to a missing path
+# is how the pre-2026-09-06 breakage went unnoticed.
 
 # ============================================================================
 # 1.2 DATA SUBDIRECTORY
 # ============================================================================
 
-THESIS_DATA_DIR: Path = ROOT_DIR / "02_thesis_data"
+THESIS_DATA_DIR: Path = SRQ1_DIR / "01_thesis_data"
 """
 Directory containing all datasets, raw data sources, and preprocessing scripts.
 
@@ -295,24 +368,17 @@ Organized by data source (Nielsen, Indeks Danmark, assessment data) and
 processing stage. This is the hub for all data management related to the
 thesis research.
 
+Moved under 01_SRQ1_Model_Training/ on 2026-09-06: the data pipeline exists to
+feed SRQ1's models, so it lives with them.
+
 Example:
     from PATHS import THESIS_DATA_DIR
-    print(THESIS_DATA_DIR.resolve())  # C:\\dev\\thesis-manifold\\02_thesis_data
+    print(THESIS_DATA_DIR.resolve())
 """
 
-THESIS_DATA_ASSESSMENT_DIR: Path = THESIS_DATA_DIR / "assessment"
-"""
-Directory containing human evaluation and assessment data.
-
-Stores evaluation results, annotations, and assessment data used for
-validating model predictions and analyzing system performance in the
-thesis research.
-
-Example:
-    from PATHS import THESIS_DATA_ASSESSMENT_DIR
-    assessments = THESIS_DATA_ASSESSMENT_DIR / "human_eval.csv"
-"""
-
+# REMOVED 2026-09-06: THESIS_DATA_ASSESSMENT_DIR. The 02_thesis_data/assessment/
+# directory did not survive the restructure and has no replacement on disk.
+# Human-eval material, where it exists, is in the modelling .archive/.
 
 THESIS_DATA_PREPROCESSING_DIR: Path = THESIS_DATA_DIR / "_02_preprocessing"
 """
@@ -744,6 +810,70 @@ def get_category_pipeline_step_outputs_dir(category: str) -> Path:
     return THESIS_DATA_PREPROCESSING_DIR / "nielsen" / category / "pipeline_step_outputs"
 
 
+def get_srq_results_dir(srq: int) -> Path:
+    """
+    Get the results directory for an SRQ by number.
+
+    Args:
+        srq: 1, 2, 3 or 4.
+
+    Returns:
+        Path to 05_thesis_results/srq{N}_{slug}/
+
+    Example:
+        >>> get_srq_results_dir(1)   # .../05_thesis_results/srq1_model_performance
+    """
+    mapping = {
+        1: THESIS_RESULTS_SRQ1_DIR,
+        2: THESIS_RESULTS_SRQ2_DIR,
+        3: THESIS_RESULTS_SRQ3_DIR,
+        4: THESIS_RESULTS_SRQ4_DIR,
+    }
+    if srq not in mapping:
+        raise ValueError(f"Unknown SRQ {srq!r}; expected one of {sorted(mapping)}")
+    return mapping[srq]
+
+
+def get_category_eda_plots_dir(category: str) -> Path:
+    """
+    Get the pipeline's EDA plot directory for a Nielsen category (~8 PNGs).
+
+    This is where the pipeline WRITES them. Plots promoted as thesis candidates
+    are copied to get_category_eda_results_dir(category) / "plots" — see
+    DEC-P0046-EDA-SPLIT.
+
+    Example:
+        >>> get_category_eda_plots_dir("CSD")   # .../pipeline_step_outputs/csd_eda_plots
+    """
+    return (get_category_pipeline_step_outputs_dir(category)
+            / f"{category.lower()}_eda_plots")
+
+
+def get_category_eda_tables_dir(category: str) -> Path:
+    """
+    Get the pipeline's EDA markdown-table directory for a Nielsen category (~30 .md).
+
+    Example:
+        >>> get_category_eda_tables_dir("CSD")  # .../pipeline_step_outputs/csd_eda_tables
+    """
+    return (get_category_pipeline_step_outputs_dir(category)
+            / f"{category.lower()}_eda_tables")
+
+
+def get_category_eda_results_dir(category: str) -> Path:
+    """
+    Get the results-tier home for a category's promoted EDA artefacts.
+
+    Per DEC-P0046-EDA-SPLIT the .csv step outputs stay in the pipeline (later EDA
+    steps consume them); the .md tables and .png plots are report material and
+    are promoted here.
+
+    Example:
+        >>> get_category_eda_results_dir("CSD")  # .../05_thesis_results/eda/CSD
+    """
+    return THESIS_RESULTS_EDA_DIR / category
+
+
 # ============================================================================
 # DEBUG PATH VERIFICATION
 # ============================================================================
@@ -764,18 +894,17 @@ def print_all_paths(verbose: bool = True) -> None:
         print(f"ROOT_DIR: {ROOT_DIR.resolve()}")
         print(f"THESIS_DIR (alias of ROOT_DIR): {THESIS_DIR.resolve()}")
         print(f"THESIS_CONTEXT_DIR: {THESIS_CONTEXT_DIR.resolve()}")
-        print(f"THESIS_RESEARCH_DIR: {THESIS_RESEARCH_DIR.resolve()}")
-        print(f"THESIS_RESEARCH_QUESTIONS_DIR: {THESIS_RESEARCH_QUESTIONS_DIR.resolve()}")
-        print(f"THESIS_RESEARCH_LITERATURE_DIR: {THESIS_RESEARCH_LITERATURE_DIR.resolve()}")
+        print(f"THESIS_CONTEXT_RESEARCH_QUESTIONS_DIR: {THESIS_CONTEXT_RESEARCH_QUESTIONS_DIR.resolve()}")
+        print(f"SRQ1_DIR: {SRQ1_DIR.resolve()}")
+        print(f"SRQ2_DIR: {SRQ2_DIR.resolve()}")
+        print(f"SRQ3_DIR: {SRQ3_DIR.resolve()}")
+        print(f"SRQ4_DIR: {SRQ4_DIR.resolve()}")
+        print(f"SRQ4_SCENARIO_SETUP_DIR: {SRQ4_SCENARIO_SETUP_DIR.resolve()}")
         print(f"THESIS_MODELLING_DIR: {THESIS_MODELLING_DIR.resolve()}")
         print(f"THESIS_MODELLING_TRAINING_DIR: {THESIS_MODELLING_TRAINING_DIR.resolve()}")
         print(f"THESIS_MODELLING_SCENARIO_DIR: {THESIS_MODELLING_SCENARIO_DIR.resolve()}")
         print(f"THESIS_MODELLING_ARCHIVE_DIR: {THESIS_MODELLING_ARCHIVE_DIR.resolve()}")
-        print(f"THESIS_MODELLING_SERVING_DIR: {THESIS_MODELLING_SERVING_DIR.resolve()}")
-        print(f"THESIS_MODELLING_SERVING_SYSTEM_A_DIR: {THESIS_MODELLING_SERVING_SYSTEM_A_DIR.resolve()}")
-        print(f"THESIS_MODELLING_SERVING_SYSTEM_B_DIR: {THESIS_MODELLING_SERVING_SYSTEM_B_DIR.resolve()}")
         print(f"THESIS_DATA_DIR: {THESIS_DATA_DIR.resolve()}")
-        print(f"THESIS_DATA_ASSESSMENT_DIR: {THESIS_DATA_ASSESSMENT_DIR.resolve()}")
         print(f"THESIS_DATA_PREPROCESSING_DIR: {THESIS_DATA_PREPROCESSING_DIR.resolve()}")
         print(f"THESIS_DATA_ENGINEERED_DIR: {THESIS_DATA_ENGINEERED_DIR.resolve()}")
         print(f"THESIS_DATA_ENGINEERED_BYMONTH_DIR: {THESIS_DATA_ENGINEERED_BYMONTH_DIR.resolve()}")
@@ -791,7 +920,11 @@ def print_all_paths(verbose: bool = True) -> None:
         print(f"THESIS_RESULTS_DIR: {THESIS_RESULTS_DIR.resolve()}")
         print(f"THESIS_RESULTS_SRQ1_DIR: {THESIS_RESULTS_SRQ1_DIR.resolve()}")
         print(f"THESIS_RESULTS_SRQ2_DIR: {THESIS_RESULTS_SRQ2_DIR.resolve()}")
+        print(f"THESIS_RESULTS_SRQ3_DIR: {THESIS_RESULTS_SRQ3_DIR.resolve()}")
         print(f"THESIS_RESULTS_SRQ4_DIR: {THESIS_RESULTS_SRQ4_DIR.resolve()}")
+        print(f"THESIS_RESULTS_APPENDIX_DIR: {THESIS_RESULTS_APPENDIX_DIR.resolve()}")
+        print(f"THESIS_RESULTS_DIAGRAMS_DIR: {THESIS_RESULTS_DIAGRAMS_DIR.resolve()}")
+        print(f"THESIS_RESULTS_EDA_DIR: {THESIS_RESULTS_EDA_DIR.resolve()}")
         print(f"THESIS_WRITING_DIR: {THESIS_WRITING_DIR.resolve()}\n")
     else:
         print("\n=== KEY PROJECT PATHS ===")
