@@ -1,0 +1,71 @@
+{
+  "source": "Nager.Date v3",
+  "url_template": "https://date.nager.at/api/v3/PublicHolidays/{year}/DK",
+  "country": "DK",
+  "fetched_utc": "2026-09-06T15:06:15+00:00",
+  "years_covered": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026,
+    2027
+  ],
+  "years_missing": [],
+  "years": {
+    "2023": {
+      "n_holidays": 15,
+      "source": "cache",
+      "sha256": "c839769379d4e481"
+    },
+    "2024": {
+      "n_holidays": 14,
+      "source": "cache",
+      "sha256": "8b0d12df4c627c1d"
+    },
+    "2025": {
+      "n_holidays": 14,
+      "source": "cache",
+      "sha256": "18f7f68f3713db01"
+    },
+    "2018": {
+      "n_holidays": 15,
+      "source": "cache",
+      "sha256": "7f6a7f3015ba50c7"
+    },
+    "2019": {
+      "n_holidays": 15,
+      "source": "cache",
+      "sha256": "c15be2ae587f4880"
+    },
+    "2020": {
+      "n_holidays": 15,
+      "source": "cache",
+      "sha256": "a82ed076fc7fc2b9"
+    },
+    "2021": {
+      "n_holidays": 15,
+      "source": "cache",
+      "sha256": "1d77942ae6fa0619"
+    },
+    "2022": {
+      "n_holidays": 15,
+      "source": "cache",
+      "sha256": "4daf0cfd7ae07f1f"
+    },
+    "2026": {
+      "n_holidays": 14,
+      "source": "cache",
+      "sha256": "20ceed6b8c43058c"
+    },
+    "2027": {
+      "n_holidays": 14,
+      "source": "cache",
+      "sha256": "684dd5d84a9c600e"
+    }
+  }
+}
