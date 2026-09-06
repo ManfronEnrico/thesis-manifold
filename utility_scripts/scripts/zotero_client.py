@@ -10,6 +10,7 @@ BibTeX is the source of truth. JSON is derived from BibTeX for programmatic acce
 
 import os
 import json
+import sys
 from pathlib import Path
 
 from pyzotero import Zotero
@@ -21,13 +22,24 @@ _SCHOLARLY_TYPES = {
     "magazineArticle", "newspaperArticle", "webpage",
 }
 
+# Resolve repo paths through PATHS.py (DEC-P0046-PATHS), anchored on
+# .env.example rather than a hop-count, which breaks whenever the file moves.
+for _cand in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
+    if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+        _REPO_ROOT = _cand
+        if str(_cand) not in sys.path:
+            sys.path.insert(0, str(_cand))
+        break
+else:
+    raise FileNotFoundError("Could not find project root above " + str(Path(__file__).resolve()))
+
+from PATHS import THESIS_WRITING_CITATIONS_DIR
+
 SCHOLARLY_ITEM_TYPES = _SCHOLARLY_TYPES
 
 
 def _load_env() -> dict:
-    # Repo root is parents[2] (utility_scripts/scripts/ -> utility_scripts/ -> root).
-    # Was parents[1] pre-P0028, when this script lived one level higher.
-    env_path = Path(__file__).resolve().parents[2] / ".env"
+    env_path = _REPO_ROOT / ".env"
     load_dotenv(env_path)
     api_key = os.environ.get("ZOTERO_API_KEY")
     group_id = os.environ.get("ZOTERO_GROUP_ID", "6479832")
@@ -265,9 +277,12 @@ def get_citations(group_id: str | None = None, sync_files: bool = True) -> list[
 
 def _write_citation_files(entries: list[dict]) -> None:
     """Write bibtex.bib as source of truth, then derive citations.json."""
-    # Canonical citation output, per the P0028 tier structure.
-    # Was utility_scripts/docs/literature/ pre-P0028.
-    lit_dir = Path(__file__).resolve().parents[2] / "05_thesis_writing" / "citations"
+    # Canonical citation output. Resolved through PATHS.py rather than a
+    # hop-count + literal tier name: the previous form pointed at
+    # "05_thesis_writing", renumbered to 06_ on 2026-09-06, and because this
+    # line calls mkdir(parents=True) it would have silently CREATED a phantom
+    # tier-05 folder instead of failing.
+    lit_dir = THESIS_WRITING_CITATIONS_DIR
     lit_dir.mkdir(parents=True, exist_ok=True)
 
     # Write BibTeX as source of truth

@@ -1,9 +1,28 @@
 """
 System B — Thesis Production System diagram.
 Clean top-to-bottom flow, no overlaps.
-Output: 05_thesis_writing/figures/system_b_overview.{svg,png}
-Run: python3 scripts/generate_systemB_diagram.py
+Output: THESIS_RESULTS_DIAGRAMS_DIR/system_b_overview.{svg,png}
+Run: python 05_thesis_results/generate_systemB_diagram.py
+
+STALENESS WARNING (P0046 F25, 2026-09-06)
+-----------------------------------------
+This diagram depicts the multi-agent THESIS WRITING system (Thesis Coordinator,
+Writing Agent, Critic Agent, Outline Agent, ...) -- a design that was abandoned.
+It is not the SRQ2/SRQ4 artefact the thesis now presents, and no chapter cites
+"system_b_overview". Repointed here only so it regenerates to the right place;
+KEEP / ADAPT / DELETE is a Phase 3b decision. Do not cite it before that.
 """
+
+import sys
+from pathlib import Path
+
+# All output locations resolve through PATHS.py (DEC-P0046-PATHS): no literal
+# tier-folder names in generator code.
+for _cand in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
+    if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+        sys.path.insert(0, str(_cand))
+        break
+from PATHS import THESIS_RESULTS_DIAGRAMS_DIR
 
 import os
 import matplotlib
@@ -11,7 +30,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
-OUTPUT_DIR = "05_thesis_writing/figures"
+OUTPUT_DIR = str(THESIS_RESULTS_DIAGRAMS_DIR)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 NAVY   = "#1B3A5C"

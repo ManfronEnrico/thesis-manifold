@@ -13,6 +13,10 @@ env/
 # Environment / secrets
 .env
 .env.*
+# .env.example is the repo-root anchor used by the dynamic root finder
+# (utility_scripts/scripts/dynamically_find_root_directory.py) and must be
+# committed, or a fresh clone cannot resolve its own root.
+!.env.example
 *.key
 # Data files (do not upload sensitive datasets)
 *.csv

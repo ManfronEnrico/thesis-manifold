@@ -25,7 +25,7 @@ actionable, "the thesis differs" is not.
 
 WHAT IT WRITES
 --------------
-    05_thesis_writing/docx-exported-snapshots/YYYY-MM-DD_HH-mm/
+    06_thesis_writing/docx-exported-snapshots/YYYY-MM-DD_HH-mm/
         thesis_full.docx          verbatim copy of the source
         thesis_full.md            whole-document text
         chapters/ch3-methodology.md   one file per Heading 1
@@ -36,7 +36,7 @@ WHAT IT WRITES
 THE SNAPSHOT IS READ-ONLY. Never edit a file under docx-exported-snapshots/ and never convert
 one back. Editing them creates a fourth version of the thesis and reintroduces
 exactly the ambiguity the snapshot exists to remove. The working surfaces are
-05_thesis_writing/sections-drafts/*.md (live) and the OneDrive .docx (prose).
+06_thesis_writing/sections-drafts/*.md (live) and the OneDrive .docx (prose).
 
 Usage:
     python utility_scripts/scripts/thesis_snapshot.py
@@ -69,9 +69,18 @@ DEFAULT_SOURCE = (
     r"\MSc. Data Science - 175888 and 176171 - Master Thesis.docx"
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-SNAP_ROOT = REPO_ROOT / "05_thesis_writing" / "docx-exported-snapshots"
-DRAFTS = REPO_ROOT / "05_thesis_writing" / "sections-drafts"
+# Resolve every repo path through PATHS.py (DEC-P0046-PATHS). Anchored on
+# .env.example rather than a hop-count, which breaks whenever the file moves.
+for _cand in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
+    if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+        if str(_cand) not in sys.path:
+            sys.path.insert(0, str(_cand))
+        break
+from PATHS import ROOT_DIR, THESIS_WRITING_SNAPSHOTS_DIR, THESIS_WRITING_DRAFTS_DIR
+
+REPO_ROOT = ROOT_DIR
+SNAP_ROOT = THESIS_WRITING_SNAPSHOTS_DIR
+DRAFTS = THESIS_WRITING_DRAFTS_DIR
 
 # Heading 1 text -> the sections-drafts basename it should be compared against.
 # An explicit map, not string-similarity guessing: a wrong pairing would report

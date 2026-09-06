@@ -60,7 +60,21 @@ import numpy as np
 import pandas as pd
 
 # Repo root on sys.path so `import PATHS` resolves when run as a script.
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+def _find_repo_root() -> Path:
+    """Walk up from this file to the repo root (anchored on .env.example).
+
+    Replaces a hard-coded parents[N] hop, which silently points at the wrong
+    directory whenever a script moves between folder depths -- as happened in
+    the 2026-09-06 restructure.
+    """
+    _start = Path(__file__).resolve().parent
+    for _cand in (_start, *_start.parents):
+        if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+            return _cand
+    raise FileNotFoundError(f"Could not find project root above {_start}")
+
+
+_REPO_ROOT = _find_repo_root()
 if str(_REPO_ROOT) not in sys.path:
 	sys.path.insert(0, str(_REPO_ROOT))
 
@@ -83,6 +97,17 @@ from pipeline_config import (  # noqa: E402
 )
 from step_1_load_and_aggregate import load_and_aggregate, load_merged  # noqa: E402
 
+# Holiday enrichment is OPTIONAL by design. The raw fetch lives in the _00_raw
+# tier and may legitimately have never run, so an ImportError here is a state to
+# record, not a failure to propagate -- see derive_holiday_enrichment().
+try:
+	sys.path.insert(
+		0, str(_REPO_ROOT / "01_SRQ1_Model_Training" / "01_thesis_data" / "_00_raw" / "holidays")
+	)
+	from fetch_holidays import load_manifest as _load_holiday_manifest  # noqa: E402
+except Exception:  # pragma: no cover - absence is a valid state
+	_load_holiday_manifest = None
+
 # Contract schema version. Bump when a field is added, removed or re-typed;
 # step 4 refuses a version it does not know rather than guessing.
 #
@@ -90,7 +115,14 @@ from step_1_load_and_aggregate import load_and_aggregate, load_merged  # noqa: E
 # provenance.holiday_months_uplift to peak_months_uplift. A 1.0 contract is
 # therefore refused rather than read with the renamed field silently missing --
 # which is precisely the failure the version field exists to prevent.
-CONTRACT_VERSION = "1.1"
+# 1.1 -> 1.2 (2026-09-06): added holiday_enrichment + holiday_reason, and when
+# enrichment is on, holiday_source / holiday_fetched_utc / holiday_years_covered.
+# Additive only -- no 1.1 field moved or changed type -- so step 4 accepts both
+# versions and reads a 1.1 contract as "no enrichment". That is deliberate: it
+# lets an existing contract keep producing exactly the matrix it always did,
+# while every new contract states its enrichment status explicitly rather than
+# by absence.
+CONTRACT_VERSION = "1.2"
 
 BRAND_COL = "brand"
 YEAR_COL = "period_year"
@@ -351,18 +383,87 @@ def measure_retention(df: pd.DataFrame, min_periods: int, horizon: int,
 # CONTRACT ASSEMBLY
 # ============================================================================
 
+def derive_holiday_enrichment(df: pd.DataFrame) -> tuple[dict, dict]:
+	"""Decide whether this run has holiday enrichment, and record why.
+
+	THIS IS THE DECISION POINT. Step 4 does not decide; it reads the flag and
+	either builds the features or does not. That split is what stops a run from
+	silently differing from its own contract: a benchmark can always tell
+	whether the numbers it is quoting came from an enriched feature set, by
+	reading the contract rather than by inspecting the matrix.
+
+	Enrichment is FALSE, with a stated reason, when:
+	  - the fetch module is absent (never installed / never run)
+	  - no manifest exists (fetch has never succeeded)
+	  - the panel extends beyond the fetched years
+
+	The last case is deliberately strict. Partial coverage would put NaN in
+	n_holidays for real training rows, and a model fitted around that NaN is not
+	the model the contract describes. Extending the fetch is one command
+	(fetch_holidays.py --years), so the strict path is cheap to clear.
+	"""
+	panel_years = sorted(int(y) for y in df["date"].dt.year.unique()) if "date" in df else []
+
+	if _load_holiday_manifest is None:
+		return (
+			{"holiday_enrichment": False, "holiday_reason": "fetch module unavailable"},
+			{"holiday_enrichment": "fetch_holidays.py not importable"},
+		)
+
+	manifest = _load_holiday_manifest()
+	if manifest is None:
+		return (
+			{"holiday_enrichment": False, "holiday_reason": "no holiday cache"},
+			{"holiday_enrichment": "no manifest; run fetch_holidays.py"},
+		)
+
+	covered = set(int(y) for y in manifest["years_covered"])
+	uncovered = [y for y in panel_years if y not in covered]
+	if uncovered:
+		return (
+			{
+				"holiday_enrichment": False,
+				"holiday_reason": f"panel years not covered: {uncovered}",
+			},
+			{
+				"holiday_enrichment": (
+					f"panel spans {panel_years[0]}-{panel_years[-1]} but cache covers "
+					f"{min(covered)}-{max(covered)}; run fetch_holidays.py --years "
+					f"{min(panel_years)}-{max(panel_years)}"
+				)
+			},
+		)
+
+	return (
+		{
+			"holiday_enrichment": True,
+			"holiday_reason": "cache covers panel",
+			"holiday_source": manifest["source"],
+			"holiday_fetched_utc": manifest["fetched_utc"],
+			"holiday_years_covered": sorted(covered),
+		},
+		{
+			"holiday_enrichment": (
+				f"{manifest['source']} fetched {manifest['fetched_utc']}; "
+				f"adds days_in_month, n_holidays, non_holiday_days"
+			)
+		},
+	)
+
+
 def build_contract(category: str, df: pd.DataFrame, horizon: int) -> dict:
 	"""Assemble every parameter step 4 needs, each with its provenance."""
 	lag_params, lag_prov = derive_lag_structure(horizon)
 	peak_months, peak_prov = derive_peak_months(df)
 	log_transform, log_prov = derive_log_transform(df)
 	split_params, split_prov = derive_split(df, horizon)
+	holiday_params, holiday_prov = derive_holiday_enrichment(df)
 	retention = measure_retention(
 		df, lag_params["min_periods"], horizon, lag_params["warmup_periods"]
 	)
 
 	provenance: dict = {}
-	for block in (lag_prov, peak_prov, log_prov, split_prov):
+	for block in (lag_prov, peak_prov, log_prov, split_prov, holiday_prov):
 		provenance.update(block)
 
 	return {
@@ -381,6 +482,7 @@ def build_contract(category: str, df: pd.DataFrame, horizon: int) -> dict:
 		"min_periods": lag_params["min_periods"],
 		"peak_months": peak_months,
 		"split": split_params,
+		**holiday_params,
 
 		# --- evidence; not consumed, but the record of how the above arose --
 		"retention": retention,

@@ -47,7 +47,21 @@ from pathlib import Path
 import pandas as pd
 
 # Repo root on sys.path so `import PATHS` resolves when run as a script.
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+def _find_repo_root() -> Path:
+    """Walk up from this file to the repo root (anchored on .env.example).
+
+    Replaces a hard-coded parents[N] hop, which silently points at the wrong
+    directory whenever a script moves between folder depths -- as happened in
+    the 2026-09-06 restructure.
+    """
+    _start = Path(__file__).resolve().parent
+    for _cand in (_start, *_start.parents):
+        if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+            return _cand
+    raise FileNotFoundError(f"Could not find project root above {_start}")
+
+
+_REPO_ROOT = _find_repo_root()
 if str(_REPO_ROOT) not in sys.path:
 	sys.path.insert(0, str(_REPO_ROOT))
 

@@ -1,7 +1,7 @@
 ---
 pid: P0046
 created: 2026-09-05 20:40:00
-updated: 2026-09-06 12:00:00
+updated: 2026-09-06 16:00:00
 ---
 
 # P0046 — Progress Log
@@ -235,9 +235,89 @@ exists apart from declared placeholders. That converts this class of breakage
 from silent to loud, and it is the same shape as the manifest's "every artefact
 has a live producer" invariant.
 
+### Session 3b — SPSS removal + PATHS validation (same day)
+
+**Done**
+
+- Archived the Indeks Danmark/SPSS dataset to
+  `.archive/spss_indeksdanmark_2026-09/` with a README recording what went and
+  what it leaves open. Removed all four SPSS constants from `PATHS.py`.
+- **`PATHS.py` now fully clean: 39/39 constants resolve, zero missing.**
+  `print_all_paths()` runs. No live script imports a removed constant.
+
+**Two findings worth more than the cleanup**
+
+1. **The abstract still claims Indeks Danmark as an empirical source** (F23) —
+   in the draft *and* in the authoritative `.docx`. Since the dataset was never
+   used, that is a method claim that does not hold, sitting in the section
+   examiners read first. Not actioned: prose edits are Brian's, in the `.docx`.
+
+2. **Answering "what is left to validate in PATHS?" found more than expected**
+   (F24). PATHS itself is done. But grepping for literal old-tier strings — a
+   different search from "what imports PATHS" — turned up **five** live scripts
+   with hardcoded dead paths, not the three already known. The two new ones are
+   `zotero_client.py:270` and `thesis_snapshot.py:73-74`. The latter generates
+   the `docx-exported-snapshots/` mirror the comment-audit workflow reads.
+
+   Same lesson as F19 one level down: the scripts that broke silently are
+   precisely those that do not route through `PATHS.py`. Worth stating
+   DEC-P0046-PATHS as a greppable check — *no live script contains a literal
+   tier-folder name* — rather than as an aspiration.
+
+### Session 3c — Phase 3 completed: every script routes through PATHS
+
+**Scope:** Brian asked for a sequential pass over every script, replacing
+hardcoded paths with PATHS imports, plus the `CLAUDE.md` -> `.env.example`
+anchor swap.
+
+**Result: audit went 43 flagged scripts -> 10; all 77 live scripts compile;
+39/39 PATHS constants resolve.** The 10 survivors are all legitimate and
+individually justified in F25's table (PATHS.py's own literals, an explanatory
+docstring, the OneDrive `.docx` default, sibling-relative `parents[1]` uses, and
+3 scripts that were already dead for unrelated reasons).
+
+**Two defects found while doing the anchor swap, neither being the anchor:**
+
+1. `.gitignore`'s `.env.*` rule excluded `.env.example`. An uncommitted anchor
+   cannot anchor a fresh clone — precisely the clean-repo case. Without catching
+   this, the swap would have been *worse* than `CLAUDE.md`, which was at least
+   committed. Added `!.env.example`.
+
+2. Every inline finder walked up from `Path.cwd()` rather than `__file__`, so
+   the root depended on where python was invoked. Fixed and verified from an
+   unrelated cwd.
+
+**`parents[N]` hops replaced in 17 scripts.** These encode folder *depth*, which
+the restructure changed — the same silent-breakage class as F19, one level down.
+
+**`ml_retraining/` archived, not repointed.** All 11 steps read `results/phase1/`,
+`data/raw/` and `Thesis/indeksdanmark` — none of which exist. Repointing would
+have created PATHS constants for folders nobody maintains, the exact failure this
+plan removes.
+
+**`generate_systemB_diagram.py`: Brian's suspicion confirmed** (F26). It renders
+the abandoned multi-agent *writing* system — Thesis Coordinator, Writing Agent,
+Critic Agent — not the SRQ2/SRQ4 artefact the thesis presents. Zero chapters cite
+its output. Followed Brian's sequencing: relocated out of tier 06, repointed,
+staleness warning added to the docstring, shadow copy archived. Keep/adapt/delete
+is now a Phase 3b decision with a recommendation of delete.
+
+**Writing note created** at
+`06_thesis_writing/writing-notes/indeks-danmark-claim-must-be-corrected.md`, as
+asked. Scope verified while writing it: the claim appears **only in the
+abstract** (2 occurrences) — Ch3 and Ch4 are clean, so the correction is two
+sentences, not a cross-chapter edit.
+
+**One self-inflicted error worth noting:** my first `zotero_client.py` patch
+inserted a module-level block inside a function body, and a second edit put a
+closing paren after a comment. Both caught by the compile sweep immediately. The
+lesson is that the sweep is the thing that made a fast mechanical pass safe —
+worth keeping as a gate for any future bulk edit.
+
 ### Next session starts here
 
-**Finish Phase 3** (the generator repointing — small, mechanical, now unblocked),
+**Finish Phase 3** — now five scripts, not three (F24 added `zotero_client.py`
+and `thesis_snapshot.py`); still small and mechanical,
 then **Phase 3b**, which is the substantive work: the staleness triage of
 `srq1_model_performance/` and `srq2_structured_tool_interface/`. Brian believes
 `appendix/` and `srq4_scenario_experiments/` are current and the other two are

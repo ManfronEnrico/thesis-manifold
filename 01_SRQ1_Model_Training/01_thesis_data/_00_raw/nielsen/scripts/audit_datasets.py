@@ -13,7 +13,21 @@ from dotenv import load_dotenv
 from azure.identity import ClientSecretCredential
 
 # Load credentials
-_env_path = Path(__file__).resolve().parents[4] / ".env"
+def _find_repo_root() -> Path:
+    """Walk up from this file to the repo root (anchored on .env.example).
+
+    Replaces a hard-coded parents[N] hop, which silently points at the wrong
+    directory whenever a script moves between folder depths -- as happened in
+    the 2026-09-06 restructure.
+    """
+    _start = Path(__file__).resolve().parent
+    for _cand in (_start, *_start.parents):
+        if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+            return _cand
+    raise FileNotFoundError(f"Could not find project root above {_start}")
+
+
+_env_path = _find_repo_root() / ".env"
 load_dotenv(_env_path)
 
 SERVER   = os.environ["RU_SERVER_STRING"]

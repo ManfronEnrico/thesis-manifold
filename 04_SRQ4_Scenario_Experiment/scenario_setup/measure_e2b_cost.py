@@ -45,7 +45,7 @@ def _load_env() -> None:
     The dashboard label is `thesis_manifold_e2b_sandbox`; the SDK reads
     `E2B_API_KEY`. Same indirection the experiment harness uses for OpenAI.
     """
-    for env_path in (_root / ".env", _root / "03_thesis_modelling" / ".env"):
+    for env_path in (_root / ".env",):  # 03_thesis_modelling/ removed 2026-09-06
         if not env_path.is_file():
             continue
         for line in env_path.read_text(encoding="utf-8", errors="replace").splitlines():

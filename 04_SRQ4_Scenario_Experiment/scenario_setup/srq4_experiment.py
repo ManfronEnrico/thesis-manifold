@@ -60,12 +60,26 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+def _find_repo_root() -> Path:
+    """Walk up from this file to the repo root (anchored on .env.example).
+
+    Replaces a hard-coded parents[N] hop, which silently points at the wrong
+    directory whenever a script moves between folder depths -- as happened in
+    the 2026-09-06 restructure.
+    """
+    _start = Path(__file__).resolve().parent
+    for _cand in (_start, *_start.parents):
+        if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+            return _cand
+    raise FileNotFoundError(f"Could not find project root above {_start}")
+
+
+sys.path.insert(0, str(_find_repo_root()))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir
 
 warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[1]
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = _find_repo_root()
 
 # Keys are read from the modelling-layer .env first, then the repo-root .env.
 # Both are gitignored. setdefault means an already-exported environment variable

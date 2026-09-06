@@ -1,7 +1,7 @@
 ---
 pid: P0046
 created: 2026-09-05 20:40:00
-updated: 2026-09-06 12:00:00
+updated: 2026-09-06 16:00:00
 status: in_progress
 focus_detail: "Repo restructured to SRQ-aligned tiers 2026-09-06, which broke 32 of 34 PATHS constants. PATHS.py rewritten and verified (3 remaining misses are pre-existing SPSS placeholders); results folders slugged; SRQ4 runs moved beside the harness. Next: Phase 3 remainder (repoint the two diagram generators, add RQ tree figure), then Phase 3b staleness triage of srq1/srq2."
 ---
@@ -111,7 +111,7 @@ Decided by Brian 2026-09-05. See findings F11-F13.
 - [x] All output paths centralise in `PATHS.py` (F13).
 - [ ] ZOMBIE disposition — still open (delete vs archive), see open question 2.
 
-### Phase 3 — Centralise paths in `PATHS.py` — `in_progress`
+### Phase 3 — Centralise paths in `PATHS.py` — `complete`
 
 Overtaken by events: the 2026-09-06 SRQ restructure (F19) broke 32 of 34
 directory constants, turning this phase from planned tidying into urgent repair.
@@ -135,24 +135,36 @@ Done in that pass:
       `srq3_integration_readiness/` (F20)
 - [x] Move SRQ4 `run_*` + `raw_responses` to `04_SRQ4_Scenario_Experiment/runs/` (F20)
 
-Remaining:
+**Phase 3 COMPLETE 2026-09-06.** Remaining items all done:
 
-- [ ] Repoint `05_thesis_results/generate_figures.py` off its hard-coded
-      `"05_thesis_writing/figures"` (now a non-existent path) to
-      `THESIS_RESULTS_DIAGRAMS_DIR`
-- [ ] Repoint + relocate `06_thesis_writing/figures/generate_systemB_diagram.py`
-      — it must not live in, or write to, the writing tier
+- [x] Repoint `generate_figures.py` -> `THESIS_RESULTS_DIAGRAMS_DIR`
+- [x] Relocate + repoint `generate_systemB_diagram.py` out of tier 06 into
+      `05_thesis_results/`, with a staleness warning (F26)
+- [x] Archive the byte-identical shadow copy (F8)
+- [x] Repoint `zotero_client.py` and `thesis_snapshot.py` (F24) — the latter
+      generates the snapshot mirror the comment-audit workflow reads
+- [x] Swap the `CLAUDE.md` root anchor to `.env.example` across 7 scripts +
+      the shared finder; fix `.gitignore` so the anchor is actually committed;
+      re-anchor from `__file__` instead of `cwd` (F25)
+- [x] Replace `parents[N]` repo-root hops in 17 scripts (F25)
+- [x] Archive the dead `ml_retraining/` pipeline (F25)
+- [x] Verify: 77 live scripts compile, 39/39 PATHS constants resolve, audit
+      down from 43 flagged scripts to 10 (all legitimate — see F25 table)
+
+Deferred to Phase 4 (needs a generator run, not a path edit):
+
 - [ ] Add `ch1_research_questions_tree` to `generate_figures.py` (F18)
-- [ ] Replace `export_appendix.py`'s inline `THESIS_RESULTS_DIR / "appendix"`
-      with `THESIS_RESULTS_APPENDIX_DIR`
-- [ ] Point `srq1_figures.py` / `srq1_shap.py` at the slugged SRQ1 constant
-- [ ] Delete the shadow copy at `utility_scripts/scripts/generate_systemB_diagram.py`
+- [ ] Point `srq1_figures.py` / `srq1_shap.py` at the slugged SRQ1 constant —
+      they resolve via `THESIS_RESULTS_SRQ1_DIR`, so this is a re-run, not a fix
 - [ ] Repoint the EDA writers to also emit `.md`/`.png` into
       `get_category_eda_results_dir(cat)` (F21)
 
 ### Phase 3b — Staleness triage + per-SRQ shape — `pending`
 
 The substantive half of the plan. Two jobs:
+
+**0. Decide `generate_systemB_diagram.py`** (F26) — it diagrams the abandoned
+multi-agent writing system and no chapter cites it. Recommendation: delete.
 
 **1. Staleness triage.** Brian's assessment: `appendix/` and
 `srq4_scenario_experiments/` are current; `srq1_model_performance/` and
@@ -230,6 +242,8 @@ rather than a correctness mechanism.
 | DEC-P0046-SINGLE-HOME | **Supersedes the promotion half of DEC-P0046-CURATION.** Tier 05 holds no figures/tables/diagrams at all — only writing apparatus (citations, snapshots, notebookLM, drafts, notes). Every artefact lives exactly once, in `04_thesis_results/`. | Removes the second copy rather than defending it with a manifest: a copy not machine-linked to its producer *is* the `fig2_granularity` failure mode. Also reduces the clean-repo rule to "tiers 00-04 ship, 05 does not". Brian, F14. | 2026-09-06 |
 | DEC-P0046-ROUTING | Producer tier decides: data-processing figures come from `02_thesis_data/`, modelling/serving/orchestration from `03_thesis_modelling/`, general diagrams from scripts in `04_thesis_results/` — all writing into `04_thesis_results/`. EDA volume is the one exception (stays at the pipeline, only candidates promoted). | Extends the existing train-vs-serve test from `repo-tier-structure.md` to outputs, so one rule covers scripts and artefacts. Semantic fit is carried by producer location + subfolder name, not by output tier. Brian, F15. | 2026-09-06 |
 | DEC-P0046-ZOMBIE | `fig2_granularity.png` deleted outright, no archive copy. | Verified committed at git `4c7a98b`, and cited by zero chapters. Archiving into a tier-05 folder that is never shared protects against a reader who cannot see it. F17. | 2026-09-06 |
+| DEC-P0046-ANCHOR | Root discovery anchors on `.env.example` (then `.env`, then `PATHS.py`), walking up from `__file__`. Never `CLAUDE.md`, never `Path.cwd()`, never `parents[N]`. | The repo ships to assessors and should not carry an anchor naming the assistant. The `__file__`/hop-count halves are correctness fixes found while doing it: cwd-anchoring failed from outside the repo, and hop counts encode folder depth, which the restructure changed. Brian + F25. | 2026-09-06 |
+| DEC-P0046-DROP-SPSS | Indeks Danmark / SPSS data archived to `.archive/spss_indeksdanmark_2026-09/`; all four PATHS constants removed. | Never used, and will not be in the 9 days to submission. Archived not deleted, being real licensed source data. Leaves an open correction: the abstract still names it as an empirical source (F23). Brian. | 2026-09-06 |
 | DEC-P0046-SHIP-SCOPE | **Corrects DEC-P0046-SINGLE-HOME's boundary claim.** Tiers 01-05 (the four SRQ tiers + results) ship to assessors. Tier 00 (context) and tier 06 (writing) are both excluded as AI-guided writing harness. | The shipped set is exactly the work; the excluded set is exactly the apparatus for writing about it. I had wrongly written "00-04 ship". Brian, F22. | 2026-09-06 |
 | DEC-P0046-SRQ-TIERS | Top-level folders map one-to-one onto research questions (`01_SRQ1_Model_Training/` .. `04_SRQ4_Scenario_Experiment/`), with data + modelling nested under SRQ1. | A script's location now states which SRQ it answers, extending the existing train-vs-serve test to the whole tree. Brian, F19. | 2026-09-06 |
 | DEC-P0046-SLUGS | Results folders carry descriptive slugs: `srq1_model_performance/`, `srq2_structured_tool_interface/`, `srq3_integration_readiness/`, `srq4_scenario_experiments/`. | Bare `srq1/` says nothing at a glance in the tree humans browse to pick artefacts. Brian, F20. | 2026-09-06 |

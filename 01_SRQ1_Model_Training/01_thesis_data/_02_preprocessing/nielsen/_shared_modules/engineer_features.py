@@ -376,6 +376,71 @@ def filter_series(
     return df.merge(keep_df, on=group_keys, how="inner").copy()
 
 
+def add_holiday_features(
+    df: pd.DataFrame,
+    holiday_dates: Iterable[str],
+    holiday_years: Iterable[int] | None = None,
+) -> pd.DataFrame:
+    """Add days_in_month, n_holidays and non_holiday_days from a holiday calendar.
+
+    WHY THESE THREE
+    ---------------
+    `month`, `quarter` and `peak_month` are all identical for a given calendar
+    month in every year, so none of them can carry:
+
+      - Easter moving between March and April, which moves 3 of the 15 DK
+        public holidays with it
+      - Store Bededag's abolition in 2024, which drops the annual count from
+        15 to 14 permanently, mid-panel
+
+    n_holidays carries both. days_in_month is included because non_holiday_days
+    is otherwise not interpretable (28 - 1 and 31 - 1 are different situations),
+    and because February is a real 10% swing in exposure that `month` encodes
+    only implicitly.
+
+    NAMING
+    ------
+    `non_holiday_days`, deliberately, not `selling_days` or `trading_days`.
+    Danish retail is open at weekends (Lukkeloven was liberalised in 2012) and
+    many stores open on public holidays too, with reduced hours. So this column
+    is NOT a count of days on which selling happened -- it is days in the month
+    that are not public holidays, which is exactly what the arithmetic does.
+    The project renamed holiday_months -> peak_months on 2026-08-18 for the
+    same reason: a name must not assert a cause the computation never
+    established.
+
+    ZERO VS NULL
+    ------------
+    A panel month inside holiday_years with no holidays gets 0 -- that is a
+    measurement. A panel month OUTSIDE holiday_years gets NaN and must not get
+    0, because "we did not fetch that year" and "that year had no holidays" are
+    different facts and only one of them is true. Callers that need a complete
+    matrix should extend the fetch, not fill the gap.
+    """
+    df = df.copy()
+
+    holidays = pd.to_datetime(pd.Series(list(holiday_dates), dtype="object"))
+    counts = (
+        holidays.dt.to_period("M").value_counts()
+        if len(holidays) else pd.Series(dtype="int64")
+    )
+
+    period = df["date"].dt.to_period("M")
+    df["days_in_month"] = df["date"].dt.days_in_month
+
+    # Inside the fetched range a month with no holidays genuinely has 0.
+    df["n_holidays"] = period.map(counts).fillna(0).astype("float64")
+
+    if holiday_years is not None:
+        covered = set(int(y) for y in holiday_years)
+        outside = ~df["date"].dt.year.isin(covered)
+        # Outside the fetched range the value is unknown, not zero.
+        df.loc[outside, "n_holidays"] = pd.NA
+
+    df["non_holiday_days"] = df["days_in_month"] - df["n_holidays"]
+    return df
+
+
 def engineer_features(
     df: pd.DataFrame,
     target_col: str = DEFAULT_TARGET_COL,
@@ -384,12 +449,16 @@ def engineer_features(
     group_keys: list[str] = ["brand"],
     *,
     peak_months: Iterable[int],
+    holiday_dates: Iterable[str] | None = None,
+    holiday_years: Iterable[int] | None = None,
 ) -> pd.DataFrame:
     """
     Add time-series features per group (default: per brand):
       - autoregressive lags
       - rolling mean/std (with shift(1) — no look-ahead)
       - calendar (month, quarter, peak_month)
+      - holiday calendar (days_in_month, n_holidays, non_holiday_days) when
+        holiday_dates is supplied; omitted entirely when it is not
       - promo intensity
       - log target
 
@@ -429,6 +498,16 @@ def engineer_features(
     df["month"] = df["date"].dt.month
     df["quarter"] = df["date"].dt.quarter
     df["peak_month"] = df["month"].isin(peak_set).astype(int)
+
+    # Holiday enrichment (optional; see add_holiday_features).
+    #
+    # Gated on holiday_dates being passed rather than on a module constant, so
+    # a run either has the feature because its contract said so, or does not
+    # have it because its contract said so. There is no third state where the
+    # feature silently disappears -- that is the defect the peak_months rename
+    # was fixing (DEC-NO-FALLBACK).
+    if holiday_dates is not None:
+        df = add_holiday_features(df, holiday_dates, holiday_years)
 
     # Promo intensity (clip to [0, 1]), lagged one period.
     #

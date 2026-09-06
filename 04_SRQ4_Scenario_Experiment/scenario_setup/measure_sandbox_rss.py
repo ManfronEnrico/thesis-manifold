@@ -44,7 +44,21 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+def _find_repo_root() -> Path:
+    """Walk up from this file to the repo root (anchored on .env.example).
+
+    Replaces a hard-coded parents[N] hop, which silently points at the wrong
+    directory whenever a script moves between folder depths -- as happened in
+    the 2026-09-06 restructure.
+    """
+    _start = Path(__file__).resolve().parent
+    for _cand in (_start, *_start.parents):
+        if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+            return _cand
+    raise FileNotFoundError(f"Could not find project root above {_start}")
+
+
+sys.path.insert(0, str(_find_repo_root()))
 from PATHS import THESIS_RESULTS_SRQ1_DIR  # noqa: E402
 
 DEFAULT_TEMPLATE = os.environ.get("PROMETHEUS_TEMPLATE_ID", "prometheus")
@@ -52,7 +66,7 @@ DEFAULT_TEMPLATE = os.environ.get("PROMETHEUS_TEMPLATE_ID", "prometheus")
 
 def _load_env() -> None:
     """Read .env for the E2B key, matching the harness's own indirection."""
-    root = Path(__file__).resolve().parents[2]
+    root = _find_repo_root()
     f = root / ".env"
     if f.is_file():
         for line in f.read_text(encoding="utf-8", errors="ignore").splitlines():

@@ -30,17 +30,20 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 # Project root discovery
 # ---------------------------------------------------------------------------
-current = Path.cwd()
-while current != current.parent:
-	if (current / "CLAUDE.md").exists():
-		ROOT_DIR = current
+# Anchor on .env.example (committed; see .gitignore) rather than CLAUDE.md --
+# the repo ships to assessors and should not advertise the assistant used.
+# Walk from __file__, not cwd: cwd depends on where python was invoked.
+_anchor_start = Path(__file__).resolve().parent
+for _cand in (_anchor_start, *_anchor_start.parents):
+	if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+		ROOT_DIR = _cand
 		break
-	current = current.parent
 else:
-	raise FileNotFoundError("Could not find project root (CLAUDE.md)")
+	raise FileNotFoundError(
+		f"Could not find project root (.env.example/.env/PATHS.py) above {_anchor_start}")
 
 sys.path.insert(0, str(ROOT_DIR))
-sys.path.insert(0, str(ROOT_DIR / "02_thesis_data" / "_02_preprocessing" / "nielsen" / "_shared_modules"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # this file lives in _shared_modules/
 
 from capture_utils import print_and_save_table, tee_console
 from pipeline_config import (

@@ -50,7 +50,21 @@ from pathlib import Path
 import pandas as pd
 
 # Repo root on sys.path so `import PATHS` resolves when run as a script.
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+def _find_repo_root() -> Path:
+    """Walk up from this file to the repo root (anchored on .env.example).
+
+    Replaces a hard-coded parents[N] hop, which silently points at the wrong
+    directory whenever a script moves between folder depths -- as happened in
+    the 2026-09-06 restructure.
+    """
+    _start = Path(__file__).resolve().parent
+    for _cand in (_start, *_start.parents):
+        if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+            return _cand
+    raise FileNotFoundError(f"Could not find project root above {_start}")
+
+
+_REPO_ROOT = _find_repo_root()
 if str(_REPO_ROOT) not in sys.path:
 	sys.path.insert(0, str(_REPO_ROOT))
 
@@ -71,7 +85,11 @@ from step_1_load_and_aggregate import load_and_aggregate, load_merged  # noqa: E
 
 # Contract schema versions this file knows how to read. A version outside this
 # set is refused rather than parsed optimistically -- see load_contract().
-SUPPORTED_CONTRACT_VERSIONS = frozenset({"1.1"})
+# 1.2 (2026-09-06) added the holiday_enrichment block additively; no 1.1 field
+# moved or changed type. So both are read, and a 1.1 contract means "no holiday
+# enrichment" -- absence of the field is unambiguous here precisely BECAUSE the
+# change was additive, which is not true of a rename (cf. 1.0, still refused).
+SUPPORTED_CONTRACT_VERSIONS = frozenset({"1.1", "1.2"})
 
 BRAND_COL = "brand"
 GROUP_KEYS = [BRAND_COL]
@@ -154,6 +172,55 @@ def load_contract(paths: dict, horizon: int) -> tuple[dict, Path]:
 # FEATURE MATRIX
 # ============================================================================
 
+def _load_holiday_calendar(contract: dict, path: Path) -> tuple[list[str], list[int]]:
+	"""Load the holiday cache a contract promised, or fail naming both.
+
+	Called only when the contract says holiday_enrichment is true. Every failure
+	below is a contract/disk disagreement: step 3 saw a usable cache and step 4
+	does not. Downgrading silently would produce a matrix that does not match
+	its own contract, so all three paths raise (DEC-NO-FALLBACK).
+	"""
+	holidays_dir = (
+		_REPO_ROOT / "01_SRQ1_Model_Training" / "01_thesis_data" / "_00_raw" / "holidays"
+	)
+	if str(holidays_dir) not in sys.path:
+		sys.path.insert(0, str(holidays_dir))
+
+	try:
+		from fetch_holidays import load_holiday_dates
+	except Exception as exc:
+		raise ContractError(
+			f"Contract promises holiday enrichment but fetch_holidays.py is not "
+			f"importable.\n  Contract: {path}\n  Expected at: {holidays_dir}\n"
+			f"  {exc}"
+		) from exc
+
+	dates, years = load_holiday_dates()
+	if not dates:
+		raise ContractError(
+			f"Contract promises holiday enrichment but the holiday cache is "
+			f"empty.\n  Contract: {path}\n"
+			f"  Run: python {holidays_dir / 'fetch_holidays.py'} --years <range>\n"
+			f"  Or re-run step 3, which will record holiday_enrichment=false."
+		)
+
+	# The contract names the years it was derived against. If the cache has
+	# since changed underneath it, the matrix would not be the one the contract
+	# describes -- and an upstream revision is a real event here (Store Bededag,
+	# abolished 2024, changed historical DK holiday data).
+	promised = contract.get("holiday_years_covered")
+	if promised is not None and sorted(int(y) for y in promised) != sorted(years):
+		raise ContractError(
+			f"Holiday cache no longer matches the contract.\n"
+			f"  Contract: {path}\n"
+			f"  Contract covers: {sorted(promised)}\n"
+			f"  Cache covers:    {sorted(years)}\n"
+			f"  Re-run step 3 so the contract describes the current cache."
+		)
+
+	return dates, years
+
+
 def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataFrame, dict]:
 	"""Calendar -> filter -> engineer, entirely on contract values.
 
@@ -172,6 +239,18 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 	lags = require(contract, "lags", path)
 	rolling_windows = require(contract, "rolling_windows", path)
 	peak_months = require(contract, "peak_months", path)
+
+	# Holiday enrichment: read, never decided here (step 3 decides). A 1.1
+	# contract has no such field and means False -- safe ONLY because the 1.2
+	# change was additive; see SUPPORTED_CONTRACT_VERSIONS.
+	#
+	# When the contract says True it is a PROMISE about the feature set, so the
+	# cache being unreadable is a hard failure rather than a quiet downgrade.
+	# A run that reports "enriched" numbers from an unenriched matrix is the one
+	# outcome this whole contract mechanism exists to prevent.
+	holiday_dates, holiday_years = None, None
+	if contract.get("holiday_enrichment", False):
+		holiday_dates, holiday_years = _load_holiday_calendar(contract, path)
 
 	stats = {"rows_in": len(df), "brands_in": int(df[BRAND_COL].nunique())}
 
@@ -202,6 +281,8 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 		rolling_windows=rolling_windows,
 		group_keys=GROUP_KEYS,
 		peak_months=peak_months,
+		holiday_dates=holiday_dates,
+		holiday_years=holiday_years,
 	)
 	stats["rows_out"] = len(out)
 	stats["cols_out"] = len(out.columns)
@@ -213,6 +294,10 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 	# run log, because a model comparison across categories is otherwise
 	# comparing different feature spaces without saying so.
 	stats["has_promo"] = "promo_units" in kept.columns
+
+	# Same principle as has_promo: a cross-category or before/after comparison
+	# must be able to see that the feature spaces differ, from the run log.
+	stats["has_holidays"] = holiday_dates is not None
 
 	_verify(out, contract, stats)
 	return out, stats

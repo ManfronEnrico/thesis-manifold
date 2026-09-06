@@ -3,8 +3,19 @@ Thesis figure generation — v2
 - No text/box/arrow overlaps (uses xlabel= for edge annotations, not label=)
 - Asymmetric layout: each figure has its own intentional visual hierarchy
 - Consistent colour palette across all figures
-- Outputs SVG + PNG to 05_thesis_writing/figures/
+- Outputs SVG + PNG to THESIS_RESULTS_DIAGRAMS_DIR (05_thesis_results/diagrams/)
 """
+import sys
+from pathlib import Path
+
+# All output locations resolve through PATHS.py (DEC-P0046-PATHS): no literal
+# tier-folder names in generator code.
+for _cand in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
+    if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
+        sys.path.insert(0, str(_cand))
+        break
+from PATHS import THESIS_RESULTS_DIAGRAMS_DIR
+
 import os
 import graphviz
 import matplotlib
@@ -13,7 +24,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-OUTPUT_DIR = "05_thesis_writing/figures"
+OUTPUT_DIR = str(THESIS_RESULTS_DIAGRAMS_DIR)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ── Shared palette ────────────────────────────────────────────────────────────

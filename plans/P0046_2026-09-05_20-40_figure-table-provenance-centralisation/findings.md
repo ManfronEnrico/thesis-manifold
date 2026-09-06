@@ -652,6 +652,184 @@ excluded set is exactly *the apparatus for writing about the work*. That is a
 cleaner line than the one I drew, and it strengthens F14 rather than weakening
 it — the artefact rule matters more, not less, when two tiers are excluded.
 
+## F23 — SPSS/Indeks Danmark removed, and the claim it leaves behind
+
+**Decided by Brian, 2026-09-06:** the Indeks Danmark consumer-survey dataset was
+never used and will not be in the 9 days to submission. Executed:
+
+- Data archived to `.archive/spss_indeksdanmark_2026-09/` with a README
+  (real licensed source data, so archived rather than deleted).
+- All four `PATHS.py` SPSS constants removed. Three of the four already resolved
+  to non-existent directories before the archival — only `_00_raw` ever existed.
+- No live script referenced any of them (verified by grep excluding `.archive/`).
+
+### The part that is not just cleanup
+
+**The thesis still claims this dataset as part of its empirical base.** Two lines
+in the abstract:
+
+> "deployed on Danish CSD retail data (Nielsen CSD panel + **Indeks Danmark
+> consumer survey**)"
+
+> "Single empirical context: Danish CSD retail, Manifold AI / Nielsen CSD panel,
+> **Indeks Danmark consumer survey**"
+
+Present in `06_thesis_writing/sections-drafts/abstract.md` (lines 40, 56) **and
+in the 2026-09-05 `.docx` snapshot** — i.e. in the authoritative prose, not just
+a draft note.
+
+Since the data was never used, these describe a data source that informs no
+result in the thesis. That is a factual claim about method that does not hold —
+materially different from a stale figure, and it is in the abstract, which
+examiners read first. Correcting it means editing the `.docx`
+(`.claude/rules/writing-surface-authority.md`), not the draft `.md`.
+
+Flagged here rather than acted on: prose edits need Brian, and the bullets-first
+rule applies.
+
+### Related, not actioned
+
+`utility_scripts/scripts/ml_retraining/01_ingest_raw.py` ingests Indeks from
+`PROJECT_ROOT / "Thesis" / "indeksdanmark"` — a path gone since P0028
+(2026-07-11). The whole `ml_retraining/` folder is an April-era pipeline
+superseded by `01_SRQ1_Model_Training/`. Left in place: it was broken for
+reasons predating this change, and archiving it is a separate decision.
+
+## F24 — `PATHS.py` is clean; three scripts bypass it and are still broken
+
+**Verification state after the SPSS removal: 39 of 39 `*_DIR` constants resolve.
+Zero missing.** `print_all_paths(verbose=True)` runs clean. No live script
+imports a removed constant.
+
+But constants resolving is not the same as scripts running. Three live scripts
+hold **hardcoded old-tier strings** and so are unaffected by the PATHS repair:
+
+| Script | Line | Holds | Effect |
+|--------|------|-------|--------|
+| `05_thesis_results/generate_figures.py` | 16 | `OUTPUT_DIR = "05_thesis_writing/figures"` | writes to a path that no longer exists |
+| `06_thesis_writing/figures/generate_systemB_diagram.py` | 14 | same | same |
+| `utility_scripts/scripts/generate_systemB_diagram.py` | 14 | same | same (the shadow copy, F8) |
+| `utility_scripts/scripts/zotero_client.py` | 270 | `parents[2] / "05_thesis_writing" / "citations"` | **new find** — Zotero writes would land in a dead path |
+| `utility_scripts/scripts/thesis_snapshot.py` | 73-74 | `REPO_ROOT / "05_thesis_writing" / ...` | **new find** — the snapshot tool is broken |
+
+The last two were not in the Phase 3 list, because Phase 3 was scoped to figure
+and table generators. They surfaced only from grepping for the literal old tier
+names rather than for PATHS imports.
+
+**This is the same lesson as F19, one level down.** The scripts that broke
+silently are exactly the ones that did *not* route through `PATHS.py`. The three
+figure generators were already known offenders (F8); `zotero_client.py` and
+`thesis_snapshot.py` are two more of the same kind. Every one of them would have
+failed at run time with no warning at import.
+
+Note `thesis_snapshot.py` matters beyond itself: it generates the
+`docx-exported-snapshots/` mirror that the whole comment-audit workflow reads.
+
+**Consequence:** the Phase 3 remainder now covers five scripts, not three, and
+the DEC-P0046-PATHS invariant should be stated as a check, not an aspiration:
+*no live script contains a literal tier-folder name.* That is greppable, and it
+belongs beside the F19 self-check in Phase 6.
+
+## F25 — Full hardcoded-path sweep: 43 scripts -> 10, all survivors legitimate
+
+A regex audit of every live `.py` (excluding `.venv/`, `.archive/`, `plans/`,
+agent config) for five defect classes: literal tier names, `CLAUDE.md` anchors,
+`parents[N]` root hops, absolute paths, and the dead `"Thesis"` segment.
+
+**Before: 43 scripts. After: 10.** All 77 live scripts compile.
+
+### The `CLAUDE.md` -> `.env.example` anchor swap
+
+Brian's reason: the repo ships to assessors, and an anchor filename that names
+the assistant is not something to hand over. Executed across 7 scripts plus the
+shared finder.
+
+Two defects were found while doing it, neither of which was the anchor itself:
+
+1. **`.gitignore:15` (`.env.*`) excluded `.env.example`.** An anchor that is not
+   committed cannot anchor a fresh clone — the exact clean-repo case this change
+   exists to serve. Added `!.env.example` with a comment saying why. Without
+   this, the swap would have been *worse* than `CLAUDE.md`, which at least was
+   committed.
+
+2. **Every inline finder walked up from `Path.cwd()`, not `__file__`.** So the
+   root resolved from wherever python happened to be invoked, and any run from
+   outside the repo failed. Now anchored on `__file__`; verified by resolving
+   correctly from an unrelated working directory.
+
+The shared `dynamically_find_root_directory.py` was rewritten as a documented
+`find_project_root()` with an anchor tuple `(".env.example", ".env", "PATHS.py")`
+— three fallbacks, so a missing `.env` on a teammate's clone is not fatal.
+
+### `parents[N]` hops replaced in 17 scripts
+
+`_REPO_ROOT = Path(__file__).resolve().parents[4]` encodes folder *depth*. The
+2026-09-06 restructure changed depth for most of the tree, so these silently
+pointed at the wrong directory — same failure class as F19, one level down.
+Replaced with `_find_repo_root()`.
+
+### What is left, and why each is fine
+
+| Script | Finding | Verdict |
+|--------|---------|---------|
+| `PATHS.py` (7 tier literals) | literal tier names | **correct** — it is the authority; the names must be written down exactly once, here |
+| `dynamically_find_root_directory.py` | `"CLAUDE.md"` | docstring explaining the swap, not an anchor |
+| `thesis_snapshot.py` (2 abs paths) | `C:\Users\brian\OneDrive\...` | the OneDrive `.docx` default + a usage example. Outside the repo by nature; `--source` overrides it |
+| `training_report.py`, `srq4_experiment.py` | `parents[1]` | resolving a *sibling* directory, not the repo root — correct relative use |
+| `audit_datasets.py` | `parents[2] / ".csv"` | local output dir, unaffected by tier layout |
+| 3 `nielsen_data_exploration`-family scripts | `parents[1]` | **dead already** — they import `thesis.ai_research_framework`, a module removed long ago. Pre-existing, unrelated to paths |
+
+### `ml_retraining/` archived rather than repointed
+
+11 scripts, `00_setup.py` .. `10_publication_figures.py`, all reading
+`PROJECT_ROOT / "results" / "phase1" / ...`, `data/raw/`, and
+`PROJECT_ROOT / "Thesis" / "indeksdanmark"`. **None of those directories exist**
+— `Thesis/` went in P0028 (2026-07-11), `data/` and `results/` never existed in
+this repo.
+
+Repointing them would have manufactured `PATHS.py` constants for folders nobody
+maintains — the failure mode this plan exists to remove, and the same reasoning
+that deleted the `THESIS_MODELLING_SERVING_*` constants in F19. Archived to
+`.archive/ml_retraining_2026-09/` with a README.
+
+### The rule is now checkable
+
+DEC-P0046-PATHS can be stated as a test rather than an intention: **no live
+script contains a literal tier-folder name, a `CLAUDE.md` anchor, or a
+`parents[N]` repo-root hop.** The audit script is the check. Belongs in Phase 6
+beside the manifest and the `PATHS.py` self-check.
+
+## F26 — `generate_systemB_diagram.py` diagrams the abandoned writing system
+
+Brian's suspicion about "System A/B" scripts was right, and sharper than
+expected. `generate_systemB_diagram.py` renders a multi-agent **thesis writing**
+system: Thesis Coordinator, Planner Agent, Writing Agent ("Bullet points only
+(never prose)"), Critic Agent, Outline Agent, APA Citation Agent, Thesis Writer
+Agent.
+
+That is the abandoned writing-agent promise, not the SRQ2 tool interface or the
+SRQ4 scenario harness the thesis actually presents. A repo-wide search for its
+output filename `system_b_overview` returns **three files: the script, its shadow
+copy, and this plan. Zero chapters.**
+
+Handled per Brian's sequencing (fix paths first, decide keep/adapt/delete after):
+
+- Relocated `06_thesis_writing/figures/generate_systemB_diagram.py` ->
+  `05_thesis_results/` (no generator may live in, or write to, the writing tier)
+- Repointed to `THESIS_RESULTS_DIAGRAMS_DIR`
+- Added a **staleness warning docstring** naming F26, so the next reader cannot
+  mistake it for current
+- Archived the byte-identical shadow copy (F8) to
+  `.archive/shadow_scripts_2026-09/`
+
+**Recommendation for Phase 3b: DELETE.** It depicts a system that was not built,
+nothing cites it, and its existence in a shipped tier invites a defence question
+about an artefact that does not exist. Kept for now only because Brian asked for
+the keep/adapt/delete call to come after the paths were fixed.
+
+`generate_figures.py`'s six diagrams are a different matter — those depict the
+real architecture and are worth updating rather than dropping (F2, F5).
+
 ## Open questions for Brian
 
 1. **Deferred to Phase 5** — the 18-row restore-or-retire table (F12), fillable
