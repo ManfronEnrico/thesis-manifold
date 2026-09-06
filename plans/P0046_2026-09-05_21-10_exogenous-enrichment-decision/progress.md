@@ -1,89 +1,99 @@
----
-pid: P0046
-created: 2026-09-05 21:10:00
-updated: 2026-09-05 21:10:00
----
+# P0047 — Progress
 
-# Progress — P0046
+## Session 1 — 2026-09-05 — decision
 
-## Session 1 — 2026-09-05 21:10 (plan creation)
+Split out of P0043: the enrichment objection changes feature engineering, hence
+training, hence every reported number, so it is not a prose fix.
 
-Split out of P0043 because the enrichment objection is not closable by editing prose.
+Brian corrected two findings; **both weakened my case against enrichment**, and
+neither was a point he had to concede.
 
-### Done
-- Collected the five Word threads that raise it (ch1 15/18/20, ch2 66/69, ch3 127,
-  ch4 177, ch5 207) with their anchors.
-- Read the live feature set in `engineer_features.py` and recorded what is genuinely
-  exogenous today (F3).
-- **Found the decisive prior art (F1)**: the pipeline had a `holiday_month(s)` feature and
-  removed it on 2026-08-18, renaming it `peak_months`, because it consulted no calendar and
-  the measured seasonality contradicted a holiday story — CSD peaks at quarter-ends,
-  danskvand in summer, energidrikke has no December peak, and January is the weakest CSD
-  month at -26.6%.
-- Recorded the grain argument (F2), including that the thesis **already** uses "monthly data
-  does not support holiday windows" to explain Prophet's weakness — so claiming a holiday
-  calendar helps the monthly models would contradict an argument already in the text.
+- **F1** — I claimed the project had already tested holiday features. It had not.
+  The 2026-08-18 change was a rename of a mislabelled peak-month rule.
+- **F2** — The Prophet grain argument holds for holiday *windows*, not monthly
+  *counts*.
 
-### Not done — deliberately
-No code was written and no feature was added. Task 3 is a decision gate for Brian; building
-first would prejudge it, and the funded-run deadline means the wrong choice is expensive.
+**Decision: Option C, upstream of the funded runs.**
+> *"exactly thats why I want to do it before we finish the experiments"*
 
-### Next
-Task 2 — size Option C honestly (hours to feature, retrain, re-benchmark, regenerate), so
-the gate is a decision about schedule rather than about intuition.
+## Session 2 — 2026-09-06 — built
 
-## Session 1 (cont.) — 2026-09-05, Brian's corrections
+### API
 
-Brian corrected two findings and settled the decision gate. **Both corrections weaken the
-case against enrichment; neither was a point he had to concede.**
+`nagerholidays.com/api/pro/` → 401 (commercial tier). Free tier is
+`date.nager.at/api/v3/PublicHolidays/{year}/DK` (F4). Brian's BDBI exam script
+used the correct host and served as the pattern for the fetch loop.
 
-### F1 was wrong and is rewritten
+### Corrections Brian made during the build
 
-I wrote that the project "already ran this experiment informally and got a negative
-answer". It did not. The 2026-08-18 change was a **rename of a mislabelled feature** —
-`holiday_month(s)` was computing peak months and consulting no calendar. That is evidence
-the old feature was fake, not evidence a real calendar adds nothing.
+| # | mine | correct |
+|---|---|---|
+| 1 | `trading_days` = weekdays − holidays | Danish retail trades weekends; `non_holiday_days = days_in_month − n_holidays` (F6) |
+| 2 | Four objections to fetching during training | Three were answerable by the cache-with-timestamp I had *myself* proposed. Only the refetch-coupling point stood |
+| 3 | Fetch tied to Nielsen refetch | Also needs standalone — a Nielsen pull is ~10 min minimum, ~2 h with raw |
+| 4 | Asked two contract-schema questions | Not his call; decided them (F8) |
 
-> Brian: *"this was only because the old holiday_months was underlying actually just peak
-> months -> thus the rename. But I am talking about including an ACTUAL holiday month api
-> enrichment, something which was not done back then."*
+On (2) I stated the fix and then used it as an objection anyway. On (4) I asked
+for a decision instead of making one after he had said to proceed.
 
-Correct. A derived peak-month rule and an external calendar are different inputs. **No
-prior art exists**, so the delta is unknown rather than predictable — which strengthens
-rather than weakens the case for measuring it.
+### Built
 
-### F2 was overreaching and is narrowed
+| component | note |
+|---|---|
+| `_00_raw/holidays/fetch_holidays.py` | standalone + auto; per-year cache; manifest with timestamp + sha256 |
+| `engineer_features.py::add_holiday_features` | `days_in_month`, `n_holidays`, `non_holiday_days` |
+| `step_3_derive_params.py` | contract **v1.2**; decides + records reason |
+| `step_4_engineer_features.py` | accepts v1.1 (unenriched) + v1.2; hard-fails if a promise is unmet |
+| `save_all_datasets.py::_refresh_holidays` | `--force` on a Nielsen pull; never fails the Nielsen run |
+| `export_holiday_appendix.py` | appendix tables 90–93 |
 
-The Prophet consistency argument holds for holiday *windows* (a span of days around a date,
-genuinely inexpressible at monthly grain). It does not extend to a monthly holiday count or
-a trading-day count, which are constructible and were never tested. Trading-day count in
-particular is **not** a re-encoding of month-of-year: it varies year to year for the same
-month, which a month dummy cannot carry.
+### Verified by running
 
-Going into `writing-notes/` as task 9, so the thesis does not argue the overreaching
-version in prose.
+- Fetch: 10 years cached, **15 holidays 2018–2023 → 14 from 2024** (F5)
+- Features: Mar 2023 = 0 vs Mar 2024 = 3 (Easter); 2017 = NaN not 0
+- Contract: covered panel → `True`; 2015-start panel → `False` with the exact fix command
+- Both engineer paths: enriched emits 3 columns, unenriched emits none
+- Mismatch guard raises; all 4 files compile
+- **F9 bug found and fixed**: a narrow re-run shrank the manifest to 3 years while
+  10 were cached — would have silently disabled enrichment
 
-### Decision: Option C, and it runs BEFORE the experiments finish
+### Appendix (per P0046 provenance rules)
 
-> Brian: *"exactly thats why I want to do it before we finish the experiments"*
+Tables 90–93 in `05_thesis_results/appendix/`, `.md` + `.csv` twins, all values
+derived from the cache, `<!-- INTERNAL REVIEW -->` separators, output via
+`PATHS.py`, root anchored on `.env.example`.
 
-The funded-run deadline is the reason to do it now, not a constraint to schedule around.
-Enrichment is therefore **upstream of P0042 blocks 1-3**, not parallel to them. Task 3 is
-closed as decided; task 2 now only confirms the retrain fits before the runs, with Option A
-as the fallback if it does not.
+Table 92 (monthly matrix) is the anti-collinearity evidence (F7): December flat
+at 4, March 0–4, April 0–5.
 
-### Next session starts here
+### Repo restructure
 
-1. **Task 2** — size the build honestly (calendar source, feature, retrain, re-benchmark,
-   table/figure regeneration) and check it against the P0042 schedule.
-2. **Task 5** — add the feature behind a flag defaulting off. At monthly grain build
-   *both* candidate forms: public-holiday-day count, and trading-day count. They are
-   different constructs and only the second is orthogonal to month-of-year.
-3. **Task 6** — benchmark with and without across all four categories; report the
-   per-category delta whatever it is. Compare SHAP between runs to check the feature is not
-   merely re-encoding `month`/`peak_month`.
-4. **Task 9** — the writing-notes entry, which can be done any time and is independent.
+Mid-session the parallel session moved everything to SRQ tiers. All paths
+updated; `PATHS.py` was already current. They also replaced my `parents[4]` hop
+with an anchor-based root finder — a real improvement, kept.
 
-Open question worth deciding early in task 2: **school holidays** move with public holidays
-and plausibly matter more for beverage demand than public holidays alone. In or out of
-scope? Cheap to add while the feature is being built, expensive to add afterwards.
+**P-ID collision**: this plan renumbered **P0047**; the other keeps P0046
+because `DEC-P0046-*` decision IDs reference it. Folder name still says P0046.
+
+## Next session starts here
+
+1. **Task 11 — the gate.** Re-run step 3 × 4 categories to emit v1.2 contracts.
+   Until then existing v1.1 contracts keep running unenriched (correct, but the
+   enrichment does nothing).
+2. **Task 6** — benchmark with/without; per-category delta **whatever it is**,
+   plus SHAP before/after to show it is not `month` re-encoded (F7).
+3. **Task 7** — regenerate affected tables/figures.
+4. **Task 12** — writing notes: reproducibility limitation (upstream revision can
+   change features silently — accepted risk, must be stated), the
+   `non_holiday_days` proxy caveat (F6), further exogenous sources as future work.
+5. **Task 8** — close the five Word threads.
+
+Then, and only then, P0042's funded runs.
+
+### Open
+
+- **School holidays**: no free API found (Brian). Out of scope by data
+  availability — say so in the write-up rather than leaving it silent.
+- **Both features or one?** `non_holiday_days` is an exact linear function of
+  `n_holidays` given `days_in_month`. Task 6's SHAP pass decides whether all
+  three earn their place; do not pre-empt it.
