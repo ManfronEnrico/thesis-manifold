@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "subject": "Implement the forecast horizon in engineer_features()",
+  "description": "engineer_features() has no `horizon` parameter; lags are shift(lag) at both H1 and H3, so both matrices are the same one-month task (F22, verified: lag_1/lag_3/lag_13 identical on CSD). Fix: at horizon h, lags become shift(lag + h - 1); rolling windows shift with them. File: 01_SRQ1_Model_Training/01_thesis_data/_02_preprocessing/nielsen/_shared_modules/engineer_features.py. Thread `horizon` from step 4, which already receives it from the contract. VERIFY BY: re-deriving the matrices and confirming lag_1 is NOT identical across h1/h3 - that equality is the defect's signature.",
+  "activeForm": "Implementing the horizon fix",
+  "status": "pending",
+  "blocks": [
+    "2"
+  ],
+  "blockedBy": []
+}

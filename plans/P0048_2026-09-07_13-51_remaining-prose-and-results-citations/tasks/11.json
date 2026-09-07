@@ -1,0 +1,11 @@
+{
+  "id": "11",
+  "subject": "MERGE ch3-methodology draft with the snapshot",
+  "description": "Inherited from P0045 task 6. MERGE, not rebuild: the draft is 1,967 words LARGER than the snapshot and holds planning material that never went into the .docx. Rebuilding from the snapshot would destroy it. 10 hollow sections. Use ch9 as the reference form (Claims/Warrant/Evidence/Open). See INHERITED_CONTEXT.md B.3.",
+  "activeForm": "Merging the ch3 methodology draft",
+  "status": "pending",
+  "blocks": [
+    "16"
+  ],
+  "blockedBy": []
+}

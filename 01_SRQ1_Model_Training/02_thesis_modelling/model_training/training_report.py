@@ -49,7 +49,8 @@ def _find_repo_root() -> Path:
 
 
 sys.path.insert(0, str(_find_repo_root()))
-from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir)
+from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir,
+                   get_srq_tables_dir, get_srq_models_dir)
 
 warnings.filterwarnings("ignore")
 
@@ -176,7 +177,7 @@ def section_hyperparams(L):
           "train+val and evaluated once on test (`srq1_benchmark_tuned.py`). "
           "Tuning on test would select the configuration that best fits the "
           "evaluation set, which is not a measurement.", ""]
-    f = THESIS_RESULTS_SRQ1_DIR / "tuned_params.json"
+    f = get_srq_models_dir(1) / "tuned_params.json"
     if not f.is_file():
         L += ["_`tuned_params.json` not found -- run `srq1_benchmark_tuned.py`._", ""]
         return L
@@ -197,7 +198,7 @@ def section_hyperparams(L):
 
 def section_accuracy(L):
     L += ["## 4. Accuracy", ""]
-    f = THESIS_RESULTS_SRQ1_DIR / "metrics.csv"
+    f = get_srq_tables_dir(1) / "metrics.csv"
     if not f.is_file():
         L += ["_`metrics.csv` not found -- run `srq1_benchmark.py`._", ""]
         return L
@@ -247,7 +248,7 @@ def section_calibration(L):
     except ImportError:
         L += ["_xgboost not installed._", ""]
         return L
-    pf = THESIS_RESULTS_SRQ1_DIR / "tuned_params.json"
+    pf = get_srq_models_dir(1) / "tuned_params.json"
     params = json.loads(pf.read_text(encoding="utf-8")) if pf.is_file() else {}
     for cat in CATEGORIES:
         fm = _matrix(cat)
@@ -300,7 +301,7 @@ def main():
     ap.add_argument("--out", default=None,
                     help="output dir (default: 04_thesis_results/srq1)")
     a = ap.parse_args()
-    out = Path(a.out) if a.out else THESIS_RESULTS_SRQ1_DIR
+    out = Path(a.out) if a.out else get_srq_tables_dir(1)
     out.mkdir(parents=True, exist_ok=True)
 
     L = ["# Model training — what was trained, on what, and how well", "",

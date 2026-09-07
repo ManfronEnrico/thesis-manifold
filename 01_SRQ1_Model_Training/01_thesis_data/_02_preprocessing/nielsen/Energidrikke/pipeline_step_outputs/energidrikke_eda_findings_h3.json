@@ -1,7 +1,7 @@
 {
-  "contract_version": "1.1",
+  "contract_version": "1.2",
   "category": "Energidrikke",
-  "generated_utc": "2026-08-18T20:01:39+00:00",
+  "generated_utc": "2026-09-07T12:13:26+00:00",
   "generated_by": "step_3_derive_params.py",
   "target_col": "sales_units",
   "forecast_horizon": 3,
@@ -43,6 +43,22 @@
     "n_test_origins": 5,
     "horizon_evaluable": true
   },
+  "holiday_enrichment": true,
+  "holiday_reason": "cache covers panel",
+  "holiday_source": "Nager.Date v3",
+  "holiday_fetched_utc": "2026-09-06T15:06:15+00:00",
+  "holiday_years_covered": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026,
+    2027
+  ],
   "retention": {
     "brands_total": 68,
     "brands_retained": 44,
@@ -76,6 +92,7 @@
     "adf_pvalue_log": 0.96104,
     "adf_stationary_at_5pct": false,
     "split": "proportional 70%/15%/remainder over distinct periods, derived from the panel rather than fixed dates, so the ratio holds as the panel grows and categories starting at different dates stay comparable",
-    "n_test_origins": "n_test_months(7) - horizon(3) + 1. A forecast origin counts only when its target month falls inside the test window"
+    "n_test_origins": "n_test_months(7) - horizon(3) + 1. A forecast origin counts only when its target month falls inside the test window",
+    "holiday_enrichment": "Nager.Date v3 fetched 2026-09-06T15:06:15+00:00; adds days_in_month, n_holidays, non_holiday_days"
   }
 }

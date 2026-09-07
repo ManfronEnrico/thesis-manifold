@@ -178,11 +178,11 @@ reviewer can dismantle in a sentence.
 
 ## Related
 
-- `plans/P0046_2026-09-05_21-10_exogenous-enrichment-decision/` (plan **P0047**) — the
+- `plans/.archive/P0046_2026-09-05_21-10_exogenous-enrichment-decision/` (plan **P0047**) — the
   decision, its findings (F1/F2 are the corrected traps; F5 Store Bededag; F6 the naming;
   F7 the anti-collinearity evidence), and the remaining build tasks
 - `plans/P0043_.../` — the five Word threads, in the comment corpus (F47)
-- `plans/P0045_.../` — ch1/ch2/ch5 drafts already carry the narrowed claim as an Open item
+- `plans/.archive/P0045_.../` (absorbed into P0048) — ch1/ch2/ch5 drafts already carry the narrowed claim as an Open item
 - [[sample-size-and-tool-interface-rationale]] §8 — cross-category asymmetry, including
   which categories report promotional measures
 - `01_SRQ1_Model_Training/01_thesis_data/_02_preprocessing/nielsen/_shared_modules/step_3_derive_params.py`

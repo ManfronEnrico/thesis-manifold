@@ -1,6 +1,6 @@
 {
   "CSD": {
-    "model_file": "CSD_model.json",
+    "model_file": "model.json",
     "trained_through": "2025-12",
     "q90_log": 1.2408536323774033,
     "test_from": "2026-01",
@@ -8,7 +8,7 @@
     "trained_at_utc": "2026-09-01T18:49:01+00:00"
   },
   "danskvand": {
-    "model_file": "danskvand_model.json",
+    "model_file": "model.json",
     "trained_through": "2026-01",
     "q90_log": 2.273821446726016,
     "test_from": "2026-02",
@@ -16,7 +16,7 @@
     "trained_at_utc": "2026-09-01T18:49:04+00:00"
   },
   "energidrikke": {
-    "model_file": "energidrikke_model.json",
+    "model_file": "model.json",
     "trained_through": "2025-12",
     "q90_log": 1.7361822528523032,
     "test_from": "2026-01",
@@ -24,7 +24,7 @@
     "trained_at_utc": "2026-09-01T18:49:06+00:00"
   },
   "RTD": {
-    "model_file": "RTD_model.joblib",
+    "model_file": "model.joblib",
     "trained_through": "2026-01",
     "q90_log": 1.230462165286533,
     "test_from": "2026-02",

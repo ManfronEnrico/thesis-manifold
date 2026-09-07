@@ -1,0 +1,13 @@
+{
+  "id": "6",
+  "subject": "Re-run SRQ4 scenarios at H3",
+  "description": "Select test.iloc[2] as the held-out target and end supplied history 3 months before it. Ground truth exists for 7 held-out months; _assert_no_leakage already covers the wider gap. See F5.",
+  "activeForm": "Re-running SRQ4 scenarios at three months",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "5"
+  ]
+}

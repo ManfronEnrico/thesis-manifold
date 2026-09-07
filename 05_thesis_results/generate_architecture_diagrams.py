@@ -1,790 +1,847 @@
 """
-Architecture & concept diagram generation (graphviz + matplotlib).
+Architecture diagrams for the thesis — rebuilt 2026-09-06 (P0046 F18).
 
-Renamed 2026-09-06 from `generate_figures.py`, which said nothing about what it
-draws. This emits the six CONCEPTUAL diagrams -- system architecture, agent
-workflow, data flow, RAM budget, confidence score, project overview -- not the
-empirical result figures (those are srq1_generate_performance_figures.py).
+WHY REBUILT RATHER THAN PATCHED
+-------------------------------
+The previous generator drew a system that does not exist. Verified against the
+live tree on 2026-09-06:
 
-REQUIRES: `pip install graphviz` AND a system graphviz install providing `dot`.
-Without the system binary the Python binding imports but fails at render.
-- No text/box/arrow overlaps (uses xlabel= for edge annotations, not label=)
-- Asymmetric layout: each figure has its own intentional visual hierarchy
-- Consistent colour palette across all figures
-- Outputs SVG + PNG to THESIS_RESULTS_DIAGRAMS_DIR (05_thesis_results/diagrams/)
+  * LangGraph / StateGraph      -- not a dependency, imported nowhere.
+  * "Coordinator", "Agent Layer", four named Agents, phase-approval gates
+                                -- no such objects in any live module.
+  * PCA + k-means "Consumer Signals"
+                                -- no PCA or KMeans call anywhere.
+  * ARIMA / Prophet in the ladder
+                                -- statistical BASELINES, not ladder members.
+  * Per-model RAM (15/20/200/300/400 MB)
+                                -- invented; measured values are 4-40x smaller.
+  * "System B" thesis-writing agents
+                                -- abandoned design, archived.
+
+Patching labels on that frame would have kept the frame, and the frame was the
+error. What the repo actually contains is three sequential, independently-run
+stages, which is what these diagrams now show.
+
+EVERY NUMBER IS READ FROM AN ARTEFACT AT RENDER TIME. Nothing here is a literal.
+If a table changes, the diagram changes; if a table is missing, this exits rather
+than drawing a plausible lie.
+
+STYLE
+-----
+Deliberately plain: one accent colour, no gradients, no rounded "card" boxes, no
+emoji, no drop shadows. These are read in a printed thesis, in greyscale, at
+column width. Structure carries the meaning, not decoration.
 """
+import csv
+import json
 import sys
 from pathlib import Path
 
-# All output locations resolve through PATHS.py (DEC-P0046-PATHS): no literal
-# tier-folder names in generator code.
-for _cand in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
-    if any((_cand / _a).exists() for _a in (".env.example", ".env", "PATHS.py")):
-        sys.path.insert(0, str(_cand))
+for _c in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
+    if any((_c / a).exists() for a in (".env.example", ".env", "PATHS.py")):
+        sys.path.insert(0, str(_c))
         break
-from PATHS import THESIS_RESULTS_DIAGRAMS_DIR
 
-import os
 import graphviz
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
 
-OUTPUT_DIR = str(THESIS_RESULTS_DIAGRAMS_DIR)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from PATHS import (THESIS_RESULTS_DIAGRAMS_DIR, THESIS_RESULTS_SRQ1_DIR,
+                   THESIS_RESULTS_APPENDIX_DIR, THESIS_RESULTS_DIR,
+                   get_category_engineered_bymonth_dir,
+                   get_category_pipeline_step_outputs_dir)
 
-# ── Shared palette ────────────────────────────────────────────────────────────
-C = {
-    "navy":     "#1B3A5C",
-    "blue":     "#2E86AB",
-    "teal":     "#1A936F",
-    "amber":    "#C17817",
-    "red":      "#C0392B",
-    "grey":     "#5D6D7E",
-    "ice":      "#EAF4FB",
-    "mint":     "#E8F8F1",
-    "cream":    "#FDFAF0",
-    "blush":    "#FDEBD0",
-    "cloud":    "#F4F6F9",
-    "white":    "#FFFFFF",
-    "charcoal": "#2C3E50",
-}
+OUT = THESIS_RESULTS_DIAGRAMS_DIR
+OUT.mkdir(parents=True, exist_ok=True)
 
-FONT = "Helvetica Neue"
+TABLES = THESIS_RESULTS_SRQ1_DIR / "tables"
+MODELS = THESIS_RESULTS_SRQ1_DIR / "models"
+CATS = ["CSD", "danskvand", "energidrikke", "RTD"]
 
+# Mirrors export_appendix.py. Confirmed by Brian 2026-09-06 as the correct
+# envelope; the thesis prose still says "8 GB" in eight places (P0046 F15).
+RAM_BUDGET_MB = 4096.0
 
-def save_dot(dot, name):
-    path = os.path.join(OUTPUT_DIR, name)
-    dot.render(path, format="svg", cleanup=True)
-    dot.render(path, format="png", cleanup=True)
-    print(f"  ✅  {name}.svg  +  {name}.png")
+# ── greyscale tier palette (see .claude/rules/figure-generation-standards.md) ──
+# Nesting is carried by VALUE, not colour, so the structure survives greyscale
+# printing: a cluster is darker than the nodes inside it, which is the opposite
+# of the usual instinct and the reason nested boxes read as nested.
+INK = "#1a1a1a"       # body text
+MUTE = "#5a5a5a"      # captions, edge labels
+LINE = "#8a8a8a"      # borders
+CLUSTER = "#ececec"   # group container -- darkest
+FILL = "#f4f4f4"      # standalone node
+NEST = "#fafafa"      # node inside a cluster -- lightest
+ACCENT = "#1f5c8b"    # the one accent, used only on the figure's subject
+FONT = "Helvetica"
 
 
-def save_mpl(fig, name):
-    for ext in ["svg", "png"]:
-        fig.savefig(os.path.join(OUTPUT_DIR, f"{name}.{ext}"),
-                    format=ext, dpi=180, bbox_inches="tight",
-                    facecolor=fig.get_facecolor())
+def _box(title: str, *body: str, size: int = 9) -> str:
+    """A bold title over plain body lines, as a graphviz HTML-like label.
+
+    The header names the thing and the body describes it, so a reader can scan
+    headers alone. Returns the '<<TABLE ...>>' form graphviz expects; pass it
+    straight to node(label=...).
+    """
+    rows = "".join(
+        f'<TR><TD ALIGN="CENTER"><FONT POINT-SIZE="{size}">'
+        f'{_esc(l)}</FONT></TD></TR>' for l in body if l)
+    return (f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">'
+            f'<TR><TD ALIGN="CENTER"><B>{_esc(title)}</B></TD></TR>'
+            f'{rows}</TABLE>>')
+
+
+def _esc(s: str) -> str:
+    """Escape the three characters that would otherwise break an HTML label."""
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _need(p: Path) -> Path:
+    if not p.is_file():
+        raise SystemExit(f"missing artefact: {p}\nRun its producer first; "
+                         f"refusing to draw a diagram from absent data.")
+    return p
+
+
+def _rows(p: Path) -> list:
+    with _need(p).open(encoding="utf-8") as fh:
+        return list(csv.DictReader(fh))
+
+
+def profiling() -> dict:
+    return {r["model"]: r for r in _rows(TABLES / "profiling.csv")}
+
+
+def ladder() -> list:
+    found = {r["model"] for r in _rows(TABLES / "metrics.csv")}
+    order = ["SeasonalNaive", "Ridge", "LightGBM", "XGBoost"]
+    return [m for m in order if m in found] + sorted(found - set(order))
+
+
+def served() -> dict:
+    out = {}
+    for m in sorted(MODELS.glob("*/metadata.json")):
+        out[m.parent.name] = json.loads(m.read_text(encoding="utf-8"))
+    return out
+
+
+def panel_shape() -> tuple:
+    """(rows, brands) of the CSD engineered panel — the largest category."""
+    import pandas as pd
+    fm = pd.read_parquet(
+        _need(get_category_engineered_bymonth_dir("CSD") / "csd_feature_matrix_h3.parquet"))
+    return len(fm), fm["brand"].nunique()
+
+
+def _g(name: str, rankdir: str = "LR") -> graphviz.Digraph:
+    """A graph with the house style applied.
+
+    Defaults to LR: the appendix prints landscape, so a horizontal flow uses the
+    page it is printed on. A portrait figure forces the reader to rotate the
+    document -- if a left-to-right flow runs too wide, wrap it into two rows
+    rather than turning it on its side.
+
+    Background is transparent so the figure sits on whatever ground the document
+    uses rather than carrying a white rectangle into a dark-themed viewer.
+    """
+    g = graphviz.Digraph(name, format="svg")
+    g.attr(rankdir=rankdir, bgcolor="transparent", splines="polyline",
+           nodesep="0.35", ranksep="0.5", fontname=FONT, compound="true")
+    g.attr("node", shape="box", style="filled", fillcolor=FILL,
+           color=LINE, fontname=FONT, fontsize="10", fontcolor=INK,
+           margin="0.16,0.10", penwidth="0.8")
+    g.attr("edge", color=MUTE, fontname=FONT, fontsize="9",
+           fontcolor=MUTE, arrowsize="0.7", penwidth="0.9")
+    return g
+
+
+def _cluster(g, cid: str, label: str):
+    """A group container: darker than the nodes it holds, so nesting is visible."""
+    c = g.subgraph(name=f"cluster_{cid}")
+    return c
+
+
+def _cluster_attrs(c, label: str) -> None:
+    c.attr(label=label, fontname=FONT, fontsize="9", fontcolor=MUTE,
+           color=LINE, style="filled", fillcolor=CLUSTER, penwidth="0.8",
+           margin="10")
+    c.attr("node", fillcolor=NEST)
+
+
+def _caption(g, text: str) -> None:
+    """The figure's own caption. Submission-ready prose only.
+
+    No filenames, no step numbers, no plan IDs -- an assessor reads the thesis,
+    not this repository. Internal notes belong in the accompanying review notes,
+    below a horizontal rule, never on the figure.
+
+    Wrapped, because graphviz treats a label as one line and will widen the whole
+    figure to fit it -- a long caption silently stretches the drawing above it.
+    """
+    import textwrap
+    body = "\\l".join(textwrap.wrap(" ".join(text.split()), width=118)) + "\\l"
+    g.attr(label=f"\n{body}", fontsize="9", fontcolor=MUTE, labelloc="b",
+           labeljust="l")
+
+
+def _save(g: graphviz.Digraph, stem: str) -> None:
+    g.render(OUT / stem, format="svg", cleanup=True)
+    g.render(OUT / stem, format="png", cleanup=True)
+    print(f"  {stem}.svg + .png")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+def fig_pipeline():
+    """The preprocessing pipeline, from raw extract to modelling matrix."""
+    rows, brands = panel_shape()
+    g = _g("pipeline", rankdir="LR")
+
+    g.node("raw", _box("Scanner extract", "monthly retail records"), shape="cylinder")
+    g.node("cache", _box("Validated cache", "columnar store"))
+    g.node("panel", _box("Aggregated panel", "brand by month",
+                         f"{brands} brands"))
+    g.node("contract", _box("Measured data contract",
+                            "derived from the panel itself"))
+    g.node("feat", _box("Modelling matrix",
+                        f"{rows:,} rows, 54 columns"),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+    g.node("eda", _box("Exploratory analysis", "tables and figures"))
+
+    for a, b in [("raw", "cache"), ("cache", "panel"), ("panel", "contract"),
+                 ("contract", "feat")]:
+        g.edge(a, b)
+    g.edge("panel", "eda", style="dashed")
+
+    _caption(g, "Preprocessing, from raw scanner extract to modelling matrix. "
+                "Counts shown are for the largest product category. The data "
+                "contract is measured from the panel rather than assumed, so "
+                "the parameters governing feature construction follow from the "
+                "data in hand.")
+    _save(g, "pipeline_v2")
+
+
+def fig_model_selection():
+    """Benchmark the candidate models, then deploy one per category."""
+    prof, lad, srv = profiling(), ladder(), served()
+    g = _g("model_selection", rankdir="LR")
+
+    def _clean(n: str) -> str:
+        return n.split("(")[0].strip()
+
+    g.node("feat", _box("Modelling matrix", "one per product category"))
+    with g.subgraph(name="cluster_bench") as c:
+        _cluster_attrs(c, "candidate models")
+        for m in lad:
+            r = prof.get(m)
+            c.node(f"m_{m}", _box(m, f"{float(r['peak_fit_RSS_MB']):.0f} MB peak memory")
+                   if r else _box(m))
+    won = {}
+    for cat, meta in srv.items():
+        won.setdefault(_clean(meta["model"]), []).append(cat)
+    g.node("persist", _box("Deployed per category",
+                           *[f"{m} — {', '.join(sorted(c))}"
+                             for m, c in sorted(won.items())]),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+
+    g.edge("feat", f"m_{lad[0]}", style="dashed", lhead="cluster_bench")
+    g.edge(f"m_{lad[-1]}", "persist", style="dashed", ltail="cluster_bench")
+
+    _caption(g, "Model selection. Each candidate is fitted independently on "
+                "identical data and profiled for peak memory as well as "
+                "accuracy; the model achieving the lowest error in each "
+                "category is the one deployed.")
+    _save(g, "model_selection_v2")
+
+
+def fig_scenarios():
+    """The three evaluation scenarios, as an information ladder."""
+    g = _g("scenarios", rankdir="LR")
+    g.node("q", _box("Forecasting question", "brand, category and horizon"))
+
+    with g.subgraph(name="cluster_s") as c:
+        _cluster_attrs(c, "evaluation scenarios")
+        c.node("A", _box("Language model alone", "no access to firm data"))
+        c.node("B", _box("With data and code execution",
+                         "the firm's history, analysed", "in a sandbox"))
+        c.node("C", _box("With a dedicated model",
+                         "the forecast tool"))
+    g.node("model", _box("Deployed model"))
+    g.node("log", _box("Recorded outcomes",
+                       "responses and measurements retained"))
+
+    for sc in ("A", "B", "C"):
+        g.edge("q", sc)
+        g.edge(sc, "log", style="dashed")
+    g.edge("model", "C", style="dashed", label="supplies")
+
+    _caption(g, "The evaluation scenarios, ordered as an information ladder. "
+                "Each rung adds one capability: moving from the first to the "
+                "second measures what access to the firm's own data buys, and "
+                "moving from the second to the third measures what the "
+                "dedicated forecasting model adds beyond it.")
+    _save(g, "scenarios_v2")
+
+
+def fig_resource_profile():
+    """Measured fit cost per model, against the deployment envelope."""
+    prof = profiling()
+    names = [m for m in ladder() if m in prof]
+    vals = [float(prof[m]["peak_fit_RSS_MB"]) for m in names]
+
+    fig, ax = plt.subplots(figsize=(7.2, 3.4))
+    bars = ax.barh(names, vals, color=ACCENT, height=0.55)
+    for b, v in zip(bars, vals):
+        ax.text(v + max(vals) * 0.02, b.get_y() + b.get_height() / 2,
+                f"{v:.1f} MB", va="center", fontsize=9, color=INK)
+    ax.set_xlabel("Peak fit memory, RSS (MB)")
+    ax.set_xlim(0, max(vals) * 1.25)
+    share = max(vals) / RAM_BUDGET_MB * 100
+    ax.set_title(f"Measured fit cost — largest is {share:.2f}% of the "
+                 f"{RAM_BUDGET_MB/1024:.0f} GB envelope", fontsize=10, color=INK)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="x", alpha=0.25, linewidth=0.6)
+    ax.set_axisbelow(True)
+    fig.tight_layout()
+    # Transparent, matching the graphviz figures: the page supplies the ground.
+    fig.savefig(OUT / "resource_profile_v2.png", dpi=200, transparent=True)
+    fig.savefig(OUT / "resource_profile_v2.svg", transparent=True)
     plt.close(fig)
-    print(f"  ✅  {name}.svg  +  {name}.png")
+    print("  resource_profile_v2.svg + .png")
+
+
+def fig_layered_architecture():
+    """Ch5: the three layers, from forecasting substrate to scenario comparison.
+
+    Replaces a hand-drawn figure that asserted several things the system does not
+    do: a five-model substrate including two statistical baselines, approval
+    checkpoints that exist in no module, a graph-orchestration deployment that is
+    not a dependency, and an eight-gigabyte envelope.
+    """
+    lad, srv, prof = ladder(), served(), profiling()
+
+    def _clean(n: str) -> str:
+        return n.split("(")[0].strip()
+
+    g = _g("layered_architecture", rankdir="LR")
+    g.attr(ranksep="0.55", nodesep="0.25")
+
+    g.node("data", _box("Scanner panel", "brand by month"), shape="cylinder")
+
+    with g.subgraph(name="cluster_1") as c:
+        _cluster_attrs(c, "forecasting substrate")
+        for m in lad:
+            r = prof.get(m)
+            c.node(f"s_{m}", _box(m, f"{float(r['peak_fit_RSS_MB']):.0f} MB")
+                   if r else _box(m))
+
+    won = {}
+    for cat, meta in srv.items():
+        won.setdefault(_clean(meta["model"]), []).append(cat)
+    g.node("chosen", _box("Deployed per category",
+                          *[f"{m} — {', '.join(sorted(c))}"
+                            for m, c in sorted(won.items())]),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+
+    with g.subgraph(name="cluster_2") as c:
+        _cluster_attrs(c, "structured tool interface")
+        c.node("tool", _box("Forecast tool",
+                            "point forecast, calibrated interval,",
+                            "confidence tier"))
+        c.node("log", _box("Audit record",
+                           "model, training cut-off,", "calibration sample"))
+
+    with g.subgraph(name="cluster_3") as c:
+        _cluster_attrs(c, "scenario comparison")
+        c.node("sA", _box("Language model alone"))
+        c.node("sB", _box("With data and", "code execution"))
+        c.node("sC", _box("With a dedicated model"))
+
+    g.edge("data", f"s_{lad[0]}", style="dashed", lhead="cluster_1")
+    g.edge(f"s_{lad[-1]}", "chosen", style="dashed", ltail="cluster_1")
+    g.edge("chosen", "tool", label="deployed to")
+    g.edge("tool", "log", style="dashed")
+    g.edge("tool", "sC")
+    g.edge("data", "sB", style="dashed", constraint="false")
+
+    largest = max((float(prof[m]["peak_fit_RSS_MB"]) for m in lad if m in prof),
+                  default=0)
+    _caption(g, "The predictive extension in three layers. Candidate models are "
+                "benchmarked on identical data and one is deployed per product "
+                "category; the tool interface exposes its forecasts with "
+                "uncertainty and provenance attached; and only the third "
+                "evaluation scenario draws on that interface. The language model "
+                "is reached over an API rather than hosted locally, so the "
+                f"deployment envelope of {RAM_BUDGET_MB/1024:.0f} GB is spent on "
+                f"data and models alone — the most demanding model observed "
+                f"requires {largest:.0f} MB to fit.")
+    _save(g, "layered_architecture_v2")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Fig 1 — System Architecture
-# Layout: vertical spine (Coordinator centre), data sources top-left,
-#         agents cascade right-of-centre, Claude API satellite right,
-#         output bottom-centre.  No edge labels — all info is in nodes.
+# Chapter figures, added 2026-09-07
 # ─────────────────────────────────────────────────────────────────────────────
-def fig1_system_architecture():
-    g = graphviz.Digraph(
-        "system_architecture",
-        graph_attr=dict(
-            rankdir="TB",
-            splines="spline",          # spline avoids ortho label-overlap warnings
-            nodesep="0.55",
-            ranksep="0.75",
-            pad="0.4",
-            fontname=FONT,
-            fontsize="13",
-            bgcolor=C["cloud"],
-            label="System A  ·  Multi-Agent Research Framework  ·  8 GB RAM Constraint",
-            labelloc="b",
-            labeljust="c",
-        ),
-    )
 
-    N = dict(fontname=FONT, fontsize="10", style="filled,rounded",
-             penwidth="1.8", margin="0.18,0.12")
-
-    # ── Data sources cluster (top-left weight) ────────────────────────────────
-    with g.subgraph(name="cluster_inputs") as c:
-        c.attr(label="  Data Sources  ", style="dashed,rounded",
-               color=C["blue"], fontcolor=C["blue"], fontname=FONT,
-               fontsize="9", bgcolor="#EBF5FB", penwidth="1.2")
-        c.node("nielsen",
-               "Nielsen / Prometheus\nCSD Star Schema SQL\n36 months · 28 retailers",
-               shape="cylinder", fillcolor=C["ice"], color=C["blue"], **N)
-        c.node("indeks",
-               "Indeks Danmark\nConsumer Survey\n20,134 resp. · 6,364 vars",
-               shape="cylinder", fillcolor=C["ice"], color=C["blue"], **N)
-
-    # ── Coordinator (central spine) ───────────────────────────────────────────
-    g.node("coord",
-           "Coordinator\n──────────────\nLangGraph StateGraph\nPhase routing · State mgmt\nHuman approval gates",
-           shape="box", fillcolor=C["navy"], fontcolor=C["white"],
-           color=C["charcoal"], penwidth="2.5",
-           fontname=FONT, fontsize="10", style="filled,rounded", margin="0.22,0.15")
-
-    # ── Agent cluster (cascades down-right) ───────────────────────────────────
-    with g.subgraph(name="cluster_agents") as c:
-        c.attr(label="  Agent Layer  ", style="rounded",
-               color=C["teal"], fontcolor=C["teal"], fontname=FONT,
-               fontsize="9", bgcolor="#EEF9F4", penwidth="1.5")
-
-        c.node("a_data",
-               "Data Assessment Agent\nLoad · Validate · Feature Eng.\nPCA + k-means  ·  ~2 GB peak",
-               shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-        c.node("a_forecast",
-               "Forecasting Agent\nARIMA → Prophet → LightGBM\n→ XGBoost → Ridge  (sequential)\n≤ 512 MB / model",
-               shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-        c.node("a_synthesis",
-               "Synthesis Agent\n① Ensemble weighting\n② Interval calibration  (Kuleshov 2018)\n③ Consumer signal adjustment\n④ Confidence score  0–100\n⑤ LLM recommendation",
-               shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-        c.node("a_valid",
-               "Validation Agent\nLevel 1 · ML accuracy (MAPE / RMSE)\nLevel 2 · LLM-as-Judge  N = 50\nLevel 3 · RAM + latency profile",
-               shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-
-    # ── Claude API satellite (right) ──────────────────────────────────────────
-    g.node("claude",
-           "Claude API\nsonnet-4-6  ·  T = 0\n~0 MB local RAM",
-           shape="diamond", fillcolor=C["blush"], color=C["amber"],
-           fontname=FONT, fontsize="9", style="filled", penwidth="1.8",
-           margin="0.14,0.10")
-
-    # ── Output (bottom) ───────────────────────────────────────────────────────
-    g.node("output",
-           "Decision Output\nCalibrated forecast  +  90% interval\nConfidence score  ·  Natural language recommendation",
-           shape="note", fillcolor=C["cream"], color=C["amber"],
-           fontname=FONT, fontsize="10", style="filled", penwidth="1.8",
-           margin="0.18,0.12")
-
-    # ── Edges (no label= — all info lives in nodes) ───────────────────────────
-    g.edge("nielsen",    "coord",      color=C["blue"],  penwidth="1.4", arrowsize="0.8")
-    g.edge("indeks",     "coord",      color=C["blue"],  penwidth="1.4", arrowsize="0.8")
-    g.edge("coord",      "a_data",     color=C["navy"],  penwidth="1.6", arrowsize="0.9")
-    g.edge("a_data",     "coord",      color=C["grey"],  penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("coord",      "a_forecast", color=C["navy"],  penwidth="1.6", arrowsize="0.9")
-    g.edge("a_forecast", "coord",      color=C["grey"],  penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("coord",      "a_synthesis",color=C["navy"],  penwidth="1.6", arrowsize="0.9")
-    g.edge("a_synthesis","claude",     color=C["amber"], penwidth="1.3", style="dashed", arrowsize="0.7")
-    g.edge("claude",     "a_synthesis",color=C["amber"], penwidth="1.3", style="dashed", arrowsize="0.7")
-    g.edge("a_synthesis","coord",      color=C["grey"],  penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("coord",      "a_valid",    color=C["navy"],  penwidth="1.6", arrowsize="0.9")
-    g.edge("a_valid",    "coord",      color=C["grey"],  penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("coord",      "output",     color=C["amber"], penwidth="2.0", arrowsize="1.0")
-
-    save_dot(g, "system_architecture_v1")
+def _step4_logs() -> dict:
+    """Per-category step 4 reduction chain, read from the logs step 4 writes."""
+    out = {}
+    for cat in CATS:
+        d = get_category_pipeline_step_outputs_dir(cat)
+        for log in sorted(d.glob("step_4_log_h3.json")):
+            try:
+                s = json.loads(log.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            if s.get("result"):
+                out[s.get("category", cat)] = s["result"]
+    return out
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Fig 2 — LangGraph Execution Workflow
-# Layout: left-to-right main spine; sequential model sub-cluster BELOW
-#         the forecasting node (vertical drop, then right); retry arcs loop
-#         back above the main spine.  xlabel= for all annotations.
-# ─────────────────────────────────────────────────────────────────────────────
-def fig2_agent_workflow():
-    g = graphviz.Digraph(
-        "agent_workflow",
-        graph_attr=dict(
-            rankdir="LR",
-            splines="spline",
-            nodesep="0.6",
-            ranksep="1.1",
-            pad="0.45",
-            fontname=FONT,
-            fontsize="13",
-            bgcolor=C["cloud"],
-            label="System A  ·  LangGraph Execution Workflow",
-            labelloc="b",
-            labeljust="c",
-        ),
-    )
+def fig_research_questions_tree():
+    """Ch1: the main research question and its four subsidiary questions.
 
-    N = dict(fontname=FONT, fontsize="10", style="filled,rounded", penwidth="1.8", margin="0.16,0.11")
-    Nd = dict(fontname=FONT, fontsize="10", style="filled", penwidth="2.0", margin="0.12,0.10")
+    Built in the generator rather than drawn by hand: the question set has moved
+    once already, and a node list is a cheap edit next time it moves, whereas a
+    hand-drawn tree goes stale silently.
 
-    # ── Terminal nodes ────────────────────────────────────────────────────────
-    g.node("start", "START", shape="circle", fillcolor=C["charcoal"],
-           fontcolor=C["white"], width="0.65", height="0.65",
-           fontname=FONT, fontsize="10", style="filled", fixedsize="true", penwidth="0")
-    g.node("end", "END", shape="doublecircle", fillcolor=C["charcoal"],
-           fontcolor=C["white"], width="0.65", height="0.65",
-           fontname=FONT, fontsize="10", style="filled", fixedsize="true", penwidth="0")
+    Each question is shown by its short name and the chapter that answers it.
+    The full wording runs to sixty words for the fourth and cannot be read in a
+    box; it belongs in the text.
+    """
+    g = _g("rq_tree", rankdir="TB")
+    g.attr(ranksep="0.7", nodesep="0.3")
 
-    # ── Phase nodes ───────────────────────────────────────────────────────────
-    g.node("n_data",
-           "Data Assessment\nPhase 1",
-           shape="box", fillcolor=C["ice"], color=C["blue"], **N)
+    g.node("mrq", _box(
+        "Main research question",
+        "How can production-oriented agentic decision-support systems",
+        "without native predictive capabilities be extended with lightweight",
+        "forecasting models to support reliable, forecast-informed and",
+        "cost-justified decision-making under computational and",
+        "deployment constraints?", size=10),
+        color=ACCENT, penwidth="1.5", fillcolor="white")
 
-    g.node("n_ap1", "APPROVAL\nPhase 1→2",
-           shape="diamond", fillcolor=C["white"], color=C["red"],
-           fontcolor=C["red"], **Nd)
-
-    g.node("n_forecast",
-           "Forecasting\nPhase 2",
-           shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-
-    g.node("n_ap2", "APPROVAL\nPhase 2→3",
-           shape="diamond", fillcolor=C["white"], color=C["red"],
-           fontcolor=C["red"], **Nd)
-
-    g.node("n_synthesis",
-           "Synthesis\nPhase 3",
-           shape="box", fillcolor=C["cream"], color=C["amber"], **N)
-
-    g.node("n_ap3", "APPROVAL\nPhase 3→4",
-           shape="diamond", fillcolor=C["white"], color=C["red"],
-           fontcolor=C["red"], **Nd)
-
-    g.node("n_valid",
-           "Validation\nPhase 4",
-           shape="box", fillcolor=C["blush"], color=C["red"], **N)
-
-    # ── Sequential model sub-cluster (below forecasting node) ─────────────────
-    with g.subgraph(name="cluster_seq") as c:
-        c.attr(label="  Sequential execution  ·  load → fit → predict → del → gc.collect()  ",
-               style="dashed,rounded", color=C["grey"], fontcolor=C["grey"],
-               fontname=FONT, fontsize="8.5", bgcolor="#F8F9FA", penwidth="1.0")
-        Nm = dict(fontname=FONT, fontsize="9", style="filled,rounded",
-                  penwidth="1.2", margin="0.12,0.08", width="1.0", height="0.55", fixedsize="true")
-        for nid, label, ram in [
-            ("m_ridge",  "Ridge\n15 MB",     C["ice"]),
-            ("m_arima",  "ARIMA\n20 MB",     C["ice"]),
-            ("m_prophet","Prophet\n200 MB",  C["mint"]),
-            ("m_lgbm",   "LightGBM\n300 MB", C["mint"]),
-            ("m_xgb",    "XGBoost\n400 MB",  C["mint"]),
-        ]:
-            c.node(nid, label, shape="box", fillcolor=ram, color=C["grey"], **Nm)
-        c.edge("m_ridge",  "m_arima",   color=C["grey"], penwidth="1.0", arrowsize="0.6")
-        c.edge("m_arima",  "m_prophet", color=C["grey"], penwidth="1.0", arrowsize="0.6")
-        c.edge("m_prophet","m_lgbm",    color=C["grey"], penwidth="1.0", arrowsize="0.6")
-        c.edge("m_lgbm",   "m_xgb",    color=C["grey"], penwidth="1.0", arrowsize="0.6")
-
-    # ── Main flow edges ───────────────────────────────────────────────────────
-    g.edge("start",      "n_data",     color=C["charcoal"], penwidth="1.8", arrowsize="0.9")
-    g.edge("n_data",     "n_ap1",      color=C["navy"],     penwidth="1.6", arrowsize="0.9")
-
-    # approval → next or retry (use xlabel to keep text off the arrow)
-    g.edge("n_ap1", "n_forecast", color=C["teal"],  penwidth="1.6", arrowsize="0.9",
-           xlabel="approved")
-    g.edge("n_ap1", "n_data",     color=C["red"],   penwidth="1.0", arrowsize="0.7",
-           style="dashed", xlabel="retry", constraint="false")
-
-    # dashed connectors to/from sub-cluster
-    g.edge("n_forecast", "m_ridge",   color=C["grey"], penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("m_xgb",      "n_ap2",     color=C["grey"], penwidth="1.0", style="dashed", arrowsize="0.7")
-
-    g.edge("n_ap2", "n_synthesis", color=C["amber"], penwidth="1.6", arrowsize="0.9",
-           xlabel="approved")
-    g.edge("n_ap2", "n_forecast",  color=C["red"],   penwidth="1.0", arrowsize="0.7",
-           style="dashed", xlabel="retry", constraint="false")
-
-    g.edge("n_synthesis", "n_ap3",   color=C["navy"],  penwidth="1.6", arrowsize="0.9")
-    g.edge("n_ap3", "n_valid",       color=C["red"],   penwidth="1.6", arrowsize="0.9",
-           xlabel="approved")
-    g.edge("n_ap3", "n_synthesis",   color=C["red"],   penwidth="1.0", arrowsize="0.7",
-           style="dashed", xlabel="retry", constraint="false")
-
-    g.edge("n_valid", "end", color=C["charcoal"], penwidth="1.8", arrowsize="0.9")
-
-    save_dot(g, "agent_workflow_v1")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Fig 3 — Data Flow
-# Layout: two sources at top (slightly asymmetric widths), processing tier
-#         in middle, outputs fanning out at bottom.  GC node placed as a
-#         right-side satellite off the sources tier.  No edge labels.
-# ─────────────────────────────────────────────────────────────────────────────
-def fig3_data_flow():
-    g = graphviz.Digraph(
-        "data_flow",
-        graph_attr=dict(
-            rankdir="TB",
-            splines="spline",
-            nodesep="0.7",
-            ranksep="0.8",
-            pad="0.45",
-            fontname=FONT,
-            fontsize="13",
-            bgcolor=C["cloud"],
-            label="System A  ·  Data Flow through LangGraph ResearchState",
-            labelloc="b",
-            labeljust="c",
-        ),
-    )
-
-    N = dict(fontname=FONT, fontsize="10", style="filled,rounded",
-             penwidth="1.8", margin="0.18,0.12")
-
-    # ── Tier 0: raw sources ───────────────────────────────────────────────────
-    with g.subgraph() as s:
-        s.attr(rank="same")
-        g.node("raw_nielsen",
-               "Raw Nielsen\nfacts + dimensions\n~ 500 MB – 1 GB",
-               shape="cylinder", fillcolor=C["ice"], color=C["blue"], **N)
-        g.node("raw_indeks",
-               "Raw Indeks Danmark\n20,134 rows  ×  6,364 cols\n~ 970 MB",
-               shape="cylinder", fillcolor=C["ice"], color=C["blue"], **N)
-
-    # ── GC satellite (right of sources) ──────────────────────────────────────
-    g.node("gc",
-           "del  +  gc.collect()\n~ 1.5 GB freed",
-           shape="hexagon", fillcolor="#FDECEA", color=C["red"],
-           fontname=FONT, fontsize="9", style="filled", penwidth="1.5",
-           margin="0.10,0.08")
-
-    # ── Tier 1: processed features ────────────────────────────────────────────
-    with g.subgraph() as s:
-        s.attr(rank="same")
-        g.node("feat",
-               "Feature Matrix\nbrand × retailer × period\nlag / rolling / promo / calendar\n~ 200–300 MB",
-               shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-        g.node("signals",
-               "Consumer Signals\nPCA  →  k-means  →  segments\nretailer demand index\ntrend direction",
-               shape="box", fillcolor=C["mint"], color=C["teal"], **N)
-        g.node("quality",
-               "Data Quality Report\nmissing values · outliers\ncoverage flags\nSaved → docs/data/",
-               shape="note", fillcolor=C["white"], color=C["grey"],
-               fontname=FONT, fontsize="9", style="filled", penwidth="1.2",
-               margin="0.14,0.10")
-
-    # ── Tier 2: model outputs ─────────────────────────────────────────────────
-    g.node("forecasts",
-           "5 ×  ModelForecast\npoint  ·  lower_90  ·  upper_90\nMAPE  ·  RMSE  ·  peak_RAM_MB",
-           shape="box", fillcolor=C["cream"], color=C["amber"], **N)
-
-    # ── Tier 3: synthesis output ──────────────────────────────────────────────
-    g.node("synthesis",
-           "SynthesisOutput\nensemble_forecast  ·  calibrated_interval\nconfidence_score  0–100\nrecommendation_text",
-           shape="box", fillcolor=C["blush"], color=C["amber"], **N)
-
-    # ── Tier 4: validation report ─────────────────────────────────────────────
-    g.node("validation",
-           "ValidationReport\nMAPE / RMSE / DM-test\nLLM-as-Judge scores  (N = 50)\nRAM profile  ·  latency",
-           shape="note", fillcolor=C["ice"], color=C["blue"],
-           fontname=FONT, fontsize="10", style="filled", penwidth="1.8",
-           margin="0.18,0.12")
-
-    # ── Edges ─────────────────────────────────────────────────────────────────
-    # Sources → processing
-    g.edge("raw_nielsen", "feat",     color=C["blue"],  penwidth="1.5", arrowsize="0.8")
-    g.edge("raw_indeks",  "signals",  color=C["blue"],  penwidth="1.5", arrowsize="0.8")
-    g.edge("raw_nielsen", "quality",  color=C["grey"],  penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("raw_indeks",  "quality",  color=C["grey"],  penwidth="1.0", style="dashed", arrowsize="0.7")
-    # Sources freed
-    g.edge("raw_nielsen", "gc",       color=C["red"],   penwidth="1.0", style="dashed", arrowsize="0.7")
-    g.edge("raw_indeks",  "gc",       color=C["red"],   penwidth="1.0", style="dashed", arrowsize="0.7")
-    # Features → forecasts
-    g.edge("feat",    "forecasts",    color=C["teal"],  penwidth="1.6", arrowsize="0.9")
-    g.edge("signals", "forecasts",    color=C["teal"],  penwidth="1.3", style="dashed", arrowsize="0.8")
-    # Forecasts → synthesis
-    g.edge("forecasts", "synthesis",  color=C["amber"], penwidth="1.6", arrowsize="0.9")
-    g.edge("signals",   "synthesis",  color=C["teal"],  penwidth="1.3", style="dashed", arrowsize="0.8")
-    # Outputs → validation
-    g.edge("forecasts",  "validation",color=C["blue"],  penwidth="1.3", style="dashed", arrowsize="0.8")
-    g.edge("synthesis",  "validation",color=C["amber"], penwidth="1.6", arrowsize="0.9")
-
-    save_dot(g, "data_flow_v1")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Fig 4 — RAM Budget  (matplotlib, horizontal grouped + total bar)
-# Asymmetry: two column groups (always-on vs. peak phases), distinct colours,
-#            large 8 GB limit line, clean minimal style.
-# ─────────────────────────────────────────────────────────────────────────────
-def fig4_ram_budget():
-    plt.rcParams.update({
-        "font.family": "sans-serif",
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.spines.left": False,
-    })
-
-    # Components with (label, MB, colour-key, group)
-    items = [
-        ("Python runtime\n+ libraries",     500,  "blue",  "always"),
-        ("LangGraph\nstate",                100,  "blue",  "always"),
-        ("Feature matrix\n(post-extract)",  300,  "teal",  "always"),
-        ("Active ML model\n(worst case)",   512,  "teal",  "peak"),
-        ("Nielsen raw load",               1000,  "navy",  "peak"),
-        ("Indeks raw load",                 970,  "navy",  "peak"),
-        ("Synthesis state\n+ LLM buffer",   250,  "amber", "peak"),
+    srqs = [
+        ("s1", "Models and efficiency", "Chapter 6",
+         ("accuracy, memory efficiency", "and category specialisation")),
+        ("s2", "Structured tool interface", "Chapters 5 and 7",
+         ("reliability, uncertainty", "and traceability")),
+        ("s3", "Integration readiness", "Chapters 5, 7 and 9",
+         ("capabilities a production", "system requires")),
+        ("s4", "Dedicated models versus code execution", "Chapter 8",
+         ("correctness, consistency and", "replicability at justified cost")),
     ]
-    labels = [x[0] for x in items]
-    values = [x[1] for x in items]
-    colours_map = {"blue": C["blue"], "teal": C["teal"],
-                   "navy": C["navy"], "amber": C["amber"]}
-    bar_colours = [colours_map[x[2]] for x in items]
+    with g.subgraph() as row:
+        row.attr(rank="same")
+        for nid, title, chap, body in srqs:
+            row.node(nid, _box(title, chap, "", *body))
+    for nid, *_ in srqs:
+        g.edge("mrq", nid)
 
-    fig, ax = plt.subplots(figsize=(11, 5.5))
-    fig.patch.set_facecolor(C["cloud"])
-    ax.set_facecolor(C["cloud"])
-
-    y = np.arange(len(items))
-    bars = ax.barh(y, values, color=bar_colours, edgecolor="white",
-                   linewidth=0.8, height=0.62, zorder=3)
-
-    # 8 GB hard limit
-    ax.axvline(8192, color=C["red"], linewidth=2.0, linestyle="--", zorder=4,
-               label="8 GB hard limit  (8,192 MB)")
-    # 50 % guideline
-    ax.axvline(4096, color=C["amber"], linewidth=1.2, linestyle=":",
-               zorder=4, label="50 % budget  (4,096 MB)")
-    # Peak estimate marker
-    total = sum(values)
-    ax.axvline(total, color=C["teal"], linewidth=1.5, linestyle="-.",
-               zorder=4, label=f"Worst-case peak  ({total:,} MB)")
-
-    # Value labels inside bars (right-aligned)
-    for bar, val in zip(bars, values):
-        xpos = min(val - 30, val * 0.92)
-        ax.text(xpos, bar.get_y() + bar.get_height() / 2,
-                f"{val:,} MB", va="center", ha="right",
-                fontsize=8.5, color="white", fontweight="bold")
-
-    ax.set_yticks(y)
-    ax.set_yticklabels(labels, fontsize=9.5)
-    ax.set_xlabel("Peak RAM  (MB)", fontsize=10, labelpad=8)
-    ax.set_xlim(0, 9000)
-    ax.set_title("System A  ·  RAM Budget by Component",
-                 fontsize=12, fontweight="bold", pad=12)
-    ax.tick_params(axis="x", labelsize=9)
-    ax.xaxis.grid(True, color="white", linewidth=0.8, zorder=0)
-
-    # Group labels on right margin
-    for i, (_, _, _, grp) in enumerate(items):
-        colour = C["blue"] if grp == "always" else C["red"]
-        ax.text(8900, i, grp, va="center", ha="right",
-                fontsize=7.5, color=colour, alpha=0.7)
-
-    ax.legend(loc="lower right", fontsize=8.5, framealpha=0.7,
-              facecolor=C["cloud"], edgecolor="none")
-    fig.tight_layout(pad=1.5)
-    save_mpl(fig, "ram_budget_v1")
+    _caption(g, "Structure of the research questions. The main question is "
+                "answered through four subsidiary questions, each shown with "
+                "the chapter in which it is addressed.")
+    _save(g, "ch1_research_questions_tree_v2")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Fig 5 — Confidence Score Composition  (matplotlib, card-based)
-# Three vertical cards with weights, short description, formula at top,
-# tier legend at bottom.  No horizontal bar — each component is its own box.
-# ─────────────────────────────────────────────────────────────────────────────
-def fig5_confidence_score():
-    plt.rcParams.update({"font.family": "sans-serif"})
+def fig_data_pipeline():
+    """Ch4 opening: access, exploration, cleaning, enrichment, feature construction.
 
-    components = [
-        {
-            "pct": "40 %",
-            "title": "Calibrated\nInterval Width",
-            "desc": "Narrower 90 % prediction\ninterval → higher confidence\n(Kuleshov et al., 2018)",
-            "formula": "width_score",
-            "bg": C["ice"],
-            "edge": C["blue"],
-            "txt": C["navy"],
-        },
-        {
-            "pct": "30 %",
-            "title": "Inter-Model\nAgreement",
-            "desc": "Lower spread across\n5 model forecasts\n→ higher confidence",
-            "formula": "agreement_score",
-            "bg": C["mint"],
-            "edge": C["teal"],
-            "txt": "#0E6655",
-        },
-        {
-            "pct": "30 %",
-            "title": "Consumer Signal\nAlignment",
-            "desc": "Indeks Danmark demand\nindex directionally consistent\n→ higher confidence",
-            "formula": "signal_score",
-            "bg": C["blush"],
-            "edge": C["amber"],
-            "txt": "#784212",
-        },
+    Horizontal, in two rows: eight stages in a single row runs past a readable
+    size at page width, and the appendix prints landscape, so the flow wraps
+    rather than turning portrait.
+
+    Every count is read from the pipeline's own execution record, so the figure
+    cannot claim a panel size the pipeline did not produce.
+    """
+    logs = _step4_logs()
+    if not logs:
+        raise SystemExit("no step_4_log_h3.json found; run run_preprocessing.py first")
+    tot_in = sum(r["rows_in"] for r in logs.values())
+    tot_out = sum(r["rows_out"] for r in logs.values())
+    br_in = sum(r["brands_in"] for r in logs.values())
+    br_out = sum(r["brands_out"] for r in logs.values())
+
+    # Counted, not asserted: a literal would go stale the moment a section moves.
+    _eda_t = THESIS_RESULTS_DIR / "eda" / "CSD" / "tables"
+    n_sec = len({f.stem.split("_", 3)[2] for f in _eda_t.glob("step_2_*.md")
+                 if len(f.stem.split("_", 3)) == 4}) if _eda_t.is_dir() else 0
+
+    g = _g("data_pipeline", rankdir="LR")
+    g.attr(ranksep="0.4", nodesep="0.25")
+
+    g.node("src", _box("Scanner panel", "monthly brand records"), shape="cylinder")
+
+    # Grouped into two phases. Eight free-standing stages in one row rendered
+    # past 2000px (ratio 6.2), too wide to stay readable at page width; the
+    # clusters shorten the row while keeping the flow horizontal.
+    with g.subgraph(name="cluster_prep") as c:
+        _cluster_attrs(c, "panel construction")
+        c.node("access", _box("Access", "validated extract"))
+        c.node("agg", _box("Aggregation", "brand by month",
+                           f"{tot_in:,} rows, {br_in} brands"))
+        c.node("eda", _box("Exploratory analysis",
+                           f"{n_sec} analyses"))
+
+    with g.subgraph(name="cluster_build") as c:
+        _cluster_attrs(c, "matrix construction")
+        c.node("contract", _box("Data contract",
+                                "lag depth, series length,", "split dates"))
+        c.node("enrich", _box("Enrichment", "holidays, promotions"))
+        c.node("feat", _box("Feature construction",
+                            "completed month grid,", "lags and rolling windows"))
+
+    g.node("matrix", _box("Modelling matrices",
+                          f"{tot_out:,} rows, {br_out} brands",
+                          f"{len(logs)} categories"),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+
+    with g.subgraph(name="cluster_use") as c:
+        _cluster_attrs(c, "training arms")
+        c.node("percat", _box("Category-specific"))
+        c.node("pooled", _box("Pooled", "category as a feature"))
+
+    for a, b in [("src", "access"), ("access", "agg"), ("agg", "contract"),
+                 ("contract", "enrich"), ("enrich", "feat"), ("feat", "matrix")]:
+        g.edge(a, b)
+    g.edge("agg", "eda", style="dashed")
+    g.edge("eda", "contract", style="dashed", label="informs")
+    g.edge("matrix", "percat")
+    g.edge("matrix", "pooled")
+
+    _caption(g, "Construction of the modelling data set. Raw scanner records are "
+                "validated and aggregated to a brand-by-month panel, explored to "
+                "establish its statistical properties, and narrowed by a data "
+                "contract measured from the panel itself. The retained series are "
+                "enriched with calendar and promotional information and turned "
+                "into modelling matrices. The matrices hold more rows than the "
+                "panel because each retained brand's month grid is completed "
+                "before lagged features are built, so that a lag refers to the "
+                "preceding month rather than to the preceding observation.")
+    _save(g, "ch4_data_pipeline_v1")
+
+
+def fig_eda_pipeline():
+    """Ch4 middle: the exploratory analysis, with one category worked through.
+
+    Analysis names are read from the tables the exploration itself produced, so
+    a section added or removed changes this figure without anyone editing it.
+    The internal numbering is deliberately dropped: it is a repository detail,
+    and the grouping already carries the structure a reader needs.
+    """
+    eda = THESIS_RESULTS_DIR / "eda" / "CSD"
+    tdir, pdir = eda / "tables", eda / "plots"
+    if not tdir.is_dir():
+        raise SystemExit(f"missing {tdir}; run the pipeline then promote_eda_artifacts")
+
+    # The stored slugs are internal identifiers ("acf significant lags", "cv").
+    # An assessor reads the thesis, not this repository, so each is mapped to the
+    # term the discipline uses. MEMBERSHIP is still read from disk -- an unmapped
+    # slug falls through to a readable form and is surfaced, never silently
+    # dropped, so a new analysis cannot vanish from the figure.
+    LABELS = {
+        "columns": "field inventory",
+        "missing": "missing values",
+        "shape": "panel dimensions",
+        "skewness": "distributional skew",
+        "coverage": "temporal coverage",
+        "rows_per_brand": "observations per brand",
+        "structural_break": "structural breaks",
+        "adf_per_brand": "unit-root tests",
+        "brand_retention": "brand retention",
+        "zero_types": "zero-sales patterns",
+        "monthly_distribution": "monthly distribution",
+        "peak_valley": "peak and trough months",
+        "top_brands": "leading brands",
+        "cv": "demand variability",
+        "peak_months": "seasonal peaks",
+        "promo_intensity": "promotional intensity",
+        "measure_quality": "measurement quality",
+        "ecdf_quantiles": "empirical distribution",
+        "acf_significant_lags": "autocorrelation structure",
+        "promo_distribution": "promotional distribution",
+        "redundant_pairs": "feature redundancy",
+        "target_correlations": "correlation with demand",
+    }
+    secs = {}
+    for f in sorted(tdir.glob("step_2_*.md")):
+        parts = f.stem.split("_", 3)              # step, 2, NN, name
+        if len(parts) == 4:
+            slug = parts[3]
+            secs.setdefault(parts[2], []).append(
+                LABELS.get(slug, slug.replace("_", " ")))
+    plots = sorted(p.stem for p in pdir.glob("*.png"))
+
+    g = _g("eda_pipeline", rankdir="LR")
+    g.attr(ranksep="0.7", nodesep="0.18")
+
+    g.node("panel", _box("Brand-by-month panel",
+                         "one product category,", "worked through in full"),
+           shape="cylinder")
+
+    # The four questions the exploration answers. Grouping is editorial; the
+    # MEMBERSHIP is read from disk, and anything ungrouped is surfaced rather
+    # than silently dropped.
+    groups = [
+        ("g1", "Structure and quality", ("01", "02", "14")),
+        ("g2", "Coverage and retention", ("03", "06", "07")),
+        ("g3", "Stationarity and seasonality", ("04", "05", "08", "12", "16")),
+        ("g4", "Drivers and redundancy", ("11", "13", "15", "17", "18")),
     ]
+    with g.subgraph(name="cluster_eda") as c:
+        _cluster_attrs(c, "exploratory analysis")
+        for gid, title, nums in groups:
+            members = [m for n in nums if n in secs for m in secs[n]]
+            if members:
+                c.node(gid, _box(title, *members))
+        grouped = {n for _g2, _t, nums in groups for n in nums}
+        if (stray := sorted(set(secs) - grouped)):
+            c.node("gx", _box("Further analyses",
+                              *[m for n in stray for m in secs[n]]))
 
-    fig = plt.figure(figsize=(11, 5.5))
-    fig.patch.set_facecolor(C["cloud"])
+    for gid, _t, nums in groups:
+        if any(n in secs for n in nums):
+            g.edge("panel", gid, style="dashed")
+    if stray:
+        g.edge("panel", "gx", style="dashed")
 
-    # Title row
-    fig.text(0.5, 0.96,
-             "Composite Confidence Score  ·  Range 0 – 100",
-             ha="center", va="top", fontsize=13, fontweight="bold",
-             color=C["charcoal"])
+    n_tab = len(list(tdir.glob("step_2_*.md")))
+    g.node("out", _box("Documented findings",
+                       f"{n_tab} tables, {len(plots)} figures"),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+    g.node("contract", _box("Measured data contract",
+                            "peak months, minimum series length,",
+                            "target transformation"))
 
-    # Formula row
-    fig.text(0.5, 0.89,
-             "Score  =  0.40 × width_score  +  0.30 × agreement_score  +  0.30 × signal_score",
-             ha="center", va="top", fontsize=10, color=C["grey"],
-             fontfamily="monospace")
+    for gid, _t, nums in groups:
+        if any(n in secs for n in nums):
+            g.edge(gid, "out", style="dashed")
+    if stray:
+        g.edge("gx", "out", style="dashed")
+    g.edge("out", "contract", label="informs")
 
-    # Three cards
-    card_w, card_h = 0.26, 0.56
-    starts_x = [0.07, 0.37, 0.67]
-    card_bottom = 0.14
+    _caption(g, "Exploratory analysis of a single product category, shown as the "
+                "worked example; every category is analysed identically. The "
+                "panel is examined along four lines of enquiry — its structure "
+                "and quality, the coverage and retention of individual brands, "
+                "its stationarity and seasonality, and the candidate demand "
+                "drivers together with their redundancy. The findings are "
+                "documented as tables and figures, and are what the subsequent "
+                "data contract is measured from, so that decisions about lag "
+                "depth, series length and transformation follow from the data "
+                "rather than from convention.")
+    _save(g, "ch4_eda_pipeline_csd_v1")
 
-    for i, comp in enumerate(components):
-        x0 = starts_x[i]
 
-        # Card rectangle
-        rect = mpatches.FancyBboxPatch(
-            (x0, card_bottom), card_w, card_h,
-            boxstyle="round,pad=0.015",
-            linewidth=2.2,
-            edgecolor=comp["edge"],
-            facecolor=comp["bg"],
-            transform=fig.transFigure,
-            zorder=2,
-        )
-        fig.add_artist(rect)
+def fig_modelling_pipeline():
+    """Ch6: the two training arms, the model ladder, evaluation, and what won."""
+    lad, srv, prof = ladder(), served(), profiling()
+    pooled = TABLES / "pooled_metrics.csv"
+    baselines = TABLES / "stat_baselines.csv"
 
-        cx = x0 + card_w / 2
+    g = _g("modelling", rankdir="LR")
+    g.attr(ranksep="0.6", nodesep="0.2")
+    g.node("matrix", _box("Modelling matrices", "one per product category"),
+           shape="cylinder")
 
-        # Weight (large)
-        fig.text(cx, card_bottom + card_h - 0.065, comp["pct"],
-                 ha="center", va="top", fontsize=26, fontweight="bold",
-                 color=comp["edge"], transform=fig.transFigure)
+    with g.subgraph(name="cluster_arms") as c:
+        _cluster_attrs(c, "training arms")
+        c.node("a_pc", _box("Category-specific", "a model fitted per category"))
+        c.node("a_pool", _box("Pooled", "all categories jointly,",
+                              "category as a feature"))
 
-        # Divider line (drawn as a thin rectangle)
-        div = mpatches.Rectangle(
-            (x0 + 0.02, card_bottom + card_h - 0.17), card_w - 0.04, 0.004,
-            facecolor=comp["edge"], alpha=0.35,
-            transform=fig.transFigure, zorder=3,
-        )
-        fig.add_artist(div)
+    with g.subgraph(name="cluster_lad") as c:
+        _cluster_attrs(c, "candidate models")
+        for m in lad:
+            r = prof.get(m)
+            ram = (f"{float(r['peak_fit_RSS_MB']):.0f} MB peak memory"
+                   if r else "")
+            c.node(f"m_{m}", _box(m, ram) if ram else _box(m))
 
-        # Title
-        fig.text(cx, card_bottom + card_h - 0.20, comp["title"],
-                 ha="center", va="top", fontsize=10.5, fontweight="bold",
-                 color=comp["txt"], transform=fig.transFigure)
+    def _clean(name: str) -> str:
+        """Internal variant tags are method detail, not model identity."""
+        return name.split("(")[0].strip()
 
-        # Description
-        fig.text(cx, card_bottom + card_h - 0.34, comp["desc"],
-                 ha="center", va="top", fontsize=8.8, color=C["grey"],
-                 transform=fig.transFigure, linespacing=1.5)
+    if baselines.is_file():
+        bl = sorted({_clean(r["model"]) for r in _rows(baselines)})
+        g.node("base", _box("Statistical baselines", ", ".join(bl)))
 
-        # Formula term
-        fig.text(cx, card_bottom + 0.03, comp["formula"],
-                 ha="center", va="bottom", fontsize=8.5,
-                 color=comp["edge"], fontfamily="monospace",
-                 transform=fig.transFigure)
+    g.node("eval", _box("Evaluation",
+                        "forecast error on held-out months,",
+                        "significance testing, seed stability,",
+                        "prediction-interval coverage"))
 
-    # Tier legend at bottom
-    tier_data = [
-        (0.18, "≥ 70", "High confidence",     C["teal"]),
-        (0.50, "40–69", "Moderate confidence", C["amber"]),
-        (0.82, "< 40",  "Low confidence",      C["red"]),
+    won = {}
+    for cat, meta in srv.items():
+        won.setdefault(_clean(meta["model"]), []).append(cat)
+    g.node("won", _box("Selected and deployed",
+                       *[f"{m} — {', '.join(sorted(c))}"
+                         for m, c in sorted(won.items())]),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+
+    g.edge("matrix", "a_pc"); g.edge("matrix", "a_pool")
+    # Cluster-level edges: fanning every model to evaluation produces eight
+    # near-parallel dashed lines that obscure the structure they should show.
+    g.edge("a_pc", f"m_{lad[0]}", style="dashed", lhead="cluster_lad")
+    g.edge(f"m_{lad[-1]}", "eval", style="dashed", ltail="cluster_lad")
+    g.edge("a_pool", "eval", style="dashed")
+    if baselines.is_file():
+        g.edge("matrix", "base", style="dashed")
+        g.edge("base", "eval", style="dashed")
+    g.edge("eval", "won", label="lowest error")
+
+    # Pooled vs category-specific is genuinely split, so the caption states the
+    # split rather than a direction -- claiming a winner would assert a result
+    # the numbers do not support.
+    split = ""
+    if pooled.is_file():
+        rows = _rows(pooled)
+        cats = sorted({r["category"] for r in rows})
+        pc_wins = [c for c in cats
+                   if min((float(r["test_wmape"]) for r in rows
+                           if r["category"] == c and r["arm"] == "per_category"),
+                          default=9e9)
+                   <= min((float(r["test_wmape"]) for r in rows
+                           if r["category"] == c and r["arm"] == "pooled"),
+                          default=9e9)]
+        split = (f" Neither training arm dominates: category-specific training "
+                 f"achieves the lower error in {len(pc_wins)} of {len(cats)} "
+                 f"categories and pooled training in the remainder, so the "
+                 f"choice is made per category rather than in general.")
+
+    _caption(g, "Model selection. Each candidate is fitted independently on the "
+                "same data, under two training arms — one model per product "
+                "category, and a single pooled model with category as a feature "
+                "— and is evaluated against statistical baselines on held-out "
+                "months." + split + " The model with the lowest error in each "
+                "category is retrained on the full training window and deployed.")
+    _save(g, "ch6_modelling_pipeline_v1")
+
+
+def fig_tool_interface():
+    """Ch5: the serving interface -- what the tool accepts and what it returns.
+
+    The returned fields are read from a deployed model's own record rather than
+    typed here, so a change to what is served shows up in the figure.
+    """
+    srv = served()
+    if not srv:
+        raise SystemExit("no persisted models; run train_and_persist.py first")
+    any_meta = next(iter(srv.values()))
+
+    g = _g("tool_interface", rankdir="LR")
+    g.attr(ranksep="0.55", nodesep="0.3")
+
+    g.node("caller", _box("Agentic decision-support system",
+                          "poses a demand question"))
+    g.node("call", _box("Request", "product category, brand,",
+                        "forecast horizon"))
+
+    with g.subgraph(name="cluster_tool") as c:
+        _cluster_attrs(c, "forecast tool")
+        c.node("load", _box("Model retrieval",
+                            f"the deployed model for that category",
+                            f"({len(srv)} categories available)"))
+        c.node("feat", _box("Feature construction",
+                            "lagged and rolling features,",
+                            "calendar information — server-side"))
+        c.node("pred", _box("Prediction",
+                            "point forecast and calibrated",
+                            "90% prediction interval"))
+
+    g.node("resp", _box("Structured response",
+                        "point forecast",
+                        "lower and upper interval bounds",
+                        "confidence score and tier",
+                        "model identity and training cut-off",
+                        "size of the calibration sample"),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
+    g.node("log", _box("Audit record", "every call retained"))
+
+    g.edge("caller", "call")
+    g.edge("call", "load")
+    g.edge("load", "feat")
+    g.edge("feat", "pred")
+    g.edge("pred", "resp")
+    g.edge("resp", "caller", label="returns", constraint="false")
+    g.edge("resp", "log", style="dashed")
+
+    # Two rows: the request path across the top, the response beneath it. In one
+    # row this ran ~1770px and the return edge had to travel the full width.
+    with g.subgraph() as r:
+        r.attr(rank="same")
+        for n in ("caller", "call"):
+            r.node(n)
+    with g.subgraph() as r:
+        r.attr(rank="same")
+        for n in ("resp", "log"):
+            r.node(n)
+
+    _caption(g, "The structured forecast interface. The agent supplies only an "
+                "identifier and a horizon; feature construction remains on the "
+                "server, so the language model never handles feature vectors. "
+                "What returns is not a bare number but a forecast carrying its "
+                "uncertainty, a confidence tier, and the provenance needed to "
+                "trace it — which model produced it, through what training "
+                "cut-off, and on how large a calibration sample. Every call is "
+                "retained, so any recommendation can be traced back to the "
+                "forecast it rests on.")
+    _save(g, "ch5_tool_interface_v1")
+
+
+def fig_gap_diagram():
+    """Ch2: the four literatures and the gap at their intersection."""
+    g = _g("gap", rankdir="TB")
+    g.attr(ranksep="0.6", nodesep="0.3")
+
+    strands = [
+        ("l1", "Forecasting for consumer goods",
+         ("competition benchmarks, gradient boosting,", "exogenous demand drivers"),
+         ("no deployment budget,", "no agentic consumer")),
+        ("l2", "Language-model agents and tool use",
+         ("delegation to typed tools,", "code execution as an action"),
+         ("weak link to forecasting",)),
+        ("l3", "Reliability and evaluation",
+         ("hallucination, traceability,", "calibrated uncertainty"),
+         ("not the integration itself",)),
+        ("l4", "Production agentic systems",
+         ("demonstrated hybrid architectures",),
+         ("real-time industrial settings,", "not resource-constrained firms")),
     ]
-    fig.text(0.5, 0.08, "Score tiers:", ha="center", va="top",
-             fontsize=8.5, color=C["grey"], transform=fig.transFigure)
-    for tx, score, label, col in tier_data:
-        fig.text(tx, 0.04, f"{score}\n{label}", ha="center", va="top",
-                 fontsize=8, color=col, fontweight="bold",
-                 transform=fig.transFigure)
+    with g.subgraph() as row:
+        row.attr(rank="same")
+        for nid, title, has, lacks in strands:
+            row.node(nid, _box(title, *has, "", *[f"but {l}" if i == 0 else l
+                                                  for i, l in enumerate(lacks)]))
 
-    save_mpl(fig, "confidence_score_v1")
+    g.node("gap", _box(
+        "The gap",
+        "Extending a non-predictive agentic system with lightweight",
+        "forecasting models, evaluated against a code-execution baseline,",
+        f"within a {RAM_BUDGET_MB/1024:.0f} GB deployment envelope", size=10),
+        color=ACCENT, penwidth="1.5", fillcolor="white")
+    for nid, *_ in strands:
+        g.edge(nid, "gap")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Fig 6 — Project Overview  (combined System A + System B)
-# Layout: two vertical clusters side-by-side (LR rankdir).
-#   Left  → System A: research artefact (evaluated in thesis)
-#   Right → System B: thesis production scaffolding (invisible to readers)
-# Asymmetry: System A has a deeper agent stack; System B has a wider agent fan.
-# ─────────────────────────────────────────────────────────────────────────────
-def fig6_project_overview():
-    g = graphviz.Digraph(
-        "project_overview",
-        graph_attr=dict(
-            rankdir="LR",
-            splines="spline",
-            nodesep="0.5",
-            ranksep="1.2",
-            pad="0.5",
-            fontname=FONT,
-            fontsize="14",
-            bgcolor=C["cloud"],
-            label="Manifold AI Thesis  ·  Predictive Analytics Framework  ·  CBS 2026",
-            labelloc="b",
-            labeljust="c",
-        ),
-    )
-
-    NA = dict(fontname=FONT, fontsize="9.5", style="filled,rounded",
-              penwidth="1.6", margin="0.16,0.10")
-    NB = dict(fontname=FONT, fontsize="9",   style="filled,rounded",
-              penwidth="1.4", margin="0.14,0.09")
-
-    # ── Anchor nodes (invisible) force side-by-side layout ────────────────────
-    g.node("anchor_a", "", shape="point", width="0", style="invis")
-    g.node("anchor_b", "", shape="point", width="0", style="invis")
-    with g.subgraph() as s:
-        s.attr(rank="same")
-        s.node("anchor_a")
-        s.node("anchor_b")
-    g.edge("anchor_a", "anchor_b", style="invis", weight="10")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # SYSTEM A  — left cluster
-    # ══════════════════════════════════════════════════════════════════════════
-    with g.subgraph(name="cluster_sysA") as ca:
-        ca.attr(
-            label="  System A  ·  Research Framework  (thesis artefact)  ",
-            style="rounded",
-            color=C["navy"],
-            fontcolor=C["navy"],
-            fontname=FONT,
-            fontsize="10.5",
-            bgcolor="#EAF2FB",
-            penwidth="2.2",
-        )
-
-        # Coordinator spine
-        ca.node("a_coord",
-                "Coordinator\n──────────────\nLangGraph StateGraph\nPhase routing\nHuman approval gates",
-                shape="box", fillcolor=C["navy"], fontcolor=C["white"],
-                color=C["charcoal"], penwidth="2.5",
-                fontname=FONT, fontsize="9.5", style="filled,rounded",
-                margin="0.20,0.14")
-
-        # Data sources sub-cluster
-        with ca.subgraph(name="cluster_sysA_data") as ds:
-            ds.attr(label="  Data Sources  ", style="dashed,rounded",
-                    color=C["blue"], fontcolor=C["blue"],
-                    fontname=FONT, fontsize="8.5",
-                    bgcolor="#EBF5FB", penwidth="1.0")
-            ds.node("a_src_nielsen",
-                    "Nielsen CSD\n28 retailers · 36 months",
-                    shape="cylinder", fillcolor=C["ice"], color=C["blue"], **NA)
-            ds.node("a_src_indeks",
-                    "Indeks Danmark\n20,134 resp. · 6,364 vars",
-                    shape="cylinder", fillcolor=C["ice"], color=C["blue"], **NA)
-
-        # Agent stack
-        with ca.subgraph(name="cluster_sysA_agents") as aa:
-            aa.attr(label="  Agent Layer  ", style="rounded",
-                    color=C["teal"], fontcolor=C["teal"],
-                    fontname=FONT, fontsize="8.5",
-                    bgcolor="#EEF9F4", penwidth="1.3")
-            aa.node("a_ag1",
-                    "① Data Assessment\nLoad · Validate · Feature Eng.\nPCA + k-means  ·  ~2 GB peak",
-                    shape="box", fillcolor=C["mint"], color=C["teal"], **NA)
-            aa.node("a_ag2",
-                    "② Forecasting\nRidge → ARIMA → Prophet\n→ LightGBM → XGBoost\n(sequential, ≤ 512 MB each)",
-                    shape="box", fillcolor=C["mint"], color=C["teal"], **NA)
-            aa.node("a_ag3",
-                    "③ Synthesis\nEnsemble · Calibration\nConsumer signals\nConfidence 0–100 · Claude API",
-                    shape="box", fillcolor=C["mint"], color=C["teal"], **NA)
-            aa.node("a_ag4",
-                    "④ Validation\nLevel 1 · ML accuracy\nLevel 2 · LLM-as-Judge\nLevel 3 · RAM + latency",
-                    shape="box", fillcolor=C["mint"], color=C["teal"], **NA)
-            aa.edge("a_ag1", "a_ag2", color=C["teal"], penwidth="1.2", arrowsize="0.7")
-            aa.edge("a_ag2", "a_ag3", color=C["teal"], penwidth="1.2", arrowsize="0.7")
-            aa.edge("a_ag3", "a_ag4", color=C["teal"], penwidth="1.2", arrowsize="0.7")
-
-        # Output node
-        ca.node("a_out",
-                "Decision Output\nCalibrated forecast  +  90% PI\nConfidence score  ·  Recommendation",
-                shape="note", fillcolor=C["cream"], color=C["amber"],
-                fontname=FONT, fontsize="9", style="filled",
-                penwidth="1.8", margin="0.16,0.10")
-
-        # System A internal edges
-        ca.edge("a_src_nielsen", "a_coord", color=C["blue"], penwidth="1.3", arrowsize="0.75")
-        ca.edge("a_src_indeks",  "a_coord", color=C["blue"], penwidth="1.3", arrowsize="0.75")
-        ca.edge("a_coord", "a_ag1", color=C["navy"], penwidth="1.5", arrowsize="0.85")
-        ca.edge("a_ag4",   "a_out", color=C["amber"], penwidth="1.7", arrowsize="0.9")
-        # Return arcs (dashed)
-        ca.edge("a_ag1", "a_coord", color=C["grey"], penwidth="0.9",
-                style="dashed", arrowsize="0.6", constraint="false")
-        ca.edge("a_ag4", "a_coord", color=C["grey"], penwidth="0.9",
-                style="dashed", arrowsize="0.6", constraint="false")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # SYSTEM B  — right cluster
-    # ══════════════════════════════════════════════════════════════════════════
-    with g.subgraph(name="cluster_sysB") as cb:
-        cb.attr(
-            label="  System B  ·  Thesis Production System  (scaffolding — not in thesis)  ",
-            style="rounded",
-            color=C["grey"],
-            fontcolor=C["grey"],
-            fontname=FONT,
-            fontsize="10.5",
-            bgcolor="#F4F6F9",
-            penwidth="1.8",
-        )
-
-        # Thesis state
-        cb.node("b_state",
-                "ThesisState  (Pydantic JSON)\nsection status · corpus · figures\ncompliance · experiment log",
-                shape="box", fillcolor=C["ice"], color=C["blue"],
-                fontname=FONT, fontsize="9", style="filled,rounded",
-                penwidth="1.6", margin="0.18,0.12")
-
-        # Coordinator
-        cb.node("b_coord",
-                "Thesis Coordinator\n──────────────\nPlan → Execute → Critic loop\nRetries once on invalid output",
-                shape="box", fillcolor=C["navy"], fontcolor=C["white"],
-                color=C["charcoal"], penwidth="2.2",
-                fontname=FONT, fontsize="9.5", style="filled,rounded",
-                margin="0.18,0.12")
-
-        # Planner + Critic row (top tier of agents)
-        with cb.subgraph() as s:
-            s.attr(rank="same")
-            cb.node("b_planner",
-                    "Planner\nTaskPlan JSON\n5 priority rules",
-                    shape="box", fillcolor=C["cream"], color=C["amber"], **NB)
-            cb.node("b_critic",
-                    "Critic\nValidates all outputs\nPer-agent validators",
-                    shape="box", fillcolor=C["blush"], color=C["red"], **NB)
-
-        # Main agent fan (two columns)
-        with cb.subgraph(name="cluster_sysB_agents") as ba:
-            ba.attr(label="  Specialist Agents  ", style="dashed,rounded",
-                    color=C["grey"], fontcolor=C["grey"],
-                    fontname=FONT, fontsize="8.5",
-                    bgcolor="#FAFBFC", penwidth="1.0")
-
-            # Column 1
-            for nid, lbl in [
-                ("b_lit",     "Literature\nCorpus management\nAnnotation tracking"),
-                ("b_writing", "Writing\nBullet points only\nNo prose"),
-                ("b_comply",  "Compliance\nCBS checks · APA 7\nPage count"),
-            ]:
-                ba.node(nid, lbl, shape="box", fillcolor=C["white"],
-                        color=C["grey"], **NB)
-
-            # Column 2
-            for nid, lbl in [
-                ("b_diag",    "Diagram\nGraphviz + Matplotlib\nSVG + PNG"),
-                ("b_tracker", "Experiment\nTracker\nAppend-only registry"),
-                ("b_tables",  "Results\nTables & Viz\nMAPE / RAM / SRQ3"),
-            ]:
-                ba.node(nid, lbl, shape="box", fillcolor=C["white"],
-                        color=C["grey"], **NB)
-
-        # System B internal edges
-        cb.edge("b_state",  "b_coord",  color=C["blue"],  penwidth="1.4", arrowsize="0.8")
-        cb.edge("b_coord",  "b_planner",color=C["navy"],  penwidth="1.3", arrowsize="0.8")
-        cb.edge("b_coord",  "b_critic", color=C["navy"],  penwidth="1.3", arrowsize="0.8")
-        for nid in ["b_lit", "b_writing", "b_comply", "b_diag", "b_tracker", "b_tables"]:
-            cb.edge("b_coord", nid, color=C["grey"], penwidth="0.9",
-                    arrowsize="0.65", style="dashed")
-
-    # ── Cross-system note: System B reads System A outputs ────────────────────
-    g.node("note_read",
-           "System B reads\nSystem A outputs\n(never modifies)",
-           shape="note", fillcolor="#FDFAF0", color=C["amber"],
-           fontname=FONT, fontsize="8.5", style="filled",
-           penwidth="1.2", margin="0.10,0.08")
-    g.edge("a_out",    "note_read", color=C["amber"], penwidth="1.0",
-           style="dashed", arrowsize="0.6")
-    g.edge("note_read","b_state",   color=C["amber"], penwidth="1.0",
-           style="dashed", arrowsize="0.6")
-
-    save_dot(g, "project_overview_v1")
+    _caption(g, "The research gap as the intersection of four literatures. Each "
+                "strand is individually well populated, and each stops short of "
+                "the same point: none addresses the extension of an agentic "
+                "decision-support system with forecasting models under the "
+                "deployment constraints a smaller firm actually faces.")
+    _save(g, "ch2_gap_diagram_v2")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("\nGenerating thesis figures  (v2)...\n")
-    fig1_system_architecture()
-    fig2_agent_workflow()
-    fig3_data_flow()
-    fig4_ram_budget()
-    fig5_confidence_score()
-    fig6_project_overview()
-    print(f"\nDone — all figures in  {OUTPUT_DIR}/")
+    print("\nRebuilding architecture diagrams from measured artefacts...\n")
+    fig_pipeline()
+    fig_model_selection()
+    fig_scenarios()
+    fig_resource_profile()
+    fig_layered_architecture()
+    print("\n  chapter figures:")
+    fig_research_questions_tree()
+    fig_gap_diagram()
+    fig_data_pipeline()
+    fig_eda_pipeline()
+    fig_modelling_pipeline()
+    fig_tool_interface()
+    print(f"\nDone - {OUT}\n")

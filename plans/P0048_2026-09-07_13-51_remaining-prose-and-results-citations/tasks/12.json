@@ -1,0 +1,11 @@
+{
+  "id": "12",
+  "subject": "MERGE ch6-model-benchmark and add the stale-numbers warning",
+  "description": "Inherited from P0045 task 7. MERGE (draft -736 w but 3 hollow sections). Add a standing Open block recording that check_chapter_facts.py PASSES ch6 while every headline number is stale - the checker matches phrases and has no rule for a number that used to be right. Record the mechanism, not just today's digits: P0049's horizon re-run will move them again. See INHERITED_CONTEXT.md B.4 and P0048 F7.",
+  "activeForm": "Merging ch6 and flagging stale numbers",
+  "status": "pending",
+  "blocks": [
+    "16"
+  ],
+  "blockedBy": []
+}

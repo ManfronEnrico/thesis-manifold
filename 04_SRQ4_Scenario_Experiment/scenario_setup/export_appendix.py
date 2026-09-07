@@ -68,7 +68,8 @@ def _find_repo_root() -> Path:
 
 
 sys.path.insert(0, str(_find_repo_root()))
-from PATHS import ROOT_DIR, THESIS_RESULTS_DIR, THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR  # noqa: E402
+from PATHS import (ROOT_DIR, THESIS_RESULTS_DIR, THESIS_RESULTS_SRQ1_DIR,  # noqa: E402
+                   THESIS_RESULTS_SRQ4_DIR, get_category_pipeline_step_outputs_dir)
 
 OUT = THESIS_RESULTS_DIR / "appendix"
 
@@ -276,7 +277,7 @@ def table_metric_dictionary() -> None:
 # ---------------------------------------------------------------------------
 def _retune_costs() -> pd.DataFrame | None:
     """Time and memory for refit vs re-tune at one forecast origin."""
-    f = THESIS_RESULTS_SRQ1_DIR / "retune_single_cutoff.csv"
+    f = THESIS_RESULTS_SRQ1_DIR / "tables" / "retune_single_cutoff.csv"
     return pd.read_csv(f) if f.is_file() else None
 
 
@@ -301,7 +302,7 @@ def table_resource_profile() -> None:
     forecast error across forecast origins, not time or memory, and merging
     unlike quantities into one grid would invite comparison down a column where
     none exists."""
-    f = THESIS_RESULTS_SRQ1_DIR / "profiling.csv"
+    f = THESIS_RESULTS_SRQ1_DIR / "tables" / "profiling.csv"
     if not f.is_file():
         print("  (skip resource profile: profiling.csv absent)")
         return
@@ -418,7 +419,7 @@ def table_resource_profile() -> None:
 
 def table_sandbox_profile() -> None:
     """The same fits, measured inside the deployment target rather than locally."""
-    f = THESIS_RESULTS_SRQ1_DIR / "sandbox_profiling.csv"
+    f = THESIS_RESULTS_SRQ1_DIR / "tables" / "sandbox_profiling.csv"
     if not f.is_file():
         print("  (skip sandbox profile: run measure_sandbox_rss.py)")
         return
@@ -473,7 +474,7 @@ def table_sandbox_profile() -> None:
 
 def table_param_drift() -> None:
     """Does freezing hyperparameters cost accuracy as data ages?"""
-    f = THESIS_RESULTS_SRQ1_DIR / "refit_vs_retune.csv"
+    f = THESIS_RESULTS_SRQ1_DIR / "tables" / "refit_vs_retune.csv"
     if not f.is_file():
         print("  (skip parameter drift: refit_vs_retune.csv absent)")
         return
@@ -518,7 +519,7 @@ def table_baselines_wide() -> None:
 
     The long form ran 28 rows and put the models being compared 7 rows apart.
     Comparison is the entire purpose of the table, so the models sit adjacent."""
-    f = THESIS_RESULTS_SRQ1_DIR / "stat_baselines.csv"
+    f = THESIS_RESULTS_SRQ1_DIR / "tables" / "stat_baselines.csv"
     if not f.is_file():
         print("  (skip baselines: stat_baselines.csv absent)")
         return
@@ -601,8 +602,174 @@ def table_baselines_wide() -> None:
                  "Letham (2018) is MISSING from the Ch2 reference list.")
 
 
+def table_pipeline_execution() -> None:
+    """Which preprocessing steps ran, for which category and horizon, and how long.
+
+    Reads the `run_manifest.json` written by `run_preprocessing.py`. Before that
+    manifest existed the run record lived only as prose inside a console log, so
+    "did every step pass for every category?" could not be answered without a
+    human reading four log files (P0046 F20).
+
+    This is a REPRODUCIBILITY table, not a performance claim. Wall-clock seconds
+    on one laptop are not a benchmark: they are evidence that the stated pipeline
+    is the pipeline that ran, and that no step was quietly skipped. The step names
+    come from the manifest rather than from a list held here, so a renamed or
+    reordered step cannot leave this table describing a pipeline that no longer
+    exists.
+    """
+    manifests = []
+    for cat in ("CSD", "danskvand", "energidrikke", "RTD"):
+        f = get_category_pipeline_step_outputs_dir(cat) / "run_manifest.json"
+        if f.is_file():
+            try:
+                manifests.append(json.loads(f.read_text(encoding="utf-8")))
+            except (json.JSONDecodeError, OSError) as exc:
+                print(f"  (skip {cat} manifest, unreadable: {exc})")
+
+    if not manifests:
+        print("  (skip pipeline execution: no run_manifest.json found -- "
+              "re-run run_preprocessing.py to produce one)")
+        return
+
+    # Step identity comes from the manifest, so this cannot drift from PIPELINE.
+    step_names: dict[int, str] = {}
+    for m in manifests:
+        for run in m.get("runs", []):
+            for st in run.get("steps", []):
+                step_names.setdefault(st["step"], st.get("name", ""))
+
+    rows, skipped, failed = [], 0, 0
+    for m in manifests:
+        for run in sorted(m.get("runs", []), key=lambda r: r.get("horizon", 0)):
+            by_step = {st["step"]: st for st in run.get("steps", [])}
+            row = {"Category": m.get("category", "?"),
+                   "Horizon (months)": run.get("horizon", "")}
+            for num in sorted(step_names):
+                st = by_step.get(num)
+                if st is None:
+                    row[f"Step {num}"] = "--"        # not part of this run
+                elif st["status"] == "ok":
+                    row[f"Step {num}"] = f"{st['seconds']:.1f}"
+                else:
+                    row[f"Step {num}"] = st["status"]
+                    skipped += st["status"] == "skipped"
+                    failed += st["status"] == "failed"
+            row["Total (s)"] = f"{run.get('total_seconds', 0):.1f}"
+            row["All steps passed"] = "yes" if run.get("ok") else "no"
+            rows.append(row)
+
+    df = pd.DataFrame(rows)
+    legend = "; ".join(f"step {n} — {step_names[n]}" for n in sorted(step_names))
+    stamps = sorted({m.get("written_at_utc", "")[:10] for m in manifests if m.get("written_at_utc")})
+    when = stamps[0] if len(stamps) == 1 else f"{stamps[0]} to {stamps[-1]}"
+
+    note = (f"Cell values are elapsed seconds for that step. {legend}. "
+            "An em dash marks a step outside the range of that run; "
+            "\"skipped\" marks a horizon-independent step deliberately not "
+            "repeated on a second horizon (steps 0-2 build the same panel "
+            "regardless of horizon).")
+    if failed:
+        note += (f" {failed} step(s) recorded a failure and are named in the "
+                 "corresponding manifest.")
+
+    _emit("pipeline_execution",
+          "Preprocessing pipeline execution by category and horizon",
+          "Execution record of the Nielsen preprocessing pipeline, taken from "
+          "the run manifest each run writes. Timings are wall-clock on the "
+          "development machine and are reported to evidence that every step "
+          "ran, not as a performance benchmark.", df,
+          note=note,
+          review=f"Generated from run_manifest.json across {len(manifests)} of 4 "
+                 f"categories ({len(df)} runs), written {when}. Regenerate by "
+                 "re-running run_preprocessing.py; the manifest merges horizons "
+                 "rather than overwriting, so H=1 and H=3 accumulate. A category "
+                 "absent here has simply not been re-run since the manifest was "
+                 "added (P0046 F20) -- it is not evidence of a failure."
+                 + (f" {skipped} skipped step(s) present." if skipped else ""))
+
+
+def table_pipeline_data_reduction() -> None:
+    """How the panel narrows from raw aggregation to modelling matrix.
+
+    The companion to `table_pipeline_execution`, deliberately kept SEPARATE
+    rather than adding columns to it: that table's unit is seconds, this one's is
+    rows and brands. Mixing them would put two incompatible units in one row and
+    invite a reader to compare down a column of unlike quantities.
+
+    This is the table that answers "what was excluded, and where". A pipeline
+    that silently drops 80% of its brands at step 3 and one that keeps them all
+    look identical in a timing log; they differ here.
+    """
+    # Read step 4's OWN log, not the run manifest's summary. Step 4 records the
+    # full reduction chain (rows_in -> rows_calendar -> rows_filtered -> rows_out
+    # with brand counts at each stage); the manifest only carries the endpoints,
+    # which would hide the calendar-fill stage that explains why the matrix has
+    # MORE rows than the panel it came from.
+    rows = []
+    for cat in ("CSD", "danskvand", "energidrikke", "RTD"):
+        d = get_category_pipeline_step_outputs_dir(cat)
+        for log in sorted(d.glob("step_4_log_h*.json")):
+            try:
+                s = json.loads(log.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            r = s.get("result", {})
+            if not r:
+                continue
+            rows.append({
+                "Category": s.get("category", cat),
+                "Horizon (months)": s.get("forecast_horizon", ""),
+                "Panel rows": r.get("rows_in"),
+                "Panel brands": r.get("brands_in"),
+                "After calendar fill": r.get("rows_calendar"),
+                "Matrix rows": r.get("rows_out"),
+                "Matrix brands": r.get("brands_out"),
+                "Matrix columns": r.get("cols_out"),
+            })
+
+    if not rows:
+        print("  (skip data reduction: no step_4_log_h*.json found -- "
+              "re-run run_preprocessing.py)")
+        return
+    rows.sort(key=lambda x: (x["Category"], x["Horizon (months)"]))
+
+    df = pd.DataFrame(rows)
+    # Drop columns no manifest populated, rather than printing a column of blanks.
+    df = df.dropna(axis=1, how="all")
+    for c in df.columns:
+        if c not in ("Category", "Horizon (months)"):
+            df[c] = df[c].map(lambda v: "" if pd.isna(v) else f"{int(v):,}")
+
+    _emit("pipeline_data_reduction",
+          "Panel size through the preprocessing pipeline",
+          "Rows and brands at each stage of matrix construction, per category "
+          "and horizon. The panel is aggregated at step 1; step 4 then completes "
+          "each brand's month grid and applies the contract measured at step 3, "
+          "producing the modelling matrix.", df,
+          note="Matrix rows EXCEED panel rows while brand counts fall. Both "
+               "follow from step 4: each retained brand's month grid is "
+               "completed before features are built, so that a lag refers to "
+               "the previous month rather than to the previous observed row, "
+               "which adds rows; and brands whose series is too short to satisfy "
+               "the contract's minimum-periods requirement are excluded, which "
+               "removes them. Exclusion is by the measured contract, not by "
+               "manual selection.",
+          review="Read from step_4_log_h{N}.json, which step 4 writes itself -- "
+                 "NOT from the run manifest, whose summary carries only the "
+                 "endpoints and would hide the calendar-fill stage. Values are "
+                 "the ones the step computed, so this cannot drift from the "
+                 "pipeline (P0046 F25).\n\n"
+                 "** DO NOT PUBLISH THE HORIZON COLUMN AS-IS.** P0048 F1 / P0049 "
+                 "F22: engineer_features() takes no horizon argument, so the h1 "
+                 "and h3 matrices encode the SAME one-month prediction task and "
+                 "differ only in their split dates. The row counts below are "
+                 "real, but labelling one of them '3' asserts a horizon the "
+                 "feature construction never applied. Re-run this table after "
+                 "the horizon fix lands.")
+
+
 def table_stability() -> None:
-    f = THESIS_RESULTS_SRQ1_DIR / "stability.csv"
+    f = THESIS_RESULTS_SRQ1_DIR / "tables" / "stability.csv"
     if not f.is_file():
         print("  (skip stability: stability.csv absent)")
         return
@@ -926,11 +1093,54 @@ def table_config(df: pd.DataFrame) -> None:
 
 
 # ---------------------------------------------------------------------------
+def _clear_previous(prefix_max: int = 88) -> int:
+    """Delete this exporter's own previously-written tables before regenerating.
+
+    The `NN_` prefix is a GENERATION-ORDER number, not a stable identity: if one
+    table's input is missing, every later table shifts up. Writing without
+    clearing therefore leaves the previous run's files behind under their old
+    numbers, and a prefix stops identifying a table -- observed 2026-09-07, when
+    three different tables were all called `02_` (P0046 F23).
+
+    Scoped deliberately. Only `NN_` files at or below `prefix_max` are removed,
+    because the higher blocks belong to OTHER producers that write into this
+    same directory. Deleting the whole directory would silently destroy their
+    output, which does not regenerate from this script.
+
+    THE BLOCK ALLOCATION (keep this in step when adding a producer):
+
+        01-49   export_appendix.py            <- this script, cleared here
+        89      generate_literature_table.py
+        90-93   export_holiday_appendix.py
+        94-99   srq1_export_enrichment_appendix.py
+
+    `prefix_max` is 88, not 89: the literature table sits at 89 and was being
+    deleted whenever this script happened to run after it. That failure is
+    invisible -- the file simply stops existing, and the run that removed it
+    reports success.
+    """
+    removed = 0
+    for f in OUT.glob("[0-9][0-9]_*"):
+        if f.suffix not in (".md", ".csv"):
+            continue
+        try:
+            if int(f.name[:2]) <= prefix_max:
+                f.unlink()
+                removed += 1
+        except (ValueError, OSError):
+            continue
+    return removed
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     print(f"Writing appendix tables to {OUT}\n")
+    if (n := _clear_previous()):
+        print(f"  (cleared {n} file(s) from the previous run)\n")
 
     table_metric_dictionary()
+    table_pipeline_execution()
+    table_pipeline_data_reduction()
     table_resource_profile()
     table_sandbox_profile()
     table_param_drift()

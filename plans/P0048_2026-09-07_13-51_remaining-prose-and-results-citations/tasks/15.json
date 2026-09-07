@@ -1,0 +1,11 @@
+{
+  "id": "15",
+  "subject": "Fill abstract, ai-declaration and ch10-conclusion",
+  "description": "Inherited from P0045 task 10. 4 hollow sections across the three short files. Smallest payoff - do last.",
+  "activeForm": "Filling the short files",
+  "status": "pending",
+  "blocks": [
+    "16"
+  ],
+  "blockedBy": []
+}

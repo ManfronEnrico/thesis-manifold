@@ -1,0 +1,14 @@
+{
+  "id": "6",
+  "subject": "Run the funded A/B/C scenarios (111 runs, ~$40)",
+  "description": "P0042's frozen sampling design: A n=3, B/C n=10 stratified, C-only cross-category, allocated inversely to per-run cost. DO NOT START BEFORE TASK 4 - running against an H1-mislabelled-as-H3 track record bakes the mislabel into the scenario results, and a degraded tool payload would invalidate the B->C comparison entirely.",
+  "activeForm": "Running the funded scenarios",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "4",
+    "5"
+  ]
+}

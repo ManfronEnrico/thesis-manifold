@@ -1,0 +1,12 @@
+{
+  "id": "7",
+  "subject": "Write the horizon prose (note blocks P3, P4)",
+  "description": "Ch4 s4.4 horizon subsection and the Ch6/Ch8 dual-horizon results. Blocked until the re-run lands - writing it earlier would put a false claim in the thesis. Ch8's stated WMAPEs are stale twice over (F7).",
+  "activeForm": "Writing the horizon prose",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5",
+    "6"
+  ]
+}

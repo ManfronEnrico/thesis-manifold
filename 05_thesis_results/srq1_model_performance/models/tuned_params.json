@@ -1,0 +1,66 @@
+{
+  "brand/CSD/LightGBM": {
+    "n_estimators": 1035,
+    "learning_rate": 0.14897573831780145,
+    "num_leaves": 80,
+    "min_child_samples": 8,
+    "subsample": 0.8503910861654302,
+    "colsample_bytree": 0.7094289115145794
+  },
+  "brand/CSD/XGBoost": {
+    "n_estimators": 1106,
+    "learning_rate": 0.042846671980013046,
+    "max_depth": 8,
+    "min_child_weight": 5.584467316419901,
+    "subsample": 0.8854886850711631,
+    "colsample_bytree": 0.8929825873399089
+  },
+  "brand/danskvand/LightGBM": {
+    "n_estimators": 359,
+    "learning_rate": 0.013417809194583028,
+    "num_leaves": 73,
+    "min_child_samples": 8,
+    "subsample": 0.9563602131410641,
+    "colsample_bytree": 0.6393722557105117
+  },
+  "brand/danskvand/XGBoost": {
+    "n_estimators": 931,
+    "learning_rate": 0.0677752428233626,
+    "max_depth": 5,
+    "min_child_weight": 6.836945835021923,
+    "subsample": 0.9375920406844779,
+    "colsample_bytree": 0.6799572485596266
+  },
+  "brand/energidrikke/LightGBM": {
+    "n_estimators": 632,
+    "learning_rate": 0.022004527434741072,
+    "num_leaves": 84,
+    "min_child_samples": 12,
+    "subsample": 0.7168578594140873,
+    "colsample_bytree": 0.7465447373174767
+  },
+  "brand/energidrikke/XGBoost": {
+    "n_estimators": 1169,
+    "learning_rate": 0.05419749091309683,
+    "max_depth": 10,
+    "min_child_weight": 3.6572297039415647,
+    "subsample": 0.8497844815459585,
+    "colsample_bytree": 0.8989576749220834
+  },
+  "brand/RTD/LightGBM": {
+    "n_estimators": 1010,
+    "learning_rate": 0.11546094439318927,
+    "num_leaves": 49,
+    "min_child_samples": 15,
+    "subsample": 0.6590377634683946,
+    "colsample_bytree": 0.6829185931957623
+  },
+  "brand/RTD/XGBoost": {
+    "n_estimators": 382,
+    "learning_rate": 0.030336967922055934,
+    "max_depth": 6,
+    "min_child_weight": 1.4728899741040307,
+    "subsample": 0.6911482941660199,
+    "colsample_bytree": 0.8471511718182558
+  }
+}

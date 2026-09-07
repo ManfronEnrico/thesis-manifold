@@ -1,0 +1,9 @@
+{
+  "id": "10",
+  "subject": "BRIAN: run the NotebookLM claims verification (CV-01..CV-05)",
+  "description": "Inherited from P0047 task 22. Briefing pack ready at 06_thesis_writing/notebookLM/04-Claims_Verification/. TWO notebooks: A = CV-01/CV-02 (statistical thresholds), B = CV-03/CV-04/CV-05 (specific documents). If only one run, do A. Do NOT upload thesis chapters - that is the failure that created CV-01. Full procedure in INHERITED_CONTEXT.md A.3.",
+  "activeForm": "Running the NotebookLM claims verification",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

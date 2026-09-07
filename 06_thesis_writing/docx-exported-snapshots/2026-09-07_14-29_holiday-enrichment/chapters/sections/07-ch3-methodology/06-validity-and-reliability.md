@@ -1,0 +1,14 @@
+# Validity and Reliability
+
+> Section of **Methodology > Validity and Reliability**
+>
+> Generated from the Word document -- **do not edit.** Edit the OneDrive `.docx`; this file is rewritten on every snapshot.
+
+**4 comment(s) on this section** -- OUTDATED, CONTEXT. Detail: `comments/sections/07-ch3-methodology/06-validity-and-reliability.md`
+
+---
+
+**Internal validity** is maintained through three design choices. First, a common percentual  train-test split is applied identically across all five forecasting models, ensuring that performance differences reflect model characteristics rather than differences in the data each model observes. Second, all models are initialised with fixed random seeds and all preprocessing steps are fully documented, enabling exact reproduction of any result. Third, the controlled comparison used for SRQ4, in which the decision-support pipeline (dedicated-model integration versus the code-as-action baseline) is the sole manipulation while the prompt set and inputs remain constant, isolates the contribution of dedicated-model integration from potential confounders.
+**External validity** is explicitly bounded. The findings of this thesis are applicable to the Danish beverage retail market (the five Nielsen categories) under an four-gigabyte RAM cloud deployment constraint and a monthly batch processing mode. Generalisation to other FMCG categories, other national markets, other RAM budgets, or real-time streaming contexts is a direction for future research rather than a claim of this thesis. The single-case embedded study design strengthens relevance to the Manifold AI operational context but limits statistical generalisation to other case organisations.
+**Construct validity** is addressed by operationalising each research question in the measurement protocols specified in Section 3.5: accuracy, memory, runtime, and stability metrics together with the specialised-versus-pooled comparison for SRQ1; the reliability, uncertainty, and traceability properties of the structured forecast-tool interface for SRQ2; the capability-readiness assessment for SRQ3; and the correctness, consistency, replicability, cost, and latency dimensions, scored via an LLM-as-judge protocol with a human-rated subset, for SRQ4. Each operationalisation is pre-specified before data analysis begins to prevent post-hoc metric selection bias.
+**Reliability** is ensured through code versioning, documentation of all hyperparameters and preprocessing decisions, and fixed random seeds throughout. Any deviation from the documented protocol is recorded as a limitation. The LLM-as-judge evaluation introduces a source of non-determinism: LLM outputs at temperature zero are highly reproducible but not guaranteed to be identical across API versions. To mitigate this, all LLM evaluation calls are logged with their exact prompt and output, enabling retrospective auditing.

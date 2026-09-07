@@ -119,6 +119,10 @@ class StepResult:
 	status: str          # "ok" | "failed" | "skipped"
 	seconds: float = 0.0
 	detail: str = ""
+	# What the step DID, as opposed to how long it took. Populated by
+	# _step_metrics() from the value the step already returns; see there for why
+	# this is extracted centrally rather than added to each step module.
+	metrics: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -160,6 +164,93 @@ def _invoke(step: Step, category: str, horizon: int, make_plots: bool,
 	if step.num == 6:
 		return step.module.run(category, horizon)
 	raise ValueError(f"No invocation defined for step {step.num}")
+
+
+# The brand column name, duplicated from the step modules (each of steps 2-6
+# defines its own BRAND_COL = "brand"). Importing one step's copy here would
+# make the orchestrator arbitrarily depend on that step; the value is only used
+# to compute an optional summary, and every use is guarded by a column check, so
+# a rename degrades the metric rather than breaking the run.
+BRAND_COL = "brand"
+
+
+def _step_metrics(step: Step, out) -> dict:
+	"""What the step DID, taken from the value it already returns.
+
+	Added 2026-09-07 (P0046). The manifest recorded that a step ran and how long
+	it took, which evidences execution but not *content*: an appendix reader
+	could not tell whether step 4 kept 40 brands or 4, and a silent collapse in
+	row count -- the failure mode most likely to invalidate a result -- looked
+	identical to a healthy run.
+
+	Extracted CENTRALLY, from each step's existing return value, rather than by
+	adding instrumentation to seven step modules. Every step already returns
+	something meaningful (a DataFrame, a contract, a manifest) and the
+	orchestrator was discarding all of it except step 2's failure list. Reading
+	what is already there keeps the step modules untouched, so this cannot drift
+	from what they compute -- there is no second code path to keep in sync.
+
+	Unknown shapes yield {} rather than raising: a metric is a nice-to-have, and
+	no pipeline run should fail because a summary could not be computed.
+	"""
+	try:
+		if step.num == 0:                       # dict: cache validation
+			return {"views_required": len(out.get("required", [])),
+					"views_missing": len(out.get("missing", [])),
+					"views_empty": len(out.get("empty", []))}
+
+		if step.num == 1:                       # DataFrame: aggregated panel
+			m = {"rows": len(out), "columns": len(out.columns)}
+			if BRAND_COL in out.columns:
+				m["brands"] = int(out[BRAND_COL].nunique())
+			if "date" in out.columns and len(out):
+				m["period"] = (f"{out['date'].min():%Y-%m} .. "
+							   f"{out['date'].max():%Y-%m}")
+			return m
+
+		if step.num == 2:                       # EdaContext
+			return {"tables_written": len(getattr(out, "tables_written", [])),
+					"plots_written": len(getattr(out, "plots_written", [])),
+					"sections_skipped": len(getattr(out, "skipped", [])),
+					"sections_failed": len(getattr(out, "failed", []))}
+
+		if step.num == 3:                       # dict: measured contract
+			m = {"lags": len(out.get("lags", [])),
+				 "rolling_windows": len(out.get("rolling_windows", [])),
+				 "min_periods": out.get("min_periods"),
+				 "log_transform_target": out.get("log_transform_target")}
+			# The retention block is the record of what the contract EXCLUDES,
+			# which is the number a reader most wants and the one a timing-only
+			# log hides completely.
+			ret = out.get("retention") or {}
+			for k in ("brands_before", "brands_after", "rows_before", "rows_after"):
+				if k in ret:
+					m[k] = ret[k]
+			return m
+
+		if step.num == 4:                       # DataFrame: feature matrix
+			m = {"rows": len(out), "columns": len(out.columns)}
+			if BRAND_COL in out.columns:
+				m["brands"] = int(out[BRAND_COL].nunique())
+			return m
+
+		if step.num == 5:                       # DataFrame: labelled split
+			m = {"rows": len(out)}
+			if "split" in out.columns:
+				m["split_rows"] = {k: int(v) for k, v
+								   in out["split"].value_counts().items()}
+			return m
+
+		if step.num == 6:                       # dict: output manifest
+			m = dict(out.get("shape", {}))
+			m["n_test_origins"] = out.get("n_test_origins")
+			m["files"] = len(out.get("files", {}))
+			return m
+
+	except Exception as exc:  # noqa: BLE001 -- a metric must never fail a run
+		return {"metrics_error": f"{type(exc).__name__}: {exc}"}
+
+	return {}
 
 
 def _check_step_outcome(step: Step, result) -> str:
@@ -226,9 +317,111 @@ def run_pipeline(
 			result.steps.append(StepResult(step, "failed", elapsed, reason))
 			break
 
-		result.steps.append(StepResult(step, "ok", elapsed))
+		result.steps.append(StepResult(step, "ok", elapsed,
+									   metrics=_step_metrics(step, out)))
 
 	return result
+
+
+def write_run_manifest(results: list[RunResult]) -> list[Path]:
+	"""Persist the run record as JSON, one manifest per category.
+
+	Added 2026-09-06 (P0046 F20). The orchestrator already measured per-step
+	timing and outcome, but only *printed* them: the run-level record existed
+	solely as prose inside run_preprocessing_console.log. Nothing could answer
+	"when did RTD last run, did every step pass, how long did step 4 take?"
+	without a human reading a log file.
+
+	Steps 0, 1, 4 and 5 write their own step_N_log.json; steps 2, 3 and 6 write
+	console output only. Those step logs are RICHER than this manifest for the
+	steps that have them -- step 4's log carries the full reduction chain
+	(rows_in, rows_calendar, rows_filtered, rows_out, brands at each stage) --
+	but none of them records the RUN: the ordering, which steps were skipped,
+	whether the run succeeded as a whole. That is what this file adds, and the
+	two are complementary rather than redundant. The appendix reads the step
+	logs for content and this manifest for execution.
+
+	Two things this deliberately does NOT do, both learned by getting them
+	wrong first:
+
+	* It does not write a single file. --all-categories produces results for
+	  every category, and filing them all under results[0]'s directory would
+	  put RTD's record in CSD's folder. Runs are grouped by category, and each
+	  category owns its own manifest.
+
+	* It does not overwrite. Horizons run separately (--horizon 1, then
+	  --horizon 3), so a plain write would erase the H=1 record the moment H=3
+	  ran, and the appendix would report one horizon as though it were the
+	  whole pipeline. Horizons not in this run are carried forward; horizons
+	  in this run are replaced.
+	"""
+	import json
+	from datetime import datetime, timezone
+
+	def _entry(r: RunResult) -> dict:
+		return {
+			"horizon": r.horizon,
+			"ok": r.ok,
+			"total_seconds": round(sum(st.seconds for st in r.steps), 3),
+			"steps": [
+				{"step": st.step.num, "name": st.step.name,
+				 "status": st.status, "seconds": round(st.seconds, 3),
+				 **({"detail": st.detail} if st.detail else {}),
+				 **({"metrics": st.metrics} if st.metrics else {})}
+				for st in r.steps
+			],
+		}
+
+	by_category: dict[str, list[RunResult]] = {}
+	for r in results:
+		by_category.setdefault(r.category, []).append(r)
+
+	written: list[Path] = []
+	stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+	for category, runs in by_category.items():
+		out = get_paths(category)["step_output_dir"] / "run_manifest.json"
+		fresh = {r.horizon: _entry(r) for r in runs}
+
+		# Carry forward horizons this run did not touch. An unreadable manifest
+		# is replaced rather than raised on: losing an old record is a smaller
+		# harm than failing a pipeline run that otherwise succeeded.
+		if out.is_file():
+			try:
+				prior = json.loads(out.read_text(encoding="utf-8"))
+				for e in prior.get("runs", []):
+					if e.get("horizon") not in fresh:
+						fresh[e["horizon"]] = e
+			except (json.JSONDecodeError, OSError, KeyError, TypeError) as exc:
+				print(f"  (existing manifest at {out} unreadable, replacing: {exc})")
+
+		payload = {
+			"category": category,
+			"written_at_utc": stamp,
+			"runs": [fresh[h] for h in sorted(fresh)],
+		}
+		out.parent.mkdir(parents=True, exist_ok=True)
+		out.write_text(json.dumps(payload, indent=2), encoding="utf-8",
+					   newline="\n")
+		written.append(out)
+		print(f"\nRun manifest -> {out}")
+
+	return written
+
+
+def _fmt_metrics(m: dict) -> str:
+	"""Render a step's metrics as one compact line, e.g. 'rows=1,472  brands=38'."""
+	parts = []
+	for k, v in m.items():
+		if isinstance(v, dict):
+			inner = " ".join(f"{ik}={iv:,}" if isinstance(iv, int) else f"{ik}={iv}"
+							 for ik, iv in v.items())
+			parts.append(f"{k}=[{inner}]")
+		elif isinstance(v, int) and not isinstance(v, bool):
+			parts.append(f"{k}={v:,}")
+		elif v is not None:
+			parts.append(f"{k}={v}")
+	return "  ".join(parts)
 
 
 def print_summary(results: list[RunResult]) -> None:
@@ -245,6 +438,10 @@ def print_summary(results: list[RunResult]) -> None:
 				flag = "" if r.status == "ok" else "  <-- FAILED"
 				print(f"    step {r.step.num}  {r.seconds:7.1f}s   "
 					  f"{r.step.name}{flag}")
+				if r.metrics:
+					# One line, so a collapsed row or brand count is visible
+					# here rather than only after opening the manifest.
+					print(f"             {_fmt_metrics(r.metrics)}")
 				if r.detail:
 					print(f"             {r.detail}")
 
@@ -351,6 +548,7 @@ def main() -> int:
 			))
 
 	print_summary(results)
+	write_run_manifest(results)
 	return 1 if any(not r.ok for r in results) else 0
 
 

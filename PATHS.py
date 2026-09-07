@@ -763,6 +763,50 @@ def get_category_pipeline_step_outputs_dir(category: str) -> Path:
     return THESIS_DATA_PREPROCESSING_DIR / "nielsen" / category / "pipeline_step_outputs"
 
 
+# ---------------------------------------------------------------------------
+# Per-SRQ result subdirectories (P0046 Phase 3b, 2026-09-06)
+# ---------------------------------------------------------------------------
+# Each SRQ results folder has the same three-way shape, so a reader who learns
+# one folder can navigate all of them:
+#
+#     srq{N}_{slug}/
+#         figures/   .png / .svg -- paste into the thesis
+#         tables/    .csv + .md twins -- .md to paste, .csv to trace back
+#         models/    serialised estimators + the hyperparameters defining them
+#
+# There is deliberately no raw/: per DEC-P0046-RUNS-WITH-EXPERIMENT raw per-run
+# material stays with the experiment that produced it and never reaches the
+# results tier, which holds only what could enter the thesis.
+#
+# The .csv/.md pair is ONE artefact in two formats, which is why the split is by
+# role rather than by file extension -- splitting on extension would separate
+# `calibration.md` from the `calibration.csv` it was rendered from.
+
+def get_srq_figures_dir(srq: int) -> Path:
+    """Figures for an SRQ (created on demand).
+
+    Example:
+        >>> get_srq_figures_dir(1)   # .../srq1_model_performance/figures
+    """
+    d = get_srq_results_dir(srq) / "figures"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_srq_tables_dir(srq: int) -> Path:
+    """Tables for an SRQ -- .csv data plus their rendered .md twins."""
+    d = get_srq_results_dir(srq) / "tables"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_srq_models_dir(srq: int) -> Path:
+    """Serialised models + hyperparameter files for an SRQ."""
+    d = get_srq_results_dir(srq) / "models"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 def get_srq_results_dir(srq: int) -> Path:
     """
     Get the results directory for an SRQ by number.

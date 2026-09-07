@@ -1,0 +1,11 @@
+{
+  "id": "16",
+  "subject": "Validate the naive VIF-based feature reduction",
+  "description": "Measured the proposed 16->9 reduction against the benchmark: mean WMAPE 28.82 vs 26.44 unreduced. REJECTED. Collinearity is a linear-model pathology; trees use correlated lags productively. Output: findings F13.",
+  "activeForm": "Validating the feature reduction",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "14"
+  ]
+}

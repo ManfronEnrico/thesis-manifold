@@ -1,0 +1,13 @@
+{
+  "id": "7",
+  "subject": "Generate appendix tables for the ablation and the diagnostics",
+  "description": "Following the same conventions as tables 90-93: .md+.csv twins, no hard-coded numbers, values read from the result CSVs, output via PATHS.py. Cover the delta table, the SHAP comparison, VIF, and the rejected reduction. DONE 2026-09-06: srq1_export_enrichment_appendix.py emits tables 94-99 (tuned ablation, tuning sensitivity, SHAP, VIF, rejected reduction, ridge alpha). Also fixed a placement defect: my four analysis scripts wrote 12 CSVs loose at the top of 05_thesis_results/srq1_model_performance/ instead of its tables/ subfolder. All four now resolve output through PATHS.get_srq_tables_dir(1) and the loose files were moved.",
+  "activeForm": "Generating the ablation appendix tables",
+  "status": "completed",
+  "blocks": [
+    "19"
+  ],
+  "blockedBy": [
+    "6"
+  ]
+}

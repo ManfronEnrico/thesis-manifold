@@ -1,0 +1,11 @@
+{
+  "id": "5",
+  "subject": "Build the holiday feature, fetch, cache and contract wiring",
+  "description": "fetch_holidays.py (standalone + hooked to the Nielsen refetch, per-year cache, manifest with timestamp and sha256); add_holiday_features in engineer_features.py; contract v1.2 decision in step 3; application + hard-fail in step 4.",
+  "activeForm": "Building the holiday enrichment",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

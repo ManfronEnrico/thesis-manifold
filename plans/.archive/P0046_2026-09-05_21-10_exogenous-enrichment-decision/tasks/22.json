@@ -1,0 +1,9 @@
+{
+  "id": "22",
+  "subject": "BRIAN: run the NotebookLM claims verification (CV-01..CV-05)",
+  "description": "Briefing pack ready at 06_thesis_writing/notebookLM/04-Claims_Verification/ following the existing 01-/02- convention: 00-MASTER-verification-brief.md, 01-HOW-TO-RUN.md, 'NLM Review/' for output, 'Candidate Sources/' for PDFs.\n\nTWO notebooks, not one: A = CV-01/CV-02 (statistical thresholds, needs statistics literature); B = CV-03/CV-04/CV-05 (specific documents: Danish shop-hours law, XGBoost docs, Store Bededag act). Mixing them makes a statistics question retrievable against a shop-hours law.\n\nIf only one run: do A. CV-01 and CV-02 are the two that appear as numbers in a results appendix.\n\nDo NOT upload thesis chapters -- the claim text is already quoted in the brief, and uploading our own prose lets the notebook return our wording as a source, which is the exact failure that created CV-01.\n\nOutcomes go to writing-notes/unverified-claims-to-check.md (source of truth); raw NLM output to 'NLM Review/'. Supersedes task 20.",
+  "activeForm": "Running the claims verification",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

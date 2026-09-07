@@ -1,10 +1,10 @@
 {
-  "generated_utc": "2026-08-18T20:01:50+00:00",
+  "generated_utc": "2026-09-07T12:13:49+00:00",
   "generated_by": "step_4_engineer_features.py",
   "category": "RTD",
   "forecast_horizon": 1,
-  "contract_version": "1.1",
-  "contract_generated_utc": "2026-08-18T20:01:47+00:00",
+  "contract_version": "1.2",
+  "contract_generated_utc": "2026-09-07T12:13:48+00:00",
   "parameters_applied": {
     "target_col": "sales_units",
     "min_periods": 15,
@@ -33,9 +33,10 @@
     "rows_filtered": 2952,
     "brands_filtered": 72,
     "rows_out": 2952,
-    "cols_out": 47,
+    "cols_out": 50,
     "brands_out": 72,
     "has_promo": false,
+    "has_holidays": true,
     "peak_months_verified": [
       5,
       6,

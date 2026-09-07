@@ -1,0 +1,11 @@
+{
+  "id": "10",
+  "subject": "Generate appendix tables 90-93 per the P0046 provenance rules",
+  "description": "export_holiday_appendix.py: provenance, annual counts, monthly matrix, feature definitions. .md+.csv twins, values derived from cache, output via PATHS.py into 05_thesis_results/appendix/.",
+  "activeForm": "Generating the holiday appendix tables",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}

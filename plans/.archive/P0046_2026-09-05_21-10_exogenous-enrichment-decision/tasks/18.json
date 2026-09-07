@@ -1,0 +1,9 @@
+{
+  "id": "18",
+  "subject": "DECISION: ship the enrichment and report the split result",
+  "description": "Brian confirmed 2026-09-06. Rejected: withdraw (throws away the finding) and split-by-model-family (breaks the cross-model comparison).",
+  "activeForm": "Confirming the ship decision",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

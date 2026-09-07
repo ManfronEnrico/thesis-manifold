@@ -1,0 +1,14 @@
+{
+  "id": "12",
+  "subject": "Write up the result, limitations and future work in writing-notes",
+  "description": "Per-category AND per-model deltas, never the mean alone. Include: SHAP rules out month re-encoding; the reproducibility limitation of an external calendar; the non_holiday_days proxy caveat; school holidays out of scope by data availability; weather/macro as future work; the sub-monthly-grain reading of a null. ALSO REQUIRED (F18): the determinism defect is a reportable methods finding, not just a bug fix. Report that XGBoost n_jobs=-1 produced a 2.65pp thread-count spread -- larger than most holiday effects -- that it flipped RTD's best model and 3 of 12 ablation cells, and that all accuracy numbers are now n_jobs=1. Use the CORRECTED headline: 7/12 helped, mean -1.42pp. The superseded 6/12 and -0.75pp must not appear anywhere in the prose.\n\nDONE 2026-09-07: 06_thesis_writing/writing-notes/srq1-holiday-enrichment-result-and-limitations.md. Bullets AND paste-ready prose (Brian explicitly approved prose this session). All 18 reported figures verified programmatically against holiday_ablation_tuned_delta.csv and appendix 96. Prose deliberately asserts NO unverified claim: statute name/year omitted (CV-03), XGBoost cause hedged (CV-04), Store Bededag cited as observed in data (CV-05) -- so it is safe to paste before task 20 completes. One sentence in section 2.2 may be added once stability lands (task 21).\n\n2026-09-07: SCOPE SPLIT. The write-up note exists and its numbers are final. PROSE INSERTION into the .docx moved to a SEPARATE SESSION -- do not action blocks P1-P6 from this plan.",
+  "activeForm": "Writing up the enrichment result",
+  "status": "completed",
+  "blocks": [
+    "8"
+  ],
+  "blockedBy": [
+    "21",
+    "6"
+  ]
+}

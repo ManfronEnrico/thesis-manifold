@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Paste blocks P1 and P2 into the .docx",
+  "description": "Apply the two ready blocks from writing-notes/srq1-forecast-horizon-defect-and-split-correction.md. P1 replaces Ch4 s4.4 (split) and its Table 5 + caption; P2 corrects Ch4 s4.3 feature count 14->13 and removes the weighted_distribution row from Table 4. Closes Word threads 183-191. MUST be applied before the holiday note's P1 (which then uses 16, not 17).",
+  "activeForm": "Pasting the ready prose blocks",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

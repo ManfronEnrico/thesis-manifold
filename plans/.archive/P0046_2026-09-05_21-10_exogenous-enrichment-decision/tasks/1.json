@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Establish ground truth: what is exogenous in the live feature set",
+  "description": "Audit engineer_features.py and step_3_derive_params.py for what is genuinely exogenous vs calendar-derived vs endogenous. Output: findings F3.",
+  "activeForm": "Auditing the live feature set",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

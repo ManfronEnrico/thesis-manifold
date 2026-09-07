@@ -1,0 +1,13 @@
+{
+  "id": "19",
+  "subject": "Regenerate affected SRQ1 figures and tables; update the staleness audit",
+  "description": "Regenerate SRQ1 artefacts and audit staleness. NOTE: the original premise (artefacts stale from the feature-set change) proved FALSE -- every generator pins a literal FEATURES list excluding the holiday columns. Testing that premise exposed the real defect (F18): XGBoost n_jobs=-1 made every XGBoost number thread-count-dependent, a 2.65pp spread larger than most reported holiday effects. Fixed to XGB_N_JOBS=1 across 8 accuracy scripts; srq1_profiling.py deliberately left at -1. Regeneration is therefore for DETERMINISM, not for features.\n\nCLOSED 2026-09-07. All SRQ1 artefacts regenerated deterministically except srq1_stability.py, which was split into task 21 because it needs a VERDICT evaluation (F18c), not just a re-run. srq1_benchmark_cv.py confirmed complete.",
+  "activeForm": "Regenerating SRQ1 artefacts",
+  "status": "completed",
+  "blocks": [
+    "21"
+  ],
+  "blockedBy": [
+    "7"
+  ]
+}

@@ -1,0 +1,16 @@
+# Limitations
+
+> Section of **Methodology > Limitations**
+>
+> Generated from the Word document -- **do not edit.** Edit the OneDrive `.docx`; this file is rewritten on every snapshot.
+
+**6 comment(s) on this section** -- SOURCE, OUTDATED, INCORRECT. Detail: `comments/sections/07-ch3-methodology/07-limitations.md`
+
+---
+
+The methodology described in this chapter is subject to five limitations that bound the scope and generalisability of the findings.
+**Data confidentiality.** The Nielsen/Prometheus dataset is used under a confidentiality agreement with Manifold AI. The raw scanner data cannot be redistributed, which constrains full external reproducibility to the processed features, code, and documented protocol rather than the underlying transaction records.
+**Training sample size.**  Between 37 and 42 monthly periods per category is at the lower boundary for reliable time series model estimation. “ARIMA” models generally require a minimum of 24 periods for stable parameter identification; this window satisfies that requirement but provides limited statistical power for detecting seasonal patterns spanning multiple years. “LightGBM” and “XGBoost” are less sensitive to sample size constraints than classical time series models, but the restricted training window limits their ability to learn longer-cycle promotional patterns. This limitation is partially mitigated by the feature engineering approach, which incorporates lagged variables and rolling statistics that increase the effective information content per observation.
+**Pilot-scale evaluation of decision-support outputs.** The SRQ4 comparison of dedicated-model integration against the code-as-action LLM baseline is conducted at pilot scale (on the order of fifty prompts) in the first instance rather than as a full study. Findings on correctness, consistency, replicability, cost, and latency are therefore indicative rather than conclusive; a full evaluation across the complete prompt set, and an optional comparison against the non-predictive production reference system, are identified as further work in Chapter 10.
+**Sequential model execution constraint.**  The four-gigabyte RAM budget requires models to be executed sequentially rather than in parallel, increasing total pipeline runtime relative to a compute-unconstrained deployment. In a production setting, this latency may be acceptable for monthly batch processing but would be prohibitive for higher-frequency planning cycles. The sequential execution design is a binding architectural constraint of the thesis artefact that would need to be re-evaluated for any real-time or sub-monthly deployment.
+**Case study generalisability.** The single-case embedded study design provides strong internal relevance to the Manifold AI operational context but limits statistical generalisation to other retail AI providers, other product categories, and other national markets. The design principles derived from the evaluation are intended to be theoretically transferable through the DSR generalisation mechanism, but their applicability to contexts with different data characteristics, regulatory environments, or competitive dynamics requires empirical validation in those contexts.

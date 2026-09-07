@@ -1,0 +1,13 @@
+{
+  "id": "3",
+  "subject": "Re-run all SRQ1 results on both horizons",
+  "description": "benchmark, benchmark_tuned, benchmark_cv, stability, calibration, mase, pooled, pooled_perbrand, ridge_pooled, stat_baselines, demand_classes, holiday ablations, appendix tables. All deterministic already (XGB_N_JOBS=1), so mechanical - but slow: tuned ablation ~24 Optuna studies, stability 40. EXPECT H3 TO GET WORSE; if it does not, task 1 did not take effect. Produces the first genuine dual-horizon table.",
+  "activeForm": "Re-running SRQ1 on both horizons",
+  "status": "pending",
+  "blocks": [
+    "4"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}

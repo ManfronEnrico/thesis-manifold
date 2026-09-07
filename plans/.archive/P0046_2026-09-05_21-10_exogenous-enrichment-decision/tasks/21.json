@@ -1,0 +1,11 @@
+{
+  "id": "21",
+  "subject": "Finish stability re-run and evaluate whether its verdict survives",
+  "description": "srq1_benchmark_cv.py is DONE (confirmed complete 00:39: 16 cells, 1601 convergence rows). Only srq1_stability.py remains -- launched 2026-09-07, 40 Optuna studies (5 seeds x 2 models x 4 categories), writes only at the end. If it did not land, re-run it; the script is idempotent.\n\nThis is NOT a refresh. Per F18c, stability's headline claim -- LightGBM and XGBoost are statistically indistinguishable, winner FLIPS in 4/4 categories, 'between-seed spread exceeds between-model difference' -- was computed with thread noise folded into XGBoost's seed spread. Quantifying seed sensitivity is the table's whole purpose, so F18 attacks the conclusion, not just the digits.\n\nCHECK, against prefix_stability_baseline/ (pre-fix XGBoost wmape_std: CSD 0.587, danskvand 1.041, energidrikke 0.791, RTD 0.917):\n  1. Does XGBoost wmape_std narrow relative to LightGBM's? LightGBM is unaffected by F18, so it is the control.\n  2. Do any of the 4 FLIPS verdicts become stable? If so the table needs REWORDING, not renumbering.\n  3. Does 'between-seed spread exceeds between-model difference' still hold?\n\nEither outcome is publishable. Verdict survives -> it now rests on clean evidence. Verdict changes -> a reported model-equivalence claim was partly an artefact of non-deterministic training, a stronger methods contribution than the original. Report whichever occurs; do not prefer one.\n\nDONE 2026-09-07 14:44. VERDICT SURVIVES (F19). All 4 categories still FLIP; XGBoost seed spread did NOT systematically narrow (0.834 -> 0.915 mean std), so thread noise was not a large component -- seed variation genuinely dominates. ONE substantive change: on RTD the between-model gap (3.16pp) now EXCEEDS the seed spread (1.94), so the blanket 'seed spread exceeds model difference' sentence in Ch6 6.6 must be qualified. Four edits specified in task-12 note block P4.",
+  "activeForm": "Finishing the deterministic regenerations",
+  "status": "completed",
+  "blocks": [
+    "12"
+  ],
+  "blockedBy": []
+}

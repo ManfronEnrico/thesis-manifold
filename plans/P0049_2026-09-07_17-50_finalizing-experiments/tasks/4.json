@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Re-verify the SRQ4 harness: 10/10 AND no warnings",
+  "description": "python 04_SRQ4_Scenario_Experiment/scenario_setup/verify_setup.py. Required: 10/10 with NO '!' lines. F21: forecast_tool.py was reading track-record CSVs from the results root instead of tables/, inside try/except, so it served payloads with historical_* fields ABSENT while still reporting READY. Fixed, but re-confirm after any results move. Check the payload really carries historical_wmape.",
+  "activeForm": "Verifying the SRQ4 harness",
+  "status": "pending",
+  "blocks": [
+    "6"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

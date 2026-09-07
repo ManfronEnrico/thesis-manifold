@@ -1,0 +1,13 @@
+{
+  "id": "3",
+  "subject": "Fix the horizon in engineer_features()",
+  "description": "Add a horizon parameter; lags become shift(lag + h - 1), rolling windows shift identically; step_4_engineer_features.py passes it through. One function. Verify by re-running the h1/h3 merge check in START_HERE.md - lag columns must now DIFFER.",
+  "activeForm": "Fixing the horizon in feature engineering",
+  "status": "pending",
+  "blocks": [
+    "4"
+  ],
+  "blockedBy": [
+    "2"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "15",
+  "subject": "Build rolling-origin cross-validation for Ridge",
+  "description": "srq1_ridge_cv.py. Nothing in 02_thesis_modelling used any cross-validation, including srq1_benchmark_cv.py. Training always precedes validation; k-fold is invalid on a time series. Output: findings F14.",
+  "activeForm": "Building rolling-origin CV",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "11"
+  ]
+}

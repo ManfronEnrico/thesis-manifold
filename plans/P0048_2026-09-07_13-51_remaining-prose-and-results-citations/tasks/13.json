@@ -1,0 +1,11 @@
+{
+  "id": "13",
+  "subject": "Rebuild ch4-data-assessment bullets",
+  "description": "Inherited from P0045 task 8. 4 hollow sections, draft -1,707 w. COORDINATE WITH TASK 8 (the ch4 prose pass) - same chapter, two surfaces. Bullets go to sections-drafts/; prose goes to the .docx. Never let prose land in the draft.",
+  "activeForm": "Rebuilding the ch4 draft bullets",
+  "status": "pending",
+  "blocks": [
+    "16"
+  ],
+  "blockedBy": []
+}

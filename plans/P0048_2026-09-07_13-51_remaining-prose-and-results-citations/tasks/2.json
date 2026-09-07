@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Raise the horizon defect with Enrico",
+  "description": "Ask whether engineer_features() was meant to shift the target by the horizon. Wording is in START_HERE.md. Decision gate: the fix invalidates SRQ1 results Enrico produced, so do not apply it unilaterally. Evidence: F1, F2 in findings.md.",
+  "activeForm": "Raising the horizon defect with Enrico",
+  "status": "pending",
+  "blocks": [
+    "3"
+  ],
+  "blockedBy": []
+}

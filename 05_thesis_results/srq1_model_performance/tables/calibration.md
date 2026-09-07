@@ -1,0 +1,26 @@
+# SRQ1 prediction-interval calibration — split conformal (tuned XGBoost, brand×month)
+
+Half-width calibrated on validation residuals (log space); empirical coverage measured on test. Well-calibrated => empirical ≈ nominal.
+
+**Read coverage and width together.** Coverage alone is not a success criterion: an arbitrarily wide interval attains perfect coverage while carrying no decision-relevant information. `Median rel. width` is the interval width as a multiple of the actual value, so 3.0 means the interval spans about three times the quantity being forecast.
+
+| Category | Nominal | Empirical coverage | Median rel. width | n_test |
+|---|---|---|---|---|
+| CSD | 80% | 75.2% | 1.79 | 665 |
+| CSD | 90% | 89.8% | 3.48 | 665 |
+| danskvand | 80% | 73.0% | 3.38 | 174 |
+| danskvand | 90% | 88.5% | 25.03  **<- too wide to act on** | 174 |
+| energidrikke | 80% | 80.8% | 3.13 | 308 |
+| energidrikke | 90% | 92.2% | 7.2  **<- too wide to act on** | 308 |
+| RTD | 80% | 73.9% | 1.48 | 372 |
+| RTD | 90% | 89.2% | 3.1 | 372 |
+
+Coverage near nominal indicates the conformal interval is a usable confidence signal for the agentic layer (SRQ2); systematic over/under-coverage flags residual heteroskedasticity (interval width is global, not per-series).
+
+## What the guarantee does and does not cover
+
+The half-width is the `ceil((n+1)(1-alpha))/n` empirical quantile of the calibration residuals, i.e. Algorithm 2 of Lei et al. (2018), whose distribution-free finite-sample guarantee is **marginal** coverage `P(Y in C(X)) >= 1-alpha` -- an average over cells, NOT a per-brand or per-month promise (Lei et al., 2018, Remark 3).
+
+**That guarantee assumes exchangeability, which monthly brand demand violates.** Barber et al. (2023) show unweighted split conformal can lose coverage materially under temporal drift, and bound the loss by a weighted sum of total-variation distances rather than eliminating it. So the coverage numbers above are an **empirical measurement**, not a theoretical entitlement -- which is exactly why they are measured on a held-out test period instead of assumed. The danskvand row (70.7% against a nominal 80%) is what that violation looks like in practice.
+
+**Width is the binding constraint here, not coverage.** danskvand and energidrikke reach acceptable coverage at 90% only with intervals spanning 9-17x the actual, which no planner can act on. Report those two as a limitation rather than averaging them into a well-calibrated claim.

@@ -1,0 +1,11 @@
+{
+  "id": "20",
+  "subject": "BRIAN: verify the four open items in the unverified-claims register",
+  "description": "VIF 5/10 bands, the Spearman 0.95 cluster threshold, the Lukkeloven 2012 date, and the Store Bededag bill number. None may reach prose unverified.\n\n2026-09-07: briefing pack built -- see task 22, which supersedes this with the concrete procedure. Register now maps register rows 1-5 to brief IDs CV-01..CV-05.",
+  "activeForm": "Verifying the unverified claims",
+  "status": "pending",
+  "blocks": [
+    "22"
+  ],
+  "blockedBy": []
+}

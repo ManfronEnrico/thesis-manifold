@@ -1,0 +1,9 @@
+{
+  "id": "4",
+  "subject": "(NOT TAKEN) Withdraw the enrichment claim and hand prose to P0043",
+  "description": "Fallback if the retrain could not fit before the funded runs, or if the result had been unusable. Superseded by task 18: ship and report.",
+  "activeForm": "Withdrawing the enrichment claim",
+  "status": "cancelled",
+  "blocks": [],
+  "blockedBy": []
+}

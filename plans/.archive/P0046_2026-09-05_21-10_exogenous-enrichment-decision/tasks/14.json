@@ -1,0 +1,11 @@
+{
+  "id": "14",
+  "subject": "Build feature diagnostics: VIF, redundancy clusters, permutation importance",
+  "description": "srq1_feature_diagnostics.py. Fills a real gap: the pipeline had no collinearity check and no feature selection anywhere. Importance measured on validation only. Output: findings F11.",
+  "activeForm": "Building the feature diagnostics",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "11"
+  ]
+}

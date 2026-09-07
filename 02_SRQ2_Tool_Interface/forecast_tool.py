@@ -64,9 +64,17 @@ _root = next((p for p in _here.parents if (p / "PATHS.py").is_file()), None)
 if _root is None:
     raise RuntimeError(f"PATHS.py not found above {_here}")
 sys.path.insert(0, str(_root))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir
+from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir,
+                   get_srq_tables_dir)
 
 MODELS_DIR = THESIS_RESULTS_SRQ1_DIR / "models"
+# Track-record CSVs live in the tier's tables/ subfolder, NOT at the results
+# root. Reading them from the root silently returned nothing -- these lookups
+# are wrapped in try/except, so the tool degraded to a payload with no
+# historical_* accuracy fields instead of failing. That is precisely the
+# evidence scenario C exists to carry, so the failure was invisible AND
+# material (P0047 F21).
+TABLES_DIR = get_srq_tables_dir(1)
 LOG_FILE = Path(__file__).resolve().parent / "forecast_log.jsonl"
 
 CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
@@ -163,7 +171,7 @@ def _track_record(category: str, model_name: str) -> dict:
             ("tuned_metrics.csv", "test_wmape", "test_median"),
         ):
             try:
-                tm = pd.read_csv(THESIS_RESULTS_SRQ1_DIR / fname)
+                tm = pd.read_csv(TABLES_DIR / fname)
             except Exception:
                 continue
             if "tuned_for" in tm.columns:
@@ -189,7 +197,7 @@ def _track_record(category: str, model_name: str) -> dict:
                   "could be read -- historical_* fields will be absent")
         _TRACK["source"] = loaded_from
         try:
-            sb = pd.read_csv(THESIS_RESULTS_SRQ1_DIR / "stat_baselines.csv")
+            sb = pd.read_csv(TABLES_DIR / "stat_baselines.csv")
             for cat, g in sb.groupby("category"):
                 # BOTH baselines are recorded, deliberately (P0040 F56).
                 #
@@ -296,13 +304,22 @@ def _load(category: str):
     """Load the persisted booster + metadata for a category."""
     if category in _CACHE:
         return _CACHE[category]
-    meta_f = MODELS_DIR / f"{category}_metadata.json"
+    # P0046 2026-09-06: models are now one folder per category
+    # (models/{cat}/metadata.json), matching 05_thesis_results/eda/. The flat
+    # models/{cat}_metadata.json layout is still accepted so an older persisted
+    # tree keeps loading rather than failing at serve time.
+    cat_dir = MODELS_DIR / category
+    meta_f = cat_dir / "metadata.json"
     if not meta_f.is_file():
-        raise FileNotFoundError(
-            f"No persisted model for {category}. Run "
-            f"model_training/train_and_persist.py first. Expected {meta_f}")
+        legacy = MODELS_DIR / f"{category}_metadata.json"
+        if legacy.is_file():
+            cat_dir, meta_f = MODELS_DIR, legacy
+        else:
+            raise FileNotFoundError(
+                f"No persisted model for {category}. Run "
+                f"model_training/train_and_persist.py first. Expected {meta_f}")
     meta = json.loads(meta_f.read_text(encoding="utf-8"))
-    f = MODELS_DIR / meta["model_file"]
+    f = cat_dir / meta["model_file"]
     # The serving model is whichever one SRQ1 selected for this category, which
     # is not always XGBoost -- danskvand serves Ridge. Dispatch on the persisted
     # format rather than assuming a booster: assuming one raised

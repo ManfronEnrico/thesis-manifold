@@ -20,7 +20,7 @@ in another.
 This script is the single training entry point. It writes, per category:
 
     04_thesis_results/srq1/models/{cat}_xgboost.json     the fitted booster
-    04_thesis_results/srq1/models/{cat}_metadata.json    everything needed to
+    05_thesis_results/srq1_model_performance/models/{cat}/metadata.json  everything needed to
                                                           serve and to audit it
 
 Serving loads these. Serving never fits.
@@ -287,8 +287,13 @@ def train_category(cat: str, slug: str) -> dict | None:
     peak = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
-    MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    model_file_name = _persist(m_srv, model_name, MODELS_DIR / f"{cat}_model")
+    # P0046 2026-09-06: one subfolder per category, matching 05_thesis_results/eda/.
+    # Was MODELS_DIR / f"{cat}_model" -- a flat dir with the category encoded in the
+    # filename, which does not scale and reads differently from every other results
+    # folder. The category prefix is now the folder, so files are just model/metadata.
+    cat_dir = MODELS_DIR / cat
+    cat_dir.mkdir(parents=True, exist_ok=True)
+    model_file_name = _persist(m_srv, model_name, cat_dir / "model")
 
     meta = {
         "category": cat,
@@ -325,7 +330,7 @@ def train_category(cat: str, slug: str) -> dict | None:
         "train_peak_ram_mb": round(peak / 1e6, 2),
         "trained_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
-    (MODELS_DIR / f"{cat}_metadata.json").write_text(
+    (cat_dir / "metadata.json").write_text(
         json.dumps(meta, indent=2), encoding="utf-8", newline="\n")
 
     print(f"  {cat:14s} {model_name:9s} on {len(trval):5d} rows through {meta['trained_through']}"

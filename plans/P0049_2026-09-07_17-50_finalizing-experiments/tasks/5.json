@@ -1,0 +1,11 @@
+{
+  "id": "5",
+  "subject": "DEC-VENDOR: choose the SRQ4 LLM vendor",
+  "description": "OPEN decision from P0039. ~$7 (Claude) vs ~$4 (GPT) for 50 runs - cost is NOT the deciding factor at this scale. Decide on ecological validity: which vendor better represents the deployment context the thesis argues for. Independent of tasks 1-4; can be decided any time before task 6.",
+  "activeForm": "Deciding the SRQ4 vendor",
+  "status": "pending",
+  "blocks": [
+    "6"
+  ],
+  "blockedBy": []
+}

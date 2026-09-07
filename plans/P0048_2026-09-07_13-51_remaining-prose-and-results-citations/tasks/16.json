@@ -1,0 +1,15 @@
+{
+  "id": "16",
+  "subject": "Verify draft wiring and re-run the hollow-section audit",
+  "description": "Inherited from P0045 task 11. Run utility_scripts/scripts/check_draft_hollow_sections.py; success criterion is 22 -> 0. ALSO check word-count delta, not just hollow count: ch2 showed 0 hollow yet was down 3,036 words. Wire in the 8 orphaned writing-notes (grep -rl returned zero for every one). Do NOT repair the stale figure paths - see INHERITED_CONTEXT.md B.8.",
+  "activeForm": "Verifying wiring and re-auditing hollow sections",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+  ]
+}

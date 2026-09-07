@@ -1,0 +1,11 @@
+{
+  "id": "13",
+  "subject": "Untuned ablation with SHAP, seed and single-feature robustness checks",
+  "description": "srq1_holiday_ablation.py across 4 categories x 3 models; SHAP before/after to test the month-re-encoding objection; 5-seed check on RTD; n_holidays-alone variant. Output: findings F10.",
+  "activeForm": "Running the untuned ablation",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "11"
+  ]
+}

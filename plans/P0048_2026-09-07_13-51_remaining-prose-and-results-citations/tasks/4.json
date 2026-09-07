@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Parameterise the hardcoded _h3 in SRQ1 scripts",
+  "description": "19 scripts under 02_thesis_modelling/model_training/srq1/ hardcode _feature_matrix_h3.parquet inline with no horizon flag. Add a horizon argument so both horizons can be benchmarked. See F2.",
+  "activeForm": "Parameterising the horizon in SRQ1 scripts",
+  "status": "pending",
+  "blocks": [
+    "5"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

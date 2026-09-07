@@ -1,0 +1,9 @@
+{
+  "id": "8",
+  "subject": "Ch1 rewrite on the measured 4 GB bound, then scenarios F/G",
+  "description": "P0044 remainder. The binding figure is the MEASURED 4096 MB Prometheus E2B template, not the assumed 8 GB SME envelope - different budgets. Also carries: refit 2.93s vs re-tune 417s (142x), and a 7-month param-drift result that was inconclusive.",
+  "activeForm": "Rewriting Ch1 and running F/G",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

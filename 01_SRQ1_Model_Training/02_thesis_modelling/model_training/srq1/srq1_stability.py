@@ -62,12 +62,63 @@ from PATHS import THESIS_RESULTS_SRQ1_DIR
 sys.path.insert(0, str(_here.parent))
 from srq1_benchmark_cv import (  # noqa: E402
     CATS, FEATURES, _load, _folds, _make, _space, _wmape, _medmape,
+    # Thread-count determinism control -- imported, not redefined, so the
+    # rationale lives in exactly one place (see srq1_benchmark_cv.py).
+    XGB_N_JOBS,
 )
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-OUT = THESIS_RESULTS_SRQ1_DIR
+class _SRQ1Out:
+    """Routes `OUT / "file.ext"` into figures/, tables/ or models/ by role.
+
+    Added 2026-09-06 (P0046 Phase 3b). The results tier is the tree humans browse
+    to pick thesis artefacts, so every SRQ folder has the same three-way shape.
+    This preserves each existing call site while filing the output correctly, and
+    it resolves READS too, so scripts reading a sibling's output keep working.
+
+    Splitting by role rather than by extension keeps a `.csv` and its rendered
+    `.md` twin together -- they are one artefact in two formats.
+    """
+
+    _MODELS = {"cv_params.json", "pooled_params.json", "tuned_params.json"}
+    _FIGURES = {".png", ".svg", ".pdf"}
+
+    def __init__(self, base):
+        self._base = base
+
+    def _sub(self, name):
+        if name in self._MODELS:
+            return self._base / "models"
+        if Path(name).suffix.lower() in self._FIGURES:
+            return self._base / "figures"
+        return self._base / "tables"
+
+    _PASSTHROUGH = {"figures", "tables", "models"}
+
+    def __truediv__(self, name):
+        # A bare subfolder name is already the destination -- pass it straight
+        # through, or `RES / "figures"` would be filed as if it were a table.
+        if str(name) in self._PASSTHROUGH:
+            d = self._base / str(name)
+            d.mkdir(parents=True, exist_ok=True)
+            return d
+        d = self._sub(str(name))
+        d.mkdir(parents=True, exist_ok=True)
+        return d / str(name)
+
+    def __getattr__(self, attr):
+        return getattr(self._base, attr)
+
+    def __fspath__(self):
+        return str(self._base)
+
+    def __str__(self):
+        return str(self._base)
+
+
+OUT = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
 
 
 def _fit_predict(model, d, feats, folds, seed, trials):
@@ -102,7 +153,7 @@ def _make_seeded(model, params, seed):
         from lightgbm import LGBMRegressor
         return LGBMRegressor(random_state=seed, verbose=-1, **params)
     from xgboost import XGBRegressor
-    return XGBRegressor(random_state=seed, verbosity=0, n_jobs=-1, **params)
+    return XGBRegressor(random_state=seed, verbosity=0, n_jobs=XGB_N_JOBS, **params)
 
 
 def main():

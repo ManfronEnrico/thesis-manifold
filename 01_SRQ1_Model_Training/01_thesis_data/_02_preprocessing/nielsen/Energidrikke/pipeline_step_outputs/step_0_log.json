@@ -38,5 +38,21 @@
     "category": "Energidrikke",
     "elapsed_sec": 0.0,
     "output_rows": 4
+  },
+  {
+    "timestamp": "2026-09-07T14:10:31.750986",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
+  },
+  {
+    "timestamp": "2026-09-07T14:13:04.862517",
+    "step_num": 0,
+    "step_name": "Validate Parquet Cache",
+    "category": "Energidrikke",
+    "elapsed_sec": 0.0,
+    "output_rows": 4
   }
 ]

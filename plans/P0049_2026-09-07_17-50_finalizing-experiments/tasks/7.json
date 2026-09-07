@@ -1,0 +1,11 @@
+{
+  "id": "7",
+  "subject": "Build the E2B template, then run scenarios D/E",
+  "description": "P0040. The template build is REQUIRED, not optional: the base image lacks statsmodels/prophet, so scenario D would be silently handicapped and D->E would measure the missing library rather than the tool. E2B cost measured at ~$0.0001/run (negligible). RU warehouse credentials verified live.",
+  "activeForm": "Building the template and running D/E",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "6"
+  ]
+}

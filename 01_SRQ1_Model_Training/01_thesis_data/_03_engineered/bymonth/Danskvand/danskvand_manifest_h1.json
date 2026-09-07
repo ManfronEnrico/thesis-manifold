@@ -1,12 +1,12 @@
 {
-  "generated_utc": "2026-08-18T20:59:38+00:00",
+  "generated_utc": "2026-09-07T12:13:03+00:00",
   "generated_by": "step_6_save_outputs.py",
   "category": "Danskvand",
   "forecast_horizon": 1,
   "target_col": "sales_units",
   "log_transform_target": true,
-  "contract_version": "1.1",
-  "contract_generated_utc": "2026-08-18T20:01:27+00:00",
+  "contract_version": "1.2",
+  "contract_generated_utc": "2026-09-07T12:13:03+00:00",
   "parameters_applied": {
     "min_periods": 15,
     "lags": [
@@ -34,13 +34,14 @@
   },
   "shape": {
     "rows": 1230,
-    "columns": 33,
+    "columns": 36,
     "brands": 30,
-    "n_features": 23
+    "n_features": 26
   },
   "features": [
     "avg_no_of_items_per_store_reach",
     "avg_number_of_stores_selling_reach",
+    "days_in_month",
     "lag_1",
     "lag_13",
     "lag_2",
@@ -48,6 +49,8 @@
     "lag_4",
     "lag_8",
     "month",
+    "n_holidays",
+    "non_holiday_days",
     "number_of_items_reach",
     "numeric_distribution",
     "numeric_distribution_reach",

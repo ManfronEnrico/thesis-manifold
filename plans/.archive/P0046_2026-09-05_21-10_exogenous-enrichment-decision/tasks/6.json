@@ -1,0 +1,15 @@
+{
+  "id": "6",
+  "subject": "Run the TUNED ablation - these are the thesis numbers",
+  "description": "srq1_holiday_ablation_tuned.py: separate Optuna study per arm per model (tune on val, refit train+val, score test once), plus Ridge with CV-selected alpha. The untuned result confounds feature change with frozen capacity. DONE 2026-09-06: helped in 6/12 (mean -0.75pp) vs 4/12 untuned. Tuning improved the danskvand baseline by ~12pp, which flipped that category from harmful to helpful -- the frozen-capacity confound was real. See findings F16; these supersede F10.",
+  "activeForm": "Running the tuned ablation",
+  "status": "completed",
+  "blocks": [
+    "7",
+    "12"
+  ],
+  "blockedBy": [
+    "13",
+    "15"
+  ]
+}

@@ -79,9 +79,91 @@ from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-OUT = THESIS_RESULTS_SRQ1_DIR
+class _SRQ1Out:
+    """Routes `OUT / "file.ext"` into figures/, tables/ or models/ by role.
+
+    Added 2026-09-06 (P0046 Phase 3b). The results tier is the tree humans browse
+    to pick thesis artefacts, so every SRQ folder has the same three-way shape.
+    This preserves each existing call site while filing the output correctly, and
+    it resolves READS too, so scripts reading a sibling's output keep working.
+
+    Splitting by role rather than by extension keeps a `.csv` and its rendered
+    `.md` twin together -- they are one artefact in two formats.
+    """
+
+    _MODELS = {"cv_params.json", "pooled_params.json", "tuned_params.json"}
+    _FIGURES = {".png", ".svg", ".pdf"}
+
+    def __init__(self, base):
+        self._base = base
+
+    def _sub(self, name):
+        if name in self._MODELS:
+            return self._base / "models"
+        if Path(name).suffix.lower() in self._FIGURES:
+            return self._base / "figures"
+        return self._base / "tables"
+
+    _PASSTHROUGH = {"figures", "tables", "models"}
+
+    def __truediv__(self, name):
+        # A bare subfolder name is already the destination -- pass it straight
+        # through, or `RES / "figures"` would be filed as if it were a table.
+        if str(name) in self._PASSTHROUGH:
+            d = self._base / str(name)
+            d.mkdir(parents=True, exist_ok=True)
+            return d
+        d = self._sub(str(name))
+        d.mkdir(parents=True, exist_ok=True)
+        return d / str(name)
+
+    def __getattr__(self, attr):
+        return getattr(self._base, attr)
+
+    def __fspath__(self):
+        return str(self._base)
+
+    def __str__(self):
+        return str(self._base)
+
+
+OUT = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
 SEED = 42
 
+
+# ---------------------------------------------------------------------------
+# XGB_N_JOBS: reproducibility, not performance. READ BEFORE CHANGING.
+#
+# XGBoost's histogram builder sums gradient statistics per thread and reduces
+# them in completion order. Floating-point addition is not associative, so a
+# different THREAD COUNT gives a different sum, a different split, and a
+# different tree -- with the seed, the data and every hyperparameter identical.
+# `random_state` fixes the subsample/colsample draw; it does NOT fix the order
+# of a parallel reduction.
+#
+# Measured on danskvand brand-month, seed 42, all else held constant
+# (2026-09-06):
+#     n_jobs=1  -> WMAPE 34.648708   (repeatable across runs)
+#     n_jobs=2  -> WMAPE 34.946778
+#     n_jobs=4  -> WMAPE 35.397904
+#     n_jobs=8  -> WMAPE 37.297544   (== n_jobs=-1 on this 8-core machine)
+#
+# A 2.65pp spread from thread count alone. That is larger than most of the
+# holiday-enrichment effects reported in appendix table 94, so with n_jobs=-1
+# a reader on a different machine could not reproduce the sign of a finding.
+# This is what caused the XGBoost-only drift when srq1_benchmark.py was re-run
+# on 2026-09-06 against matrices whose new holiday columns no models read
+# (P0047 F18).
+#
+# Fixed to 1 for every ACCURACY number. The cost is wall-clock on a
+# single fit, which is seconds here and is not a reported quantity.
+#
+# DELIBERATELY NOT APPLIED to srq1_profiling.py: that script measures memory
+# and latency under realistic multi-core execution, where n_jobs=-1 is the
+# thing being measured. It records the core count with its results and says so
+# in its output table.
+# ---------------------------------------------------------------------------
+XGB_N_JOBS = 1
 CATS = {"CSD": "csd", "danskvand": "danskvand",
         "energidrikke": "energidrikke", "RTD": "rtd"}
 
@@ -128,7 +210,7 @@ def _make(model, params):
         from lightgbm import LGBMRegressor
         return LGBMRegressor(random_state=SEED, verbose=-1, **params)
     from xgboost import XGBRegressor
-    return XGBRegressor(random_state=SEED, verbosity=0, n_jobs=-1, **params)
+    return XGBRegressor(random_state=SEED, verbosity=0, n_jobs=XGB_N_JOBS, **params)
 
 
 def _space(trial, model):

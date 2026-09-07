@@ -1,0 +1,177 @@
+{
+  "category": "RTD",
+  "written_at_utc": "2026-09-07T12:13:53+00:00",
+  "runs": [
+    {
+      "horizon": 1,
+      "ok": true,
+      "total_seconds": 21.366,
+      "steps": [
+        {
+          "step": 0,
+          "name": "validate cache",
+          "status": "ok",
+          "seconds": 0.013,
+          "metrics": {
+            "views_required": 4,
+            "views_missing": 0,
+            "views_empty": 0
+          }
+        },
+        {
+          "step": 1,
+          "name": "load and aggregate",
+          "status": "ok",
+          "seconds": 2.287,
+          "metrics": {
+            "rows": 2509,
+            "columns": 31,
+            "brands": 101
+          }
+        },
+        {
+          "step": 2,
+          "name": "descriptive EDA",
+          "status": "ok",
+          "seconds": 15.308,
+          "metrics": {
+            "tables_written": 20,
+            "plots_written": 7,
+            "sections_skipped": 2,
+            "sections_failed": 0
+          }
+        },
+        {
+          "step": 3,
+          "name": "derive contract",
+          "status": "ok",
+          "seconds": 1.853,
+          "metrics": {
+            "lags": 6,
+            "rolling_windows": 2,
+            "min_periods": 15,
+            "log_transform_target": true
+          }
+        },
+        {
+          "step": 4,
+          "name": "engineer features",
+          "status": "ok",
+          "seconds": 1.79,
+          "metrics": {
+            "rows": 2952,
+            "columns": 50,
+            "brands": 72
+          }
+        },
+        {
+          "step": 5,
+          "name": "apply split",
+          "status": "ok",
+          "seconds": 0.036,
+          "metrics": {
+            "rows": 2952,
+            "split_rows": {
+              "train": 2088,
+              "val": 432,
+              "test": 432
+            }
+          }
+        },
+        {
+          "step": 6,
+          "name": "save outputs",
+          "status": "ok",
+          "seconds": 0.078,
+          "metrics": {
+            "rows": 2952,
+            "columns": 52,
+            "brands": 72,
+            "n_features": 33,
+            "n_test_origins": 6,
+            "files": 4
+          }
+        }
+      ]
+    },
+    {
+      "horizon": 3,
+      "ok": true,
+      "total_seconds": 3.927,
+      "steps": [
+        {
+          "step": 0,
+          "name": "validate cache",
+          "status": "skipped",
+          "seconds": 0.0,
+          "detail": "horizon-independent; --skip-shared"
+        },
+        {
+          "step": 1,
+          "name": "load and aggregate",
+          "status": "skipped",
+          "seconds": 0.0,
+          "detail": "horizon-independent; --skip-shared"
+        },
+        {
+          "step": 2,
+          "name": "descriptive EDA",
+          "status": "skipped",
+          "seconds": 0.0,
+          "detail": "horizon-independent; --skip-shared"
+        },
+        {
+          "step": 3,
+          "name": "derive contract",
+          "status": "ok",
+          "seconds": 1.732,
+          "metrics": {
+            "lags": 6,
+            "rolling_windows": 2,
+            "min_periods": 17,
+            "log_transform_target": true
+          }
+        },
+        {
+          "step": 4,
+          "name": "engineer features",
+          "status": "ok",
+          "seconds": 2.084,
+          "metrics": {
+            "rows": 2542,
+            "columns": 50,
+            "brands": 62
+          }
+        },
+        {
+          "step": 5,
+          "name": "apply split",
+          "status": "ok",
+          "seconds": 0.038,
+          "metrics": {
+            "rows": 2542,
+            "split_rows": {
+              "train": 1798,
+              "val": 372,
+              "test": 372
+            }
+          }
+        },
+        {
+          "step": 6,
+          "name": "save outputs",
+          "status": "ok",
+          "seconds": 0.072,
+          "metrics": {
+            "rows": 2542,
+            "columns": 52,
+            "brands": 62,
+            "n_features": 33,
+            "n_test_origins": 4,
+            "files": 4
+          }
+        }
+      ]
+    }
+  ]
+}

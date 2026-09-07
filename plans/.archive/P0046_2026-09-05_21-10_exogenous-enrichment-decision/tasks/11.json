@@ -1,0 +1,11 @@
+{
+  "id": "11",
+  "subject": "Re-run steps 3-6 for 4 categories x 2 horizons",
+  "description": "Regenerate contracts as v1.2 with holiday_enrichment true, and propagate the three features through step 4 (matrix), step 5 (split) and step 6 (the file the benchmark reads). Verified: 8/8 contracts, 8/8 matrices, zero NaN.",
+  "activeForm": "Re-running the preprocessing pipeline",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}

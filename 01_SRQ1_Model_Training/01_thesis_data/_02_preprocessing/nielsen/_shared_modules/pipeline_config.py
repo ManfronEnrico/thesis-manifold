@@ -211,6 +211,42 @@ def get_paths(category: str) -> dict[str, Path]:
 	}
 
 
+def promote_eda_artifacts(category: str) -> tuple[int, int]:
+	"""Copy this category's EDA .md tables and .png plots into the results tier.
+
+	Per DEC-P0046-EDA-SPLIT the .csv step outputs STAY here -- later EDA steps
+	consume them (structural breaks, ADF-per-brand feed data-handling decisions).
+	The .md and .png are generated to be *read*, so they are report material and
+	belong in 05_thesis_results/eda/{category}/ where artefacts are browsed.
+
+	Copy, not move: the pipeline rewrites these on every run, so a move would be
+	undone next run and would strip the step-adjacent context that makes a plot
+	diagnosable. Call at the end of a pipeline run to keep the two in sync --
+	otherwise the promoted copy silently drifts from the pipeline's.
+
+	Returns:
+		(n_tables, n_plots) copied.
+	"""
+	import shutil
+	from PATHS import get_category_eda_results_dir
+
+	paths = get_paths(category)
+	dst = get_category_eda_results_dir(category)
+	(dst / "tables").mkdir(parents=True, exist_ok=True)
+	(dst / "plots").mkdir(parents=True, exist_ok=True)
+
+	n_md = n_png = 0
+	if paths["tables_dir"].is_dir():
+		for f in sorted(paths["tables_dir"].glob("*.md")):
+			shutil.copy2(f, dst / "tables" / f.name)
+			n_md += 1
+	if paths["plots_dir"].is_dir():
+		for f in sorted(paths["plots_dir"].glob("*.png")):
+			shutil.copy2(f, dst / "plots" / f.name)
+			n_png += 1
+	return n_md, n_png
+
+
 def print_target_definition() -> None:
 	"""Echo the ML target contract, as the notebook's config cell did."""
 	print("ML TARGET DEFINITION")

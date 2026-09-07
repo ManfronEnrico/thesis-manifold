@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Size Option C against the P0042 funded-run schedule",
+  "description": "Estimate calendar source, feature build, retrain, re-benchmark and artefact regeneration; check it fits before the ~111 funded runs.",
+  "activeForm": "Sizing Option C",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

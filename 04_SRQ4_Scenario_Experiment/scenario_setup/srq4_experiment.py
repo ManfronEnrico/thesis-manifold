@@ -75,7 +75,7 @@ def _find_repo_root() -> Path:
 
 
 sys.path.insert(0, str(_find_repo_root()))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir
+from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir, SRQ2_DIR
 
 warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[1]
@@ -140,8 +140,11 @@ LEGACY_SCHEMA = "v2-units-no-recommendation"
 # Scenario C's tool comes from the serving interface. Loaded by explicit path
 # because 03_thesis_modelling/ has no __init__.py, so it is not an importable
 # package. Serving loads persisted models; nothing here trains.
-_FT_PATH = (ROOT / "model_serving_interface" / "scenario_c_forecast"
-            / "forecast_tool.py")
+# P0046 2026-09-06: was ROOT/"model_serving_interface"/"scenario_c_forecast",
+# a path removed in the SRQ restructure -- Scenario C would have raised
+# FileNotFoundError at import. The tool now lives in the SRQ2 tier, resolved
+# through PATHS rather than a relative guess.
+_FT_PATH = SRQ2_DIR / "forecast_tool.py"
 if not _FT_PATH.is_file():
     raise FileNotFoundError(
         f"Scenario C's forecast tool is missing: {_FT_PATH}")

@@ -1,0 +1,14 @@
+{
+  "id": "5",
+  "subject": "Regenerate matrices and re-benchmark both horizons",
+  "description": "Regenerate all 8 feature matrices, then re-run SRQ1 (benchmark, tuned, cv, calibration, SHAP, stat baselines, profiling) at H1 and H3. MUST honour XGB_N_JOBS=1 per P0047 LOCKED_STATE.md or the new numbers are no more reproducible than the old. Expect H3 accuracy to worsen - that is the correct result.",
+  "activeForm": "Regenerating matrices and re-benchmarking",
+  "status": "pending",
+  "blocks": [
+    "6",
+    "7"
+  ],
+  "blockedBy": [
+    "4"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "14",
+  "subject": "Fill ch7 and ch8 hollow sections",
+  "description": "Inherited from P0045 task 9. Ch7 2 hollow, ch8 3 hollow. Note P0048 F8: ch8's design subsections (Benchmark design, Metrics, Baselines, Judge protocol, RAM/latency profiling, Failure modes) are unconverted bullets with unfilled placeholders like '[N] SKUs x 28 retailers x [T] weeks', and the weekly framing contradicts the locked brand x month grain.",
+  "activeForm": "Filling ch7 and ch8 hollow sections",
+  "status": "pending",
+  "blocks": [
+    "16"
+  ],
+  "blockedBy": []
+}

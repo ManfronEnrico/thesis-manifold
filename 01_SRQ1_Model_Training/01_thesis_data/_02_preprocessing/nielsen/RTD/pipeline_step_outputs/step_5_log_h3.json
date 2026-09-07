@@ -1,9 +1,9 @@
 {
-  "generated_utc": "2026-08-18T20:01:58+00:00",
+  "generated_utc": "2026-09-07T12:13:53+00:00",
   "generated_by": "step_5_apply_split.py",
   "category": "RTD",
   "forecast_horizon": 3,
-  "contract_version": "1.1",
+  "contract_version": "1.2",
   "cutoffs_applied": {
     "train_end": [
       2025,

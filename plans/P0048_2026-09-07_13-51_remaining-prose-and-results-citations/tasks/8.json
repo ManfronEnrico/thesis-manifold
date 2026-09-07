@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Ch4 complete pass with EDA citations",
+  "description": "Section-by-section verification and prose for s4.1-s4.6, working in the per-category EDA tables and 8 plots that are currently uncited. s4.2 EDA figures are all stale - do this AFTER the re-run so it is done once. Also: Table 10 is captioned 'NO IDEA'; Tables 9 and 12 have typos.",
+  "activeForm": "Completing the chapter 4 pass",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}
