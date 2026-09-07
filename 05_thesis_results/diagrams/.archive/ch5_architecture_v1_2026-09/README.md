@@ -1,4 +1,4 @@
-# `ch5_architecture_v1` — superseded 2026-09-06 by `layered_architecture_v2`
+# `ch5_architecture_v1` — superseded 2026-09-06 by `ch5_layered_architecture_v2`
 
 Hand-drawn SVG with no producer. Its layered framing (substrate → tool interface
 → agentic layer) was sound and is preserved in the replacement; several specific
@@ -13,6 +13,6 @@ claims were not.
 | "≤ 8 GB RAM" | measured envelope is 4096 MB |
 | "Lightweight Python coordinator" | no coordinator object exists; the stages are separate scripts run in sequence |
 
-Replaced by `layered_architecture_v2`, which keeps the three-layer story and
+Replaced by `ch5_layered_architecture_v2`, which keeps the three-layer story and
 reads the ladder, the served model per category, the measured RAM and the
 scenario set from artefacts at render time.

@@ -26,7 +26,7 @@ producing a diagram of a system nobody built. Rebuilt from the code instead.
 
 ## What replaced them
 
-`pipeline_v2`, `model_selection_v2`, `scenarios_v2`, `resource_profile_v2` — three
+`ch4_preprocessing_pipeline_v2`, `ch6_model_selection_v2`, `ch7_scenarios_v2`, `ch6_resource_profile_v2` — three
 sequential stages plus a measured resource chart, matching what the repo does:
 preprocessing (`run_preprocessing.py`, steps 0-6) → independent model fitting and
 persistence → the three-scenario SRQ4 comparison (A plain / B data+code /

@@ -8,20 +8,20 @@
  viewBox="0.00 0.00 1093.00 420.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 415.95)">
 <title>modelling</title>
-<text xml:space="preserve" text-anchor="start" x="8" y="-47.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Model selection. Each candidate is fitted independently on the same data, under two training arms — one model per</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-37.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">product category, and a single pooled model with category as a feature — and is evaluated against statistical</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-26.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">baselines on held&#45;out months. Neither training arm dominates: category&#45;specific training achieves the lower error in 2</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">of 4 categories and pooled training in the remainder, so the choice is made per category rather than in general. The</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-5.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">model with the lowest error in each category is retrained on the full training window and deployed.</text>
+<text xml:space="preserve" text-anchor="middle" x="542.47" y="-47.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Model selection. Each candidate is fitted independently on the same data, under two training arms — one model per</text>
+<text xml:space="preserve" text-anchor="middle" x="542.47" y="-37.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">product category, and a single pooled model with category as a feature — and is evaluated against statistical</text>
+<text xml:space="preserve" text-anchor="middle" x="542.47" y="-26.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">baselines on held&#45;out months. Neither training arm dominates: category&#45;specific training achieves the lower error in 2</text>
+<text xml:space="preserve" text-anchor="middle" x="542.47" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">of 4 categories and pooled training in the remainder, so the choice is made per category rather than in general. The</text>
+<text xml:space="preserve" text-anchor="middle" x="542.47" y="-5.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">model with the lowest error in each category is retrained on the full training window and deployed.</text>
 <g id="clust1" class="cluster">
 <title>cluster_arms</title>
-<polygon fill="#ececec" stroke="#8a8a8a" stroke-width="0.8" points="162.04,-102.95 162.04,-249.95 315.08,-249.95 315.08,-102.95 162.04,-102.95"/>
-<text xml:space="preserve" text-anchor="middle" x="238.56" y="-237.4" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">training arms</text>
+<polygon fill="#878787" stroke="#8a8a8a" stroke-width="0.8" points="162.04,-102.95 162.04,-249.95 315.08,-249.95 315.08,-102.95 162.04,-102.95"/>
+<text xml:space="preserve" text-anchor="middle" x="238.56" y="-237.4" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">training arms</text>
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_lad</title>
-<polygon fill="#ececec" stroke="#8a8a8a" stroke-width="0.8" points="403.83,-164.95 403.83,-403.95 532.87,-403.95 532.87,-164.95 403.83,-164.95"/>
-<text xml:space="preserve" text-anchor="middle" x="468.35" y="-391.4" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">candidate models</text>
+<polygon fill="#878787" stroke="#8a8a8a" stroke-width="0.8" points="403.83,-164.95 403.83,-403.95 532.87,-403.95 532.87,-164.95 403.83,-164.95"/>
+<text xml:space="preserve" text-anchor="middle" x="468.35" y="-391.4" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">candidate models</text>
 </g>
 <!-- matrix -->
 <g id="node1" class="node">

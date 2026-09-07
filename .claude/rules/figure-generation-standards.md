@@ -22,6 +22,10 @@ what the reader sees.
 | Box titles | Bold header row, plain body | [Typography](#typography) |
 | Step numbers | Omit them | [Typography](#typography) |
 | Contrast | Greyscale tiers, nested boxes lighter | [Contrast](#contrast) |
+| Export format | **SVG only**, no PNG twin | [Format](#format) |
+| Caption alignment | Centred under the drawing | [Captions](#captions) |
+| Sibling boxes | Equal width, so peers look like peers | [Layout](#layout) |
+| Aspect ratio | **≤ 3.6**, so it is placeable on A4 | [Layout](#layout) |
 | Background | Transparent | [Contrast](#contrast) |
 | Caption text | Submission-ready; no filenames | [Captions](#captions) |
 | Internal notes | Separated, never in the caption | [Captions](#captions) |
@@ -86,8 +90,9 @@ Use a **greyscale tier system**, so nesting is visible without colour:
 | Element | Fill | Why |
 |---------|------|-----|
 | Page background | `transparent` | the figure sits on whatever the document uses |
-| Cluster / group box | `#ececec` | the container reads as a container |
+| Cluster / group box | `#878787` | mid grey, so near-white children clearly sit *inside* it |
 | Node inside a cluster | `#fafafa` | nested boxes are *lighter* than their parent |
+| Cluster **label** | `#1a1a1a` (ink) | a muted grey title sinks into a `#878787` fill |
 | Standalone node | `#f4f4f4` | between the two |
 | Emphasis (the outcome) | white fill + accent border | draws the eye without shouting |
 
@@ -102,6 +107,10 @@ Set `bgcolor="transparent"` on graphviz graphs and
 
 **Every caption is submission-ready prose.** Assume the reader has the thesis and
 nothing else.
+
+**Centre it.** In graphviz, join wrapped lines with `\n` and set
+`labeljust="c"` — `\l` left-justifies each line, which reads as misaligned
+beneath a centred drawing.
 
 Never put in a caption:
 
@@ -155,3 +164,163 @@ nesting visible in greyscale, does the caption stand alone without the repo?
 - `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` — `REVIEW_SEP`,
   the submission/internal split, and the output-block allocation
 - `.claude/rules/writing-surface-authority.md` — where prose lives
+
+
+## Format
+
+**SVG only. Do not emit a PNG twin.**
+
+SVG is vector, so it stays sharp at any size in print, and Word accepts it on
+paste directly. A PNG beside it is strictly the lower-quality copy of the same
+figure, and a second file that must be kept in step is a second file that can
+fall out of step.
+
+```python
+g.render(OUT / stem, format="svg", cleanup=True)   # and nothing else
+fig.savefig(OUT / f"{stem}.svg", transparent=True)  # matplotlib likewise
+```
+
+When dropping PNG output, **grep the drafts for `.png` references first** — an
+image link pointing at a file you just stopped generating is a broken figure that
+renders as nothing, and nothing is exactly what nobody notices.
+
+## Equal-width siblings
+
+Graphviz sizes each node to its own text. A row of sibling boxes whose titles
+differ in length therefore comes out visibly uneven, which reads as a hierarchy
+that is not there. Where boxes are **peers**, fix their width:
+
+```python
+row.node(nid, _box(title, ...), width="2.6", fixedsize="false")
+```
+
+`fixedsize="false"` keeps the width as a *floor*, so a box whose content genuinely
+exceeds it still grows rather than clipping its text.
+
+
+## Aspect ratio and A4
+
+Measure every figure against the page it will be printed on. A4 with 2.5 cm
+margins gives a portrait text block of 160×247 mm and a landscape one of
+247×160 mm (**ratio 1.54**).
+
+| Ratio | Verdict |
+|-------|---------|
+| ≤ 1.54 | fits either orientation at full size |
+| 1.54–3.6 | landscape page, or in-text at reduced size |
+| > 3.6 | **too wide to place** — fold it into rows |
+
+To fold a long flow, pin one node from each phase into a shared column:
+
+```python
+with g.subgraph() as col:
+    col.attr(rank="same")
+    col.node("agg")        # first stage of phase 1
+    col.node("contract")   # first stage of phase 2
+```
+
+This took one figure from 4.4 to 3.25 without changing its content.
+
+**Do not ship a portrait and a landscape variant of the same figure.** SVG is
+vector and scales to either page without loss, so a second file buys nothing
+unless the *layout* genuinely differs — and it is then a second artefact to keep
+in step. Hold the ratio instead, and treat a variant as a per-figure exception.
+
+## Ordering nodes in graphviz
+
+Every ordering control is a **rank** control underneath, and two of the three
+common attempts fail *silently*:
+
+| Attempt | What actually happens |
+|---|---|
+| invisible `A→B→C` edges | forces new ranks — under `rankdir=LR` this puts each node in its own column |
+| `rank="same"` subgraph naming clustered nodes | **re-parents them out of the cluster**; the cluster box disappears with no error |
+| `ordering="out"` on a node | ignored — it is a *graph* attribute |
+
+What works: set `rank="same"` **on the cluster**, then add invisible edges
+between its members. Inside an already-same-rank group an invisible edge no
+longer re-ranks; it only constrains order.
+
+When verifying, remember **SVG y-coordinates are negative-upward** — sorting
+descending lists a stack bottom-to-top.
+
+## Alignment — the three levers
+
+Layout problems usually turn out to be one of three things, and it helps to know
+which lever moves which:
+
+| Lever | Controls | Reach for it when |
+|---|---|---|
+| `rankdir` (`TB` / `LR`) | the overall flow direction | the diagram should be a stack rather than a row, or vice versa |
+| `rank="same"` | which items share a row (or column) | two things should sit level with each other |
+| `width=` on nodes | how wide a box is drawn | siblings look mismatched |
+
+### If the order matters, do not use a cluster
+
+A cluster lets the layout engine choose the order of its members, and it *will*
+reorder them to shorten edges. Seven ways of constraining that were measured and
+all failed — invisible chains, per-cluster `rank`, `ordering`, edge `weight`,
+`constraint="false"`, `newrank` — because every one is a hint to a heuristic.
+
+Render the group as **one node whose label is a table of rows** instead. The
+order becomes text in a list and cannot be renegotiated:
+
+```python
+g.node("llm", _stack("evaluation scenarios", [
+    ("A — Plain LLM", "no access to firm data"),
+    ("B — LLM + data & code", "the firm's history, analysed in a sandbox"),
+]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+```
+
+The cost is that members are no longer edge endpoints — the group is.
+
+| Use a cluster when | Use a stack when |
+|---|---|
+| membership is the point, order is not | the sequence *is* the content |
+| members need their own edges | the group is addressed as a whole |
+
+**Never span two clusters with `rank="same"`.** It re-parents the members and
+graphviz warns `"<node> was already in a rankset, deleted from cluster <name>"`
+— the visible symptom is a box drawn *outside* the container it belongs to.
+Read those warnings; they name the node and the cluster.
+
+### Containers inherit their widest member
+
+A cluster is drawn to fit its contents. Two stacked clusters whose members have
+different label lengths therefore get **different widths**, and mismatched edges
+on stacked boxes read as a mistake even when nothing else is wrong.
+
+Fix it on the members, not the container — there is no width attribute on a
+cluster that does what you want:
+
+```python
+SW = {"width": "2.9", "fixedsize": "false"}
+c.node("A", _box(...), **SW)      # every member of every cluster
+```
+
+Measured: two scenario clusters at 178pt and 214pt became 228pt and 228pt, with
+identical left and right edges.
+
+The same fix handles a row of siblings that should look like peers, and an
+emphasis box that sits off-centre because the row above it is uneven.
+
+### Text inside a box: left-aligned items, centred block
+
+A list of comparable items reads better flush-left — centred lines start at a
+different x each, so the eye has no column to run down. But a left-aligned block
+pushed against the box edge looks unbalanced.
+
+Both are achievable at once: nest the list in its own single-cell table. The
+inner table centres as a unit; its rows stay flush-left.
+
+```python
+def _bullets(title, *body, size=9):
+    items = "".join(f'<TR><TD ALIGN="LEFT">&#8226; {_esc(l)}</TD></TR>'
+                    for l in body if l)
+    inner = f'<TABLE BORDER="0" CELLSPACING="0">{items}</TABLE>'
+    return (f'<<TABLE BORDER="0" CELLSPACING="0">'
+            f'<TR><TD ALIGN="CENTER"><B>{_esc(title)}</B></TD></TR>'
+            f'<TR><TD ALIGN="CENTER">{inner}</TD></TR></TABLE>>')
+```
+
+Use bullets for **enumerations of comparable things**; keep prose centred.

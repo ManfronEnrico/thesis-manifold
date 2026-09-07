@@ -8,9 +8,9 @@
  viewBox="0.00 0.00 729.00 164.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 160.4)">
 <title>pipeline</title>
-<text xml:space="preserve" text-anchor="start" x="8" y="-26.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Preprocessing, from raw scanner extract to modelling matrix. Counts shown are for the largest product category. The</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">data contract is measured from the panel rather than assumed, so the parameters governing feature construction follow</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-5.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">from the data in hand.</text>
+<text xml:space="preserve" text-anchor="middle" x="360.72" y="-26.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Preprocessing, from raw scanner extract to modelling matrix. Counts shown are for the largest product category. The</text>
+<text xml:space="preserve" text-anchor="middle" x="360.72" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">data contract is measured from the panel rather than assumed, so the parameters governing feature construction follow</text>
+<text xml:space="preserve" text-anchor="middle" x="360.72" y="-5.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">from the data in hand.</text>
 <!-- raw -->
 <g id="node1" class="node">
 <title>raw</title>

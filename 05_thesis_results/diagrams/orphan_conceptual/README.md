@@ -42,7 +42,7 @@ three hand-drawn diagrams now have a generated replacement in the parent
 |---|---|---|
 | `ch1_research_questions_tree` | `ch1_research_questions_tree_v2` | showed a superseded RQ set |
 | `ch2_gap_diagram` | `ch2_gap_diagram_v2` | stated the envelope as **8 GB**; it is 4096 MB |
-| `ch5_architecture_v1` | `layered_architecture_v2` | claimed a five-model substrate, human-in-the-loop checkpoints and a LangGraph deployment — none of which exist |
+| `ch5_architecture_v1` | `ch5_layered_architecture_v2` | claimed a five-model substrate, human-in-the-loop checkpoints and a LangGraph deployment — none of which exist |
 
 **These files are kept as the record of what was drawn before, and must not be
 pasted into the thesis.** Every one of them contains at least one claim the code

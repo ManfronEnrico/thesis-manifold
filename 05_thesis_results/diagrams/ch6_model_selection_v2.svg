@@ -8,12 +8,12 @@
  viewBox="0.00 0.00 515.00 335.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 331)">
 <title>model_selection</title>
-<text xml:space="preserve" text-anchor="start" x="8" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Model selection. Each candidate is fitted independently on identical data and profiled for peak memory as well as</text>
-<text xml:space="preserve" text-anchor="start" x="8" y="-5.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">accuracy; the model achieving the lowest error in each category is the one deployed.</text>
+<text xml:space="preserve" text-anchor="middle" x="253.56" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Model selection. Each candidate is fitted independently on identical data and profiled for peak memory as well as</text>
+<text xml:space="preserve" text-anchor="middle" x="253.56" y="-5.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">accuracy; the model achieving the lowest error in each category is the one deployed.</text>
 <g id="clust1" class="cluster">
 <title>cluster_bench</title>
-<polygon fill="#ececec" stroke="#8a8a8a" stroke-width="0.8" points="153.04,-47 153.04,-319 282.08,-319 282.08,-47 153.04,-47"/>
-<text xml:space="preserve" text-anchor="middle" x="217.56" y="-306.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">candidate models</text>
+<polygon fill="#878787" stroke="#8a8a8a" stroke-width="0.8" points="153.04,-47 153.04,-319 282.08,-319 282.08,-47 153.04,-47"/>
+<text xml:space="preserve" text-anchor="middle" x="217.56" y="-306.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">candidate models</text>
 </g>
 <!-- feat -->
 <g id="node1" class="node">

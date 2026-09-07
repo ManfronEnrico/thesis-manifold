@@ -34,6 +34,7 @@ column width. Structure carries the meaning, not decoration.
 """
 import csv
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -70,7 +71,7 @@ RAM_BUDGET_MB = 4096.0
 INK = "#1a1a1a"       # body text
 MUTE = "#5a5a5a"      # captions, edge labels
 LINE = "#8a8a8a"      # borders
-CLUSTER = "#ececec"   # group container -- darkest
+CLUSTER = "#878787"   # group container -- darkest, a mid grey
 FILL = "#f4f4f4"      # standalone node
 NEST = "#fafafa"      # node inside a cluster -- lightest
 ACCENT = "#1f5c8b"    # the one accent, used only on the figure's subject
@@ -90,6 +91,60 @@ def _box(title: str, *body: str, size: int = 9) -> str:
     return (f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">'
             f'<TR><TD ALIGN="CENTER"><B>{_esc(title)}</B></TD></TR>'
             f'{rows}</TABLE>>')
+
+
+def _bullets(title: str, *body: str, size: int = 9) -> str:
+    """Like _box, but the body is a bulleted list: text left-aligned, block centred.
+
+    A list of parallel items reads better flush-left -- centred lines give every
+    item a different starting x, so the eye has no column to run down. But a
+    left-aligned block hard against the box edge looks unbalanced, so the list is
+    nested in its own single-cell table, which centres as a unit while its
+    contents stay flush. Left text, centred block; both, rather than either.
+
+    Use for enumerations of comparable things. Prose stays with _box().
+    """
+    items = "".join(
+        f'<TR><TD ALIGN="LEFT"><FONT POINT-SIZE="{size}">'
+        f'&#8226; {_esc(l)}</FONT></TD></TR>' for l in body if l)
+    inner = (f'<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
+             f'{items}</TABLE>')
+    return (f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">'
+            f'<TR><TD ALIGN="CENTER"><B>{_esc(title)}</B></TD></TR>'
+            f'<TR><TD ALIGN="CENTER">{inner}</TD></TR></TABLE>>')
+
+
+def _stack(title: str, rows: list, size: int = 9, dashed: bool = False) -> str:
+    """A titled group whose members are rows of one label, in the order given.
+
+    Use instead of a cluster when the ORDER of the members matters. A cluster
+    lets graphviz's layout engine choose the order of its members, and it will
+    reorder them to shorten edges -- seven successive attempts to constrain that
+    (invisible chains, per-cluster rank, ordering, edge weights, newrank,
+    constraint=false) each produced a different wrong order, because every one
+    of those knobs is a *hint* to a heuristic.
+
+    Rendering the members as rows of a single node removes the heuristic from
+    the question: the order is text in a table, so it cannot be rearranged.
+    The cost is that members are no longer individually addressable as edge
+    endpoints -- the group as a whole is. Worth it when the sequence IS the
+    content, as with a lettered ladder.
+
+    `rows` is a list of (heading, detail) pairs; detail may be "".
+    """
+    border = "1" if not dashed else "1"
+    cells = []
+    for head, detail in rows:
+        d = (f'<BR/><FONT POINT-SIZE="{size - 1}">{_esc(detail)}</FONT>'
+             if detail else "")
+        cells.append(
+            f'<TR><TD ALIGN="LEFT" BGCOLOR="{NEST}" BORDER="{border}" '
+            f'COLOR="{LINE}" CELLPADDING="5">'
+            f'<B>{_esc(head)}</B>{d}</TD></TR>')
+    return (f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="4" CELLPADDING="0">'
+            f'<TR><TD ALIGN="CENTER"><FONT POINT-SIZE="{size}">'
+            f'{_esc(title)}</FONT></TD></TR>'
+            f'{"".join(cells)}</TABLE>>')
 
 
 def _esc(s: str) -> str:
@@ -163,7 +218,13 @@ def _cluster(g, cid: str, label: str):
 
 
 def _cluster_attrs(c, label: str) -> None:
-    c.attr(label=label, fontname=FONT, fontsize="9", fontcolor=MUTE,
+    """A group container: mid grey, so the near-white boxes inside read as nested.
+
+    The label is INK rather than MUTE: at this fill value a muted grey title
+    sinks into the background it sits on. Any outer/inner box pair uses this
+    same pairing -- CLUSTER behind, NEST in front, black label.
+    """
+    c.attr(label=label, fontname=FONT, fontsize="9", fontcolor=INK,
            color=LINE, style="filled", fillcolor=CLUSTER, penwidth="0.8",
            margin="10")
     c.attr("node", fillcolor=NEST)
@@ -180,15 +241,40 @@ def _caption(g, text: str) -> None:
     figure to fit it -- a long caption silently stretches the drawing above it.
     """
     import textwrap
-    body = "\\l".join(textwrap.wrap(" ".join(text.split()), width=118)) + "\\l"
+    # "\\n" centres each line; "\\l" would left-justify it. The caption sits under
+    # a centred drawing, so a left-flush block reads as misaligned against it.
+    body = "\\n".join(textwrap.wrap(" ".join(text.split()), width=118)) + "\\n"
     g.attr(label=f"\n{body}", fontsize="9", fontcolor=MUTE, labelloc="b",
-           labeljust="l")
+           labeljust="c")
+
+
+_CH_PREFIX = re.compile(r"^ch\d+_")
+
+
+def _check_stem(stem: str) -> str:
+    """Every diagram filename declares the chapter it belongs to.
+
+    The diagrams folder is flat and mixes chapters, so the prefix is the only
+    thing that says where a figure is cited. Enforced rather than remembered:
+    five figures had drifted unprefixed before this check existed, and the name
+    alone did not say which chapter each served.
+
+    Raises rather than warns -- a figure written without a chapter is a figure
+    nobody can place, and it is cheaper to fail here than to sort it out later.
+    """
+    if not _CH_PREFIX.match(stem):
+        raise ValueError(
+            f"diagram stem {stem!r} has no chapter prefix. "
+            f"Name it 'ch<N>_<slug>' so the file says where it is cited.")
+    return stem
 
 
 def _save(g: graphviz.Digraph, stem: str) -> None:
+    _check_stem(stem)
+    # SVG only. It is vector, so it stays sharp at any size, and Word takes it
+    # on paste directly -- the PNG twin was strictly the lower-quality copy.
     g.render(OUT / stem, format="svg", cleanup=True)
-    g.render(OUT / stem, format="png", cleanup=True)
-    print(f"  {stem}.svg + .png")
+    print(f"  {stem}.svg")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -218,7 +304,7 @@ def fig_pipeline():
                 "contract is measured from the panel rather than assumed, so "
                 "the parameters governing feature construction follow from the "
                 "data in hand.")
-    _save(g, "pipeline_v2")
+    _save(g, "ch4_preprocessing_pipeline_v2")
 
 
 def fig_model_selection():
@@ -251,36 +337,69 @@ def fig_model_selection():
                 "identical data and profiled for peak memory as well as "
                 "accuracy; the model achieving the lowest error in each "
                 "category is the one deployed.")
-    _save(g, "model_selection_v2")
+    _save(g, "ch6_model_selection_v2")
 
 
 def fig_scenarios():
-    """The three evaluation scenarios, as an information ladder."""
+    """The evaluation scenarios, as an information ladder.
+
+    The two groups are drawn with _stack() rather than as graphviz clusters:
+    the order A..E is the content of this figure, and a cluster hands that
+    order to a layout heuristic. See _stack's docstring for what was tried.
+    """
     g = _g("scenarios", rankdir="LR")
+    g.attr(ranksep="0.6", nodesep="0.35")
+
     g.node("q", _box("Forecasting question", "brand, category and horizon"))
+    g.node("model", _box("Deployed model", "one per product category"))
 
-    with g.subgraph(name="cluster_s") as c:
-        _cluster_attrs(c, "evaluation scenarios")
-        c.node("A", _box("Language model alone", "no access to firm data"))
-        c.node("B", _box("With data and code execution",
-                         "the firm's history, analysed", "in a sandbox"))
-        c.node("C", _box("With a dedicated model",
-                         "the forecast tool"))
-    g.node("model", _box("Deployed model"))
+    # Lettered as the repository names them, so figure, run logs and results
+    # tables share one vocabulary. D and E are dashed: the harness runs A, B
+    # and C only, and D/E await access to a proprietary engine. Drawing five
+    # identical rungs would assert five sets of results exist.
+    g.node("llm", _stack("evaluation scenarios — LLM", [
+        ("A — Plain LLM", "no access to firm data"),
+        ("B — LLM + data & code", "the firm's history, analysed in a sandbox"),
+        ("C — LLM + dedicated model", "the forecast tool"),
+    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+
+    g.node("prom", _stack("planned — Prometheus production engine", [
+        ("D — Prometheus + data & code", "the engine as shipped"),
+        ("E — Prometheus + dedicated model", "the forecast tool, ported"),
+    ], dashed=True), shape="box", style="filled,dashed", fillcolor=CLUSTER,
+        color=LINE)
+
     g.node("log", _box("Recorded outcomes",
-                       "responses and measurements retained"))
+                       "responses and measurements retained"),
+           color=ACCENT, penwidth="1.5", fillcolor="white")
 
-    for sc in ("A", "B", "C"):
-        g.edge("q", sc)
-        g.edge(sc, "log", style="dashed")
-    g.edge("model", "C", style="dashed", label="supplies")
+    # Left to right: what is asked, what answers it, what is recorded. The
+    # trained model joins from the left because it is an input, not an outcome.
+    g.edge("q", "llm")
+    g.edge("q", "prom", style="dotted")
+    g.edge("model", "llm", style="dashed", label="supplies C")
+    g.edge("model", "prom", style="dotted", label="supplies E")
+    g.edge("llm", "log", style="dashed")
+    g.edge("prom", "log", style="dotted")
+
+    # Inputs share the leftmost column; the two groups stack in the middle.
+    with g.subgraph() as col:
+        col.attr(rank="same")
+        col.node("q")
+        col.node("model")
+    with g.subgraph() as col:
+        col.attr(rank="same")
+        col.node("llm")
+        col.node("prom")
 
     _caption(g, "The evaluation scenarios, ordered as an information ladder. "
-                "Each rung adds one capability: moving from the first to the "
-                "second measures what access to the firm's own data buys, and "
-                "moving from the second to the third measures what the "
-                "dedicated forecasting model adds beyond it.")
-    _save(g, "scenarios_v2")
+                "Each rung adds one capability: A to B measures what access to "
+                "the firm's own data buys, and B to C measures what the "
+                "dedicated forecasting model adds beyond it. Scenarios D and E "
+                "repeat that final comparison inside the production engine and "
+                "are shown dashed: they are specified but not executed here, "
+                "since the engine is proprietary.")
+    _save(g, "ch7_scenarios_v2")
 
 
 def fig_resource_profile():
@@ -304,10 +423,12 @@ def fig_resource_profile():
     ax.set_axisbelow(True)
     fig.tight_layout()
     # Transparent, matching the graphviz figures: the page supplies the ground.
-    fig.savefig(OUT / "resource_profile_v2.png", dpi=200, transparent=True)
-    fig.savefig(OUT / "resource_profile_v2.svg", transparent=True)
+    # Saved directly rather than through _save(), so the chapter-prefix check is
+    # called explicitly here -- otherwise this one figure would escape it.
+    stem = _check_stem("ch6_resource_profile_v2")
+    fig.savefig(OUT / f"{stem}.svg", transparent=True)
     plt.close(fig)
-    print("  resource_profile_v2.svg + .png")
+    print(f"  {stem}.svg")
 
 
 def fig_layered_architecture():
@@ -375,7 +496,7 @@ def fig_layered_architecture():
                 f"deployment envelope of {RAM_BUDGET_MB/1024:.0f} GB is spent on "
                 f"data and models alone — the most demanding model observed "
                 f"requires {largest:.0f} MB to fit.")
-    _save(g, "layered_architecture_v2")
+    _save(g, "ch5_layered_architecture_v2")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -427,13 +548,18 @@ def fig_research_questions_tree():
          ("reliability, uncertainty", "and traceability")),
         ("s3", "Integration readiness", "Chapters 5, 7 and 9",
          ("capabilities a production", "system requires")),
-        ("s4", "Dedicated models versus code execution", "Chapter 8",
+        ("s4", "Dedicated models vs code execution", "Chapter 8",
          ("correctness, consistency and", "replicability at justified cost")),
     ]
+    # Equal width, fixed. Left to itself graphviz sizes each box to its own text,
+    # and the fourth title is twice the length of the first -- so a row of four
+    # siblings came out visibly uneven, reading as a hierarchy that isn't there.
+    # These are four peers and should look like it.
     with g.subgraph() as row:
         row.attr(rank="same")
         for nid, title, chap, body in srqs:
-            row.node(nid, _box(title, chap, "", *body))
+            row.node(nid, _box(title, chap, "", *body),
+                     width="2.6", fixedsize="false")
     for nid, *_ in srqs:
         g.edge("mrq", nid)
 
@@ -471,42 +597,48 @@ def fig_data_pipeline():
 
     g.node("src", _box("Scanner panel", "monthly brand records"), shape="cylinder")
 
-    # Grouped into two phases. Eight free-standing stages in one row rendered
-    # past 2000px (ratio 6.2), too wide to stay readable at page width; the
-    # clusters shorten the row while keeping the flow horizontal.
-    with g.subgraph(name="cluster_prep") as c:
-        _cluster_attrs(c, "panel construction")
-        c.node("access", _box("Access", "validated extract"))
-        c.node("agg", _box("Aggregation", "brand by month",
-                           f"{tot_in:,} rows, {br_in} brands"))
-        c.node("eda", _box("Exploratory analysis",
-                           f"{n_sec} analyses"))
+    # The two phases are _stack() groups, not clusters. As clusters they were
+    # laid out side by side (ratio 4.4, too wide for a page), and forcing them
+    # to stack with rank="same" re-parented their members -- graphviz warned
+    # "agg was already in a rankset, deleted from cluster data_pipeline" and
+    # drew the contract box outside the phase it belongs to. A stack cannot
+    # leak a member, because the members are rows of one label.
+    g.node("prep", _stack("panel construction", [
+        ("Access", "validated extract"),
+        ("Aggregation", f"brand by month — {tot_in:,} rows, {br_in} brands"),
+        ("Exploratory analysis", f"{n_sec} analyses"),
+    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE, width="3.1", fixedsize="false")
 
-    with g.subgraph(name="cluster_build") as c:
-        _cluster_attrs(c, "matrix construction")
-        c.node("contract", _box("Data contract",
-                                "lag depth, series length,", "split dates"))
-        c.node("enrich", _box("Enrichment", "holidays, promotions"))
-        c.node("feat", _box("Feature construction",
-                            "completed month grid,", "lags and rolling windows"))
+    g.node("build", _stack("matrix construction", [
+        ("Data contract", "lag depth, series length, split dates"),
+        ("Enrichment", "holidays, promotions"),
+        ("Feature construction", "completed month grid, lags and rolling windows"),
+    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE, width="3.1", fixedsize="false")
 
     g.node("matrix", _box("Modelling matrices",
                           f"{tot_out:,} rows, {br_out} brands",
                           f"{len(logs)} categories"),
-           color=ACCENT, penwidth="1.5", fillcolor="white")
+           color=ACCENT, penwidth="1.5", fillcolor="white", width="1.95", fixedsize="false")
 
-    with g.subgraph(name="cluster_use") as c:
-        _cluster_attrs(c, "training arms")
-        c.node("percat", _box("Category-specific"))
-        c.node("pooled", _box("Pooled", "category as a feature"))
+    g.node("arms", _stack("training arms", [
+        ("Category-specific", ""),
+        ("Pooled", "category as a feature"),
+    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
 
-    for a, b in [("src", "access"), ("access", "agg"), ("agg", "contract"),
-                 ("contract", "enrich"), ("enrich", "feat"), ("feat", "matrix")]:
-        g.edge(a, b)
-    g.edge("agg", "eda", style="dashed")
-    g.edge("eda", "contract", style="dashed", label="informs")
-    g.edge("matrix", "percat")
-    g.edge("matrix", "pooled")
+    # Source on the left, outputs on the right, the two phases stacked between.
+    g.edge("src", "prep")
+    g.edge("prep", "build", label="informs")
+    g.edge("build", "matrix")
+    g.edge("matrix", "arms")
+
+    with g.subgraph() as col:
+        col.attr(rank="same")
+        col.node("prep")
+        col.node("build")
+    with g.subgraph() as col:
+        col.attr(rank="same")
+        col.node("matrix")
+        col.node("arms")
 
     _caption(g, "Construction of the modelling data set. Raw scanner records are "
                 "validated and aggregated to a brand-by-month panel, explored to "
@@ -592,11 +724,14 @@ def fig_eda_pipeline():
         for gid, title, nums in groups:
             members = [m for n in nums if n in secs for m in secs[n]]
             if members:
-                c.node(gid, _box(title, *members))
+                # Bulleted: these are lists of comparable analyses, so the
+                # items read down a common left edge instead of each line
+                # starting at its own centred position.
+                c.node(gid, _bullets(title, *members))
         grouped = {n for _g2, _t, nums in groups for n in nums}
         if (stray := sorted(set(secs) - grouped)):
-            c.node("gx", _box("Further analyses",
-                              *[m for n in stray for m in secs[n]]))
+            c.node("gx", _bullets("Further analyses",
+                                  *[m for n in stray for m in secs[n]]))
 
     for gid, _t, nums in groups:
         if any(n in secs for n in nums):
@@ -607,7 +742,7 @@ def fig_eda_pipeline():
     n_tab = len(list(tdir.glob("step_2_*.md")))
     g.node("out", _box("Documented findings",
                        f"{n_tab} tables, {len(plots)} figures"),
-           color=ACCENT, penwidth="1.5", fillcolor="white")
+           color=ACCENT, penwidth="1.5", fillcolor="white", width="2.0", fixedsize="false")
     g.node("contract", _box("Measured data contract",
                             "peak months, minimum series length,",
                             "target transformation"))
@@ -731,8 +866,15 @@ def fig_tool_interface():
     g = _g("tool_interface", rankdir="LR")
     g.attr(ranksep="0.55", nodesep="0.3")
 
+    # The question originates with a person, not with the agent. The agent's work
+    # at this end is recognising that a demand question is a forecasting task and
+    # resolving it into the arguments the tool accepts -- omitting that step made
+    # the agent look like the asker rather than the interpreter.
+    g.node("user", _box("Decision maker", "asks a demand question",
+                        "in natural language"))
     g.node("caller", _box("Agentic decision-support system",
-                          "poses a demand question"))
+                          "recognises a forecasting task and",
+                          "resolves it into tool arguments"))
     g.node("call", _box("Request", "product category, brand,",
                         "forecast horizon"))
 
@@ -757,6 +899,7 @@ def fig_tool_interface():
            color=ACCENT, penwidth="1.5", fillcolor="white")
     g.node("log", _box("Audit record", "every call retained"))
 
+    g.edge("user", "caller")
     g.edge("caller", "call")
     g.edge("call", "load")
     g.edge("load", "feat")
@@ -769,16 +912,19 @@ def fig_tool_interface():
     # row this ran ~1770px and the return edge had to travel the full width.
     with g.subgraph() as r:
         r.attr(rank="same")
-        for n in ("caller", "call"):
+        for n in ("user", "caller", "call"):
             r.node(n)
     with g.subgraph() as r:
         r.attr(rank="same")
         for n in ("resp", "log"):
             r.node(n)
 
-    _caption(g, "The structured forecast interface. The agent supplies only an "
-                "identifier and a horizon; feature construction remains on the "
-                "server, so the language model never handles feature vectors. "
+    _caption(g, "The structured forecast interface. A demand question is put in "
+                "natural language; the agent recognises it as a forecasting "
+                "task and resolves it into the arguments the tool accepts. It "
+                "supplies only an identifier and a horizon; feature "
+                "construction remains on the server, so the language model "
+                "never handles feature vectors. "
                 "What returns is not a bare number but a forecast carrying its "
                 "uncertainty, a confidence tier, and the provenance needed to "
                 "trace it — which model produced it, through what training "
@@ -807,11 +953,15 @@ def fig_gap_diagram():
          ("demonstrated hybrid architectures",),
          ("real-time industrial settings,", "not resource-constrained firms")),
     ]
+    # Equal width, as in the research-question tree: sized to their own text the
+    # four strands come out uneven, and because the gap box is centred on their
+    # combined span it then sits visibly off-centre in the figure.
     with g.subgraph() as row:
         row.attr(rank="same")
         for nid, title, has, lacks in strands:
             row.node(nid, _box(title, *has, "", *[f"but {l}" if i == 0 else l
-                                                  for i, l in enumerate(lacks)]))
+                                                  for i, l in enumerate(lacks)]),
+                     width="2.6", fixedsize="false")
 
     g.node("gap", _box(
         "The gap",
