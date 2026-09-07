@@ -106,7 +106,9 @@ graph-engine/
 
 # Thesis snapshots: the .docx copies are large binaries git cannot diff.
 # The extracted .md files ARE tracked -- they are the diffable record.
-05_thesis_writing/docx-exported-snapshots/*/thesis_full.docx
+# Path was 05_thesis_writing/ before the tier renumber; the stale prefix
+# silently matched nothing, so 3 copies were tracked before this was caught.
+06_thesis_writing/docx-exported-snapshots/*/thesis_full.docx
 
 # Trained models: regenerable artefacts, not source.
 # `train_and_persist.py` rebuilds every one in ~30s from the feature matrices
@@ -120,3 +122,8 @@ graph-engine/
 # provenance the thesis needs.
 04_thesis_results/srq1/models/*_model.json
 04_thesis_results/srq1/models/*_model.joblib
+
+# Run-local marker written by run_both_horizons.py --resume. Records when the
+# current suite run began, so a stage counts as done only if its artefact is
+# newer. Machine state, not a deliverable.
+.run_both_horizons.stamp

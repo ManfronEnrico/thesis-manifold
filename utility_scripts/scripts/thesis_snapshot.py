@@ -138,6 +138,129 @@ FALLBACK_HEADING_STYLES = {"Heading1": 1, "Heading2": 2, "Heading3": 3,
 _NO_OUTLINE = 9
 
 
+def _numbering_scheme(z: zipfile.ZipFile,
+                     levels: dict[str, int]) -> dict[str, tuple[str, int, str]]:
+    """Map each styleId to the (numId, ilvl, lvlText) Word numbers it with.
+
+    The .docx stores NO number in the heading text. "4.1" is rendered live by
+    Word from word/numbering.xml, which is exactly why the numbering renumbers
+    itself when a chapter is inserted -- and exactly why a text extractor gets
+    the bare title. The number has to be recomputed the way Word computes it.
+
+    Two filters, both necessary:
+
+    1. The style must carry a numPr. This leaves the built-in Heading1-9
+       (Abstract, Reference List, Appendix, the Tables of Figures and Tables)
+       and the custom H2/H3/H4/H5-NoTOC styles unnumbered -- correct, and what
+       a name-based rule would have got wrong.
+    2. The style must BE a heading (`levels`). ListParagraph is Word's generic
+       list style and carries a style-level numId, but 236 of its 247
+       paragraphs here are plain bullets that never joined a numbered list.
+       Numbering off the style alone stamped a running counter onto them and
+       turned the Abstract's bullet skeleton into "3." .. "18." (2026-09-07).
+
+    The numId is carried because it identifies the SEQUENCE. Figure captions,
+    table captions and chapter headings are all ilvl=0 but belong to different
+    numIds, so they must count independently.
+
+    Returns {styleId: (numId, ilvl, lvlText)}, e.g. {"H2-Chapter": ("16", 1, "%1.%2")}.
+    """
+    try:
+        styles = ET.fromstring(z.read("word/styles.xml"))
+        numbering = ET.fromstring(z.read("word/numbering.xml"))
+    except (KeyError, ET.ParseError):
+        return {}
+
+    # numId -> abstractNumId. The indirection exists so several lists can share
+    # one definition; it is not optional to follow it.
+    concrete: dict[str, str] = {}
+    for num in numbering.iter(f"{W}num"):
+        nid = num.get(f"{W}numId")
+        ab = num.find(f"{W}abstractNumId")
+        if nid and ab is not None and ab.get(f"{W}val"):
+            concrete[nid] = ab.get(f"{W}val")
+
+    # abstractNumId -> {ilvl: lvlText}
+    abstract: dict[str, dict[int, str]] = {}
+    for an in numbering.iter(f"{W}abstractNum"):
+        aid = an.get(f"{W}abstractNumId")
+        if not aid:
+            continue
+        lvls: dict[int, str] = {}
+        for lvl in an.findall(f"{W}lvl"):
+            ilvl = lvl.get(f"{W}ilvl")
+            fmt = lvl.find(f"{W}numFmt")
+            txt = lvl.find(f"{W}lvlText")
+            if ilvl is None or txt is None:
+                continue
+            # numFmt="none" is a level that renders nothing. Keeping it would
+            # print the literal placeholder text ("1.1.1.1") as if it were a
+            # real number.
+            if fmt is not None and fmt.get(f"{W}val") == "none":
+                continue
+            lvls[int(ilvl)] = txt.get(f"{W}val") or ""
+        abstract[aid] = lvls
+
+    out: dict[str, tuple[int, str]] = {}
+    for st in styles.iter(f"{W}style"):
+        sid = st.get(f"{W}styleId")
+        pr = st.find(f"{W}pPr")
+        npr = pr.find(f"{W}numPr") if pr is not None else None
+        # Headings only -- see filter 2 above.
+        if not sid or npr is None or levels.get(sid) is None:
+            continue
+        nid_el = npr.find(f"{W}numId")
+        ilvl_el = npr.find(f"{W}ilvl")
+        if nid_el is None or not nid_el.get(f"{W}val"):
+            continue
+        # A style with numPr but no ilvl is level 0 -- Word's default.
+        ilvl = int(ilvl_el.get(f"{W}val")) if (
+            ilvl_el is not None and (ilvl_el.get(f"{W}val") or "").isdigit()) else 0
+        nid = nid_el.get(f"{W}val")
+        lvls = abstract.get(concrete.get(nid, ""), {})
+        if ilvl in lvls:
+            out[sid] = (nid, ilvl, lvls[ilvl])
+    return out
+
+
+class _Numberer:
+    """Reproduces Word's heading counters over a single document walk.
+
+    Word holds one counter per level: seeing a level-N heading increments N and
+    resets every level deeper than N. Substituting those counters into the
+    level's lvlText ("%1.%2") gives the string Word draws on screen.
+
+    Verified against this document's own TOC, which caches Word's answers:
+    all 88 numbered entries matched exactly.
+
+    Counters are kept PER numId, because each numId is its own sequence.
+    Figure1-H1, H1-Tables and H1-Chapter are all ilvl=0; sharing one counter
+    made every figure caption advance the chapter number, yielding
+    "Chapter 19 | Introduction" (caught on first run, 2026-09-07).
+    """
+
+    def __init__(self, scheme: dict[str, tuple[str, int, str]]):
+        self.scheme = scheme
+        self.counters: dict[str, dict[int, int]] = {}
+
+    def prefix(self, style: str) -> str:
+        """The rendered number for a paragraph in `style`, or "" if unnumbered."""
+        got = self.scheme.get(style)
+        if got is None:
+            return ""
+        num_id, ilvl, template = got
+        ctr = self.counters.setdefault(num_id, {})
+        ctr[ilvl] = ctr.get(ilvl, 0) + 1
+        # A heading resets everything below it: 4.9 -> 5 makes the next
+        # sub-heading 5.1, not 5.10.
+        for deeper in [k for k in ctr if k > ilvl]:
+            del ctr[deeper]
+        text = template
+        for i in range(9):
+            text = text.replace(f"%{i + 1}", str(ctr.get(i, 0)))
+        return text.strip()
+
+
 def _heading_levels(z: zipfile.ZipFile) -> dict[str, int]:
     """Map every styleId in the document to a heading level (1-9), or absent.
 
@@ -490,6 +613,8 @@ def read_docx(path: Path) -> dict:
     # Levels come from the document's own style definitions, so custom styles
     # (H1-Chapter, or anything invented later) are picked up without a code edit.
     levels = _heading_levels(z)
+    # Heading numbers are recomputed, not read: the .docx stores none.
+    numberer = _Numberer(_numbering_scheme(z, levels))
     styles_used: dict[str, int] = {}
     doc = ET.fromstring(z.read("word/document.xml"))
     body = doc.find(f"{W}body")
@@ -587,6 +712,16 @@ def read_docx(path: Path) -> dict:
         st = _style(para)
         text = _text(para).strip()
         lvl = levels.get(st) if st else None
+        # Word draws the number; the stored text has none. Recompute it so the
+        # markdown reads "## 4.1 Overview" like the document does, and so a
+        # prose anchor can cite an unambiguous section number.
+        #
+        # The counter must advance for EVERY numbered paragraph in document
+        # order, including ones with no text, or the sequence silently drifts.
+        # It is therefore called before the `text` guard below.
+        number = numberer.prefix(st) if st else ""
+        if number and text:
+            text = f"{number} {text}"
         # Headings are bold by style definition (Heading1, H2-Chapter, ...), so
         # emphasis inside one would render "## **Title**" -- 13 heading runs in
         # this document carry an explicit <w:b> that would do exactly that.
@@ -622,20 +757,40 @@ def read_docx(path: Path) -> dict:
     # with the row/column structure lost (seen 2026-09-05). Tables are handled
     # as a unit here, in document order so comment ranges stay correct.
     hpath = ""
-    for child in body:
-        if child.tag == f"{W}p":
-            _handle_para(child)
-        elif child.tag == f"{W}tbl":
-            _scan_ranges(child, hpath)          # anchors first, in order
-            md = _render_table(child, hpath)
-            if md:
-                n_tables[0] += 1
-                paragraphs.append({"text": md, "style": "__table__",
-                                   "heading_path": hpath})
-                if current is not None:
-                    current["paras"].append(md)
-                    current["blocks"].append({"lvl": None, "text": md,
-                                              "md": md})
+
+    def _walk(container) -> None:
+        """Dispatch a container's children, descending only into w:sdt.
+
+        A structured document tag (content control) is how Word wraps an
+        automatic Table of Contents. It is neither a w:p nor a w:tbl, so the
+        loop below stepped straight over it -- taking all 91 TOC entries with
+        it, which is why table-of-contents.md exported as a bare heading.
+
+        This descends into that ONE container type deliberately. It is not a
+        general recursion: iterating all paragraphs recurses into tables, which
+        is what flattened 28 tables into loose cell values (2026-09-05).
+        """
+        for child in container:
+            if child.tag == f"{W}p":
+                _handle_para(child)
+            elif child.tag == f"{W}tbl":
+                _handle_table(child)
+            elif child.tag in (f"{W}sdt", f"{W}sdtContent"):
+                _walk(child)
+
+    def _handle_table(child) -> None:
+        _scan_ranges(child, hpath)          # anchors first, in order
+        md = _render_table(child, hpath)
+        if md:
+            n_tables[0] += 1
+            paragraphs.append({"text": md, "style": "__table__",
+                               "heading_path": hpath})
+            if current is not None:
+                current["paras"].append(md)
+                current["blocks"].append({"lvl": None, "text": md,
+                                          "md": md})
+
+    _walk(body)
 
     for cid, parts in anchored.items():
         comments[cid]["anchor"] = _tidy_anchor("".join(parts))

@@ -1784,3 +1784,103 @@ reported performance. It belongs to the experiment work, not to this plan. See P
 - P0045 — draft bullet reconstruction; F5 there records the ch6 stale-numbers problem
   that this corpus's 45 ch6 VERIFY stamps are independently asking about
 - P0046 — the experiment-side half of argument 3
+
+---
+
+## F48 — Word stores no heading numbers; they must be recomputed from `numbering.xml`
+
+**2026-09-07.** The export produced `## Overview and Data Strategy` where the document
+reads `4.1 Overview and Data Strategy`. Nothing was lost in extraction: **the number is
+not in the file.** Word renders it live from `word/numbering.xml`, which is exactly what
+makes it dynamic — insert a chapter and everything renumbers.
+
+The recipe is fully recoverable. Style → `numId` → `abstractNum` → per-`ilvl` `lvlText`:
+
+| style | numId | ilvl | lvlText |
+|---|---|---|---|
+| `H1-Chapter` | 16 | 0 | `Chapter %1 \|` |
+| `H2-Chapter` | 16 | 1 | `%1.%2` |
+| `H3-Chapter` | 16 | 2 | `%1.%2.%3` |
+
+Word keeps one counter per level: a level-N heading increments N and clears everything
+deeper. `_Numberer` reproduces that in one document walk.
+
+**Verified rather than assumed.** The document's own TOC caches Word's answers, so all
+138 computed headings were diffed against the 88 Word had numbered: **zero mismatches**.
+That check is repeatable and is the reason this shipped without a tripwire.
+
+## F49 — Two counter bugs, both of which produced plausible-looking output
+
+Neither raised an error; both were caught by comparison, not by reading the code.
+
+**1. One counter shared across sequences → `Chapter 19 | Introduction`.**
+`Figure1-H1` (numId 20), `H1-Tables` (17) and `H1-Chapter` (16) are all `ilvl=0`. With a
+single `{ilvl: count}` dict every figure caption advanced the chapter number. Counters
+must be keyed **per numId** — each numId is an independent sequence.
+
+**2. Numbering off the style alone → the Abstract's bullets became `3.`–`18.`**
+`ListParagraph` carries a style-level `numId`, but **236 of its 247** paragraphs never
+joined a numbered list (only 11 carry their own `w:numPr`). The fix is the stated scope:
+number **heading styles only**, tested via the resolved `levels` map.
+
+Found by diffing per-chapter word counts against the previous snapshot. Exactly two
+chapters moved: the TOC (+765, intended) and the Abstract (**+16, wrong**). Sixteen words
+in a 31k-word document is not visible by eye — **the diff is the detector, not review.**
+
+## F50 — The Table of Contents was never empty; it sits inside a `w:sdt`
+
+`table-of-contents.md` exported as a bare heading. All 91 entries were present in
+`document.xml` the whole time: Word wraps an automatic TOC in a structured document tag
+(content control), and the body walk — which iterates **direct children** of `w:body` —
+matched neither `w:p` nor `w:tbl` and stepped over the container whole.
+
+That non-recursion is deliberate (it is what stopped 28 tables being flattened into loose
+cell values, F31). The fix adds `w:sdt`/`w:sdtContent` as **one** descend-into case, not
+a general recursion. TOC: 4 → 769 words.
+
+Useful property: TOC entries carry Word's own resolved numbers, which is what made F48
+verifiable.
+
+## F51 — Numbering follows the document, so the built-in/custom style swap needed no code change
+
+Brian swapped chapter headings onto the **built-in** `Heading1/2/3` (only built-ins can be
+Word cross-reference targets — his `INTERNALREFERENCES` tag depends on it) and moved front
+matter to a custom `NoChapter-Heading1`.
+
+**Simulated before he committed to it**, by rewriting `styles.xml`/`document.xml` and
+running the real exporter. Two results:
+
+- **Step 1 alone breaks silently.** With numbering on `Heading1` and front matter still
+  on `Heading1`, the export gives `Chapter 1 | Table of Contents` … `Chapter 5 |
+  Introduction`. No error, all counts correct, every number wrong. Today "is numbered" and
+  "is a real chapter" are the same question *only because* the custom styles happen to
+  carry the numbering; the swap separates them and the second step restores the
+  distinction.
+- **Both steps together reproduce the pre-swap output exactly.**
+
+Post-swap diff of all 165 headings: **one difference** — `10.7 Placement options (confirm
+with supervisor)`, a built-in `Heading2` inside the AI Use Declaration, numbered as though
+it belonged to Ch10. Predicted from the simulation, then found in the real export, then
+fixed by Brian (165 → 164 headings, −2 words).
+
+**Because the exporter reads numbering from the document rather than from style names, a
+restyle needs no code edit.** The 2026-09-05 breakage (F-series, `H1-Chapter`) happened
+because levels were keyed on names; this session confirms the fix generalises.
+
+## F52 — Internal links export cleanly; `InternalLinkChar` is colour-only
+
+Ch4 now carries **174 `w:hyperlink` anchors**, **9 `REF` fields** and **20 runs** styled
+`InternalLinkChar`. All export as readable cached text (`Section 4.2`, `Chapter 6`) —
+greppable, and usable as prose anchors.
+
+`InternalLinkChar` sets **colour only** (`#215E99`), no bold or italic, so `_text()`
+emits no markdown markers. **If it were ever restyled italic it would render as
+emphasis** and be indistinguishable from a quotation — the same class of problem
+`TERM_STYLES` exists to solve.
+
+One document-side artefact, not an export bug: `delimitations of Introduction  Chapter
+1.4` is two adjacent REF fields (heading *text*, then *number*) with "Chapter " typed
+between them, and is the only double-space of its kind in ch4.
+
+Caveat worth carrying: **REF text is cached.** A snapshot taken after inserting links but
+before Word refreshes fields captures stale text. `Ctrl+A`, `F9`, save.

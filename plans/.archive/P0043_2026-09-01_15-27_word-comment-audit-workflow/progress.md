@@ -722,3 +722,55 @@ P0046.
 Arrived at "ch6 first" and "bare tags are the norm" independently of F39/F40, which were
 written in the parallel session and not visible at the time. Treated as corroboration;
 only the non-overlapping half was appended.
+
+---
+
+## 2026-09-07 — Heading numbering, TOC recovery, style swap, internal links
+
+Worked **after** this plan was archived into `.archive/` during the account-switch
+consolidation. Recorded here because it continues P0043's exporter, which no active plan
+owns. See F48–F52.
+
+### Delivered
+
+- **Heading numbers in the markdown.** `# Chapter 4 | Data Assessment`, `## 4.1 …`,
+  `### 4.1.1 …`. Recomputed from `numbering.xml` (F48), verified against Word's own
+  cached TOC numbers: 138 headings, **zero mismatches**.
+- **Table of Contents recovered** — 4 → 769 words. It was never empty (F50).
+- **Section filenames inherit the numbers**, e.g.
+  `01-4-1-overview-and-data-strategy` — directly citable as anchors.
+- **Survived Brian's heading-style swap with no code change** (F51).
+
+### Tried and rejected
+
+- **A tripwire failing the export on a hand-typed number.** Proposed, and Brian declined:
+  a broken heading is visible in Word's Navigation Pane. Correct call — the guard would
+  have duplicated a check the author already performs.
+- **`Chapter 4 |` shortened to `4 |`.** Offered; Brian chose faithful to the template.
+- **Numbering every style carrying a `numPr`.** Looked right, silently numbered 236 plain
+  bullets (F49).
+
+### Near-misses
+
+- **`Chapter 19 | Introduction`** — shared counters across numIds. Visible on the first
+  run, so it cost minutes.
+- **The Abstract's `3.`–`18.`** — cost was 16 words in 31k and was found only by the
+  per-chapter word-count diff. **The lesson is the method, not the bug:** diff every
+  chapter's word count against the previous snapshot after any parser change.
+- **The style swap** — simulated first, which predicted both the silent half-swap failure
+  and the exact stray heading (`10.7 Placement options`) before either happened.
+
+### Verified this session
+
+`thesis_snapshot.py` parses; `PATHS.py` runs; **no missing `*_DIR` constants**; a full
+export re-run reproduces the numbering and the TOC. The verification snapshot was deleted
+rather than kept, to avoid a sixth near-identical copy.
+
+### Open / not mine to close
+
+- **`NoChapter-Heading2`/`-Heading3` siblings.** Brian created `NoChapter-Heading1` for
+  level-1 front matter; a built-in H2/H3 in the front or back matter will still be
+  numbered into the wrong chapter. One instance was found and fixed; a Navigation Pane
+  sweep would confirm there are no others.
+- **The claim ledger** (P0043 tasks 23–34) remains unbuilt. Threading shipped; the ledger
+  did not.
