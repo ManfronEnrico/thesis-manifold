@@ -116,8 +116,18 @@ generators renamed to say what they emit; `requirements.txt` completed.
       4 SRQ1 figures, 149 EDA artefacts, each with its producer
 - [ ] Decide per artefact: in-text, appendix, or neither
 - [ ] **Then** audit the draft's existing figure references against it
-- [ ] Decide the 18 `analysis/figures*` on regenerability, not on citation —
-      they are Enrico's archived notebooks and have **no live producer**
+- [ ] **The 18 `analysis/figures*`** (F17) — decide per file on regenerability,
+      not on citation. Archived notebooks with hardcoded
+      `/Users/enricomanfron/Desktop/…` paths: blockers are edits, not rewrites.
+      **RETIRE archives the image too** — a stale image beside a retired producer
+      is the trap that started this whole effort
+- [ ] **SRQ2's two surviving files** (F16) — `synthesis.csv` +
+      `synthesis_summary.md` have no live producer but are cited by Ch7 §7.2.
+      Either restore `srq2_synthesis.py` (deterministic, free) to a live location,
+      or withdraw those numbers. **Undecided — needs Brian**
+- [ ] Confirm nothing in `diagrams/.archive/` has leaked back into use (F15) —
+      all three archives are do-not-paste, the RAM one because its numbers are
+      fabricated
 
 ### Phase 6 — manifest + invariant checks — `pending`
 
@@ -162,9 +172,14 @@ generators renamed to say what they emit; `requirements.txt` completed.
    used. 2 occurrences, abstract only — Ch3/Ch4 are clean. Note at
    `06_thesis_writing/writing-notes/indeks-danmark-claim-must-be-corrected.md`.
 4. **Ch8 §8.3 / Table 21** comes out with the retired LLM judge.
-5. **P-ID collision**: `P0046_..._exogenous-enrichment-decision/` declares
-   `pid: P0047` in its frontmatter but sits in a `P0046_` folder. Rename the
-   folder when convenient.
+5. ~~**P-ID collision**~~ — resolved 2026-09-07. Both `P0046_*` folders are now
+   in `.archive/`, so the collision affects no active plan. Noted in
+   `PLANS_INDEX.md`; the archived folder names are left as they are.
+6. **SRQ2's two files** (F16): `synthesis.csv` and `synthesis_summary.md` are
+   cited by Ch7 §7.2 but no live script produces them. Restore
+   `srq2_synthesis.py` — deterministic and free to re-run — or withdraw the
+   §7.2 numbers. A cited table whose producer is archived cannot be defended if
+   an examiner asks how it was computed.
 
 ## Errors worth not repeating
 
@@ -174,4 +189,6 @@ generators renamed to say what they emit; `requirements.txt` completed.
 | Generated Python through a shell heredoc | `\n` inside the generated string collapsed to a real newline, twice; a repair heuristic then mangled 7 good lines. Recovered with `git checkout --`. **Use the Edit tool for code containing escapes** |
 | A move repointed producers but not consumers | Half the appendix vanished into "(skip ...absent)" notices with exit 0. Grep for *readers* of any path that moves |
 | `rank="same"` to force figure rows | Fights the layout: produced a column and a staircase. Let graphviz assign ranks |
+| Graphviz not on PATH in a fresh shell | `winget` installed `dot.exe` to `C:\Program Files\Graphviz\bin` without adding it. Prepend it before running the diagram generator. Not a code defect |
+| A heredoc turned `\b` into a backspace inside a plan file | A Windows path written into a Python string inside a heredoc. Python warned (`SyntaxWarning: invalid escape sequence`) and the control char landed in the `.md`, where Edit could then not match the line. The warning is the tell |
 | Plugin hook flags `focus_detail` frontmatter | False positive — the field is required by `workflow-planning-with-files.md`. Do not strip it |

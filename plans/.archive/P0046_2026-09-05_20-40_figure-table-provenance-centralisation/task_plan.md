@@ -10,7 +10,7 @@ outcome_summary: "Superseded by P0050. Delivered: PATHS.py rebuilt for the SRQ t
 # P0046 — Figure, Table & Graph Provenance and Centralisation
 
 > **⚠ SUPERSEDED 2026-09-07 by
-> [P0050](../P0050_2026-09-07_18-40_figure-table-generation-and-provenance/START_HERE.md).**
+> [P0050](../../P0050_2026-09-07_18-40_figure-table-generation-and-provenance/START_HERE.md).**
 > Its findings were consolidated and rewritten there; this plan is kept as the
 > record of how the work was done, not as a live task list. Do not resume here.
 

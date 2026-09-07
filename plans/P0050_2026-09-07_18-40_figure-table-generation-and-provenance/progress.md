@@ -8,7 +8,7 @@ updated: 2026-09-07 18:40:00
 
 ## Session log
 
-### 2026-09-05 → 09-07 (carried over from P0046)
+### 2026-09-05 → 09-07 (carried over from P0046, now archived)
 
 Traced every figure and table to a producer; rebuilt `PATHS.py` for the SRQ
 tiers; moved the root anchor off `CLAUDE.md`; archived stale artefacts with
@@ -19,6 +19,22 @@ was never built (F1).
 Added `run_manifest.json` and per-step content metrics to the preprocessing
 pipeline, and made the appendix consume both. Clean-slate re-run: 4 categories ×
 2 horizons, 8 runs, all passing.
+
+**Two live bugs were fixed as side effects of the path work**, both worth knowing
+about because they sat in code other plans also touch:
+
+- **Scenario C could not start.** `srq4_experiment.py` loaded its forecast tool
+  from `model_serving_interface/scenario_c_forecast/`, a directory the
+  restructure removed — it would have raised `FileNotFoundError` at import.
+  Now `SRQ2_DIR / "forecast_tool.py"`, and it fails with a message naming the
+  missing file rather than a traceback. Verified still in place 2026-09-07
+  (`srq4_experiment.py:147`).
+- **`fig1_model_ladder` rendered empty** under a title asserting a result the
+  data contradicted (a grain-tag mismatch selected zero rows). The chart now
+  raises if the filter is empty, and the title is derived from the data.
+
+Also: `requirements.txt` was missing `graphviz`, `matplotlib` and `statsmodels`,
+so a fresh clone could reproduce **no figure at all** (F4).
 
 ### 2026-09-07 — chapter figures and the style pass
 

@@ -224,6 +224,86 @@ SVGs for filenames, step numbers and plan IDs returns **zero** hits.
 
 ---
 
+# Live state carried forward from P0046
+
+P0046 is archived. F15-F18 below are the parts of it that describe **things still
+on disk**, as opposed to lessons already generalised in F1-F14.
+
+## F15 — Three quarantined archives, and why each is quarantined
+
+`05_thesis_results/diagrams/.archive/` holds three directories, each with a
+README. **None of their contents may be pasted into the thesis**, and the reason
+differs in each case:
+
+| Archive | Holds | Why it is not usable |
+|---------|-------|----------------------|
+| `fabricated_ram_budget_2026-09/` | `ram_budget_v1.{svg,png}` + its source function | Seven **invented** MB values (P0040 F5). One is "Indeks raw load, 970 MB" — a dataset dropped the same day as never used. The figure charts memory consumed by data the thesis does not touch |
+| `fictional_architecture_2026-09/` | 5 diagrams + the old generator | Depicted LangGraph orchestration, a coordinator and named agents — see F1 |
+| `ch5_architecture_v1_2026-09/` | the hand-drawn Ch5 figure | Claimed a five-model substrate, approval checkpoints and an 8 GB envelope |
+
+**The RAM one is the near-miss worth remembering.** Installing graphviz to
+"unblock the figures" would, unguarded, have shipped a fabricated figure straight
+into the results tier on the first successful run in months. The plan had
+recorded the risk in advance; that recording is what made the guard happen.
+
+The guard itself is now moot in the best way: the 2026-09-06 generator rebuild
+replaced the whole file, so `fig4_ram_budget()` **no longer exists** rather than
+sitting commented out. Real measurements are in
+`appendix/02_substrate_resource_profile`, `04_sandbox_resource_profile` and
+`srq1_model_performance/tables/sandbox_profiling.csv` — the resource figure now
+reads those.
+
+## F16 — SRQ2 holds two files with no live producer
+
+`05_thesis_results/srq2_structured_tool_interface/` contains exactly
+`synthesis.csv` and `synthesis_summary.md`. **No live script writes them**; the
+producers (`srq2_synthesis.py`, `srq2_agent.py`) sit in
+`02_thesis_modelling/.archive/superseded_scripts_2026-08/`.
+
+The judge artefacts that used to sit beside them are retired: Brian's decision,
+stated directly — *"we decided against a judge; just because it is in the current
+thesis doc doesn't mean it will be removed"* — and independently corroborated by
+his own review comments 381/383/384 on Ch8 §8.3 (`VERIFY`, `OUTDATED`,
+`INCORRECT`).
+
+**A correction worth keeping**, because the reasoning error is repeatable: I had
+first recommended RESTORING the judge producers, on the grounds that Table 21
+cites them. That inferred a requirement from the *draft* rather than from the
+design decision — the same inversion as F2. A chapter citing something is
+evidence it was once intended, not evidence it must survive.
+
+**Open**: the two surviving files are cited by Ch7 §7.2. Either restore
+`srq2_synthesis.py` (deterministic, free to re-run) to a live SRQ2 location, or
+withdraw the §7.2 numbers. Not decided.
+
+## F17 — Enrico's 18 notebook figures, still unresolved
+
+`06_thesis_writing/analysis/figures/` (11) and `figures_agentic/` (7). They trace
+to archived notebooks that hardcode `/Users/enricomanfron/Desktop/…`, so they are
+**archived, not broken** — the blockers are path edits, not rewrites.
+
+Decide per file on **regenerability**, not on whether something currently cites
+them (F2). And apply the pairing rule: **RETIRE archives the image too.** A stale
+image left beside a retired producer is exactly the trap that produced the very
+first finding of this whole effort — a figure still sitting in the results tier
+whose generating code had been deleted a month earlier.
+
+## F18 — Two more environment traps
+
+Neither is a code defect; both cost time.
+
+**Graphviz is not on PATH.** `winget install Graphviz.Graphviz` put `dot.exe` at
+`C:\Program Files\Graphviz\bin` without adding it, so the generator raises
+`ExecutableNotFound` in a fresh shell. Prepend it.
+
+**A shell heredoc turned `\b` into a backspace inside a plan file.** Writing a
+Windows path into a Python string inside a heredoc; Python warned
+(`SyntaxWarning: invalid escape sequence`) and the control character landed in
+the `.md`, where the Edit tool then could not match the line. The warning is the
+tell — avoid backslash paths in generated strings.
+
+---
+
 ## Inherited blocker — not this plan's to fix
 
 **The forecast horizon is never applied to feature construction.**
