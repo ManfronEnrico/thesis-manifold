@@ -36,35 +36,44 @@ LightGBM, old margin 0.43 pp) and **3 of 12 holiday-ablation signs**.
 > Numbers: `../.archive/P0046_2026-09-05_21-10_exogenous-enrichment-decision/LOCKED_STATE.md`
 > Detail: same folder, `findings.md` F18–F20.
 
-### (b) …but they are H1 mislabelled as H3 — this is NOT solved
+### (b) The H1-mislabelled-as-H3 defect — FIXED 2026-09-07
 
-`engineer_features()` **never receives the horizon**. `--horizon` is threaded through
-parameter derivation, contracts and filenames, but lags are `shift(lag)` at both
-horizons. Verified independently: on CSD, `lag_1`, `lag_3` and `lag_13` are **identical**
-between the h1 and h3 matrices. Only `rolling_mean_4` differs, in 33 of 4,370 rows — a
-`min_periods` warm-up artefact.
+It was **three** defects in three layers, not the one P0048 reported. See
+`findings.md` F23 for the full record.
 
-**Both matrices are the same one-month-ahead task.** Published results come from the
-`_h3` file, so the thesis reports one-month accuracy while describing three-month.
+| Layer | Was | Now |
+|---|---|---|
+| Features | `engineer_features()` ignored the horizon; h1 and h3 matrices byte-identical in every lag | required `horizon` arg; every past-derived feature shifts by an extra `h − 1` |
+| Scoring | `srq4_experiment.py` scored `test.iloc[0]` = cutoff+1, whatever matrix it read | `HORIZON = 3`, scores `test.iloc[HORIZON − 1]` |
+| Serving | `forecast_tool` called with no month → defaulted to the first test month | scored month passed explicitly; payload carries `months_ahead` |
 
-**This is a validity problem, not a reproducibility one, and it is the more serious.**
+**Layer 2 was the dangerous one.** Fixing only the features would have produced
+correct-looking matrices, a passing pipeline, and the same wrong number.
 
-**Brian's decision** (from P0048): implement both horizons and benchmark both, including
-SRQ4 at 3 months. Ground truth exists — 7 held-out months with actuals. **Expect H3 to
-get worse after the fix**; if it doesn't, the fix didn't work.
+Verified: all 8 matrices rebuilt; `h3.lag_1 == h1.lag_3` exactly (the offset is precise,
+not merely different); **H=1 byte-identical to the old definition**, so nothing published
+at H=1 changes; the leakage assert now requires the gap to *equal* the horizon and fires
+on a forged 1-month gap; `verify_setup.py` **10/10, no warnings**.
+
+**Still expected: H3 accuracy should worsen once models are retrained.** The models on
+disk are still H=1-trained.
 
 ---
 
 ## 2. Do these in this order
 
-| # | Do | Why it is in this position |
+| # | Do | State |
 |---|---|---|
-| **1** | **Decide + implement the horizon fix** | Everything downstream inherits the label. At horizon *h*: lags become `shift(lag + h − 1)`, rolling windows shift with them. |
-| **2** | **Re-run SRQ1 for both horizons** | No clean H1 results exist as such — current numbers are H1 in substance, filed as h3. |
-| **3** | **Re-verify the SRQ4 harness** | `verify_setup.py` must pass 10/10 **with no `!` warnings** — see §3. |
-| **4** | **Then P0042's ~111 funded runs (~$40)** | Running these before step 1 bakes the mislabel into the scenario results. |
+| ~~1~~ | ~~Horizon fix~~ | ✅ **DONE** 2026-09-07 |
+| **2** | **Retrain SRQ1** | **NEXT.** Models on disk are H=1-trained; Scenario C currently serves an H=1 model against H=3 features. **Read F24 first** — it decides what phase 2 *is*. |
+| **3** | Re-verify the SRQ4 harness | Passing now, but re-run after retraining — the tool loads the persisted model. |
+| **3b** | **Smoke test, n=1/scenario, ~$1** | Brian, 2026-09-07. `verify_setup.py` checks contracts, not an end-to-end run. A defect found here costs $1; in step 4 it costs $40. |
+| **4** | P0042's ~111 funded runs (~$40) | Still last. |
 
-**Do not start at step 4 because it looks unblocked.** It reads as ready; it isn't.
+**An open decision gates step 2** (F24): 13 live SRQ1 scripts hardcode `_h3`, so they now
+read genuine H=3 features — but **none can produce H=1**. Either retrain at H=3 only
+(faster, unblocks the funded runs) or parameterise the horizon across those 13 scripts
+first. Do not find-and-replace to `h1`: that just swaps which horizon is unreachable.
 
 ---
 

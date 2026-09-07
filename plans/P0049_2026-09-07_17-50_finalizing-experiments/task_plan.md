@@ -1,9 +1,9 @@
 ---
 pid: P0049
 created: 2026-09-07 17:50:00
-updated: 2026-09-07 18:15:00
+updated: 2026-09-07 20:45:00
 status: in_progress
-focus_detail: "CONSOLIDATION PLAN for the account switch — read START_HERE.md first. Collects every open experimental thread from P0039/P0040/P0042/P0044/P0047 into one ordered sequence. Two headline facts: (1) SRQ1 numbers are now deterministic (XGB_N_JOBS=1, F18) and the model-equivalence verdict survived (F19); (2) but engineer_features() never receives the horizon, so h1 and h3 are the SAME one-month task and published results are H1 mislabelled as H3 (F22, found by P0048). The horizon fix is upstream of the ~111 funded runs. Also fixed today: forecast_tool.py was reading its track record from the wrong directory and silently serving forecasts with NO historical_* fields (F21) — that would have invalidated the B->C comparison the funded runs are meant to measure."
+focus_detail: "PHASE 1 DONE, PHASE 2 PART-RUN. The horizon fix is implemented, verified and committed -- it was THREE defects (features, SRQ4 scoring, tool serving), and fixing only the first would have left the experiment measuring one month ahead. Both horizons are now runnable: srq1/_horizon.py resolves SRQ1_HORIZON (default 3) into BOTH the input matrix and the output dir, so H=1 cannot overwrite H=3. RESUME TOMORROW with: python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/run_both_horizons.py --resume  -- done so far: benchmark (both horizons), benchmark_cv + benchmark_tuned (H=3 only). Remaining: 4 stages at H=3, 7 at H=1. VPS and committing the parquets were both considered and REJECTED (F27): the suite uses 282MB, the kills were two concurrent runs, and the matrices stay gitignored under the Nielsen confidentiality agreement. Also found: F25, train_and_persist.py read model-selection inputs from the wrong directory and silently defaulted to XGBoost for all four categories. See findings.md F23-F27 and progress.md."
 ---
 
 # P0049 — Finalizing experiments
@@ -40,31 +40,90 @@ Checking a stated blocker before acting on it is the main lesson of this plan.
 
 ## Phases
 
-### Phase 1 — Horizon (BLOCKING everything downstream)
+### Phase 1 — Horizon ✅ DONE (2026-09-07)
 
-1. Decide the fix: at horizon *h*, lags become `shift(lag + h − 1)`; rolling windows
-   shift with them.
-2. Implement in `engineer_features()`, which currently has no `horizon` parameter.
-3. Re-run preprocessing steps 3–6 for 4 categories × H=1,3.
-4. Confirm the matrices now differ: `lag_1` must **not** be identical across h1/h3.
+It was **three** defects in three layers, not one — see `findings.md` F23. Fixing only
+`engineer_features()` would have left the experiment still scoring one month ahead.
 
-**Expect H3 accuracy to worsen.** Three months ahead is harder than one. If it does not
-change, the fix has not taken effect.
+1. ✅ `engineer_features()` takes a required `horizon`; every past-derived feature
+   shifts by an extra `h − 1`. H=1 is byte-identical to the old definition.
+2. ✅ `srq4_experiment.py` scores `test.iloc[HORIZON − 1]`, not `test.iloc[0]`.
+   `HORIZON = 3` is one constant selecting both the matrix and the scored month.
+3. ✅ Scenario C passes the scored month to the tool; the payload carries
+   `months_ahead`. The leakage assert now checks the gap is **exactly** the horizon.
+4. ✅ Steps 4–6 re-run, 4 categories × H=1,3. All 8 matrices published and verified:
+   `lag_1` differs across horizons and `h3.lag_1 == h1.lag_3` exactly.
+5. ✅ `verify_setup.py`: **10/10, no warnings.**
 
-### Phase 2 — Re-run SRQ1 on both horizons
+**Still to come: H3 accuracy should worsen after retraining.** Three months ahead is
+harder than one. The models on disk are still H=1-trained — that is phase 2.
 
-Full benchmark, tuned benchmark, CV, stability, ablation, appendix tables.
-All already deterministic, so a re-run is mechanical — but it is not cheap in wall-clock
-(the tuned ablation is ~24 Optuna studies; stability is 40).
+### Phase 2 — Re-run SRQ1 on both horizons (IN PROGRESS)
 
-Produces the first genuine **dual-horizon** results table.
+**DEC-HORIZON-BOTH (Brian, 2026-09-07): run H=1 and H=3 properly, both.**
+
+The horizon is now a single value per run, `SRQ1_HORIZON` (default 3), read by
+`srq1/_horizon.py` and used for **both** the input matrix and the output directory —
+so the two can never describe different horizons.
+
+| Horizon | Matrix | Results go to |
+|---|---|---|
+| **3** (primary) | `*_feature_matrix_h3.parquet` | `srq1_model_performance/{tables,figures,models}/` |
+| **1** (secondary) | `*_feature_matrix_h1.parquet` | `srq1_model_performance/h1/{...}/` |
+
+H=3 keeps the unsuffixed paths because `forecast_tool.py`, the SRQ4 harness, the
+appendix exporter and the figure generators all read them. **An H=1 run therefore
+cannot overwrite an H=3 result** — the property that makes this safe.
+
+Run it: `python model_training/run_both_horizons.py` (`--dry-run`, `--horizon`,
+`--only` available). 8 ordered stages × 2 horizons; the order is a dependency chain,
+not a bag of scripts.
+
+**Sanity check already passed** (untuned benchmark): H=3 is worse than H=1 in 3 of 4
+categories — the plan's own test that the fix took effect. RTD moves the other way;
+F26 records why that is real rather than survivorship, and what still needs confirming.
+
+**Where the run stopped (2026-09-07 20:45)** — resume with `--resume`, which skips
+only what this run already produced:
+
+| Stage | H=3 | H=1 |
+|---|---|---|
+| benchmark | ✅ 18:51 | ✅ 18:25 |
+| benchmark_cv | ✅ 19:47 (56 min) | ⬜ |
+| benchmark_tuned | ✅ 19:51 (3 min) | ⬜ |
+| baselines_stat · calibration · train_persist · figures | ⬜ | ⬜ |
+
+```bash
+python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/run_both_horizons.py --resume
+```
+
+CV and tuned dominate the wall clock; the remaining stages are minutes.
+
+Two defects found while doing this — see `findings.md`:
+- **F24** — 13 scripts hardcoded `_h3`; none could produce H=1.
+- **F25** — `train_and_persist.py` read its selection inputs from the tier root
+  instead of `tables/`, so **model selection silently fell through to a hardcoded
+  `"XGBoost"` default** and never consulted the CV study. The default was wrong for
+  all four categories.
 
 ### Phase 3 — Re-verify the SRQ4 harness
 
 `python 04_SRQ4_Scenario_Experiment/scenario_setup/verify_setup.py`
 
 Required: **10/10 and no `!` warnings**. A warning here means the tool is serving
-degraded payloads (see F21).
+degraded payloads (see F21). Passing as of 2026-09-07, but **re-run after phase 2** —
+the tool loads the persisted model, so retraining changes what it serves.
+
+### Phase 3b — Smoke test before spending (NEW, Brian 2026-09-07)
+
+**n=1 per scenario, one brand, ~$1.** `verify_setup.py` checks reachability and
+contracts; it does not run a scenario end to end. This does.
+
+Check before ramping: every scenario returns a parseable forecast, `outcome == "ok"`,
+Scenario C's `tool_output.months_ahead == 3`, latency and token counts are in the
+expected range, and the logged `target_month` is identical across all three.
+
+A defect found here costs $1. The same defect found in phase 4 costs $40.
 
 ### Phase 4 — Funded runs
 
@@ -78,7 +137,8 @@ Then D/E (P0040) — build the E2B template first, or D is silently handicapped.
 | ID | Decision | State |
 |---|---|---|
 | **DEC-VENDOR** | Claude vs GPT for SRQ4 | **OPEN.** ~$7 vs ~$4 for 50 runs — decide on ecological validity, not cost |
-| **DEC-HORIZON** | Implement both horizons, benchmark both, SRQ4 at 3 months | **MADE** (Brian, via P0048) |
+| **DEC-HORIZON** | Implement both horizons, benchmark both, SRQ4 at 3 months | **MADE** (Brian, via P0048); implemented + verified 2026-09-07 |
+| **DEC-HORIZON-BOTH** | H=1 and H=3 both run properly. H=3 primary, keeps the unsuffixed result paths; H=1 writes to `h1/` | **MADE** (Brian, 2026-09-07) |
 | **DEC-DETERMINISM** | Accuracy at `n_jobs=1`; resource profiling at `-1` | **MADE**, implemented, verified |
 | **DEC-GRAIN** | brand × month | Locked, earlier |
 
