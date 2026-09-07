@@ -184,17 +184,26 @@ def main():
 
     def same_month():
         # Arms scored on different months are incomparable, not merely different.
+        #
+        # The target is passed to the tool exactly as run_scenario_c passes it.
+        # Calling without it would test the tool's DEFAULT month rather than the
+        # month the experiment actually requests -- and the default is the first
+        # held-out month, i.e. one month ahead whatever HORIZON says.
         _, _, t = m._brand_history(a.category, a.brand)
-        tool = m._eval_forecast(a.category, a.brand)
-        ok = tool.get("forecast_month") == t
-        return ok, (f"history target={t}, tool forecast_month={tool.get('forecast_month')}")
-    c.run("all scenarios target the same month", same_month)
+        tool = m._eval_forecast(a.category, a.brand, t)
+        ahead = tool.get("months_ahead")
+        ok = tool.get("forecast_month") == t and ahead == m.HORIZON
+        return ok, (f"history target={t}, tool forecast_month="
+                    f"{tool.get('forecast_month')}, months_ahead={ahead} "
+                    f"(HORIZON={m.HORIZON})")
+    c.run("all scenarios target the same month, at HORIZON", same_month)
 
     print("\n-- tool contract -------------------------------------------------")
 
     def tool_payload():
         need = {"forecast_units", "interval_90", "confidence_tier",
-                "forecast_month", "trained_through", "interval_method", "model"}
+                "forecast_month", "months_ahead", "trained_through",
+                "interval_method", "model"}
         out = m._eval_forecast(a.category, a.brand)
         missing = need - set(out)
         return (not missing), (f"complete: {out['forecast_units']:,.0f} units, "

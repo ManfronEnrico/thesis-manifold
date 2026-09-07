@@ -66,6 +66,11 @@ sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR
 
 sys.path.insert(0, str(_here.parent))
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
 from srq1_benchmark_cv import CATS, _load  # noqa: E402
 
 warnings.filterwarnings("ignore")
@@ -117,7 +122,7 @@ class _SRQ1Out:
         return str(self._base)
 
 
-OUT = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
+OUT = _SRQ1Out(results_root())
 
 P_CUT = 1.32      # Syntetos, Boylan & Croston (2005), p. 495
 CV2_CUT = 0.49    # same

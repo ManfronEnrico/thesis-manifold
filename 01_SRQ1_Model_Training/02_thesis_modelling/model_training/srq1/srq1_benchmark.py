@@ -41,6 +41,12 @@ if _root is None:
 sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
+
 warnings.filterwarnings("ignore")
 
 class _SRQ1Out:
@@ -91,7 +97,8 @@ class _SRQ1Out:
         return str(self._base)
 
 
-OUT = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
+OUT = _SRQ1Out(results_root())
+
 SEED = 42
 
 
@@ -192,7 +199,7 @@ KEYS = {"bymonth": ["brand"]}
 
 def _load(ds: str, cat: str, slug: str) -> pd.DataFrame | None:
     sub = "CSD" if (cat == "CSD") else cat
-    p = DATASETS[ds] / sub / f"{slug}_feature_matrix_h3.parquet"
+    p = matrix_path(cat, slug, base=DATASETS[ds])
     if not p.exists():
         return None
     return pd.read_parquet(p)

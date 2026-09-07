@@ -30,6 +30,10 @@ sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir
 
 warnings.filterwarnings("ignore")
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
 class _SRQ1Out:
     """Routes `OUT / "file.ext"` into figures/, tables/ or models/ by role.
 
@@ -78,7 +82,7 @@ class _SRQ1Out:
         return str(self._base)
 
 
-RES = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
+RES = _SRQ1Out(results_root())
 SEED = 42
 
 # ---------------------------------------------------------------------------
@@ -168,7 +172,7 @@ params = json.loads((RES / "tuned_params.json").read_text())
 rows = []
 for cat, slug in CATS.items():
     sub = "CSD" if cat == "CSD" else cat
-    fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix_h3.parquet")
+    fm = pd.read_parquet(matrix_path(cat, slug))
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     tr, va, te = (d[d.split == s] for s in ("train", "val", "test"))
     if len(tr) < 30 or len(va) == 0 or len(te) == 0:

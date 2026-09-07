@@ -300,6 +300,20 @@ def _tier(score: float) -> str:
     return "High" if score >= 70 else ("Moderate" if score >= 40 else "Low")
 
 
+def _months_ahead(trained_through: str, forecast_month: str) -> int | None:
+    """Months between the last trained month and the month being forecast.
+
+    Both are "YYYY-MM". Returns None rather than guessing if either is missing
+    or malformed -- an absent horizon is honest, a wrong one is not.
+    """
+    try:
+        ty, tm = (int(x) for x in str(trained_through).split("-")[:2])
+        fy, fm = (int(x) for x in str(forecast_month).split("-")[:2])
+    except (ValueError, AttributeError):
+        return None
+    return (fy - ty) * 12 + (fm - tm)
+
+
 def _load(category: str):
     """Load the persisted booster + metadata for a category."""
     if category in _CACHE:
@@ -354,10 +368,18 @@ def _log(record: dict) -> None:
 def forecast_demand(category: str, brand: str, month: str | None = None) -> dict:
     """Return the structured forecast payload for one (category, brand).
 
-    `month` selects a specific held-out month ("2026-06"); omitted, the first
+    `month` selects a specific held-out month ("2026-06"); omitted, the FIRST
     test month is used. Requesting a month outside the test split is refused --
     the model was trained through the validation period, so a train or
     validation month is not a forecast, it is recall.
+
+    CALLERS SCORING AT A HORIZON MUST PASS `month`. The default is the month
+    immediately after the training cutoff -- one month ahead. A caller that
+    omits it while scoring against a later month compares a one-month-ahead
+    forecast to a three-month-ahead actual and reports the difference as model
+    error. The returned payload always names `forecast_month`, and
+    `months_ahead` states the horizon of the row actually served, so a caller
+    can assert it got the month it meant rather than trusting the default.
     """
     t0 = time.perf_counter()
     if category not in CATEGORIES:
@@ -417,6 +439,11 @@ def forecast_demand(category: str, brand: str, month: str | None = None) -> dict
         "category": category,
         "brand": brand,
         "forecast_month": row.iloc[0]["ym"],
+        # How far past the training cutoff the served row sits. Stated rather
+        # than left implicit: the features in that row were built for one
+        # specific horizon, and a caller comparing this forecast to an actual
+        # must be able to check the two describe the same distance ahead.
+        "months_ahead": _months_ahead(meta["trained_through"], row.iloc[0]["ym"]),
         "forecast_units": round(yhat, 1),
         "interval_90": [round(lo, 1), round(hi, 1)],
         "confidence": round(conf, 1),

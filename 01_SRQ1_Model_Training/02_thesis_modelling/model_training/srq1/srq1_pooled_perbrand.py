@@ -58,6 +58,11 @@ sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR
 
 # Reuse the sibling script's definitions verbatim so the two cannot drift: same
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
 # FEATURES, same CATS, same tuning protocol, same seed. Importing beats copying.
 sys.path.insert(0, str(_here.parent))
 from srq1_pooled import (  # noqa: E402
@@ -114,7 +119,7 @@ class _SRQ1Out:
         return str(self._base)
 
 
-OUT = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
+OUT = _SRQ1Out(results_root())
 
 
 def _brand_rows(parts, cat):

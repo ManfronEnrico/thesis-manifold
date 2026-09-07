@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import pathlib
 import sys
 import warnings
 from pathlib import Path
@@ -54,6 +55,10 @@ from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir,
 
 warnings.filterwarnings("ignore")
 
+# See srq1/_horizon.py -- one source for the active horizon and its paths.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent / "srq1"))
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
 # Mirrors srq4_experiment.CAT_FILE. Kept local so this report can run even if the
 # harness is mid-edit -- a transparency report that breaks when the thing it
 # documents breaks is useless exactly when it is needed.
@@ -67,7 +72,7 @@ FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
 
 def _matrix(cat):
     slug = CATEGORIES[cat]
-    f = get_category_engineered_bymonth_dir(cat) / f"{slug}_feature_matrix_h3.parquet"
+    f = matrix_path(cat, slug)
     return pd.read_parquet(f) if f.is_file() else None
 
 
@@ -177,7 +182,7 @@ def section_hyperparams(L):
           "train+val and evaluated once on test (`srq1_benchmark_tuned.py`). "
           "Tuning on test would select the configuration that best fits the "
           "evaluation set, which is not a measurement.", ""]
-    f = get_srq_models_dir(1) / "tuned_params.json"
+    f = (results_root() / "models") / "tuned_params.json"
     if not f.is_file():
         L += ["_`tuned_params.json` not found -- run `srq1_benchmark_tuned.py`._", ""]
         return L
@@ -198,7 +203,7 @@ def section_hyperparams(L):
 
 def section_accuracy(L):
     L += ["## 4. Accuracy", ""]
-    f = get_srq_tables_dir(1) / "metrics.csv"
+    f = (results_root() / "tables") / "metrics.csv"
     if not f.is_file():
         L += ["_`metrics.csv` not found -- run `srq1_benchmark.py`._", ""]
         return L
@@ -248,7 +253,7 @@ def section_calibration(L):
     except ImportError:
         L += ["_xgboost not installed._", ""]
         return L
-    pf = get_srq_models_dir(1) / "tuned_params.json"
+    pf = (results_root() / "models") / "tuned_params.json"
     params = json.loads(pf.read_text(encoding="utf-8")) if pf.is_file() else {}
     for cat in CATEGORIES:
         fm = _matrix(cat)
@@ -301,7 +306,7 @@ def main():
     ap.add_argument("--out", default=None,
                     help="output dir (default: 04_thesis_results/srq1)")
     a = ap.parse_args()
-    out = Path(a.out) if a.out else get_srq_tables_dir(1)
+    out = Path(a.out) if a.out else (results_root() / "tables")
     out.mkdir(parents=True, exist_ok=True)
 
     L = ["# Model training — what was trained, on what, and how well", "",

@@ -34,6 +34,10 @@ sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 
 warnings.filterwarnings("ignore")
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 class _SRQ1Out:
@@ -84,7 +88,7 @@ class _SRQ1Out:
         return str(self._base)
 
 
-OUT = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
+OUT = _SRQ1Out(results_root())
 SEED = 42
 
 
@@ -198,7 +202,7 @@ def _load(ds, cat, slug):
     referenced a global `fm` that did not exist there -- the script raised
     NameError on its first call and could not run at all."""
     sub = "CSD" if cat == "CSD" else cat
-    fm = pd.read_parquet(DATASETS[ds] / sub / f"{slug}_feature_matrix_h3.parquet")
+    fm = pd.read_parquet(matrix_path(cat, slug, base=DATASETS[ds]))
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     parts = {s: d[d.split == s] for s in ("train", "val", "test")}
     return parts, available_features(fm)

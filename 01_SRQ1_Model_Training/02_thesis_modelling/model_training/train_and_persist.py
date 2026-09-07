@@ -65,7 +65,10 @@ from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir
 warnings.filterwarnings("ignore")
 
 SEED = 42
-MODELS_DIR = THESIS_RESULTS_SRQ1_DIR / "models"
+# See srq1/_horizon.py -- one source for the active horizon and its paths.
+sys.path.insert(0, str(_here.parent / "srq1"))
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+MODELS_DIR = results_root() / "models"
 
 CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
               "energidrikke": "energidrikke", "RTD": "rtd"}
@@ -111,9 +114,14 @@ def best_model_for(cat: str) -> str:
     # linear baseline, SeasonalNaive the floor. Both are candidates ONLY if they
     # beat the best tuned model, and that comparison is unavailable, so they are
     # included from metrics.csv with an explicit margin requirement below.
-    cvf = THESIS_RESULTS_SRQ1_DIR / "cv_metrics.csv"
-    tf = THESIS_RESULTS_SRQ1_DIR / "tuned_metrics.csv"
-    mf = THESIS_RESULTS_SRQ1_DIR / "metrics.csv"
+    # tables/, NOT the tier root. These reads are guarded by is_file(), so a
+    # wrong directory degraded SILENTLY: model selection fell through to the
+    # hardcoded "XGBoost" default and never consulted the CV study this block
+    # documents at length. Same failure shape as F21 in forecast_tool.py.
+    _tables = results_root() / "tables"
+    cvf = _tables / "cv_metrics.csv"
+    tf = _tables / "tuned_metrics.csv"
+    mf = _tables / "metrics.csv"
     best, best_wmape = "XGBoost", float("inf")
 
     # P0044 F27/F29: select from the CV study when available, on its CROSS-
@@ -206,8 +214,7 @@ def _persist(model, model_name: str, path_stem: Path) -> str:
 def train_category(cat: str, slug: str) -> dict | None:
     """Fit, calibrate and persist one category. Returns its metadata."""
 
-    eng = get_category_engineered_bymonth_dir(cat)
-    f = eng / f"{slug}_feature_matrix_h3.parquet"
+    f = matrix_path(cat, slug)
     if not f.is_file():
         print(f"  {cat:14s} SKIP -- no feature matrix at {f}")
         return None
@@ -241,12 +248,12 @@ def train_category(cat: str, slug: str) -> dict | None:
     # "brand/{cat}/{model}" in the old file. wMAPE is the objective the thesis
     # reports against, so that variant is used. tuned_params.json remains as a
     # fallback so a missing CV entry degrades instead of crashing.
-    cvf = THESIS_RESULTS_SRQ1_DIR / "cv_params.json"
+    cvf = results_root() / "models" / "cv_params.json"
     if cvf.is_file():
         params = json.loads(cvf.read_text(encoding="utf-8")).get(
             f"{cat}/{model_name}/wmape", {})
     if not params:
-        pf = THESIS_RESULTS_SRQ1_DIR / "tuned_params.json"
+        pf = results_root() / "models" / "tuned_params.json"
         if pf.is_file():
             # Ridge is the untuned baseline and has no entry; it uses its defaults.
             params = json.loads(pf.read_text(encoding="utf-8")).get(

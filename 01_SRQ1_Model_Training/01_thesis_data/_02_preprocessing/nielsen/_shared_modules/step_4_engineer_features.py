@@ -239,6 +239,11 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 	lags = require(contract, "lags", path)
 	rolling_windows = require(contract, "rolling_windows", path)
 	peak_months = require(contract, "peak_months", path)
+	# Read from the CONTRACT, not from run()'s --horizon argument, even though
+	# both are in scope: load_contract() has already hard-failed if the two
+	# disagree, so taking it from the contract makes min_periods and the feature
+	# offset provably the same horizon -- they are derived from one value.
+	horizon = require(contract, "forecast_horizon", path)
 
 	# Holiday enrichment: read, never decided here (step 3 decides). A 1.1
 	# contract has no such field and means False -- safe ONLY because the 1.2
@@ -281,6 +286,7 @@ def build_matrix(df: pd.DataFrame, contract: dict, path: Path) -> tuple[pd.DataF
 		rolling_windows=rolling_windows,
 		group_keys=GROUP_KEYS,
 		peak_months=peak_months,
+		horizon=horizon,
 		holiday_dates=holiday_dates,
 		holiday_years=holiday_years,
 	)

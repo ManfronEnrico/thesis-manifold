@@ -56,6 +56,10 @@ sys.path.insert(0, str(_root))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir
 
 warnings.filterwarnings("ignore")
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
 logging.getLogger("prophet").setLevel(logging.CRITICAL)
 logging.getLogger("cmdstanpy").setLevel(logging.CRITICAL)
 
@@ -107,7 +111,7 @@ class _SRQ1Out:
         return str(self._base)
 
 
-RES = _SRQ1Out(THESIS_RESULTS_SRQ1_DIR)
+RES = _SRQ1Out(results_root())
 RES.mkdir(parents=True, exist_ok=True)
 CATS = {"CSD": "csd", "danskvand": "danskvand", "energidrikke": "energidrikke", "RTD": "rtd"}
 
@@ -309,7 +313,7 @@ def main():
     rows = []
     for cat, slug in CATS.items():
         sub = "CSD" if cat == "CSD" else cat
-        fm = pd.read_parquet(get_category_engineered_bymonth_dir(sub) / f"{slug}_feature_matrix_h3.parquet")
+        fm = pd.read_parquet(matrix_path(cat, slug))
         d = fm.dropna(subset=["sales_units"]).copy()
         d["ds"] = [_date(y, m) for y, m in zip(d.period_year, d.period_month)]
         acc = {n: [0.0, 0.0, []] for n in MODELS}

@@ -449,13 +449,14 @@ def engineer_features(
     group_keys: list[str] = ["brand"],
     *,
     peak_months: Iterable[int],
+    horizon: int,
     holiday_dates: Iterable[str] | None = None,
     holiday_years: Iterable[int] | None = None,
 ) -> pd.DataFrame:
     """
     Add time-series features per group (default: per brand):
-      - autoregressive lags
-      - rolling mean/std (with shift(1) — no look-ahead)
+      - autoregressive lags, offset by the forecast horizon
+      - rolling mean/std (shifted by the horizon — no look-ahead)
       - calendar (month, quarter, peak_month)
       - holiday calendar (days_in_month, n_holidays, non_holiday_days) when
         holiday_dates is supplied; omitted entirely when it is not
@@ -467,30 +468,66 @@ def engineer_features(
     let lag_1 for brand X at region A silently pick up brand X's prior-month
     value from region B, since rows would only be sorted by (brand, date).
 
+    horizon: how many months ahead the row is predicting. REQUIRED, because
+    there is no horizon-neutral feature set and a default would silently make
+    one horizon wrong (the same reasoning as peak_months and min_periods).
+
+    THE HORIZON OFFSET (added 2026-09-07, fixing F22). Every past-derived
+    feature is shifted by an EXTRA (horizon - 1) periods, so lag_k becomes
+    shift(k + horizon - 1) and the shift(1) features become shift(horizon).
+
+    Why: a row for month t predicts sales at t. Forecasting h months ahead means
+    standing at t - h and knowing only what had been observed by then, i.e. up
+    to month t - h. The most recent usable observation is therefore t - h, which
+    is shift(h) — not shift(1). At h=1 the offset is zero and every feature is
+    unchanged, so the H=1 definition is preserved exactly.
+
+    Without this, --horizon reached the filenames, the contract and min_periods
+    but never the features themselves: the h1 and h3 matrices were byte-identical
+    in every lag column, so both were one-month-ahead tasks and the h3 results
+    reported one-month accuracy while describing three-month. min_periods was
+    already derived as warmup + horizon + 1 in anticipation of this shift, so
+    step 3 had been reserving the rows for an offset that was never applied.
+
     Leakage analysis: every transformation here is either deterministic
-    (calendar, promo ratio, log) or uses only the past within each group
-    (lags via shift, rolling via shift(1)). Therefore the function is safe
-    to apply on the full frame before train/val/test split.
+    (calendar, promo ratio, log) or uses only observations at or before
+    t - horizon within each group. Therefore the function is safe to apply on
+    the full frame before train/val/test split, at any horizon.
     """
+    if horizon < 1:
+        raise ValueError(f"horizon must be >= 1, got {horizon}")
+
+    # The extra shift beyond the H=1 definition. Named rather than inlined so
+    # the six feature blocks below visibly share ONE offset -- a future feature
+    # that forgets it would be a silent leak of horizon-1 months of the future.
+    _h = horizon - 1
     df = df.sort_values(group_keys + ["date"]).copy()
     g = df.groupby(group_keys)
 
-    # Autoregressive lags
+    # Autoregressive lags, offset by the horizon.
+    #
+    # The COLUMN NAME keeps its H=1 meaning -- lag_1 is "the most recent
+    # observation available to the forecaster" -- while the data behind it moves
+    # with the horizon. Renaming to lag_3 at H=3 would instead make the same
+    # column name mean different things in different matrices, which is worse:
+    # every downstream FEATURES list is written against these names, and a
+    # cross-horizon comparison must line the columns up.
     for lag in lags:
-        df[f"lag_{lag}"] = g[target_col].shift(lag)
+        df[f"lag_{lag}"] = g[target_col].shift(lag + _h)
 
-    # Rolling statistics on shifted series (avoids leakage of t into t)
+    # Rolling statistics on shifted series (avoids leakage of t into t, and of
+    # the horizon-1 months the forecaster has not yet observed)
     peak_set = set(peak_months)
     for w in rolling_windows:
         df[f"rolling_mean_{w}"] = (
             g[target_col]
-            .shift(1)
+            .shift(1 + _h)
             .transform(lambda s: s.rolling(w, min_periods=max(2, w // 4)).mean())
         )
         if w == 4:  # match preprocessing.py: only window=4 has std
             df[f"rolling_std_{w}"] = (
                 g[target_col]
-                .shift(1)
+                .shift(1 + _h)
                 .transform(lambda s: s.rolling(w, min_periods=2).std().fillna(0))
             )
 
@@ -547,7 +584,7 @@ def engineer_features(
         )
         df["promo_intensity"] = _promo_intensity_t.groupby(
             [df[k] for k in group_keys]
-        ).shift(1)
+        ).shift(1 + _h)
 
     # Intermittency (restored from the archived notebook, P0038, 2026-08-18).
     #
@@ -574,10 +611,10 @@ def engineer_features(
         [df[k] for k in group_keys] + [_run_id]
     ).cumsum() * _is_zero
 
-    df["zero_run_flag"] = _grouped.shift(1)
+    df["zero_run_flag"] = _grouped.shift(1 + _h)
     df["zero_run_length"] = _run_len.groupby(
         [df[k] for k in group_keys]
-    ).shift(1)
+    ).shift(1 + _h)
 
     # Log-transformed target
     df["log_sales_units"] = np.log1p(df["sales_units"])
@@ -741,6 +778,10 @@ class FeatureEngineer:
     # and so callers must name them at the call site.
     peak_months: frozenset[int] = field(kw_only=True)
     min_periods: int = field(kw_only=True)
+    # Also a contract value, and for the same reason: min_periods is derived as
+    # warmup + horizon + 1, so a FeatureEngineer that defaulted the horizon
+    # could hold a min_periods and a feature offset describing different tasks.
+    horizon: int = field(kw_only=True)
     # None -> apply_split derives cutoffs proportionally from the data. Set both
     # to (year, month) tuples only to reproduce a previously published split.
     train_end: tuple[int, int] | None = None
@@ -779,6 +820,7 @@ class FeatureEngineer:
             lags=self.lags,
             rolling_windows=self.rolling_windows,
             peak_months=self.peak_months,
+            horizon=self.horizon,
             group_keys=group_keys,
         )
         df = apply_split(

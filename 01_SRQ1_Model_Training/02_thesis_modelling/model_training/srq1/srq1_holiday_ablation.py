@@ -61,6 +61,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from PATHS import get_srq_tables_dir  # noqa: E402
 
 # Reuse the benchmark verbatim -- same models, same metrics, same seed.
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
 from srq1_benchmark import (  # noqa: E402
     CATS, FEATURES, KEYS, SEED, _fit_predict, _load, _metrics,
     available_features,
@@ -72,7 +77,7 @@ MODELS = ["Ridge", "LightGBM", "XGBoost"]
 GRAIN = "bymonth"
 # Tabular output belongs in the tier's tables/ subfolder, not loose at the
 # top of the results dir (DEC-P0046-SINGLE-HOME / the srq1 folder shape).
-OUT = get_srq_tables_dir(1)
+OUT = (results_root() / "tables")
 
 
 def _prepare(fm: pd.DataFrame, feats: list[str]):

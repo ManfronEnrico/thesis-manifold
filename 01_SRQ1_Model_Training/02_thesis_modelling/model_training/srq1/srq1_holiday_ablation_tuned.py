@@ -56,6 +56,11 @@ if str(_REPO_ROOT) not in sys.path:
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from PATHS import get_srq_tables_dir  # noqa: E402
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
 import srq1_benchmark_tuned as TUNED  # noqa: E402
 import srq1_ridge_cv as RCV  # noqa: E402
 from srq1_benchmark import CATS, FEATURES, _load as _load_fm, _metrics  # noqa: E402
@@ -64,7 +69,7 @@ HOLIDAY_FEATURES = ["days_in_month", "n_holidays", "non_holiday_days"]
 GRAIN = "bymonth"
 # Tabular output belongs in the tier's tables/ subfolder, not loose at the
 # top of the results dir (DEC-P0046-SINGLE-HOME / the srq1 folder shape).
-OUT = get_srq_tables_dir(1)
+OUT = (results_root() / "tables")
 TREE_MODELS = ["LightGBM", "XGBoost"]
 
 # The two benchmarks key the SAME directory under different names --

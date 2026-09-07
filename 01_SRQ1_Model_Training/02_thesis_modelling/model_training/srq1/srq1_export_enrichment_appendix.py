@@ -54,7 +54,14 @@ if str(_REPO_ROOT) not in sys.path:
 
 from PATHS import THESIS_RESULTS_APPENDIX_DIR, get_srq_tables_dir  # noqa: E402
 
-SRC = get_srq_tables_dir(1)
+# The active horizon, and the paths that follow from it. ONE source, so the
+# matrix read and the results written can never describe different horizons
+# (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
+from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+
+
+SRC = (results_root() / "tables")
+
 OUT = THESIS_RESULTS_APPENDIX_DIR
 REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"
 

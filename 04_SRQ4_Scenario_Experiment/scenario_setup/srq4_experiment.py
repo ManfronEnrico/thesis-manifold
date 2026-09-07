@@ -252,6 +252,40 @@ def _engineered_dir(tag, sub):
     return get_category_engineered_bymonth_dir(sub)
 
 
+# The forecast horizon this experiment scores, in months. ONE constant, used
+# both to select the feature matrix and to pick the scored month out of the
+# held-out window, because those two must not be able to disagree.
+#
+# WHY THIS EXISTS (2026-09-07, fixing the scoring half of F22). The horizon
+# used to be a hardcoded "_h3" in three read_parquet() calls, while the scored
+# actual was test.iloc[0] -- the FIRST held-out month, i.e. the month straight
+# after the training cutoff. That is one month ahead by construction, whichever
+# matrix is read. So the experiment reported three-month-ahead accuracy while
+# measuring one-month-ahead accuracy, independently of the feature-side defect
+# in engineer_features(). Fixing only the features would have left this intact.
+#
+# The scored month is now test.iloc[HORIZON - 1]: standing at the cutoff and
+# forecasting HORIZON months out lands on the HORIZON-th held-out month.
+#
+# H=3 is the primary reported horizon: a quarter is the period in which
+# marketing budgets are authorised, so it is the first horizon at which a
+# campaign decision is actually taken. Set to 1 to reproduce the H=1 task.
+HORIZON = 3
+
+# Held-out months needed before a brand can be scored at this horizon. A brand
+# whose test window is shorter has no observation at the target month at all.
+_MIN_TEST_MONTHS = HORIZON
+
+
+def _matrix_path(slug, tag, sub):
+    """The feature matrix for the horizon being scored.
+
+    Derived from HORIZON rather than written out, so the matrix and the scored
+    offset cannot drift apart -- the failure this whole constant exists to stop.
+    """
+    return _engineered_dir(tag, sub) / f"{slug}_feature_matrix_h{HORIZON}.parquet"
+
+
 # weighted_distribution / weighted_dist is deliberately ABSENT (P0036 task 7,
 # 2026-08-19).
 #
@@ -310,15 +344,29 @@ def _brand_history(category, brand):
     current wall-clock date, scoring a different month than scenarios B and C --
     which would make the scenarios incomparable rather than merely different.
 
-    LEAKAGE BOUNDARY: `fit` is train+val only. The test row is never included,
+    THE SCORED MONTH IS test.iloc[HORIZON - 1], NOT test.iloc[0]. The history
+    ends at the training cutoff; forecasting HORIZON months past that cutoff
+    lands on the HORIZON-th held-out month. Taking the first one would score a
+    one-month-ahead forecast no matter which matrix was read -- see HORIZON.
+
+    The intervening months (test.iloc[0 : HORIZON-1]) are given to NOBODY: they
+    are held out of `fit` as well, because a forecaster standing at the cutoff
+    has not observed them either. This is what makes the task genuinely
+    HORIZON-months-ahead rather than a one-month forecast with a later label.
+
+    LEAKAGE BOUNDARY: `fit` is train+val only. No test row is ever included,
     verified by `_assert_no_leakage` below."""
     slug, tag, sub = CAT_FILE[category]
-    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
+    fm = pd.read_parquet(_matrix_path(slug, tag, sub))
     g = fm[(fm.brand.str.upper() == brand.upper())].sort_values("period_index")
     test = g[g.split == "test"].dropna(subset=["sales_units"])
-    actual = float(test.iloc[0]["sales_units"]) if len(test) else None
-    target = (f"{int(test.iloc[0]['period_year'])}-{int(test.iloc[0]['period_month']):02d}"
-              if len(test) else None)
+    # Short window -> no observation at the target month. Return None rather
+    # than silently scoring a nearer month, which would mix horizons across
+    # brands within one reported figure.
+    scored = test.iloc[HORIZON - 1] if len(test) >= _MIN_TEST_MONTHS else None
+    actual = float(scored["sales_units"]) if scored is not None else None
+    target = (f"{int(scored['period_year'])}-{int(scored['period_month']):02d}"
+              if scored is not None else None)
     cols = ["period_year", "period_month", "sales_units"] + [
         c for c in ("promo_intensity", "weighted_distribution") if c in g.columns]
     fit = g[g.split.isin(["train", "val"])].dropna(subset=["sales_units"])[cols]
@@ -331,10 +379,15 @@ def _assert_no_leakage(fit, test, category, brand):
 
     A silent leak here would not produce an error -- it would produce an
     impressively accurate Scenario B, which is exactly the result the thesis is
-    trying to measure. Cheap to check, catastrophic to miss."""
-    if not len(test) or not len(fit):
+    trying to measure. Cheap to check, catastrophic to miss.
+
+    Checks the SCORED month (test.iloc[HORIZON-1]). The "history ends before the
+    target" test below is what additionally proves the HORIZON-1 intervening
+    months stayed out of `fit` -- at H=3 a history ending one month before the
+    target would be a two-month-ahead forecast reported as three."""
+    if len(test) < _MIN_TEST_MONTHS or not len(fit):
         return
-    t = test.iloc[0]
+    t = test.iloc[HORIZON - 1]
     clash = fit[(fit.period_year == t["period_year"])
                 & (fit.period_month == t["period_month"])]
     if len(clash):
@@ -348,6 +401,21 @@ def _assert_no_leakage(fit, test, category, brand):
             f"LEAKAGE: {category}/{brand} history ends "
             f"{int(last['period_year'])}-{int(last['period_month']):02d}, "
             f"at or after the target month")
+
+    # The gap must be EXACTLY the horizon. The check above only proves the
+    # history ends before the target, which at H=3 would also pass for a history
+    # ending one month before it -- a two-month-ahead forecast reported as
+    # three. Understating the gap is a leak; overstating it silently makes the
+    # task harder than reported. Both are wrong, so this is an equality.
+    gap = ((int(t["period_year"]) - int(last["period_year"])) * 12
+           + int(t["period_month"]) - int(last["period_month"]))
+    if gap != HORIZON:
+        raise AssertionError(
+            f"HORIZON MISMATCH: {category}/{brand} history ends "
+            f"{int(last['period_year'])}-{int(last['period_month']):02d} and the "
+            f"scored month is {int(t['period_year'])}-{int(t['period_month']):02d} "
+            f"-- a gap of {gap} month(s), but HORIZON={HORIZON}. The forecast "
+            f"would be reported at a horizon it was not made at.")
 
 
 def _eval_forecast(category, brand, month=None):
@@ -530,8 +598,15 @@ def run_scenario_c(category, brand, question=None):
             if calls:
                 for call in calls:
                     args = json.loads(call.arguments or "{}")
+                    # The scored month is passed EXPLICITLY. Omitting it makes
+                    # the tool fall back to the first held-out month, which at
+                    # HORIZON>1 is not the month the run is scored on -- the
+                    # forecast would be one month ahead while the actual it is
+                    # compared against is HORIZON months ahead. The prompt
+                    # already names this month to the model for the same reason.
                     out = _eval_forecast(args.get("category", category),
-                                         args.get("brand", brand))
+                                         args.get("brand", brand),
+                                         target)
                     # Log the arguments the MODEL chose alongside what it was
                     # asked about. A mismatch means the LLM queried a different
                     # series than the one being scored -- silent otherwise, and
@@ -730,10 +805,16 @@ def _tar(vals, tol=0.01):
 
 
 def _eligible_brands(cat):
-    """Brands in a category that have a held-out test actual, ordered by volume."""
+    """Brands with a held-out actual AT THE SCORED MONTH, ordered by volume.
+
+    Requires at least HORIZON held-out months, not merely one: a brand with a
+    shorter window has nothing to score at this horizon, and including it would
+    put a brand into the sample that every run then skips."""
     slug, tag, sub = CAT_FILE[cat]
-    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
-    has_test = set(fm[fm.split == "test"].dropna(subset=["sales_units"]).brand.str.upper())
+    fm = pd.read_parquet(_matrix_path(slug, tag, sub))
+    te = fm[fm.split == "test"].dropna(subset=["sales_units"])
+    has_test = {str(b).upper() for b, g in te.groupby("brand")
+                if len(g) >= _MIN_TEST_MONTHS}
     vol = (fm.dropna(subset=["sales_units"]).groupby("brand").sales_units.sum()
            .sort_values(ascending=False))
     return [b for b in vol.index if str(b).upper() in has_test]
@@ -754,9 +835,17 @@ def _scorable_brands(cat):
     Scoping the experiment to brands with continuous recent sales is also the
     honest population for a demand forecast; intermittent/zero-inflated series
     are a different forecasting problem, and one worth naming as a limitation
-    rather than silently averaging over."""
+    rather than silently averaging over.
+
+    The whole test window must be non-zero, not merely the scored month. Only
+    the scored month enters the APE denominator, so the weaker rule would be
+    enough to keep the arithmetic defined -- but it would let the eligible
+    population change with HORIZON, and the H=1 and H=3 results would then be
+    measured on different sets of brands. Holding the population fixed keeps the
+    two horizons comparable, at the cost of a few brands that could technically
+    have been scored."""
     slug, tag, sub = CAT_FILE[cat]
-    fm = pd.read_parquet(_engineered_dir(tag, sub) / f"{slug}_feature_matrix_h3.parquet")
+    fm = pd.read_parquet(_matrix_path(slug, tag, sub))
     te = fm[fm.split == "test"].dropna(subset=["sales_units"])
     keep = {str(b).upper() for b, g in te.groupby("brand") if (g.sales_units > 0).all()}
     return [b for b in _eligible_brands(cat) if str(b).upper() in keep]
