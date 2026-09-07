@@ -1,8 +1,8 @@
 ---
 name: write-prose-from-bullets
-description: "SKILL - Convert an approved bullet skeleton into thesis prose with EXACT .docx insertion points. Regenerates the snapshot, reads the target sections, writes paragraphs anchored to quoted sentences, flags every asset as in-text or appendix, and routes unverified citations to the NotebookLM claims folder. Triggers: write prose, turn bullets into prose, prose for chapter N, insert into the docx, where do these paragraphs go."
+description: "SKILL - Convert approved bullets, or a chapter's Word comments, into thesis prose with EXACT .docx insertion points. Confirms the snapshot is current for BOTH prose and comments, inventories a chapter's comments before writing, anchors every block to quoted sentences plus their neighbours, offers REWORD for salvageable sentences, flags assets in-text or appendix, and turns every SOURCE comment into a claims-register row. Triggers: write prose, turn bullets into prose, prose for chapter N, work through my comments, address the comments in chapter N, insert into the docx, where do these paragraphs go."
 metadata:
-  version: "1.0"
+  version: "1.1"
   last_updated: "2026-09-07"
   status: active
   related_rules:
@@ -47,11 +47,26 @@ needs the user to say so.
 Prose must be anchored to the *current* document, and the anchors are quoted sentences.
 A stale snapshot produces anchors that no longer exist.
 
-**Ask exactly this:**
+**First, establish what the newest snapshot is and whether Word has moved since.**
+The manifest records both the capture time and the source file's own modified time:
 
-> Should I regenerate the `.docx` snapshot first? Regenerate if the Word file has been
-> edited since `<newest snapshot folder name>`; skip if nothing has changed and I can
-> read that one.
+```bash
+ls -t 06_thesis_writing/docx-exported-snapshots/ | head -3
+grep -E "Captured|Source modified|Comments:"   06_thesis_writing/docx-exported-snapshots/<newest>/MANIFEST.md
+```
+
+If **Source modified** is later than **Captured**, the `.docx` has been edited since the
+snapshot and anchors may be stale — say so rather than asking a blind question.
+
+**A snapshot carries prose AND comments, and both must be current.** The comment export
+is a point-in-time extract; a comment resolved in Word this morning still appears open in
+yesterday's snapshot. When a pass is comment-driven, snapshot currency is not a
+convenience — a stale extract means working threads the author has already closed.
+
+**Then ask:**
+
+> Newest snapshot is `<name>` (captured `<time>`, source last modified `<time>`,
+> `<N>` comments). Regenerate before I start, or work from this one?
 
 To regenerate:
 
@@ -67,12 +82,13 @@ anchor is only valid relative to it.
 
 ### Phase 2 — Read the target sections, and verify the chapter map
 
-**Never guess chapter numbers.** They drift. Read:
+**Never guess chapter numbers.** They drift. The snapshot mirrors prose and comments
+file for file:
 
 ```
-<snapshot>/chapters/sections/          # numbered dirs, one per Heading 1
-<snapshot>/chapters/sections/<NN-chapter>/<section>/   # leaf .md per heading
-<snapshot>/comments/sections/<same path>               # objections on that section
+<snapshot>/chapters/sections/<NN-chapter>/<section>/<leaf>.md   # the prose
+<snapshot>/comments/sections/<NN-chapter>/<section>/<leaf>.md   # objections on it
+<snapshot>/comments/<chapter>.md                                # whole-chapter roll-up + tagged index
 ```
 
 Two things to extract per target section:
@@ -82,6 +98,43 @@ Two things to extract per target section:
 2. **Open comments** — a Word thread anchored on the sentence you are about to change is
    usually the *reason* the change is needed. Name the thread number; closing it is part
    of the deliverable.
+
+#### Phase 2B — For a comment-driven pass: inventory the WHOLE chapter first
+
+When the job is "work through my comments on chapter N", read the chapter-level comment
+file **before writing anything**. It carries a tagged index — section, tags, and the
+opening words of each thread.
+
+```bash
+sed -n '/^## Index/,/^---/p' <snapshot>/comments/ch4-data-assessment.md
+```
+
+Then build a table: **thread → section → tag → underlying issue**, and group by the last
+column. This is the step that pays for itself — *n* comments frequently reduce to far
+fewer facts, and one block can close a whole cluster. Working section by section makes
+that structurally invisible.
+
+Each comment carries an `**On:**` field with the anchored text verbatim. **Use it as the
+anchor** rather than reconstructing one from the prose file.
+
+Tags observed in this project, and what each implies:
+
+| Tag | Means | Usually produces |
+|---|---|---|
+| `INCORRECT` | A stated fact is wrong | `REWORD` or `REPLACE` — verify against a result file first |
+| `OUTDATED` | Was true, no longer is | `REWORD`, once the current value is confirmed |
+| `VERIFY` | The author doubts it | A check, then `VERIFIED-OK` or a fix |
+| `SOURCE` | Needs a citation | A **register row**, never an invented citation |
+| `APPENDIX` | Table belongs in the appendix | A citation, not inlined prose |
+| `PROSE` | Bullets awaiting prose | New paragraphs |
+| `CONTEXT` | Needs more explanation | `INSERT AFTER` |
+| `FORMATTING` | Presentation only | Usually `NEEDS-BRIAN`; no prose |
+| `METADATA` | Internal residue in the text | Deletion — flag it |
+| `ACADEMIC` | Register or framing | A judgement call; propose, don't impose |
+
+**Give every comment a verdict** (ADDRESSED / VERIFIED-OK / FLAGGED / REGISTERED /
+NEEDS-BRIAN) — see `prose-insertion-discipline`. A comment silently skipped reads as a
+comment overlooked.
 
 ### Phase 3 — Write prose against the real text
 
@@ -100,12 +153,16 @@ For every block:
 ### P<n> — <Chapter> §<section> <title>
 
 > **File:** <path within the snapshot>
-> **Word comment <N>** is anchored here — <what it asks>  [if applicable]
+> **Closes Word threads:** <N, N, N> — <what they ask>
+> **Verified against:** <result file the numbers came from>
 
-**Anchor:**
+**Anchor** — <where in the section: "end of the paragraph beginning ...">:
 > "<verbatim sentence from the .docx>"
 
-**Action:** REPLACE | INSERT AFTER | APPEND | EDIT-THEN-INSERT
+**Following text begins:**            [when inserting a new paragraph]
+> "<first sentence of the next paragraph>"
+
+**Action:** REPLACE | INSERT AFTER | APPEND | EDIT-THEN-INSERT | REWORD
 
 **Assets:**
 - **In-text:** <table/figure to place in the body, with its content if new>
@@ -121,6 +178,16 @@ For every block:
 | `INSERT AFTER` | Anchor stays untouched; prose follows it |
 | `APPEND` | Add to the end of the named section |
 | `EDIT-THEN-INSERT` | Anchor needs a small change **first** (a count, a table row), then prose is added. Spell out both steps separately. |
+| `REWORD` | One sentence rewritten in place — give **before and after in full** |
+
+**Prefer `REWORD` to `REPLACE` when a sentence is salvageable.** A wrong clause needs the
+clause fixed, not the paragraph rewritten; replacing wholesale discards approved prose and
+makes the change impossible to check by eye.
+
+**Quote the neighbours, not just the anchor.** For a new paragraph, quote the last
+sentence of the paragraph before *and* the first sentence of the one after. For a sentence
+inside a paragraph, quote both sides of the seam. The human is scanning a Word document,
+and a single sentence rarely identifies a position unambiguously.
 
 **Match the target's form.** A section that is a bullet list takes bullets, not
 paragraphs. Check before writing.
@@ -155,14 +222,50 @@ and written to a claims file under:
 project data rather than a remembered citation, write it that way — an
 `UNVERIFIED` tag is a debt, and prose with no debt can be pasted immediately.
 
-Also update the register at `writing-notes/unverified-claims-to-check.md`.
+#### Every `SOURCE` comment becomes a register row
+
+A comment tagged `SOURCE` is a **verification request**. Answering it with a citation
+written from memory is exactly the failure that created CV-01, so the answer is never a
+citation — it is a row in `writing-notes/unverified-claims-to-check.md` stating what a
+verification run must establish.
+
+Write the row as a **yes/no question against a document**:
+
+```markdown
+| N | <the claim as the thesis states it> | ch4 §4.4, Word thread 184 | **To verify:**
+does an authoritative source state a minimum series length for ARIMA parameter
+estimation, and is it ~24 periods? |
+```
+
+Bare `SOURCE` comments carrying no text are common — the claim is in the comment's
+`**On:**` field. Read the anchored sentence and write the question from that.
+
+Then add the supporting material to the chapter's verification folder:
+
+```
+06_thesis_writing/notebookLM/04-Claims_Verification/Chapter <N> - <Name>/<Topic>/
+```
+
+so a NotebookLM run can be pointed at it. Two standing constraints from the existing
+briefs, which the pack already encodes:
+
+- **Never upload thesis chapters.** The notebook will return our own wording as a
+  source — the failure that created CV-01.
+- **Group by literature type, not by chapter.** A statistics question and a legal
+  question in one notebook retrieve against each other's documents.
+
+**The register is the queue.** A claim named only in a writing note will not be
+verified, because the register is what gets worked through.
 
 ### Phase 7 — Report
 
 State plainly:
 
 - Which snapshot the anchors are valid against
+- **Every comment in scope, with its verdict** — ADDRESSED / VERIFIED-OK / FLAGGED /
+  REGISTERED / NEEDS-BRIAN. A comment with no verdict reads as one overlooked
 - Which Word threads this closes
+- Which claims went to the register, and what each asks
 - **What is blocked and why** — never silently omit a block whose evidence is not ready
 - Any discrepancy found in the existing text, as a flag, not a fix
 
@@ -180,6 +283,10 @@ State plainly:
 | Inventing a citation to support a sentence | This is the failure the claims folder exists for | Write from measured data, or mark UNVERIFIED |
 | Pasting prose into a section that is bullets | Breaks the section's form | Match the target |
 | Editing the `.docx` or a snapshot | Both are off-limits | Stage in writing-notes |
+| Answering a `SOURCE` comment with a citation | Invents the source the comment asked for | Write a register row stating what to verify |
+| Replacing a paragraph to fix one clause | Discards approved prose; diff is unreadable | `REWORD` the sentence |
+| Quoting only the anchor sentence | Mid-paragraph anchors are ambiguous | Quote the neighbouring sentences too |
+| Reading comments section by section | Cannot see that 8 threads are 1 fact | Inventory the whole chapter first (Phase 2B) |
 
 ---
 
@@ -190,8 +297,36 @@ State plainly:
 - [ ] Every number traced to a result file, and verified programmatically where possible
 - [ ] Every asset marked in-text or appendix
 - [ ] Every unverified citation marked inline **and** filed under `04-Claims_Verification/`
+- [ ] Every `SOURCE` comment has a register row saying what to verify
+- [ ] Every comment in scope has a verdict — none silently skipped
+- [ ] Every insertion quotes its neighbouring sentences, not just the anchor
 - [ ] Word comment threads this closes are named
 - [ ] Blocked blocks stated as blocked, with the dependency
+
+---
+
+## Where everything lives
+
+| What | Path |
+|---|---|
+| **Authoritative prose** | the OneDrive `.docx` — never edited by this skill |
+| Snapshots | `06_thesis_writing/docx-exported-snapshots/YYYY-MM-DD_HH-mm_<slug>/` |
+| ↳ manifest (capture time, source mtime, comment count) | `<snapshot>/MANIFEST.md` |
+| ↳ prose, per chapter | `<snapshot>/chapters/<chN>.md` |
+| ↳ prose, per section | `<snapshot>/chapters/sections/<NN-chapter>/<section>/<leaf>.md` |
+| ↳ **comments, per chapter** (tagged index) | `<snapshot>/comments/<chN>.md` |
+| ↳ **comments, per section** (mirrors prose paths) | `<snapshot>/comments/sections/<NN-chapter>/…` |
+| Snapshot generator | `utility_scripts/scripts/thesis_snapshot.py --label "<slug>"` |
+| Staged prose + placement contracts | `06_thesis_writing/writing-notes/<slug>.md` |
+| Planning bullets (**never prose**) | `06_thesis_writing/sections-drafts/*.md` |
+| **Claims register** (the verification queue) | `06_thesis_writing/writing-notes/unverified-claims-to-check.md` |
+| Verification packs, per chapter | `06_thesis_writing/notebookLM/04-Claims_Verification/Chapter <N> - <Name>/` |
+| ↳ how to run a verification | `…/Claims_Verification-01-HOW-TO-RUN.md` |
+| The Zotero library — the only citable source | `06_thesis_writing/citations/citations.json` |
+| Figures, diagrams, appendix tables | owned by **P0050**; check before citing |
+
+`comments/` mirrors `chapters/` file for file, so the objections on a section are always
+at the same path under a different root.
 
 ---
 

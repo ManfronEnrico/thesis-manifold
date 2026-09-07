@@ -6,6 +6,15 @@
      Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
 
 # Chapter 4 — Data Assessment
+
+> ⚠ **THE STATUS LINE BELOW IS STALE (flagged 2026-09-07, not rewritten).**
+> It claims COMPLETE / all figures recomputed 2026-06-27 / no placeholders remain.
+> Since then the pipeline was re-run (feature matrices regenerated 2026-09-07 15:59,
+> now horizon-correct and carrying the holiday features), and the SRQ1 result tables
+> are older still (2026-09-06 22:55) — so they are pre-fix. Treat every figure in this
+> file as unverified until the benchmark re-runs. Left in place because it is unclear
+> what "COMPLETE" was originally scoped to; see `writing-notes/ch4-comment-pass.md`.
+
 > Status: COMPLETE — ALL FIGURES RECOMPUTED LOCALLY (2026-06-27) — RQs v4 (four beverage categories; SRQ3 = integration readiness; Nielsen scanner panel only). The cleaned Nielsen parquets are local (`data/raw/nielsen_<cat>_clean_*.parquet`); structural figures, data-quality figures (null rates, negative/zero counts, in-scope SKU and series counts), and the detailed time-series EDA (ADF stationarity, ACF/PACF, seasonality, promo correlation) are computed directly from them under the DVH EXCL. HD market scope for all four categories. No `[regenerate]` placeholders remain. Awaiting human review only.
 > Author: Claude Code — requires human review before finalisation
 > Convention: all figures are local, recomputed under DVH EXCL. HD unless explicitly attributed to Brian's superseded all-markets audit.
@@ -15,13 +24,80 @@
 
 ## 4.1 Overview and Data Strategy
 
+> Claims settled in the 2026-09-07 comment pass (threads 133-137).
+> Prose staged in `writing-notes/ch4-comment-pass.md` blocks C1-C4.
+
+**Claims this section must make**
+
+- One secondary data source: the Nielsen/Prometheus beverage scanner panel, four Danish
+  categories (CSD, danskvand, energidrikke, RTD).
+- **Beer (`totalbeer`) was available at source and deliberately excluded** on compute and
+  bandwidth grounds -- an analytical scoping choice, NOT a gap in the data.
+  Evidence: `save_all_datasets.py` registers `totalbeer_clean_facts_v`;
+  `_00_raw/nielsen/data_jsonl/Totalbeer/metadata/` exists. Ch1 §1.4 and Ch3 §3.4 must
+  agree. (thread 134)
+- **The data are point-of-sale scanner records, not survey data.** Nielsen metadata
+  describes the monetary measures as consumer retail price captured at point of sale;
+  "survey" appears nowhere in any category's metadata. Coverage is bounded by which
+  retailers report, not by sampling error. (thread 136)
+- CSD is the worked category (**§4.2**, not §4.3 -- numbering corrected 2026-09-07).
+- **The other three categories are load-bearing, not replications**: they carry the
+  pooled-vs-per-category comparison, whose answer differs by category scale.
+  Evidence: `srq1_model_performance/tables/pooled_summary.md`. (thread 135)
+- **The split is proportional and derived, not locked or pre-registered** -- cut-offs are
+  recomputed from each category's period count and move when the panel extends.
+  Evidence: `_03_engineered/bymonth/CSD/csd_split_dates_h3.json` (test ends 2026-07).
+  (thread 137; same fact as threads 183/185/187/191 in §4.4)
+- Assessment follows the three-stage Saunders et al. (2023) secondary-data evaluation.
+  Name the framework here; do not re-explain it -- Ch3 owns the explanation. (thread 133)
+
+**Open**
+
+- Chapter subtitle undecided; the literal placeholder `COULD USE A SUBTITLE` is still in
+  the Word document and must be removed. (thread 131)
+- Cross-thesis repetition question (thread 133) is a whole-document judgement, not a §4.1
+  edit.
+
 ---
 
 ## 4.2 The Nielsen Scanner Panel (core forecasting input)
 
 ### 4.2.1 Source, Type, and Access
 
+> Threads 139-140 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.1.1.
+
+- Provided by Manifold AI via the Prometheus platform; commercial, restricted access.
+- **Documentary secondary data (scanner panel), NOT survey data** -- same correction as
+  thread 136. The bolded phrase in Word was the error itself. (thread 139)
+- **No NDA exists.** Access is restricted by understanding, not contract; raw extracts
+  stay local and are not redistributed. Do not assert a legal instrument we cannot
+  produce. ⚠ confirm against what was actually agreed. (thread 140)
+
+**Open**
+- Bolding has no convention chapter-wide; proposal is headers and table labels only.
+
+
 ### 4.2.2 Schema and Structure
+
+> Threads 142-146 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.1.2.
+
+- Star schema verified: market/period/product dimensions, facts at market x product x
+  period. Product dimension carries brand, manufacturer, pack format, flavour, price
+  tier, corporate attribution. (thread 142)
+- Period identifiers are not monotonic with calendar time; sort by
+  (period_year, period_month).
+- **Retention threshold is DERIVED, not chosen**: `min_periods = warmup + horizon + 1`
+  = 15 at H1, 17 at H3. The >=30 / >=40 thresholds are gone -- three competing fixed
+  values were removed 2026-08-18. This retracts a limitation rather than restating one.
+  Evidence: `_shared_modules/engineer_features.py`. (thread 146)
+- **Brands retained: 95 / 29 / 44 / 62** (CSD / danskvand / energidrikke / RTD),
+  superseding 77 / 24 / 27 / 42. Evidence: `*_manifest_h3.json`. (thread 143)
+
+**Open**
+- Data-model diagram does not exist -- P0050 owes it. (thread 142)
+- Table 4.1's long caption should move to an appendix. (thread 143)
+- Periods and SKU columns not re-verified since 2026-06-27.
+
 
 | Category | Periods (max) | Brands (in scope) | retained ≥40 | retained ≥30 | Catalog SKUs | In-scope SKUs | Brand-month rows | In-scope fact rows |
 |---|---|---|---|---|---|---|---|---|
@@ -32,7 +108,41 @@
 
 ### 4.2.3 Overall Suitability
 
+> Threads 148-149 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.1.3.
+
+- Market scope is the single `DVH EXCL. HD` level; summing the 28 hierarchical market
+  values inflates CSD volume 6.16x.
+- **Exogenous predictors now include the holiday calendar** (`days_in_month`,
+  `n_holidays`, `non_holiday_days`) -- present in the regenerated matrices. (thread 148)
+- **Promo is unavailable for danskvand and RTD** (`has_promo: false`), so the predictor
+  set is narrower there -- not zero-filled, absent. (thread 148)
+- **Counts are extract-dependent, not fixed.** Monthly re-pull lengthens the panel and
+  admits brands previously below the minimum. Report the extract date, not frozen
+  numbers. (thread 149)
+
+
 ### 4.2.4 Precise Suitability
+
+> Threads 151-154 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.1.4.
+
+- **Zero is a measurement; null is an unobserved month.** The thesis had this inverted.
+  Zero-fill applies to sales measures in months absent from a brand's calendar because
+  the brand sold nothing, not an unknown amount. Evidence: `engineer_features.py` --
+  "That is a measurement, not a gap to be imputed." (thread 152)
+- **Weighted-distribution gaps are forward-filled within brand, never backward.** The
+  claimed brand-and-market median imputation DOES NOT EXIST in the code. bfill was
+  removed as leakage: it contaminated 1,176 rows (19.1% of the calendar) across 51
+  brands. Leading gaps fill zero. (thread 153)
+- **Negatives are floored to zero without asserting a cause.** The extract cannot
+  distinguish returns/corrections from recording errors, so claim the treatment, not the
+  explanation. Evidence: `full[c] = full[c].clip(lower=0)`. (thread 154)
+
+**Open**
+- Reliability currently rests on Nielsen's reputation with no source -- register row 5.
+  Either cite a panel-data methodology source or argue from the completeness figures.
+  (thread 151)
+- Null-rate percentages and negative-row counts predate the regeneration.
+
 
 - *Promotional values*: where the promotional metric exists (CSD and energidrikke) it is fully populated (0.00% null), with the absence of promotional activity encoded as a zero rather than a null; for **danskvand** and **RTD** the promotional column is absent entirely, collapsing to the promo-zero case above.
 - *Weighted-distribution nulls*: negligible across all categories — 0.019% (CSD), 0.016% (danskvand), 0.093% (energidrikke), 0.000% (RTD). These reflect products Nielsen does not track for distribution in a given period; they are imputed using a brand-and-market median, which preserves central tendency but ignores within-period time variation (a moderate limitation for niche brands, immaterial at these null rates).
@@ -40,9 +150,64 @@
 
 ### 4.2.5 Forecasting Suitability
 
+> Threads 156-157 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.1.5.
+
+- **Adequacy rests on three-plus complete annual cycles**, verifiable from the panel --
+  NOT on an ARIMA minimum period count, which had no source in the 86-entry library.
+  Register row 6. (thread 156)
+- Benchmarking uses the brands meeting the derived minimum length: 95 / 29 / 44 / 62.
+  (thread 157)
+- A fully-observed subset (present in every period) is a stricter alternative; the
+  57/22/18/37 figures predate regeneration and need re-deriving if cited.
+
+
 ---
 
 ## 4.3 CSD — Worked Category (EDA and Parameters)
+
+> Threads 159-175 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.2.
+> NOTE: this is §4.2 in the Word document under the corrected numbering.
+
+**Claims this section must make**
+
+- **CSD is the worked category because it is the largest and longest-running**: most
+  brands, longest unbroken history, and it has the promo measures two others lack -- so
+  it exercises every stage of the pipeline. State the justification; do not assert the
+  status. (thread 159)
+- Panel: **142 brands, 4,209 brand-month rows**, full-history series **46 periods**
+  (thesis says 136 / 3,789 / 42). Retained after the derived minimum: **95 brands**.
+  Evidence: `csd_eda_tables/step_2_01_shape.md`. (thread 161)
+- **Stationarity is per-brand, not aggregate.** Difference-stationarity dominates; a
+  minority are stationary in log level; a few need no transform. ADF power is limited at
+  n=46, so treat as indicative of the transform, not a classification.
+  Evidence: `step_2_05_adf_per_brand.md`. (thread 163)
+- **Peak months verified exactly as stated** -- CSD {3,6,9,12}, danskvand {6,7,8,9},
+  energidrikke {3,6,9}, RTD {5,6,12}. Four measured profiles, each commercially
+  plausible. This is a real result and should stay prominent.
+  Evidence: all four `step_3_contract_h3.md`. (thread 165)
+- The indicator is named for what it measures (an elevated month), not a presumed cause.
+  Peaks are quarter-ends -- trade loading, not holidays. (thread 165)
+- Mean-based rule, not totals: the panel is unbalanced, so a month's total reflects how
+  many brands were active. (thread 165)
+- **Two ACF estimates differ by construction** -- single-brand keeps the brand's level,
+  pooled demeans first and isolates common dynamics, so pooled is larger. Conclusion is
+  unaffected. (thread 167)
+- **All 142 CSD brands have no zero-sales months**, so intermittent demand does not arise
+  for this category. Evidence: `step_2_07_zero_types.md`. Cites Hyndman & Koehler (2006),
+  which IS in the library.
+
+**Open**
+
+- **Table 3 (per-category EDA) is NOT verified.** Promo correlations (r=0.937/0.988), ADF
+  p-values and ACF figures all predate regeneration and could not be reproduced from
+  current outputs -- `step_2_13_promo_intensity` gives a distribution, not a correlation.
+  Needs a regeneration pass. (thread 173)
+- Table 2 (parameters) has two wrong rows: MIN_PERIODS 30 and the 24/6/12 split.
+- Both tables are appendix candidates -- P0050. (threads 169, 173)
+- Remove revision narration throughout ("supersedes Brian's...", "revises...",
+  "renamed from..."). Six threads flag this as METADATA.
+- "§4.6" cross-reference is residue; no such section exists. (thread 172)
+
 
 ### 4.3.1 Scope and Filtering
 
@@ -96,6 +261,33 @@
 
 ## 4.4 Feature Engineering (forecasting substrate)
 
+> Threads 177-181 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.3.
+> NOTE: this is §4.3 in the Word document.
+
+**Claims this section must make**
+
+- **The holiday enrichment is IN the data**: `days_in_month`, `n_holidays`,
+  `non_holiday_days` are present in the regenerated matrices. (thread 177)
+- Model inputs: six lags, three rolling statistics, three calendar features, three
+  holiday features, promo_intensity where available.
+- `log_sales_units` is the TARGET, not an input -- using it would be trivial leakage.
+  (thread 180)
+- **Tree models take NaN natively (default branch direction per split); the linear model
+  gets a zero-fill at fit time.** Deferring to the model keeps both treatments visible
+  instead of hiding one imputation in the shared substrate. No citation needed -- this is
+  a property of the implementations. (thread 181)
+
+**Open**
+
+- ⚠ **Four competing counts exist and none matches the thesis's "22 columns / 17
+  features"**: parquet 54 columns, manifest 34 features, `srq1_benchmark.py` 13 trained,
+  pooled comparison 12. Best reconstruction is 13 + 3 holiday = **16**. Read the benchmark
+  script before finalising. (threads 177, 179)
+- **`weighted_distribution` as "the fourteenth input feature" is doubtful** -- it is not in
+  the FEATURES list; it is a raw Nielsen measure in the matrix, which is different from
+  being a model input. (thread 180)
+
+
 | Feature | Description | Models |
 |---|---|---|
 | `lag_1`, `lag_2`, `lag_3`, `lag_4`, `lag_8`, `lag_13` | Lagged `sales_units` (short, medium, seasonal) | LightGBM, XGBoost, Ridge |
@@ -119,6 +311,35 @@
 ---
 
 ## 4.6 Key Risks and Mitigations
+
+> Threads 193-194 settled 2026-09-07. Prose: `writing-notes/ch4-pass.md` §4.5.
+> NOTE: this is §4.5 in the Word document.
+
+**Claims this section must make**
+
+- Figures are pipeline-generated and regenerate on refresh; report the extract date rather
+  than framing figures as "verified (resolved)". A risk register states standing
+  limitations, not project history. (thread 193)
+- **The weighted-distribution median imputation DOES NOT EXIST** -- it is a within-brand
+  forward fill with an explicit no-backfill guard. The current text concedes a limitation
+  the pipeline does not have. Residual risk is a stale value persisting through a long
+  gap. (thread 193)
+- Thin panels: danskvand and RTD retain 29 and 62 brands against CSD's 95. Statistical
+  baselines are most exposed since they estimate from a single series. Report panel
+  lengths so the reader can weight the results. (thread 193)
+- Promo-zero categories (danskvand, RTD) lack the signal entirely -- unmeasured-variable
+  limitation.
+- Generalisability bounded to DVH EXCL. HD, the observed window, and the retained series.
+
+**Open**
+
+- **Chapter 4 cites exactly one source (Saunders et al. 2023).** Most claims are
+  measurements of this dataset and are correctly uncited, but three places genuinely need
+  one: Hyndman & Koehler 2006 (in library, usable now), Box & Jenkins 1970 (NOT in
+  library -- register row 8), and a commercial-panel reliability source (register row 6).
+  (thread 194)
+- Stale numbers to correct here: MIN_PERIODS=30, "CSD (42 periods, 77 brands)" -> 46 and 95.
+
 
 - **Figures verified (resolved).** All structural, data-quality, and EDA figures in this chapter are recomputed locally from the `data/raw` parquets under the DVH EXCL. HD scope (2026-06-27), superseding the earlier P0023 audit values; no placeholders remain. Residual dependence is only on Brian's final harmonised pipeline, against which the local figures are expected to reconcile.
 - **Market scope (resolved).** Confirmed locally that the inherited "All Markets" aggregation double-counts (6.16× inflation for CSD; 14–17× for the other three categories, which expose 86 market levels). Resolved by scoping all four categories to the single `DVH EXCL. HD` market level; feature matrices regenerated accordingly (2026-06-23) under DVH EXCL. HD + MIN_PERIODS=30.

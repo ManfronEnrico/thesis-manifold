@@ -5,7 +5,7 @@ category: governance
 applies-to: [all chapters, all methodology claims, all code comments citing literature]
 triggers: [citing a source from memory, stating a numeric threshold, quoting a convention, writing a methods sentence, reviewing before submission]
 created: 2026_09_06-16_10
-updated: 2026_09_07-10_45
+updated: 2026_09_07-20_28
 ---
 
 # Unverified claims to check
@@ -40,6 +40,13 @@ here instead, and let Brian decide.
 | 3 | "Lukkeloven was liberalised in 2012", Danish stores open Sundays | Claude, in conversation; now in `engineer_features.py::add_holiday_features` docstring and in the enrichment writing note | Brian confirmed the *substance* (Danish retail trades weekends) from domain knowledge, which is what the feature design rests on. The **year and the statute name** came from Claude and are uncited. Either cite Danish retail-hours legislation or drop the specifics and keep the plain statement. |
 | 4 | Store Bededag abolished effective 2024 (L 13, adopted 2023-02-28) | `export_holiday_appendix.py`, appendix table 91 review note | The *effect* is verified in data — the Nager API returns 15 holidays through 2023 and 14 from 2024. The **bill number and adoption date** were written from memory and are not verified. Verify against Danish legislation or cite only the observed change. |
 
+| 5 | XGBoost's histogram builder reduces per-thread gradient sums in completion order, so thread count changes the result | `srq1_benchmark.py::XGB_N_JOBS` comment and P0047 F18 | **MEASURED IN-PROJECT, mechanism NOT cited.** The *effect* is directly measured and reproducible in this repo (n_jobs 1/2/4/8 -> WMAPE 34.65/34.95/35.40/37.30, seed and data fixed) — that evidence stands on its own and needs no citation. The *explanation* (non-associative float reduction over threads) is Claude's, from general knowledge, and is not backed by an XGBoost reference. **In prose: report the measurement, and either cite XGBoost documentation for the mechanism or state the cause as the most likely explanation rather than established fact.** |
+| 6 | Nielsen's commercial standing warrants treating its scanner data as reliable | ch4 §4.1.4, Word thread 151 | **To verify:** does a methodological source on commercial retail panel data support treating provider reputation as a reliability warrant? If not, reliability must be argued from the observable completeness figures already reported in §4.1.4 rather than from Nielsen's standing. |
+| 7 | ARIMA requires ~24 periods for stable parameter identification | ch4 §4.1.5, Word thread 156 | **To verify:** does an authoritative forecasting text state a minimum series length for ARIMA parameter identification, and is it approximately 24 periods? **Already removed from the prose** (replaced by a three-annual-cycles argument the data support directly) — reinstate only if a source is found. Hyndman & Athanasopoulos is in the library but was checked and does not state this. |
+
+| 8 | ACF significance band is +/- 1.96 / sqrt(n), attributed to Box and Jenkins (1970) | `step_2_16_acf_significant_lags.md`, surfaced by ch4 Word thread 194 | **To verify:** is the +/-1.96/sqrt(n) band for sample autocorrelation attributable to Box & Jenkins (1970), and is that edition the right citation? The work is **not in the 86-entry library**. Either add it to Zotero and cite properly, or state the band as a standard criterion without attribution. The band itself is uncontroversial; the attribution is what is unverified. |
+| 9 | The validation window must contain at least two seasonal cycles for Prophet | ch4 §4.4, Word thread 189 | **To verify:** does Prophet's documentation or an authoritative source state a minimum number of seasonal cycles for fitting yearly seasonality? If not, drop the claim -- the panel length can be reported without asserting a requirement. |
+
 ## How to use this file
 
 - **Adding**: any time a source is named from memory rather than from the
@@ -60,9 +67,6 @@ here instead, and let Brian decide.
   this file is a planning surface
 - `plans/P0046_..._exogenous-enrichment-decision/findings.md` F12, F14 — the
   measured corrections of Claude's own claims in the same session
-
-| 5 | XGBoost's histogram builder reduces per-thread gradient sums in completion order, so thread count changes the result | `srq1_benchmark.py::XGB_N_JOBS` comment and P0047 F18 | **MEASURED IN-PROJECT, mechanism NOT cited.** The *effect* is directly measured and reproducible in this repo (n_jobs 1/2/4/8 -> WMAPE 34.65/34.95/35.40/37.30, seed and data fixed) — that evidence stands on its own and needs no citation. The *explanation* (non-associative float reduction over threads) is Claude's, from general knowledge, and is not backed by an XGBoost reference. **In prose: report the measurement, and either cite XGBoost documentation for the mechanism or state the cause as the most likely explanation rather than established fact.** |
-
 
 ---
 
