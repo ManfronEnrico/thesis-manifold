@@ -107,6 +107,7 @@ held-out ground truth is retained. Ground truth **is** retained — see F5.
 | 5 | Ch5–Ch9 prose + citations | section by section | pending |
 | 6 | **Inherited: draft bullets** | ch3/ch6 merge, ch4/ch7/ch8, short files, verify | pending (tasks 11–16) |
 | 7 | **Inherited: Brian's writing items** | 5 Word threads, NotebookLM claims verification | pending (tasks 9–10) |
+| 8 | **Chapter reorder: swap Ch5 and Ch6** | remove a forward dependency; add an SRQ→chapter map | pending (from P0050, 09-07) |
 
 **Phase 4 is not fully blocked.** §4.1/§4.2 narrative and §4.3/§4.4 (blocks P1/P2)
 can proceed now; only the horizon subsection and the numbers that move with the

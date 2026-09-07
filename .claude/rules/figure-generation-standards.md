@@ -324,3 +324,29 @@ def _bullets(title, *body, size=9):
 ```
 
 Use bullets for **enumerations of comparable things**; keep prose centred.
+
+### `BALIGN` is the one that centres a subtitle
+
+A cell's `ALIGN` positions the cell's content block; **`BALIGN` positions the
+lines within it** when a cell holds several lines separated by `<BR/>`. A
+heading-over-subtitle cell therefore needs both, or the subtitle stays flush-left
+under a centred heading — a mix that reads as a mistake:
+
+```python
+f'<TD ALIGN="CENTER" BALIGN="CENTER" ...><B>{head}</B><BR/>{detail}</TD>'
+```
+
+**Do not check this by looking for `text-anchor="middle"` in the SVG.** Graphviz
+centres text by computing the `x` and leaving `text-anchor="start"`, so the
+attribute says nothing. Measure the *midpoint* of each line against the box
+centre instead.
+
+### One vocabulary across the whole figure set
+
+A term introduced in one figure must appear identically in every other figure
+that refers to the same thing — and match what the code and the results tables
+call it. Scenario names were lettered in the scenarios figure while the
+architecture figure still carried older descriptive labels for the same three
+things; a reader meeting "Scenario C" in one place could not connect it to the
+other. When a name changes, grep the whole generator, not just the figure that
+prompted the change.

@@ -20,7 +20,7 @@ in another.
 This script is the single training entry point. It writes, per category:
 
     04_thesis_results/srq1/models/{cat}_xgboost.json     the fitted booster
-    05_thesis_results/srq1_model_performance/models/{cat}/metadata.json  everything needed to
+    05_thesis_results/model_benchmark/models/{cat}/metadata.json  everything needed to
                                                           serve and to audit it
 
 Serving loads these. Serving never fits.

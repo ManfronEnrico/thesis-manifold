@@ -28,16 +28,16 @@
 <text xml:space="preserve" text-anchor="start" x="221.64" y="-445.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">panel construction</text>
 <polygon fill="#fafafa" stroke="none" points="176.26,-409.7 176.26,-439.7 342.01,-439.7 342.01,-409.7 176.26,-409.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="176.26,-409.7 176.26,-439.7 342.01,-439.7 342.01,-409.7 176.26,-409.7"/>
-<text xml:space="preserve" text-anchor="start" x="194.26" y="-425.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Access</text>
-<text xml:space="preserve" text-anchor="start" x="182.26" y="-417.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">validated extract</text>
+<text xml:space="preserve" text-anchor="start" x="242.26" y="-425.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Access</text>
+<text xml:space="preserve" text-anchor="start" x="230.26" y="-417.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">validated extract</text>
 <polygon fill="#fafafa" stroke="none" points="176.26,-375.7 176.26,-405.7 342.01,-405.7 342.01,-375.7 176.26,-375.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="176.26,-375.7 176.26,-405.7 342.01,-405.7 342.01,-375.7 176.26,-375.7"/>
 <text xml:space="preserve" text-anchor="start" x="230.26" y="-391.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Aggregation</text>
 <text xml:space="preserve" text-anchor="start" x="182.26" y="-383.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">brand by month — 9,645 rows, 366 brands</text>
 <polygon fill="#fafafa" stroke="none" points="176.26,-341.7 176.26,-371.7 342.01,-371.7 342.01,-341.7 176.26,-341.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="176.26,-341.7 176.26,-371.7 342.01,-371.7 342.01,-341.7 176.26,-341.7"/>
-<text xml:space="preserve" text-anchor="start" x="182.26" y="-357.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Exploratory analysis</text>
-<text xml:space="preserve" text-anchor="start" x="208.89" y="-349.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">16 analyses</text>
+<text xml:space="preserve" text-anchor="start" x="211.51" y="-357.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Exploratory analysis</text>
+<text xml:space="preserve" text-anchor="start" x="238.14" y="-349.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">16 analyses</text>
 </g>
 <!-- src&#45;&gt;prep -->
 <g id="edge1" class="edge">
@@ -52,12 +52,12 @@
 <text xml:space="preserve" text-anchor="start" x="220.89" y="-275.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">matrix construction</text>
 <polygon fill="#fafafa" stroke="none" points="169.14,-239.7 169.14,-269.7 349.14,-269.7 349.14,-239.7 169.14,-239.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="169.14,-239.7 169.14,-269.7 349.14,-269.7 349.14,-239.7 169.14,-239.7"/>
-<text xml:space="preserve" text-anchor="start" x="205.51" y="-255.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Data contract</text>
-<text xml:space="preserve" text-anchor="start" x="175.14" y="-247.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">lag depth, series length, split dates</text>
+<text xml:space="preserve" text-anchor="start" x="228.39" y="-255.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Data contract</text>
+<text xml:space="preserve" text-anchor="start" x="198.01" y="-247.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">lag depth, series length, split dates</text>
 <polygon fill="#fafafa" stroke="none" points="169.14,-205.7 169.14,-235.7 349.14,-235.7 349.14,-205.7 169.14,-205.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="169.14,-205.7 169.14,-235.7 349.14,-235.7 349.14,-205.7 169.14,-205.7"/>
-<text xml:space="preserve" text-anchor="start" x="184.51" y="-221.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Enrichment</text>
-<text xml:space="preserve" text-anchor="start" x="175.14" y="-213.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">holidays, promotions</text>
+<text xml:space="preserve" text-anchor="start" x="232.14" y="-221.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Enrichment</text>
+<text xml:space="preserve" text-anchor="start" x="222.76" y="-213.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">holidays, promotions</text>
 <polygon fill="#fafafa" stroke="none" points="169.14,-171.7 169.14,-201.7 349.14,-201.7 349.14,-171.7 169.14,-171.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="169.14,-171.7 169.14,-201.7 349.14,-201.7 349.14,-171.7 169.14,-171.7"/>
 <text xml:space="preserve" text-anchor="start" x="211.14" y="-187.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Feature construction</text>
@@ -94,8 +94,8 @@
 <text xml:space="preserve" text-anchor="start" x="431.44" y="-125.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Category&#45;specific</text>
 <polygon fill="#fafafa" stroke="none" points="425.44,-81.7 425.44,-111.7 518.44,-111.7 518.44,-81.7 425.44,-81.7"/>
 <polygon fill="none" stroke="#8a8a8a" points="425.44,-81.7 425.44,-111.7 518.44,-111.7 518.44,-81.7 425.44,-81.7"/>
-<text xml:space="preserve" text-anchor="start" x="452.81" y="-97.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Pooled</text>
-<text xml:space="preserve" text-anchor="start" x="431.44" y="-89.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">category as a feature</text>
+<text xml:space="preserve" text-anchor="start" x="455.44" y="-97.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Pooled</text>
+<text xml:space="preserve" text-anchor="start" x="434.06" y="-89.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">category as a feature</text>
 </g>
 <!-- matrix&#45;&gt;arms -->
 <g id="edge4" class="edge">

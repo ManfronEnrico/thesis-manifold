@@ -69,9 +69,13 @@ def _find_repo_root() -> Path:
 
 sys.path.insert(0, str(_find_repo_root()))
 from PATHS import (ROOT_DIR, THESIS_RESULTS_DIR, THESIS_RESULTS_SRQ1_DIR,  # noqa: E402
-                   THESIS_RESULTS_SRQ4_DIR, get_category_pipeline_step_outputs_dir)
+                   THESIS_RESULTS_SRQ4_DIR, CHAPTER_SLUGS,
+                   get_category_pipeline_step_outputs_dir,
+                   get_chapter_tables_dir)
 
-OUT = THESIS_RESULTS_DIR / "appendix"
+# No single OUT any more: tables are written to the chapter that discusses them
+# (see _TABLE_CHAPTER below). THESIS_RESULTS_DIR is still imported because the
+# run index is written once, at the top of the results tree.
 
 # Measured allocation of Manifold's production E2B template (alias `prometheus`),
 # not a literature estimate. See P0044 findings.
@@ -91,6 +95,47 @@ _SEQ = [0]
 REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"
 
 
+# This script is a CROSS-CUTTING exporter, not a scenario script. It lives with
+# the SRQ4 harness for historical reasons, but only 5 of its 15 tables concern
+# the scenario experiment -- the rest describe the pipeline, the substrate and
+# its cost. Filing them all under SRQ4 put pipeline-execution figures in
+# "scenario experiments", so each table now names the chapter that discusses it.
+_TABLE_CHAPTER: dict = {
+    # Ch4 -- how the data set was built
+    "pipeline_execution": "data_assessment",
+    "pipeline_data_reduction": "data_assessment",
+    # Ch6 -- the models, their cost and their stability
+    "metric_dictionary": "model_benchmark",
+    "statistical_baselines": "model_benchmark",
+    "seed_stability": "model_benchmark",
+    "parameter_drift": "model_benchmark",
+    "substrate_resource_profile": "model_benchmark",
+    "retraining_cost": "model_benchmark",
+    # Ch7 -- the tool interface in use
+    "interval_communication": "decision_synthesis",
+    "traceability_record": "decision_synthesis",
+    # Ch8 -- the scenario comparison itself
+    "scenario_comparison": "experimental_evaluation",
+    "outcome_taxonomy": "experimental_evaluation",
+    "per_run_record": "experimental_evaluation",
+    "run_configuration": "experimental_evaluation",
+    "sandbox_resource_profile": "experimental_evaluation",
+}
+
+
+def _chapter_dir(slug: str) -> Path:
+    """Where one table belongs. An unmapped slug raises rather than defaulting.
+
+    A default would file a new table in whichever chapter was convenient and let
+    it sit there unnoticed; failing loudly costs one line in the map above.
+    """
+    if slug not in _TABLE_CHAPTER:
+        raise KeyError(
+            f"table {slug!r} has no chapter in _TABLE_CHAPTER -- add one. "
+            f"Known: {sorted(_TABLE_CHAPTER)}")
+    return get_chapter_tables_dir(_TABLE_CHAPTER[slug])
+
+
 def _emit(slug: str, title: str, caption: str, df: pd.DataFrame,
           note: str = "", review: str = "") -> None:
     """Write one table as .md (paste/screenshot) and .csv (trace a number back).
@@ -99,17 +144,18 @@ def _emit(slug: str, title: str, caption: str, df: pd.DataFrame,
     order for our own review. The file CONTENT carries none: numbering inside
     the document is Word's job, and a hard-coded number goes stale the moment a
     table is dropped from the appendix."""
-    OUT.mkdir(parents=True, exist_ok=True)
+    out = _chapter_dir(slug)
+    out.mkdir(parents=True, exist_ok=True)
     _SEQ[0] += 1
     stem = f"{_SEQ[0]:02d}_{slug}"
-    df.to_csv(OUT / f"{stem}.csv", index=False, encoding="utf-8")
+    df.to_csv(out / f"{stem}.csv", index=False, encoding="utf-8")
 
     lines = [f"**{title}.** {caption}", "", df.to_markdown(index=False)]
     if note:
         lines += ["", f"*Note.* {note}"]
     if review:
         lines += [REVIEW_SEP, review]
-    (OUT / f"{stem}.md").write_text("\n".join(lines) + "\n",
+    (out / f"{stem}.md").write_text("\n".join(lines) + "\n",
                                     encoding="utf-8", newline="\n")
 
     _INDEX.append((title, stem))
@@ -1093,7 +1139,7 @@ def table_config(df: pd.DataFrame) -> None:
 
 
 # ---------------------------------------------------------------------------
-def _clear_previous(prefix_max: int = 88) -> int:
+def _clear_previous() -> int:
     """Delete this exporter's own previously-written tables before regenerating.
 
     The `NN_` prefix is a GENERATION-ORDER number, not a stable identity: if one
@@ -1102,39 +1148,36 @@ def _clear_previous(prefix_max: int = 88) -> int:
     numbers, and a prefix stops identifying a table -- observed 2026-09-07, when
     three different tables were all called `02_` (P0046 F23).
 
-    Scoped deliberately. Only `NN_` files at or below `prefix_max` are removed,
-    because the higher blocks belong to OTHER producers that write into this
-    same directory. Deleting the whole directory would silently destroy their
-    output, which does not regenerate from this script.
+    Matched by SLUG, not by prefix range. The old scheme reserved numeric blocks
+    per producer (01-49 here, 89 the literature table, 90-99 the holiday and
+    enrichment exporters) because every producer wrote into one flat appendix
+    directory, and a whole-directory wipe would have destroyed output this
+    script cannot regenerate. That was fragile in both directions: the bound was
+    once set to 89 and silently deleted the literature table, and a new producer
+    picking an unclaimed number was a matter of remembering to look.
 
-    THE BLOCK ALLOCATION (keep this in step when adding a producer):
-
-        01-49   export_appendix.py            <- this script, cleared here
-        89      generate_literature_table.py
-        90-93   export_holiday_appendix.py
-        94-99   srq1_export_enrichment_appendix.py
-
-    `prefix_max` is 88, not 89: the literature table sits at 89 and was being
-    deleted whenever this script happened to run after it. That failure is
-    invisible -- the file simply stops existing, and the run that removed it
-    reports success.
+    Under DEC-CHAPTER-FOLDERS each table is written to its chapter, and this
+    removes exactly the files it is about to rewrite -- `NN_<slug>.md|csv` for
+    slugs in `_TABLE_CHAPTER`. It cannot reach another producer's output even if
+    they share a directory, so no block allocation needs maintaining.
     """
     removed = 0
-    for f in OUT.glob("[0-9][0-9]_*"):
-        if f.suffix not in (".md", ".csv"):
-            continue
-        try:
-            if int(f.name[:2]) <= prefix_max:
+    for slug, chapter in _TABLE_CHAPTER.items():
+        for f in get_chapter_tables_dir(chapter).glob(f"[0-9][0-9]_{slug}.*"):
+            if f.suffix not in (".md", ".csv"):
+                continue
+            try:
                 f.unlink()
                 removed += 1
-        except (ValueError, OSError):
-            continue
+            except OSError:
+                continue
     return removed
 
 
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    print(f"Writing appendix tables to {OUT}\n")
+    _chapters = sorted(set(_TABLE_CHAPTER.values()))
+    print(f"Writing tables into {len(_chapters)} chapter folders under "
+          f"{THESIS_RESULTS_DIR.name}/: {', '.join(_chapters)}\n")
     if (n := _clear_previous()):
         print(f"  (cleared {n} file(s) from the previous run)\n")
 
@@ -1193,14 +1236,19 @@ def main() -> None:
            "gives the directory a stable generation order for our own review; the "
            "document itself carries no table number, so Word's caption fields stay "
            "authoritative.", "",
-           "| # | Table | File |", "|---|---|---|"]
+           "Tables are filed under the CHAPTER that discusses them, not under the "
+           "script that produced them -- the writing workflow runs chapter by "
+           "chapter, so the folder you open is the chapter you are writing.", "",
+           "| # | Chapter | Table | File |", "|---|---|---|---|"]
     for i, (title, stem) in enumerate(_INDEX, 1):
-        idx.append(f"| {i} | {title} | `{stem}.md` / `{stem}.csv` |")
-    (OUT / "README.md").write_text("\n".join(idx) + "\n",
-                                   encoding="utf-8", newline="\n")
+        ch = _TABLE_CHAPTER[stem.split("_", 1)[1]]
+        idx.append(f"| {i} | {ch} | {title} | `{ch}/tables/{stem}.md` |")
+    index_path = THESIS_RESULTS_DIR / "APPENDIX_TABLES.md"
+    index_path.write_text("\n".join(idx) + "\n",
+                          encoding="utf-8", newline="\n")
 
     print(f"\n{len(_INDEX)} tables written.")
-    print(f"  index: {OUT / 'README.md'}")
+    print(f"  index: {index_path}")
     print("  each table .md carries its review notes below a horizontal rule.")
 
 

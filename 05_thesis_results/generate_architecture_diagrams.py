@@ -48,13 +48,29 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from PATHS import (THESIS_RESULTS_DIAGRAMS_DIR, THESIS_RESULTS_SRQ1_DIR,
-                   THESIS_RESULTS_APPENDIX_DIR, THESIS_RESULTS_DIR,
+from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_chapter_figures_dir,
+                   get_category_eda_results_dir,
+                   THESIS_RESULTS_DIR,
                    get_category_engineered_bymonth_dir,
                    get_category_pipeline_step_outputs_dir)
 
-OUT = THESIS_RESULTS_DIAGRAMS_DIR
-OUT.mkdir(parents=True, exist_ok=True)
+# Diagrams are filed by chapter like every other artefact. The chapter comes
+# from the filename prefix that _check_stem() already enforces, so the routing
+# needs no second list to keep in step with the figure names.
+_CH_DIR = {
+    1: "introduction", 2: "literature_review", 3: "methodology",
+    4: "data_assessment", 5: "architecture", 6: "model_benchmark",
+    7: "decision_synthesis", 8: "experimental_evaluation",
+    9: "discussion", 10: "conclusion",
+}
+
+
+def _out_for(stem: str) -> Path:
+    """The figures/ folder of the chapter this diagram's prefix names."""
+    n = int(re.match(r"ch(\d+)_", stem).group(1))
+    if n not in _CH_DIR:
+        raise ValueError(f"{stem!r} names chapter {n}, which does not exist")
+    return get_chapter_figures_dir(_CH_DIR[n])
 
 TABLES = THESIS_RESULTS_SRQ1_DIR / "tables"
 MODELS = THESIS_RESULTS_SRQ1_DIR / "models"
@@ -137,9 +153,13 @@ def _stack(title: str, rows: list, size: int = 9, dashed: bool = False) -> str:
     for head, detail in rows:
         d = (f'<BR/><FONT POINT-SIZE="{size - 1}">{_esc(detail)}</FONT>'
              if detail else "")
+        # Centred, matching _box: these rows are a heading over a subtitle, the
+        # same shape as a standalone node, and mixing left-aligned rows into a
+        # figure of centred boxes reads as an inconsistency rather than a choice.
+        # (Left alignment belongs to _bullets, where items form a scannable list.)
         cells.append(
-            f'<TR><TD ALIGN="LEFT" BGCOLOR="{NEST}" BORDER="{border}" '
-            f'COLOR="{LINE}" CELLPADDING="5">'
+            f'<TR><TD ALIGN="CENTER" BALIGN="CENTER" BGCOLOR="{NEST}" '
+            f'BORDER="{border}" COLOR="{LINE}" CELLPADDING="5">'
             f'<B>{_esc(head)}</B>{d}</TD></TR>')
     return (f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="4" CELLPADDING="0">'
             f'<TR><TD ALIGN="CENTER"><FONT POINT-SIZE="{size}">'
@@ -273,7 +293,7 @@ def _save(g: graphviz.Digraph, stem: str) -> None:
     _check_stem(stem)
     # SVG only. It is vector, so it stays sharp at any size, and Word takes it
     # on paste directly -- the PNG twin was strictly the lower-quality copy.
-    g.render(OUT / stem, format="svg", cleanup=True)
+    g.render(_out_for(stem) / stem, format="svg", cleanup=True)
     print(f"  {stem}.svg")
 
 
@@ -426,7 +446,7 @@ def fig_resource_profile():
     # Saved directly rather than through _save(), so the chapter-prefix check is
     # called explicitly here -- otherwise this one figure would escape it.
     stem = _check_stem("ch6_resource_profile_v2")
-    fig.savefig(OUT / f"{stem}.svg", transparent=True)
+    fig.savefig(_out_for(stem) / f"{stem}.svg", transparent=True)
     plt.close(fig)
     print(f"  {stem}.svg")
 
@@ -472,26 +492,40 @@ def fig_layered_architecture():
         c.node("log", _box("Audit record",
                            "model, training cut-off,", "calibration sample"))
 
-    with g.subgraph(name="cluster_3") as c:
-        _cluster_attrs(c, "scenario comparison")
-        c.node("sA", _box("Language model alone"))
-        c.node("sB", _box("With data and", "code execution"))
-        c.node("sC", _box("With a dedicated model"))
+    # Deliberately NOT lettered here. The comparison generalises over the agent:
+    # both the local orchestrator and the production engine are agents, both can
+    # be given data and code, and both can be given the trained models -- so the
+    # three conditions cover all five lettered scenarios rather than only the
+    # first three. Naming A/B/C in this figure would have implied the Prometheus
+    # pair was missing, and would have duplicated a mapping the scenarios figure
+    # already owns. The letters belong there; the capability ladder belongs here.
+    #
+    # A _stack, not a cluster: the three conditions are a sequence, and a cluster
+    # reorders its members to shorten edges (it had rendered C, B, A). The one
+    # edge that pointed into a member now addresses the group.
+    g.node("scen", _stack("scenario comparison", [
+        ("Plain agent", "no access to firm data"),
+        ("Agent + data & code", "the firm's history, analysed"),
+        ("Agent + models", "the forecast tool"),
+    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
 
     g.edge("data", f"s_{lad[0]}", style="dashed", lhead="cluster_1")
     g.edge(f"s_{lad[-1]}", "chosen", style="dashed", ltail="cluster_1")
     g.edge("chosen", "tool", label="deployed to")
     g.edge("tool", "log", style="dashed")
-    g.edge("tool", "sC")
-    g.edge("data", "sB", style="dashed", constraint="false")
+    g.edge("tool", "scen")
+    g.edge("data", "scen", style="dashed", constraint="false")
 
     largest = max((float(prof[m]["peak_fit_RSS_MB"]) for m in lad if m in prof),
                   default=0)
     _caption(g, "The predictive extension in three layers. Candidate models are "
                 "benchmarked on identical data and one is deployed per product "
                 "category; the tool interface exposes its forecasts with "
-                "uncertainty and provenance attached; and only the third "
-                "evaluation scenario draws on that interface. The language model "
+                "uncertainty and provenance attached; and only the "
+                "model-equipped condition draws on that interface. The three "
+                "conditions are stated in terms of the agent rather than of a "
+                "particular engine, so they apply equally to the local "
+                "orchestrator and to the production platform. The language model "
                 "is reached over an API rather than hosted locally, so the "
                 f"deployment envelope of {RAM_BUDGET_MB/1024:.0f} GB is spent on "
                 f"data and models alone — the most demanding model observed "
@@ -542,13 +576,13 @@ def fig_research_questions_tree():
         color=ACCENT, penwidth="1.5", fillcolor="white")
 
     srqs = [
-        ("s1", "Models and efficiency", "Chapter 6",
+        ("s1", "SRQ1 - Models and Efficiency", "Chapter 6",
          ("accuracy, memory efficiency", "and category specialisation")),
-        ("s2", "Structured tool interface", "Chapters 5 and 7",
+        ("s2", "SRQ2 - Structured Tool Interface", "Chapters 5 and 7",
          ("reliability, uncertainty", "and traceability")),
-        ("s3", "Integration readiness", "Chapters 5, 7 and 9",
+        ("s3", "SRQ3 - Integration Readiness", "Chapters 5, 7 and 9",
          ("capabilities a production", "system requires")),
-        ("s4", "Dedicated models vs code execution", "Chapter 8",
+        ("s4", "SRQ4 - Models versus Code", "Chapter 8",
          ("correctness, consistency and", "replicability at justified cost")),
     ]
     # Equal width, fixed. Left to itself graphviz sizes each box to its own text,
@@ -588,7 +622,7 @@ def fig_data_pipeline():
     br_out = sum(r["brands_out"] for r in logs.values())
 
     # Counted, not asserted: a literal would go stale the moment a section moves.
-    _eda_t = THESIS_RESULTS_DIR / "eda" / "CSD" / "tables"
+    _eda_t = get_category_eda_results_dir("CSD") / "tables"
     n_sec = len({f.stem.split("_", 3)[2] for f in _eda_t.glob("step_2_*.md")
                  if len(f.stem.split("_", 3)) == 4}) if _eda_t.is_dir() else 0
 
@@ -660,7 +694,7 @@ def fig_eda_pipeline():
     The internal numbering is deliberately dropped: it is a repository detail,
     and the grouping already carries the structure a reader needs.
     """
-    eda = THESIS_RESULTS_DIR / "eda" / "CSD"
+    eda = get_category_eda_results_dir("CSD")
     tdir, pdir = eda / "tables", eda / "plots"
     if not tdir.is_dir():
         raise SystemExit(f"missing {tdir}; run the pipeline then promote_eda_artifacts")
@@ -994,4 +1028,5 @@ if __name__ == "__main__":
     fig_eda_pipeline()
     fig_modelling_pipeline()
     fig_tool_interface()
-    print(f"\nDone - {OUT}\n")
+    print(f"\nDone - figures written per chapter under "
+          f"{THESIS_RESULTS_DIR.name}/\n")

@@ -7,8 +7,8 @@ the suite twice, once per horizon, by setting SRQ1_HORIZON for each child
 process. Every script then picks its own input matrix and output directory from
 that one value (see srq1/_horizon.py), so:
 
-  * H=3 writes to  05_thesis_results/srq1_model_performance/{tables,figures,models}/
-  * H=1 writes to  05_thesis_results/srq1_model_performance/h1/{...}/
+  * H=3 writes to  05_thesis_results/model_benchmark/{tables,figures,models}/
+  * H=1 writes to  05_thesis_results/model_benchmark/h1/{...}/
 
 **An H=1 run cannot overwrite an H=3 result.** That is the whole point of the
 split, and it is why this is a wrapper rather than a note in a README telling
@@ -74,11 +74,63 @@ OPTIONAL = ("profiling", "stability", "pooled")
 HORIZONS = (3, 1)  # primary first, so a run interrupted early still has H=3
 
 
-def _run(name: str, script: Path, horizon: int, dry: bool) -> tuple[str, int, float]:
+def _results_root_for(horizon: int) -> Path:
+    """Where `horizon` writes its results.
+
+    Mirrors srq1/_horizon.results_root(), but takes the horizon as an argument.
+    That module resolves SRQ1_HORIZON once at import, so importing it here would
+    pin this parent process to a single horizon while it orchestrates both.
+    """
+    sys.path.insert(0, str(SRQ1))
+    from _horizon import PRIMARY  # noqa: E402
+    from PATHS import THESIS_RESULTS_SRQ1_DIR  # noqa: E402
+    return (THESIS_RESULTS_SRQ1_DIR if horizon == PRIMARY
+            else THESIS_RESULTS_SRQ1_DIR / f"h{horizon}")
+
+
+# The artefact each stage writes, relative to its horizon's results root. Used
+# ONLY by --resume to decide what is already done. A stage with no entry here
+# always runs.
+#
+# Resume exists because this suite gets killed: it is hours long and competes
+# for RAM with everything else on the machine. Without it, a kill in the last
+# stage discards every completed Optuna study before it.
+PRODUCES: dict[str, str] = {
+    "benchmark":       "tables/metrics.csv",
+    "benchmark_cv":    "tables/cv_metrics.csv",
+    "benchmark_tuned": "tables/tuned_metrics.csv",
+    "baselines_stat":  "tables/stat_baselines.csv",
+    "calibration":     "tables/calibration.csv",
+    "train_persist":   "models/index.json",
+}
+
+
+def _done(name: str, horizon: int, started: float) -> bool:
+    """True if this stage's artefact exists AND was written by THIS run.
+
+    The mtime test is the point. An artefact left over from a previous run
+    describes different code or different data, and treating it as done is how a
+    "completed" suite comes to hold a stale table nobody notices -- the same
+    silent-staleness failure as F21/F25. Only a file written after this run began
+    counts.
+    """
+    rel = PRODUCES.get(name)
+    if rel is None:
+        return False
+    return (_results_root_for(horizon) / rel).is_file() and \
+        (_results_root_for(horizon) / rel).stat().st_mtime >= started
+
+
+def _run(name: str, script: Path, horizon: int, dry: bool,
+         started: float | None = None) -> tuple[str, int, float]:
     env = dict(os.environ, SRQ1_HORIZON=str(horizon))
     label = f"H={horizon} {name}"
     if dry:
         print(f"  [dry] {label:<28} {script.name}")
+        return (label, 0, 0.0)
+
+    if started is not None and _done(name, horizon, started):
+        print(f"\n  -- {label} already produced this run; skipping", flush=True)
         return (label, 0, 0.0)
 
     print(f"\n{'=' * 74}\n  {label}  --  {script.name}\n{'=' * 74}", flush=True)
@@ -86,6 +138,11 @@ def _run(name: str, script: Path, horizon: int, dry: bool) -> tuple[str, int, fl
     r = subprocess.run([sys.executable, str(script)], env=env, cwd=str(script.parent))
     dt = time.perf_counter() - t0
     print(f"  -> {label} exit={r.returncode} in {dt:,.1f}s", flush=True)
+    if r.returncode != 0:
+        # Say so at the point of failure, not only in the summary hours later.
+        print(f"  !! {label} FAILED -- later stages that read its output will "
+              f"degrade rather than crash. Check before trusting the results.",
+              flush=True)
     return (label, r.returncode, dt)
 
 
@@ -97,6 +154,11 @@ def main() -> int:
                     help="comma-separated stage names from the ordered list")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the plan without running anything")
+    ap.add_argument("--resume", metavar="STAMP_FILE", nargs="?", const="auto",
+                    help=("skip stages whose artefact was already written by this "
+                          "run. Use after a kill: the suite is hours long and "
+                          "competes for RAM, so a late kill would otherwise throw "
+                          "away every completed Optuna study."))
     a = ap.parse_args()
 
     stages = STAGES
@@ -124,10 +186,22 @@ def main() -> int:
     print(f"Horizons: {list(horizons)}  (H=3 writes the primary tree; "
           f"H=1 writes h1/)")
 
+    # The resume marker. Stages are "done" only if their artefact was written
+    # after this timestamp, so a stale table from an earlier run never counts.
+    stamp = HERE / ".run_both_horizons.stamp"
+    if a.resume and stamp.is_file():
+        started = stamp.stat().st_mtime
+        print(f"Resuming: skipping stages already produced since "
+              f"{time.strftime('%H:%M:%S', time.localtime(started))}")
+    else:
+        started = None
+        if not a.dry_run:
+            stamp.write_text(time.strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
+
     results = []
     for h in horizons:
         for name, script in stages:
-            results.append(_run(name, script, h, a.dry_run))
+            results.append(_run(name, script, h, a.dry_run, started))
 
     if a.dry_run:
         return 0

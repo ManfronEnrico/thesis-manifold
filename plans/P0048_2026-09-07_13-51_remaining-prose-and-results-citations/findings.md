@@ -202,3 +202,142 @@ the EDA plots.
 
 Also visible in `table-of-tables.md`: **Table 10 is captioned "NO IDEA"**, and Tables
 9 and 12 carry typos ("Exclud", "adn"). Cosmetic, but they are in the document.
+
+---
+
+## F(new) — Chapter order: Ch5 sits before the chapter it depends on
+
+Raised by Brian 2026-09-07 while reviewing the research-question figure, which
+shows SRQ1→Ch6, SRQ2→Ch5+7, SRQ3→Ch5+7+9, SRQ4→Ch8. His question was whether the
+scatter is a red flag and whether the chapters should be regrouped by SRQ.
+
+**The scatter is not the problem.** SRQ3 being answered across 5, 7 and 9 is what
+a synthesis question looks like, and a discussion chapter drawing on earlier
+chapters is what discussion chapters do. Reordering to tidy a diagram would be
+optimising for the diagram.
+
+**The forward dependency is the problem**, and it is real. Ch5 §5.3 is titled
+"The Forecasting Substrate (SRQ1)", describes the model set, and defers with
+"benchmarked in Chapter 6". The architecture chapter explains the artefact whose
+evidence arrives only in the *next* chapter — the reader meets the substrate as
+an assumption and learns later whether it works.
+
+### Why "regroup Ch5 and Ch7 under SRQ2" does not work
+
+Ch5 is not an SRQ2 chapter. Its §5.2 presents the artefact as three layers and it
+carries a section per SRQ: 5.3 SRQ1, 5.4 SRQ2, 5.6 SRQ3, 5.7 SRQ4. Regrouping it
+would mean **splitting the chapter**, not moving it — and an architecture chapter
+that presents the whole artefact before the evaluation chapters take it apart is
+a legitimate structure worth keeping.
+
+### Recommended: a single swap, Ch5 ↔ Ch6
+
+| | Now | Proposed |
+|---|-----|----------|
+| 4 | Data | Data |
+| 5 | Framework design | **Model benchmark** |
+| 6 | Model benchmark | **Framework design** |
+| 7 | Decision synthesis | Decision synthesis |
+| 8 | Experimental evaluation | Experimental evaluation |
+
+Gives data → models → architecture → synthesis → evaluation: the DSR build order
+and the repo's own tier order agree with it. Ch5's per-SRQ sections stay intact
+and Ch7–Ch10 do not move.
+
+**Check before executing**: Ch6 §6.3.2 is "Feature engineering" — confirm Ch6 has
+no dependency on something Ch5 currently establishes first. Not verified here.
+
+**Two wins independent of the swap:**
+- An SRQ→chapter map table in Ch1 does more for the reader than any reordering.
+- Ch8 §8.2 is "Level 1 — ML accuracy evaluation (SRQ1)" while Ch6 already reports
+  SRQ1 results. That overlap deserves a look on its own terms.
+
+**Cost**: touches every cross-reference, figure and table number, and the Word
+document. Cheaper now than after the remaining prose lands — an argument for
+deciding soon, not for doing it hastily.
+
+---
+
+## F9 — The horizon defect is FIXED in code and matrices, but NOT in results (2026-09-07)
+
+**Supersedes F1's "proposed, not applied" status.** P0049 landed the fix while this
+plan's session was compacted.
+
+**Code:** `engineer_features()` now takes `horizon: int` as a REQUIRED parameter
+(`_shared_modules/engineer_features.py:452`), documenting that `lag_k` becomes
+`shift(k + horizon - 1)` and shift(1) features become `shift(horizon)`.
+
+**Matrices:** regenerated 2026-09-07 15:59. Verified on CSD:
+
+| check | result |
+|---|---|
+| lag columns identical across h1/h3 | **False** (was True — this was the bug) |
+| `lag_1` == `shift(1+3-1)` at h3 | **True** |
+| naive `shift(1)` at h3 | False |
+
+`n_test_origins = 5` now appears in the manifest, so the horizon reaches evaluation too.
+
+**⚠ Results are NOT regenerated.** `tables/metrics.csv` and `pooled_summary.md` are dated
+2026-09-06 22:55/23:12 — *before* the 15:59 matrix regeneration. Every SRQ1 accuracy
+number currently in `05_thesis_results/` is therefore still one-month-ahead in substance.
+`srq1_model_performance/h1/` exists but is **empty**.
+
+**Consequence for prose:** structural claims about the pipeline (how the split is derived,
+that lags are horizon-offset, feature composition) can be written now. **Accuracy numbers
+cannot** — they will move when the benchmark re-runs.
+
+## F10 — The feature matrix now carries holiday features and 34 features, not 13
+
+CSD h3 manifest (regenerated 15:59): **54 columns, 34 features, 95 brands, 4,370 rows**;
+h1 has 4,876 rows.
+
+The matrix includes `days_in_month`, `n_holidays`, `non_holiday_days` — the P0047 holiday
+enrichment. **F3's "13 features" was the modelling FEATURES list in `srq1_benchmark.py`,
+not the matrix width**, and the two must not be conflated in prose:
+
+| count | what it is |
+|---|---|
+| 54 | columns in the parquet (includes raw Nielsen measures, target, split, keys) |
+| 34 | `n_features` per the manifest |
+| 13 | features the benchmark actually trains on (pre-holiday) |
+| 12 | the pooled-vs-per-category intersection (`promo_intensity` dropped) |
+
+Ch4 §4.1.2's "22 columns" matches none of these. Flagged, not amended — establish what it
+was counting first.
+
+## F11 — Comment 136 (survey-type) is decisively wrong, and the metadata says so
+
+The word "survey" appears **nowhere** in the Nielsen metadata (0 hits across all five
+categories' `metadata_*_columns.jsonl` plus both index files). The only provenance term
+present is **"scanner"** (7 hits), and `NIELSEN_METADATA_INDEX.json` describes
+`sales_value` as *"Consumer retail price including VAT (point-of-sale scanner data)."*
+
+Scanner data is a census of transactions at participating retailers, not a sample-based
+survey instrument. The thesis's "survey-type" claim is unsupported by the only metadata
+available and should be replaced with the sourced term.
+
+## F12 — Comment 134 (totalbeer) is confirmed; the thesis states the opposite of the truth
+
+`save_all_datasets.py` registers `totalbeer_clean_facts_v` and `totalbeer_clean_facts` in
+its download config, and `_00_raw/nielsen/data_jsonl/Totalbeer/metadata/` exists on disk.
+The fact table **does** exist. The script's own docstring: *"Totalbeer is out of scope for
+the thesis (dropped from the prose on compute-constraint grounds, P0034)."*
+
+The thesis says the data "do not exist at source, not a size or memory constraint" and
+calls it a data limitation. Both halves are inverted: it exists, the constraint WAS
+compute, and it is an analytical choice.
+
+## F13 — Comment 135 understates its own case
+
+The three non-CSD categories are not "parallel proofs of concept" — they carry the
+pooled-vs-per-category finding (`tables/pooled_summary.md`), which is only possible
+because all four ran. Pooling helps the small categories and hurts CSD:
+
+| | LightGBM | XGBoost |
+|---|---|---|
+| CSD | +1.2 pp (per-cat wins) | +3.8 pp (per-cat wins) |
+| danskvand | −2.2 pp (pooled wins) | −1.2 pp (pooled wins) |
+| energidrikke | −1.6 pp (pooled wins) | −2.8 pp (pooled wins) |
+| RTD | +0.7 pp | +1.3 pp |
+
+⚠ These numbers are pre-fix (see F9) — the *pattern* is the citable claim, not the digits.

@@ -74,6 +74,80 @@ layer (the ladder is four; the layer does not exist), and "18 EDA sections"
 **Verification**: 5 producers run clean in any order; 11 diagrams; 25 appendix
 tables; 195 live scripts compile; `PATHS OK`.
 
+### 2026-09-07 (later) — chapter prefixes, and the tier-05 restructure scoped
+
+Brian: `appendix/` is an artefact of earlier table generation; tier 05 should
+mirror the thesis, chapter by chapter, so he can decide later what goes in the
+appendix. **DEC-CHAPTER-FOLDERS.**
+
+**Deliberately not started.** He is reworking the Word export so headings carry
+their numbers ("Chapter 2 | Literature Review"), and the folder names should come
+from that export rather than from a guess at the numbering. Scoped in F19, with
+the two routing conflicts that make "file it where it originates" insufficient:
+`export_appendix.py` is cross-cutting rather than scenario-specific, and the
+holiday tables split Ch4 (source) from Ch6 (ablation).
+
+**Done now, since it is independent of the numbering:** all eleven diagrams carry
+a chapter prefix. The five that lacked one were renamed by what each figure
+*shows* — read from its body, not inferred from its name. `_check_stem()` now
+enforces the convention and raises on a stem without `ch<N>_`.
+
+The guard caught the case that mattered: `fig_resource_profile` saves through
+matplotlib rather than `_save()`, so a check placed only in `_save()` would have
+missed exactly the figure whose predecessor carried fabricated numbers.
+
+Verified: guard rejects 3 bad stems and accepts 2 good ones; 11 diagrams
+regenerate; no unprefixed file remains; live consumers repointed (the Ch5 draft
+had **two** stale references, one of them still naming the archived
+`ch5_architecture_v1`).
+
+### 2026-09-07 (evening) — chapter-keyed tier 05, and the diagram polish pass
+
+**Diagrams finished.** Chapter prefixes on all eleven, enforced by
+`_check_stem()`. Captions centred, PNG output dropped (SVG is vector and pastes
+into Word; the twin was the lower-quality copy). Cluster fill darkened to
+`#878787` with a black label so nesting reads. EDA groups switched to bulleted
+lists — left-aligned text in a centred block, via a nested table. Ch5 and Ch7
+scenario labels aligned to the repository's own A/B/C/D/E vocabulary, then Ch5
+generalised to "Plain agent / Agent + data & code / Agent + models" so it covers
+all five scenarios without duplicating Ch7's mapping (F24).
+
+**Aspect ratios measured against A4.** Nine of eleven now fit a portrait column
+or a landscape page. `ch4_data_pipeline_v1` went 4.4 → 1.16 by folding its two
+phases into a stack. `ch4_preprocessing_pipeline_v2` (4.45) is the sole outlier
+and is superseded in substance by `ch4_data_pipeline_v1` — a Phase 5
+retire-or-fix decision, not a layout fix (F22).
+
+**`_stack()` replaced clusters where order matters** after seven attempts to
+constrain graphviz's ordering each failed differently (F23). Two of those
+failures were silent: `rank="same"` across clusters re-parents its members and
+the cluster boxes vanish with no error, which was also the cause of the
+"contract box escaping its outer box" bug — graphviz had been warning about it
+and the warning was being filtered out of the output.
+
+**Tier 05 restructured to chapter folders** (F25). `01_introduction` …
+`09_discussion`, each with `figures/ tables/ models/`. The SRQ folders,
+`appendix/` and `diagrams/` are gone; quarantined material is in `.archive/`.
+
+The move cost far less than the ~30 producer scripts suggested, because most
+already went through `get_srq_*_dir()` — repointing three helpers moved ~25
+scripts untouched. The ones that needed editing were exactly those that had
+built paths inline.
+
+Folder numbers are **derived** from position in `CHAPTER_SLUGS` via one private
+helper, so reordering the tuple renumbers the tree. Verified against Brian's own
+proposed swap.
+
+**Two near-misses worth recording:**
+
+- `srq1_model_performance/` reappeared after the move with four `cv_*` files. I
+  nearly deleted it as leftover — they turned out to be **19 hours newer** than
+  the chapter-folder copies (a benchmark had run mid-session and written through
+  the old path). Merged the newer ones in. Compare before deleting.
+- The draft image references were repointed to `introduction/` *before* the
+  numeric prefixes were added, leaving three **broken links** that resolved to
+  nothing. Caught at end-of-day by re-resolving every image path in the drafts.
+
 ---
 
 ## Next session starts here

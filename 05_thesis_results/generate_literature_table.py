@@ -36,9 +36,12 @@ for _c in (Path(__file__).resolve().parent, *Path(__file__).resolve().parents):
         sys.path.insert(0, str(_c))
         break
 
-from PATHS import THESIS_RESULTS_DIR, THESIS_WRITING_DRAFTS_DIR
+from PATHS import (THESIS_WRITING_DRAFTS_DIR,
+                   get_chapter_tables_dir)
 
-OUT = THESIS_RESULTS_DIR / "appendix"
+# Ch2: the map from each strand of the literature to the design decision it
+# informed. It is parsed from the literature chapter, and read beside it.
+OUT = get_chapter_tables_dir("literature_review")
 CH2 = THESIS_WRITING_DRAFTS_DIR / "ch2-literature-review.md"
 
 # The curated half: what each strand changed in the build. Keyed by section

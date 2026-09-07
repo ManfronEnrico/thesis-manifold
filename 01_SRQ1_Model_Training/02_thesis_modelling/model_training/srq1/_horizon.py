@@ -18,11 +18,11 @@ H=3 is the primary reported horizon -- a quarter is the period in which marketin
 budgets are authorised, so it is the first horizon at which a campaign decision is
 actually taken. It therefore writes where it always has:
 
-    05_thesis_results/srq1_model_performance/{tables,figures,models}/
+    05_thesis_results/model_benchmark/{tables,figures,models}/
 
 H=1 writes to a parallel subtree:
 
-    05_thesis_results/srq1_model_performance/h1/{tables,figures,models}/
+    05_thesis_results/model_benchmark/h1/{tables,figures,models}/
 
 This asymmetry is deliberate. `forecast_tool.py`, the SRQ4 harness, the appendix
 exporter and the figure generators all read the unsuffixed paths; moving the

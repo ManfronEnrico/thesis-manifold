@@ -3,7 +3,7 @@ pid: P0050
 created: 2026-09-07 18:40:00
 updated: 2026-09-07 18:40:00
 status: in_progress
-focus_detail: "HANDOFF PLAN for the account switch - read START_HERE.md first. Owns every figure, table and diagram: 11 diagrams + 25 appendix tables from 5 producers, all regenerating in any order, all data-driven, all restyled to the new house standard (horizontal, bold headers, greyscale tiers, transparent, submission-ready captions). Supersedes the figure/table half of P0046. NEXT: Phase 5 - publish the inventory, THEN choose citations. One inherited blocker: the horizon is never applied to feature construction (P0048 F1 / P0049 F22), so the reduction table's horizon column carries a DO-NOT-PUBLISH warning until that fix lands."
+focus_detail: "Diagrams are DONE: 11 chapter-prefixed SVGs, house style applied and enforced in code. Tier 05 is now CHAPTER-KEYED (01_introduction .. 09_discussion, each with figures/ tables/ models/); the SRQ, appendix and diagrams folders are gone. Folder numbers derive from CHAPTER_SLUGS, so a chapter reorder is a one-tuple edit. All 5 producers run clean; every *_DIR resolves. NEXT: Phase 5 — publish the inventory, THEN choose citations. Blocker unchanged: the horizon never reaches feature construction (P0048 F1 / P0049 F22)."
 ---
 
 # P0050 — Figure, table and diagram generation
@@ -58,12 +58,22 @@ does). 195 live scripts compile; `PATHS OK`.
 
 ### The diagram set
 
-**System (5):** `pipeline_v2` · `model_selection_v2` · `scenarios_v2` ·
-`resource_profile_v2` · `layered_architecture_v2`
+**All eleven now carry a chapter prefix** (2026-09-07). The five that did not
+were renamed by what they *show*, not by their old name:
 
-**Chapter (6):** `ch1_research_questions_tree_v2` · `ch2_gap_diagram_v2` ·
-`ch4_data_pipeline_v1` · `ch4_eda_pipeline_csd_v1` · `ch5_tool_interface_v1` ·
-`ch6_modelling_pipeline_v1`
+| Ch | Diagram |
+|----|---------|
+| 1 | `ch1_research_questions_tree_v2` |
+| 2 | `ch2_gap_diagram_v2` |
+| 4 | `ch4_data_pipeline_v1` · `ch4_eda_pipeline_csd_v1` · `ch4_preprocessing_pipeline_v2` |
+| 5 | `ch5_tool_interface_v1` · `ch5_layered_architecture_v2` |
+| 6 | `ch6_modelling_pipeline_v1` · `ch6_model_selection_v2` · `ch6_resource_profile_v2` |
+| 7 | `ch7_scenarios_v2` |
+
+`_check_stem()` **enforces** the prefix rather than trusting memory: a stem
+without `ch<N>_` raises. `fig_resource_profile` saves via matplotlib rather than
+`_save()`, so it calls the check explicitly — otherwise that one figure would
+escape it.
 
 All eleven are horizontal, carry bold box headers, use the greyscale contrast
 tiers, render on a transparent ground, and contain **zero** filenames, step
@@ -109,6 +119,23 @@ generators renamed to say what they emit; `requirements.txt` completed.
 - [x] Literature → design map, with its two provenances marked (F9)
 - [x] House style written to `.claude/rules/figure-generation-standards.md`
       and applied to all eleven figures (F10-F13)
+
+### Phase 4b — chapter-keyed tier 05 — `complete`
+
+- [x] All eleven diagrams chapter-prefixed, enforced by `_check_stem()` (F20)
+- [x] **Restructure tier 05 by chapter** (DEC-CHAPTER-FOLDERS, F19). `appendix/`
+      is an outdated name over correct content — "appendix" is a *routing
+      decision*, and Phase 5 is where that decision gets made, so it must not be
+      pre-committed in a path
+- [x] ~~Waiting on the Word export~~ — landed 2026-09-07 16:53; chapter names taken from it — headings will carry their
+      numbers ("Chapter 2 | Literature Review", "2.8 Design Science Research"),
+      and the folder names should come from that, not from a guess
+- [x] Two routing conflicts honoured (F19): `export_appendix.py`
+      is a cross-cutting exporter, not a scenario script (6 of its 14 tables are
+      pipeline/model tables); and the holiday tables split Ch4 source vs Ch6
+      ablation
+- [x] **Consumers repointed** — incl. 3 broken draft image links found at EOD — F5's lesson; this move touches
+      all five producers plus `PATHS.py`
 
 ### Phase 5 — inventory → citation decisions — `pending` — **START HERE**
 
@@ -159,6 +186,8 @@ generators renamed to say what they emit; `requirements.txt` completed.
 | DEC-DIAGRAMS-FROM-CODE | Diagrams read artefacts at render time and refuse to draw from absent data | 09-06 |
 | DEC-RAM-4GB | 4096 MB is the envelope. Thesis prose still says "8 GB" in 8 places | 09-06 |
 | DEC-GENERATE-ALL | Generate every figure programmatically; hand redrawing afterwards is Brian's option, not a reason to leave one ungenerated | 09-07 |
+| DEC-CHAPTER-FOLDERS | Tier 05 is keyed by thesis chapter, mirroring the final document, with `figures/ tables/` beneath each. Chapter beats producer where they disagree | 09-07 |
+| DEC-CHAPTER-PREFIX | Every diagram filename declares its chapter; `diagrams/` stays flat | 09-07 |
 | DEC-FIGURE-STYLE | Horizontal, bold headers, no step numbers, greyscale tiers, transparent, submission-ready captions — `.claude/rules/figure-generation-standards.md` | 09-07 |
 
 ---

@@ -149,7 +149,66 @@ Example:
     print(THESIS_RESULTS_DIR.resolve())
 """
 
-THESIS_RESULTS_SRQ1_DIR: Path = THESIS_RESULTS_DIR / "srq1_model_performance"
+# ---------------------------------------------------------------------------
+# CHAPTER-KEYED RESULTS (DEC-CHAPTER-FOLDERS, 2026-09-07)
+# ---------------------------------------------------------------------------
+# Artefacts are filed by the THESIS CHAPTER that discusses them, not by the SRQ
+# whose script produced them. The writing workflow is chapter by chapter, so the
+# folder a writer opens should be the chapter they are writing.
+#
+# The two keys genuinely disagree, which is why this layer exists:
+#   * export_appendix.py lives under SRQ4 but 6 of its 14 tables are pipeline
+#     and model tables belonging to Ch4 and Ch6;
+#   * the holiday tables split Ch4 (the calendar source) from Ch6 (the ablation
+#     RESULTS) while sharing a subject.
+#
+# Folders are named "{NN}_{slug}" so the tree sorts in reading order, but the
+# NUMBER IS DERIVED from position in CHAPTER_SLUGS and never written down twice.
+# A reorder is under active consideration (P0048 phase 8: swapping the benchmark
+# and architecture chapters, and possibly moving feature diagnostics into the
+# data chapter), so a hand-typed number would go stale the moment it happens.
+#
+# The slug names the SUBJECT and survives a renumbering; the prefix is only a
+# sort key. Nothing in the codebase references a chapter number to build a path,
+# so reordering CHAPTER_SLUGS is the whole edit -- see get_chapter_results_dir.
+
+CHAPTER_SLUGS: tuple = (
+    "introduction",
+    "literature_review",
+    "methodology",
+    "data_assessment",
+    "architecture",
+    "model_benchmark",
+    "decision_synthesis",
+    "experimental_evaluation",
+    "discussion",
+    "conclusion",
+)
+"""The ten chapter subjects, in current document order.
+
+Slugs, not numbers -- see the note above. To reorder the thesis, reorder this
+tuple; nothing else needs to change, because no path contains a chapter number.
+"""
+
+CHAPTER_ORDER: dict = {slug: i + 1 for i, slug in enumerate(CHAPTER_SLUGS)}
+"""slug -> current chapter number. The ONLY place the numbering is written down.
+
+Use it for display ("Chapter 6"), never to build a path.
+"""
+
+
+def _chapter_folder(slug: str) -> str:
+    """"{NN}_{slug}" -- the on-disk folder name for a chapter.
+
+    Used by both the constants below and get_chapter_results_dir(), so the
+    prefix is computed in exactly one place. Typing "06_model_benchmark" into a
+    constant would survive a reorder of CHAPTER_SLUGS and silently point at the
+    wrong chapter.
+    """
+    return f"{CHAPTER_ORDER[slug]:02d}_{slug}"
+
+
+THESIS_RESULTS_SRQ1_DIR: Path = THESIS_RESULTS_DIR / _chapter_folder("model_benchmark")
 """
 SRQ1 — model performance: benchmark metrics, calibration, SHAP, demand classes.
 
@@ -158,7 +217,7 @@ NOTE: contents are known to be partly stale (P0046 F16/F19) and are pending the
 Phase 3b reorganisation into figures/ tables/ models/.
 """
 
-THESIS_RESULTS_SRQ2_DIR: Path = THESIS_RESULTS_DIR / "srq2_structured_tool_interface"
+THESIS_RESULTS_SRQ2_DIR: Path = THESIS_RESULTS_DIR / _chapter_folder("decision_synthesis")
 """
 SRQ2 — structured tool interface results.
 
@@ -166,13 +225,13 @@ Renamed from "srq2" 2026-09-06. NOTE: known to contain LLM-as-Judge outputs from
 a dropped design (P0046 F19); do not cite before the Phase 3b staleness triage.
 """
 
-THESIS_RESULTS_SRQ3_DIR: Path = THESIS_RESULTS_DIR / "srq3_integration_readiness"
+THESIS_RESULTS_SRQ3_DIR: Path = THESIS_RESULTS_DIR / _chapter_folder("discussion")
 """
 SRQ3 — integration readiness. Placeholder: SRQ3 has not been started, so this
 directory may not exist on disk yet.
 """
 
-THESIS_RESULTS_SRQ4_DIR: Path = THESIS_RESULTS_DIR / "srq4_scenario_experiments"
+THESIS_RESULTS_SRQ4_DIR: Path = THESIS_RESULTS_DIR / _chapter_folder("experimental_evaluation")
 """
 SRQ4 — scenario comparison: AGGREGATED results only (summary tables, figures).
 
@@ -181,25 +240,19 @@ folders and raw LLM responses live at SRQ4_EXPERIMENT_DIR, not here — this hol
 the aggregation across runs.
 """
 
-THESIS_RESULTS_APPENDIX_DIR: Path = THESIS_RESULTS_DIR / "appendix"
-"""
-Generated appendix tables (.md + .csv twins) written by
-04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py.
+# REMOVED 2026-09-07 (DEC-CHAPTER-FOLDERS): THESIS_RESULTS_APPENDIX_DIR and
+# THESIS_RESULTS_DIAGRAMS_DIR. Both directories are gone -- appendix tables and
+# diagrams are now written into the chapter that discusses them, via
+# get_chapter_tables_dir() / get_chapter_figures_dir().
+#
+# Removed rather than repointed because there is no single directory left for
+# either to name: their contents deliberately span several chapters. A constant
+# resolving to a path that no longer exists is how the pre-2026-09-06 breakage
+# went unnoticed -- Path() never validates, so it fails at read/write time
+# rather than at import.
 
-Replaces that script's former inline `THESIS_RESULTS_DIR / "appendix"`.
-"""
-
-THESIS_RESULTS_DIAGRAMS_DIR: Path = THESIS_RESULTS_DIR / "diagrams"
-"""
-Conceptual/architecture diagrams (graphviz + matplotlib), produced by
-05_thesis_results/generate_figures.py.
-
-Created 2026-09-06 to give the diagram generators a home inside the results
-tier. They previously wrote straight into the writing tier's figures/ folder,
-which DEC-P0046-SINGLE-HOME forbids.
-"""
-
-THESIS_RESULTS_EDA_DIR: Path = THESIS_RESULTS_DIR / "eda"
+THESIS_RESULTS_EDA_DIR: Path = (THESIS_RESULTS_DIR
+                                 / _chapter_folder("data_assessment") / "eda")
 """
 Per-category EDA artefacts promoted as thesis candidates: the markdown tables
 and PNG plots (~38 per category).
@@ -782,29 +835,96 @@ def get_category_pipeline_step_outputs_dir(category: str) -> Path:
 # role rather than by file extension -- splitting on extension would separate
 # `calibration.md` from the `calibration.csv` it was rendered from.
 
-def get_srq_figures_dir(srq: int) -> Path:
-    """Figures for an SRQ (created on demand).
+def get_chapter_results_dir(slug: str) -> Path:
+    """The results folder for one thesis chapter.
+
+    Args:
+        slug: one of CHAPTER_SLUGS, e.g. "data_assessment".
+
+    Returns:
+        Path to 05_thesis_results/{NN}_{slug}/, where NN is the chapter's
+        position in CHAPTER_SLUGS -- so the tree sorts in reading order.
+
+    The number is DERIVED, never typed. Reordering CHAPTER_SLUGS renumbers the
+    folders on the next run; nothing else references a number, so a reorder
+    cannot leave a folder claiming a position it no longer holds.
+
+    Raises on an unknown slug rather than silently creating a stray folder --
+    a typo would otherwise produce a directory nobody looks in, which is how
+    artefacts go missing.
 
     Example:
-        >>> get_srq_figures_dir(1)   # .../srq1_model_performance/figures
+        >>> get_chapter_results_dir("model_benchmark")
+        .../05_thesis_results/06_model_benchmark
     """
-    d = get_srq_results_dir(srq) / "figures"
+    if slug not in CHAPTER_ORDER:
+        raise ValueError(
+            f"Unknown chapter slug {slug!r}; expected one of {list(CHAPTER_SLUGS)}")
+    return THESIS_RESULTS_DIR / _chapter_folder(slug)
+
+
+def get_chapter_figures_dir(slug: str) -> Path:
+    """Figures for a chapter -- .svg to paste into the document."""
+    d = get_chapter_results_dir(slug) / "figures"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def get_chapter_tables_dir(slug: str) -> Path:
+    """Tables for a chapter -- .csv data plus their rendered .md twins."""
+    d = get_chapter_results_dir(slug) / "tables"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_chapter_models_dir(slug: str) -> Path:
+    """Serialised estimators + hyperparameters, for chapters that train."""
+    d = get_chapter_results_dir(slug) / "models"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+# SRQ -> chapter, for the get_srq_*_dir() helpers below.
+#
+# This is the hinge of DEC-CHAPTER-FOLDERS: ~25 producer scripts already reach
+# the results tier through these three helpers, so repointing the helpers moves
+# their output without touching the scripts. A script asks for "somewhere to put
+# SRQ1's tables"; where that is, is this file's decision, not the script's.
+#
+# SRQ3 has no results of its own -- integration readiness is argued in the
+# discussion from evidence the other chapters produce.
+_SRQ_CHAPTER: dict = {
+    1: "model_benchmark",          # Ch6: the benchmark and selection
+    2: "decision_synthesis",       # Ch7: the tool interface in use
+    3: "discussion",               # Ch9: readiness is assessed, not measured
+    4: "experimental_evaluation",  # Ch8: the scenario comparison
+}
+
+
+def get_srq_figures_dir(srq: int) -> Path:
+    """Figures for an SRQ, filed under the chapter that discusses them.
+
+    Example:
+        >>> get_srq_figures_dir(1)   # .../05_thesis_results/model_benchmark/figures
+    """
+    return get_chapter_figures_dir(_srq_chapter(srq))
 
 
 def get_srq_tables_dir(srq: int) -> Path:
     """Tables for an SRQ -- .csv data plus their rendered .md twins."""
-    d = get_srq_results_dir(srq) / "tables"
-    d.mkdir(parents=True, exist_ok=True)
-    return d
+    return get_chapter_tables_dir(_srq_chapter(srq))
 
 
 def get_srq_models_dir(srq: int) -> Path:
     """Serialised models + hyperparameter files for an SRQ."""
-    d = get_srq_results_dir(srq) / "models"
-    d.mkdir(parents=True, exist_ok=True)
-    return d
+    return get_chapter_models_dir(_srq_chapter(srq))
+
+
+def _srq_chapter(srq: int) -> str:
+    """The chapter slug an SRQ's artefacts belong to."""
+    if srq not in _SRQ_CHAPTER:
+        raise ValueError(f"Unknown SRQ {srq!r}; expected one of {sorted(_SRQ_CHAPTER)}")
+    return _SRQ_CHAPTER[srq]
 
 
 def get_srq_results_dir(srq: int) -> Path:
@@ -916,8 +1036,6 @@ def print_all_paths(verbose: bool = True) -> None:
         print(f"THESIS_RESULTS_SRQ2_DIR: {THESIS_RESULTS_SRQ2_DIR.resolve()}")
         print(f"THESIS_RESULTS_SRQ3_DIR: {THESIS_RESULTS_SRQ3_DIR.resolve()}")
         print(f"THESIS_RESULTS_SRQ4_DIR: {THESIS_RESULTS_SRQ4_DIR.resolve()}")
-        print(f"THESIS_RESULTS_APPENDIX_DIR: {THESIS_RESULTS_APPENDIX_DIR.resolve()}")
-        print(f"THESIS_RESULTS_DIAGRAMS_DIR: {THESIS_RESULTS_DIAGRAMS_DIR.resolve()}")
         print(f"THESIS_RESULTS_EDA_DIR: {THESIS_RESULTS_EDA_DIR.resolve()}")
         print(f"THESIS_WRITING_DIR: {THESIS_WRITING_DIR.resolve()}\n")
     else:

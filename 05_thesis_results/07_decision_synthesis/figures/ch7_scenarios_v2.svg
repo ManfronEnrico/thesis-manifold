@@ -26,16 +26,16 @@
 <text xml:space="preserve" text-anchor="start" x="274.68" y="-301.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">evaluation scenarios — LLM</text>
 <polygon fill="#fafafa" stroke="none" points="256.31,-265.2 256.31,-295.2 409.31,-295.2 409.31,-265.2 256.31,-265.2"/>
 <polygon fill="none" stroke="#8a8a8a" points="256.31,-265.2 256.31,-295.2 409.31,-295.2 409.31,-265.2 256.31,-265.2"/>
-<text xml:space="preserve" text-anchor="start" x="266.43" y="-280.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">A — Plain LLM</text>
-<text xml:space="preserve" text-anchor="start" x="262.31" y="-272.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">no access to firm data</text>
+<text xml:space="preserve" text-anchor="start" x="297.93" y="-280.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">A — Plain LLM</text>
+<text xml:space="preserve" text-anchor="start" x="293.81" y="-272.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">no access to firm data</text>
 <polygon fill="#fafafa" stroke="none" points="256.31,-231.2 256.31,-261.2 409.31,-261.2 409.31,-231.2 256.31,-231.2"/>
 <polygon fill="none" stroke="#8a8a8a" points="256.31,-231.2 256.31,-261.2 409.31,-261.2 409.31,-231.2 256.31,-231.2"/>
 <text xml:space="preserve" text-anchor="start" x="277.31" y="-246.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">B — LLM + data &amp; code</text>
 <text xml:space="preserve" text-anchor="start" x="262.31" y="-238.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">the firm&#39;s history, analysed in a sandbox</text>
 <polygon fill="#fafafa" stroke="none" points="256.31,-197.2 256.31,-227.2 409.31,-227.2 409.31,-197.2 256.31,-197.2"/>
 <polygon fill="none" stroke="#8a8a8a" points="256.31,-197.2 256.31,-227.2 409.31,-227.2 409.31,-197.2 256.31,-197.2"/>
-<text xml:space="preserve" text-anchor="start" x="262.31" y="-212.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">C — LLM + dedicated model</text>
-<text xml:space="preserve" text-anchor="start" x="300.18" y="-204.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">the forecast tool</text>
+<text xml:space="preserve" text-anchor="start" x="266.43" y="-212.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">C — LLM + dedicated model</text>
+<text xml:space="preserve" text-anchor="start" x="304.31" y="-204.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">the forecast tool</text>
 </g>
 <!-- q&#45;&gt;llm -->
 <g id="edge1" class="edge">
@@ -50,8 +50,8 @@
 <text xml:space="preserve" text-anchor="start" x="246.18" y="-141.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">planned — Prometheus production engine</text>
 <polygon fill="#fafafa" stroke="none" points="242.81,-105.2 242.81,-135.2 422.81,-135.2 422.81,-105.2 242.81,-105.2"/>
 <polygon fill="none" stroke="#8a8a8a" points="242.81,-105.2 242.81,-135.2 422.81,-135.2 422.81,-105.2 242.81,-105.2"/>
-<text xml:space="preserve" text-anchor="start" x="248.81" y="-120.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">D — Prometheus + data &amp; code</text>
-<text xml:space="preserve" text-anchor="start" x="283.31" y="-112.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">the engine as shipped</text>
+<text xml:space="preserve" text-anchor="start" x="259.31" y="-120.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">D — Prometheus + data &amp; code</text>
+<text xml:space="preserve" text-anchor="start" x="293.81" y="-112.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#1a1a1a">the engine as shipped</text>
 <polygon fill="#fafafa" stroke="none" points="242.81,-71.2 242.81,-101.2 422.81,-101.2 422.81,-71.2 242.81,-71.2"/>
 <polygon fill="none" stroke="#8a8a8a" points="242.81,-71.2 242.81,-101.2 422.81,-101.2 422.81,-71.2 242.81,-71.2"/>
 <text xml:space="preserve" text-anchor="start" x="248.81" y="-86.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">E — Prometheus + dedicated model</text>

@@ -52,7 +52,7 @@ _REPO_ROOT = _find_repo_root()
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from PATHS import THESIS_RESULTS_APPENDIX_DIR, get_srq_tables_dir  # noqa: E402
+from PATHS import get_chapter_tables_dir, get_srq_tables_dir  # noqa: E402
 
 # The active horizon, and the paths that follow from it. ONE source, so the
 # matrix read and the results written can never describe different horizons
@@ -62,7 +62,9 @@ from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F4
 
 SRC = (results_root() / "tables")
 
-OUT = THESIS_RESULTS_APPENDIX_DIR
+# Ch6: with-feature vs without-feature model comparisons and their SHAP
+# attribution -- modelling results, not data provenance (that is Ch4).
+OUT = get_chapter_tables_dir("model_benchmark")
 REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"
 
 

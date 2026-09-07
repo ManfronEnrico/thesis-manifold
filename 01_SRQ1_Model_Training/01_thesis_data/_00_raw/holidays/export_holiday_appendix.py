@@ -53,12 +53,15 @@ _REPO_ROOT = _find_repo_root()
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from PATHS import THESIS_RESULTS_APPENDIX_DIR  # noqa: E402
+from PATHS import get_chapter_tables_dir  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_holidays import CACHE_DIR, MANIFEST_PATH, load_manifest  # noqa: E402
 
-OUT = THESIS_RESULTS_APPENDIX_DIR
+# Ch4: these describe the calendar SOURCE -- how the holiday data was obtained
+# and shaped. The ablation RESULTS that use it are Ch6, and are written by
+# srq1_export_enrichment_appendix.py. Same subject, two chapters, on purpose.
+OUT = get_chapter_tables_dir("data_assessment")
 REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"
 
 # Continues export_appendix.py's sequence. Holiday tables are appendix material
