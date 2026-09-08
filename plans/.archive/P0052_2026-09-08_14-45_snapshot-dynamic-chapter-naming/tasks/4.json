@@ -1,0 +1,11 @@
+{
+  "id": "4",
+  "subject": "Update all four CHAPTER_MAP consumers",
+  "description": "Findings F3: _slug() (486), _write_comments slug_by_thread (~1245), unmapped warning (1329), and the drift pairing. The comments one is the silent failure -- comments/sections/<path> pairs with chapters/sections/<path> by slug equality alone, so changing one and not the other decouples the two section trees while both still render fine.",
+  "activeForm": "Updating CHAPTER_MAP consumers",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

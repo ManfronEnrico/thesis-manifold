@@ -5,7 +5,7 @@ category: workflow
 applies-to: [thesis prose, writing-notes, docx insertion, appendix references]
 triggers: [writing prose, converting bullets to prose, preparing paragraphs for Word, citing a table or figure in prose]
 created: 2026_09_07-15_00
-updated: 2026_09_07-16_40
+updated: 2026_09_08-18_50
 ---
 
 # Prose insertion discipline
@@ -22,6 +22,9 @@ the hard part — locating the seam — onto them.
 | Anchor carries its neighbours | The human cannot tell one paragraph from the next | [Anchor context](#anchor-context) |
 | Snapshot named in frontmatter | Anchors that no longer exist | [Snapshot currency](#snapshot-currency) |
 | Comments are read before writing | Rewriting text the author already objected to | [Comment-driven passes](#comment-driven-passes) |
+| Chapter's note folder swept before writing | Another session's note silently ignored | [The note folder](#the-note-folder) |
+| Applied notes archived, not left in place | Two notes disagreeing, neither marked stale | [The note folder](#the-note-folder) |
+| One fix per heading block, ruled off | A wall of prose the author cannot navigate | [Note layout](#note-layout) |
 | Explicit action verb | Ambiguity between adding and replacing | [Actions](#actions) |
 | REWORD offered where a sentence is salvageable | A whole paragraph rewritten to fix six words | [Actions](#actions) |
 | Asset marked in-text or appendix | 12-row grids inlined into paragraphs | [Assets](#assets) |
@@ -148,6 +151,123 @@ rather than hunting the same paragraph four times.
 
 **Match the target's form.** A bullet-list section takes bullets. Check the snapshot
 before writing paragraphs into a list.
+
+## Note layout
+
+A writing note is read with a Word document open and a finger on the scroll bar.
+Its job is to be **navigable**, not merely complete: the author must be able to
+find one fix, apply it, and find the next without re-reading what they have
+already done.
+
+The heading levels are fixed, so every note in the project looks the same:
+
+| Level | Carries |
+|---|---|
+| `#` | the note title, and the top-level groupings (`# The fixes`, `# Claims register`, `# Decisions`) |
+| `##` | one fix, named by what it repairs — `## Fix 4 - Thread 154, the imputation claim is not implemented` |
+| `###` | a sub-fix where one fix has several parts — `### 4a - Replace the stale count paragraph` |
+| `####` | the mechanical fields, in this order: **Anchor**, **Action**, **Replace with** |
+| `###` | `### Note - <what it is>`, for anything that is not itself an edit |
+
+**Every fix is separated from the next by a horizontal rule (`---`).** Without
+it the fixes run together and the author loses their place mid-chapter.
+
+```markdown
+## Fix 3 - Thread 186, referring to repository files
+
+### Anchor
+
+Starts: *"They are recorded per category and per horizon in..."*
+
+### Action
+
+REWORD.
+
+#### Replace with
+
+> "The resolved boundaries are written to disk alongside each feature matrix..."
+
+### Note - the general rule
+
+A filename with a wildcard in it is a note to a developer, not a sentence in a
+thesis.
+
+---
+```
+
+**Why the `### Note` level exists.** Evidence, warnings and recommendations are
+not edits, and mixing them into the paste-ready text is how an author pastes a
+caveat into their thesis. Keeping them at their own level after the `Replace
+with` block means the top of every fix is always something to copy.
+
+**A fix headline names the problem, not the location.** `## Fix 4 - Section 4.3`
+tells the author nothing they cannot see; `## Fix 4 - Section 4.3 now
+contradicts itself` tells them why they are about to spend five minutes.
+
+**Answer questions above the fixes, not inside them.** A question the author
+asked in their last message gets its own `##` block before `# The fixes`, so the
+answer is not buried in a block they may skip.
+
+## The note folder
+
+Writing notes live in a per-chapter folder with an archive beside it:
+
+```
+06_thesis_writing/writing-notes/
+  ch4_data_assessment/
+    ch4-verification-pass.md          <- live: not yet applied
+    ch4-feature-eligibility.md
+    .archive/
+      2026-09-08_ch4-comment-pass-applied.md
+```
+
+**Anything left in the chapter folder is a claim that it still needs applying.**
+That is the whole contract, and both halves of it are load-bearing.
+
+### Sweep the folder before writing
+
+A chapter pass **begins** by listing the chapter's note folder — not by opening
+the snapshot. Other sessions write notes into these folders, and a note nobody
+reads is worse than no note: it represents work already done that is about to be
+done again, differently.
+
+For each live note found, establish which of three states it is in:
+
+| State | How to tell | What to do |
+|---|---|---|
+| **Applied** | its `Find` strings are gone from the snapshot and the replacements are present | archive it (below) |
+| **Partly applied** | some blocks landed, others did not | archive it, and carry the unapplied blocks forward into the new note |
+| **Not applied** | anchors still match the snapshot verbatim | leave it, and do not duplicate its blocks |
+
+Check this by **measuring against the snapshot**, never by assuming. A note's own
+`status:` frontmatter says what its author intended, not what reached the `.docx`.
+
+### Archive on the way in, not on the way out
+
+When a note has been applied, move it — do not delete it, and do not leave it:
+
+```
+writing-notes/<chapter>/.archive/<YYYY-MM-DD>_<original-name>-applied.md
+```
+
+Deleting loses the reasoning behind an edit that is now in the thesis with no
+record of why. Leaving it in place is worse: the folder then holds two notes
+whose anchors contradict each other, and nothing marks which one is stale. The
+next session — or the next person — cannot tell them apart.
+
+The date prefix is the date it was **archived**, so the folder reads
+chronologically.
+
+### Say what was swept
+
+The new note states what it found, so the author can see that another session's
+work was not lost:
+
+```markdown
+**Notes swept:** `ch4-comment-pass.md` (applied, archived),
+`ch4-feature-eligibility.md` (not applied — its two blocks are carried into
+Fix 6 below).
+```
 
 ## Assets
 

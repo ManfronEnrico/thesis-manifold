@@ -350,3 +350,43 @@ architecture figure still carried older descriptive labels for the same three
 things; a reader meeting "Scenario C" in one place could not connect it to the
 other. When a name changes, grep the whole generator, not just the figure that
 prompted the change.
+
+## A generator must delete, not only write
+
+A figure generator that only ever *adds* files is correct until something is
+renamed. Then the old name stays on disk beside the new one, and two copies of
+the same figure differ only by a prefix with nothing to say which is current.
+
+**Every generator removes the stale copies of what it is about to write.**
+`export_appendix.py` does this in `_clear_previous()`; `generate_architecture_diagrams.py`
+does it inside `_out_for()`, which is the single point every write passes through.
+
+Delete by **identity, not by location**. The appendix exporter matches on table
+slug; the diagram generator matches on the figure slug and removes
+`ch<other>_<same-slug>.svg` from every other chapter. Neither can reach a file it
+does not itself produce, so no directory wipe and no reserved numeric block needs
+maintaining.
+
+The workaround — "rename or regenerate, not both" — is not a fix. A rule the
+human has to remember, to stop a script producing duplicates, is a missing
+feature in the script.
+
+## Never hardcode a chapter number
+
+`{1: "introduction", 5: "architecture", ...}` inside a generator is a second copy
+of the chapter numbering that `PATHS.CHAPTER_ORDER` already owns, and it goes
+stale silently:
+
+```python
+_CH_DIR = {n: slug for slug, n in CHAPTER_ORDER.items()}   # derived
+```
+
+Measured 2026-09-08: during the Ch5/Ch6 swap the hardcoded map still read
+`5:"architecture", 6:"model_benchmark"` after `PATHS.py` had swapped them. The
+output was nonetheless correct, because the figure stems were renamed in the same
+pass and the two errors cancelled. **A bug that cancels against another bug is
+worse than one that fails**, because nothing reports it — the next change to
+either half would have surfaced it as mis-filed figures.
+
+The same reasoning covers table routing: `_TABLE_CHAPTER` maps slug → slug, never
+slug → number, which is why the chapter swap needed no edit there at all.

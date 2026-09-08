@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Decide whether snapshot slugs keep a chapter number",
+  "description": "Settle task_plan.md's Open question BEFORE any code. Options: keep `ch5-model-benchmark.md` (reading order visible in ls, but still renames on every reorder) vs drop to `model-benchmark.md` (survives reorders, matches PATHS.py CHAPTER_SLUGS which holds no numbers). Recommendation in the plan is to drop the number from the slug and keep position in the sections-tree prefix, mirroring PATHS._chapter_folder(). Deciding late means renaming every draft and doc link twice.",
+  "activeForm": "Deciding the slug convention",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

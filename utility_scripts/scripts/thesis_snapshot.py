@@ -82,37 +82,35 @@ REPO_ROOT = ROOT_DIR
 SNAP_ROOT = THESIS_WRITING_SNAPSHOTS_DIR
 DRAFTS = THESIS_WRITING_DRAFTS_DIR
 
-# Heading 1 text -> the sections-drafts basename it should be compared against.
+# Heading 1 subject -> the stable stem naming that chapter's SUBJECT.
+#
+# Deliberately carries no chapter numbers. The previous CHAPTER_MAP encoded
+# identity twice -- once by number ("chapter 5") and once by title -- and the
+# two contradicted the moment Ch5 and Ch6 were swapped in Word (2026-09-08),
+# because a number is a position and positions move. `_slug()` matched with
+# `startswith`, so the number key always won and the (correct) title key never
+# got a chance: every ch5/ch6 file was named for the opposite chapter.
+#
 # An explicit map, not string-similarity guessing: a wrong pairing would report
 # drift between two unrelated chapters, which is worse than reporting none.
-CHAPTER_MAP = {
-    "chapter 1": "ch1-introduction",
-    "chapter 2": "ch2-literature-review",
-    "chapter 3": "ch3-methodology",
-    "chapter 4": "ch4-data-assessment",
-    "chapter 5": "ch5-framework-design",
-    "chapter 6": "ch6-model-benchmark",
-    "chapter 7": "ch7-decision-synthesis",
-    "chapter 8": "ch8-experimental-evaluation",
-    "chapter 9": "ch9-discussion",
-    "chapter 10": "ch10-conclusion",
+# Keys are matched against the lowercased heading with any "Chapter N" prefix
+# already removed, so prefixed and bare forms resolve identically -- Ch1-6
+# dropped the prefix on 2026-09-05 and had regained it by 2026-09-07.
+CHAPTER_SUBJECTS = {
+    "introduction": "introduction",
+    "literature review": "literature-review",
+    "methodology": "methodology",
+    "data assessment": "data-assessment",
+    "model benchmark": "model-benchmark",
+    "predictive-extension architecture": "architecture",
+    "context-aware decision synthesis": "decision-synthesis",
+    "experimental evaluation": "experimental-evaluation",
+    "discussion": "discussion",
+    "conclusion": "conclusion",
+    # Front matter: unnumbered, and no sections-drafts counterpart by design.
+    # Registered so the "unknown subject" warning stays meaningful -- otherwise
+    # 7 expected entries drown out the one that signals a new chapter.
     "abstract": "abstract",
-    # Ch1-6 headings dropped their "Chapter N -" prefix (seen 2026-09-05) and
-    # read as a bare title, so match on the title too. Keys are matched as
-    # substrings of the lowercased heading; keep them long enough to be unique.
-    "introduction": "ch1-introduction",
-    "literature review": "ch2-literature-review",
-    "methodology": "ch3-methodology",
-    "data assessment": "ch4-data-assessment",
-    "predictive-extension architecture": "ch5-framework-design",
-    "model benchmark": "ch6-model-benchmark",
-    "context-aware decision synthesis": "ch7-decision-synthesis",
-    "experimental evaluation": "ch8-experimental-evaluation",
-    "discussion": "ch9-discussion",
-    "conclusion": "ch10-conclusion",
-    # Front matter: no sections-drafts counterpart by design. Registered so the
-    # "not in CHAPTER_MAP" warning stays meaningful -- otherwise 6 expected
-    # entries drown out the one that signals a genuinely new chapter.
     "table of contents": "table-of-contents",
     "table of figures": "table-of-figures",
     "table of tables": "table-of-tables",
@@ -120,6 +118,10 @@ CHAPTER_MAP = {
     "ai use declaration": "ai-use-declaration",
     "appendix": "appendix",
 }
+
+# "Chapter 5 | Model Benchmark" -> ("5", "model benchmark"). The separator has
+# been a hyphen and is currently a pipe, so accept the plausible set.
+_CH_PREFIX = re.compile(r"^chapter\s+(\d+)\s*[|:\u2013\u2014-]?\s*", re.I)
 
 # Heading levels are NOT hardcoded. They are resolved per-document from
 # word/styles.xml by _heading_levels(), because keying on style *names* is what
@@ -474,23 +476,42 @@ def _text(el, emphasis: bool = False) -> str:
     joined = re.sub(r"\*{6}", "", joined)
     return joined
 
-def _slug(title: str) -> str:
-    """Map a Heading 1 to a draft basename via CHAPTER_MAP, else a safe slug.
+def _subject(title: str) -> tuple[str | None, str | None]:
+    """Split a Heading 1 into its (chapter number, subject stem).
 
-    Longest key first, and the match must end at a non-digit. Both guards are
-    needed: plain `startswith` maps "Chapter 10 - Conclusion" to `ch1-...`
-    because "chapter 1" is a prefix of "chapter 10", which silently overwrites
-    ch1's file with ch10's text and reports a nonsense -2,733 word drift.
+    Both halves come from the document. The number is whatever Word rendered
+    into the heading; the subject is looked up in CHAPTER_SUBJECTS after the
+    "Chapter N" prefix is stripped -- and stripping is the whole mechanism, not
+    a convenience, because `startswith` can only match at position 0 and the
+    prefix was occupying it.
+
+    Returns (None, None) for a heading whose subject is not registered.
     """
     low = title.lower().strip()
-    for key in sorted(CHAPTER_MAP, key=len, reverse=True):
+    number = None
+    m = _CH_PREFIX.match(low)
+    if m:
+        number, low = m.group(1), low[m.end():]
+    # Longest key first: subjects sharing a prefix must not resolve to the
+    # shorter one.
+    for key in sorted(CHAPTER_SUBJECTS, key=len, reverse=True):
         if low.startswith(key):
-            rest = low[len(key):]
-            if rest[:1].isdigit():      # "chapter 1" vs "chapter 10"
-                continue
-            return CHAPTER_MAP[key]
-    s = re.sub(r"[^a-z0-9]+", "-", low).strip("-")
-    return s[:60] or "untitled"
+            return number, CHAPTER_SUBJECTS[key]
+    return number, None
+
+
+def _slug(title: str) -> str:
+    """Filename stem for a Heading 1: "ch5-model-benchmark", else a safe slug.
+
+    Number and subject are BOTH read from the document, so a reorder in Word
+    renames these files by itself and needs no code edit. Front matter carries
+    no number and is named by subject alone ("abstract", "appendix").
+    """
+    number, subject = _subject(title)
+    if subject is None:
+        s = re.sub(r"[^a-z0-9]+", "-", title.lower().strip()).strip("-")
+        return s[:60] or "untitled"
+    return f"ch{number}-{subject}" if number else subject
 
 
 # Cell/row boundaries in anchor text use ASCII unit/record separators, not
@@ -889,6 +910,42 @@ def _anchor_excerpt(a: str) -> str:
             f"see the chapter file…] {tail}")
 
 
+def _md_cell(s: str) -> str:
+    """Make text safe to drop into a markdown table cell.
+
+    A raw "|" ends the cell and shifts every column after it. Anchor text
+    genuinely contains pipes -- the WMAPE formula in Ch5 is "S|y-y^| / S|y|"
+    -- and a table row silently gaining two columns is the kind of breakage
+    nobody reads closely enough to notice. Newlines end the ROW, so they go too.
+    """
+    return s.replace("|", "\\|").replace("\n", " ").replace("\r", " ")
+
+
+def _anchor_locator(a: str, n: int = 5) -> str:
+    """First n and last n words of the anchored passage, for an index row.
+
+    This is a FINDING aid, not a quotation: Brian reads it with Word open and
+    Ctrl-F, so what matters is a searchable head and a searchable tail. The
+    index tables previously showed only the comment text, which says what the
+    objection was but not where in the thesis it sits -- and the anchor is
+    exactly what Word's own comment pane does not make greppable.
+
+    Head AND tail because a selection's boundaries are what identify it; the
+    middle of a long selection is the least distinguishing part (the same
+    reasoning as _anchor_excerpt, at table scale).
+
+    Short anchors are returned whole. Head+tail on a 7-word anchor would print
+    5 words, an ellipsis, then 5 words that OVERLAP the first 5 -- longer than
+    the original and misleading about what was selected.
+    """
+    words = _plain(" ".join(a.split())).split()
+    if not words:
+        return ""
+    if len(words) <= n * 2:
+        return " ".join(words)
+    return f"{' '.join(words[:n])} … {' '.join(words[-n:])}"
+
+
 def _thread_keywords(root: dict, replies: list[dict]) -> list[str]:
     """Keywords for a whole thread: the root's, plus any a reply introduces.
 
@@ -930,17 +987,24 @@ def _render_comments(rows: list[dict], title: str, src_name: str,
     threads = _group_threads(rows)
 
     out += ["## Index", "",
-            "| # | " + ("section" if scoped else "chapter") + " | tags | replies | opens with |",
-            "|---|---|---|---:|---|"]
+            "| # | " + ("section" if scoped else "chapter")
+            + " | tags | replies | on (first 5 … last 5 words) | opens with |",
+            "|---|---|---|---:|---|---|"]
     for root, replies in threads:
+        # Escaped, because this cell holds a HEADING and the headings read
+        # "Chapter 5 | Model Benchmark & Selection" -- a literal pipe in every
+        # chapter, which silently split the row and shifted every later column.
         where = (root["heading_path"].split(" > ")[-1] if scoped
                  else root["chapter"] or "(unanchored)")
         first = _plain(" ".join(root["text"].split()))[:80]
         flag = " ✔" if root["resolved"] else ""
         n = str(len(replies)) if replies else ""
         tags = ", ".join(_thread_keywords(root, replies))
-        out.append(f"| [{root['id']}](#c{root['id']}) | {where[:45]}{flag} "
-                   f"| {tags} | {n} | {first}... |")
+        # The anchor is what locates the thread in Word; the comment text is
+        # what it says. Both, in that order.
+        on = _md_cell(_anchor_locator(root["anchor"])) if root["anchor"] else "—"
+        out.append(f"| [{root['id']}](#c{root['id']}) | {_md_cell(where[:45])}{flag} "
+                   f"| {tags} | {n} | {on} | {_md_cell(first)}... |")
     out += ["", "---", ""]
 
     for root, replies in threads:
@@ -1167,7 +1231,7 @@ def _write_thread_index(d: dict, out_dir: Path) -> None:
            "## Threads per chapter", "",
            "| chapter | threads |", "|---|---:|"]
     for ch, n in sorted(by_ch.items(), key=lambda kv: -kv[1]):
-        out.append(f"| {ch} | {n} |")
+        out.append(f"| {_md_cell(ch)} | {n} |")
 
     # Work-type roll-up: the taxonomy answers "how much of what kind of work is
     # left, and where", which a per-thread list cannot show at 241 threads.
@@ -1181,7 +1245,8 @@ def _write_thread_index(d: dict, out_dir: Path) -> None:
         out += ["", "## Work type by chapter", "",
                 "Keyword tags Brian applied during the review pass. A thread "
                 "counts once per tag.", "",
-                "| tag | total | " + " | ".join(c[:18] for c in chaps) + " |",
+                "| tag | total | " + " | ".join(_md_cell(c[:18])
+                                                    for c in chaps) + " |",
                 "|---|---:|" + "---:|" * len(chaps)]
         for k in sorted(kw_ch, key=lambda k: -sum(kw_ch[k].values())):
             cells = " | ".join(str(kw_ch[k].get(c, "") or "") for c in chaps)
@@ -1190,8 +1255,9 @@ def _write_thread_index(d: dict, out_dir: Path) -> None:
         out += ["", f"*{untagged} thread(s) carry no tag.*"]
 
     out += ["", "## All threads", "",
-            "| thread | chapter | section | tags | opened by | replies | last voice | gist |",
-            "|---|---|---|---|---|---:|---|---|"]
+            "| thread | chapter | section | tags | opened by | replies "
+            "| last voice | on (first 5 … last 5 words) | gist |",
+            "|---|---|---|---|---|---:|---|---|---|"]
     for root, replies in threads:
         sec = (root["heading_path"].split(" > ")[-1]
                if root["heading_path"] else "")
@@ -1199,11 +1265,12 @@ def _write_thread_index(d: dict, out_dir: Path) -> None:
         gist = _plain(" ".join(root["text"].split()))[:70]
         slug = _slug(root["chapter"]) if root["chapter"] else "unanchored"
         flag = " RESOLVED" if root["resolved"] else ""
+        on = _md_cell(_anchor_locator(root["anchor"])) if root["anchor"] else "—"
         out.append(f"| [{root['id']}]({slug}.md#c{root['id']}) "
-                   f"| {(root['chapter'] or '')[:28]} | {sec[:32]} "
+                   f"| {_md_cell((root['chapter'] or '')[:28])} | {_md_cell(sec[:32])} "
                    f"| {', '.join(_thread_keywords(root, replies))} "
                    f"| {root['author'][:16]} | {len(replies)} "
-                   f"| {last[:16]}{flag} | {gist}... |")
+                   f"| {last[:16]}{flag} | {on} | {_md_cell(gist)}... |")
 
     (out_dir / "comments" / "INDEX.md").write_text("\n".join(out),
                                                    encoding="utf-8")
@@ -1296,7 +1363,7 @@ def _sanity_warnings(d: dict) -> list[str]:
         raise SystemExit(
             f"ABORT: two chapters share a filename: {', '.join(sorted(dupes))}.\n"
             "The later one would overwrite the earlier. Add distinguishing\n"
-            "entries to CHAPTER_MAP."
+            "entries to CHAPTER_SUBJECTS."
         )
 
     # One section holding most of the document = neighbours merged into it.
@@ -1326,10 +1393,14 @@ def _sanity_warnings(d: dict) -> list[str]:
                     f"{', '.join(empties[:5])}")
 
 
-    unmapped = [c["title"] for c in chapters if c["slug"] not in CHAPTER_MAP.values()]
+    # A title-keyed scheme self-heals a REORDER but cannot self-heal a RENAME:
+    # a retitled chapter falls out of CHAPTER_SUBJECTS and would otherwise be
+    # silently unpaired in the drift table. This warning is the only alarm.
+    unmapped = [c["title"] for c in chapters if _subject(c["title"])[1] is None]
     if unmapped:
-        warn.append(f"  WARN    {len(unmapped)} chapter(s) not in CHAPTER_MAP, "
-                    f"named from their title: {', '.join(unmapped[:4])}")
+        warn.append(f"  WARN    {len(unmapped)} chapter(s) not in "
+                    f"CHAPTER_SUBJECTS, named from their title: "
+                    f"{', '.join(unmapped[:4])}")
     return warn
 
 
@@ -1403,6 +1474,19 @@ def write_snapshot(src: Path, out_dir: Path, do_drift: bool,
                          key=lambda kv: (d["levels"].get(kv[0], 9), -kv[1])):
         man.append(f"| `{sid}` | {d['levels'].get(sid, '?')} | {n} |")
 
+    # Naming is derived from the document, so a reorder now renames files
+    # silently and correctly -- which is the point, but it also means nothing
+    # records that a reorder HAPPENED. This table makes it a one-line diff.
+    man += ["", "## Chapter order as the document reports it", "",
+            "Both number and subject are read from the heading; nothing here is",
+            "typed into the exporter. A reorder in Word shows up as a diff of",
+            "this table and needs no code change.", "",
+            "| # | subject | heading as written |", "|---:|---|---|"]
+    for ch in d["chapters"]:
+        number, subject = _subject(ch["title"])
+        man.append(f"| {number or '--'} | {subject or '(unknown)'} | "
+                   f"{ch['title'].replace('|', chr(92) + '|')} |")
+
     if do_drift and DRAFTS.is_dir():
         man += ["", "## Drift vs. `sections-drafts/`", "",
                 "Word counts only -- a weak signal, since markdown syntax and",
@@ -1410,7 +1494,14 @@ def write_snapshot(src: Path, out_dir: Path, do_drift: bool,
                 "chapters for inspection, not as a verdict.", "",
                 "| chapter | draft .md | snapshot | delta |", "|---|---:|---:|---:|"]
         for ch in d["chapters"]:
-            draft = DRAFTS / f"{ch['slug']}.md"
+            # Paired on SUBJECT, not on the numbered slug: a draft names a
+            # chapter's subject and must not be renamed every time that chapter
+            # moves. sections-drafts/ therefore holds "model-benchmark.md",
+            # never "ch5-model-benchmark.md".
+            subject = _subject(ch["title"])[1]
+            if subject is None:
+                continue
+            draft = DRAFTS / f"{subject}.md"
             if not draft.is_file():
                 continue
             dw = _words(draft.read_text(encoding="utf-8", errors="replace"))

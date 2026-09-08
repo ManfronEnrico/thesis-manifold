@@ -5,7 +5,11 @@
      Do not paste prose back in -- two live copies is the drift this removes.
      Full pre-strip prose: .archive/2026-09-01_superseded-prose/sections-drafts-prose/ -->
 
-# Chapter 6 — Model Benchmark & Selection
+# Model Benchmark & Selection
+
+> Chapter number is owned by the Word document and read live by the exporter
+> (P0052). Not repeated here: this file was titled "Chapter 6" while the
+> document had moved it to 5 (swap of 2026-09-08).
 
 > **P0044 OPEN (2026-09-01): RAM figure needs reconciling.** This file states an
 > 8 GB budget. That number is a project assumption, not a sourced one -- Ng (2017)

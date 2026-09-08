@@ -177,8 +177,8 @@ CHAPTER_SLUGS: tuple = (
     "literature_review",
     "methodology",
     "data_assessment",
-    "architecture",
     "model_benchmark",
+    "architecture",
     "decision_synthesis",
     "experimental_evaluation",
     "discussion",
@@ -201,7 +201,7 @@ def _chapter_folder(slug: str) -> str:
     """"{NN}_{slug}" -- the on-disk folder name for a chapter.
 
     Used by both the constants below and get_chapter_results_dir(), so the
-    prefix is computed in exactly one place. Typing "06_model_benchmark" into a
+    prefix is computed in exactly one place. Typing "05_model_benchmark" into a
     constant would survive a reorder of CHAPTER_SLUGS and silently point at the
     wrong chapter.
     """
@@ -855,7 +855,7 @@ def get_chapter_results_dir(slug: str) -> Path:
 
     Example:
         >>> get_chapter_results_dir("model_benchmark")
-        .../05_thesis_results/06_model_benchmark
+        .../05_thesis_results/05_model_benchmark
     """
     if slug not in CHAPTER_ORDER:
         raise ValueError(

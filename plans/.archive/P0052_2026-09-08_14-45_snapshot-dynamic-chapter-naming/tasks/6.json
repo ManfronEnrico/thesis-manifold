@@ -1,0 +1,11 @@
+{
+  "id": "6",
+  "subject": "Confirm the sections tree renumbers itself",
+  "description": "chapters/sections/09-ch5-framework-design/ encodes position twice: the 09- prefix is derived and correct, the ch5 inside the slug is typed and wrong (F6). The prefix re-derives every run, so this tree should self-correct once the slug drops its number. Verify rather than migrate.",
+  "activeForm": "Verifying sections tree renumbering",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

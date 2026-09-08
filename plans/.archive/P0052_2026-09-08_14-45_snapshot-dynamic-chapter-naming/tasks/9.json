@@ -1,0 +1,15 @@
+{
+  "id": "9",
+  "subject": "Re-export and verify against the acceptance tests",
+  "description": "Run thesis_snapshot.py --label dynamic-naming-check. Verify: every chapters/<slug>.md names its own subject; the +1,815/-1,838 mirror pair in the drift table is GONE (F1); ch7 and ch8 now appear; comments/sections mirrors chapters/sections; no spurious unmapped warnings. Then answer the real acceptance test: if Ch7 and Ch8 were swapped tomorrow, would anything need editing? Must be no.",
+  "activeForm": "Re-exporting and verifying",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "4",
+    "5",
+    "6",
+    "7",
+    "8"
+  ]
+}

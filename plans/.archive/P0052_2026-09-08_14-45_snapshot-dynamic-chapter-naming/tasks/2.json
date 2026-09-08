@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Write failing assertions for the Ch5/Ch6 mispairing",
+  "description": "Pin the bug before fixing it. Assert _slug() on the four live heading forms (both prefixed and bare) resolves to the subject, not the position. See findings F2 for the measured current behaviour. Blocked by task 1 because the expected slug strings depend on the naming decision.",
+  "activeForm": "Writing failing assertions",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

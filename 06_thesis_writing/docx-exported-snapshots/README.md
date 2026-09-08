@@ -222,61 +222,41 @@ run anyway.
 
 ## Housekeeping
 
-**Snapshots are ignored by default. Tracking is opt-in, and manual.**
+**Nothing in this folder is tracked in git, except this README.**
 
-Every export writes a fresh timestamped folder that git ignores. A snapshot enters the
-repo only when **you copy it into `shared_snapshot/`** by hand — which is the one folder
-under here that is tracked. Nothing automatic can publish an export, so a bad one cannot
-reach Enrico by accident.
+A snapshot is a derived mirror: ~325 generated `.md` files reflecting the `.docx` at one
+moment, reproducible any time by re-running the exporter. Git was carrying regenerable
+output and nothing else, so it no longer carries any of it.
 
-Why ignore by default: a snapshot is ~325 files of derived markdown mirroring the `.docx`
-at one moment, and the `.docx`'s own history already lives in OneDrive version history.
-Four archived snapshots were once tracked as **1,306 files** for no benefit.
+The real history of the prose is the **OneDrive version history of the `.docx`**. That is
+the record to go back to, not a folder of past exports.
 
 ```
 docx-exported-snapshots/
-├── 2026-09-08_15-43_dynamic-naming-verified/   just exported -- IGNORED
-├── shared_snapshot/                                              TRACKED
-│   └── 2026-09-08_15-43_dynamic-naming-verified/   published, slug and all
-├── .archive/                                   kept for reference -- IGNORED
-└── README.md                                                     TRACKED
+├── 2026-09-08_18-04_ch4-second-verification/   local only -- IGNORED
+├── .archive/                                   local only -- IGNORED
+└── README.md                                                  TRACKED
 ```
 
-Every snapshot keeps its `YYYY-MM-DD_HH-mm_label` folder wherever it sits. Publishing
-moves the folder; it never unpacks it.
+Snapshots live on your disk for as long as you want them and vanish from git entirely.
+Every one keeps its `YYYY-MM-DD_HH-mm_label` folder — the timestamp and label are what
+say which `.docx` it mirrors, taken when, and why.
 
-### Publish a snapshot
+### Sharing one with Enrico
 
-Check the export first — read `MANIFEST.md`, confirm no `WARN` lines, confirm the drift
-deltas look plausible. Then **drag the whole slugged folder** into `shared_snapshot/`.
+Send the folder, or the `.docx` it came from. Do not commit it — the `.gitignore` will
+refuse it, which is the intended answer rather than an obstacle to work around.
 
-In Explorer that is one drag. On the command line, note there is **no `\*`** on the
-source — copying the folder, not its contents:
+### Housekeeping
 
-```powershell
-$root = "06_thesis_writing\docx-exported-snapshots"
-Copy-Item -Recurse "$root\2026-09-08_15-43_dynamic-naming-verified" "$root\shared_snapshot\"
-```
-
-```
-shared_snapshot/
-└── 2026-09-08_15-43_dynamic-naming-verified/    <- the slug comes WITH it
-    ├── MANIFEST.md
-    └── chapters/
-```
-
-**Do not flatten it.** `Copy-Item "$snap\*"` — with the trailing `\*` — copies the
-contents and drops the folder, and with it the timestamp and label that say which `.docx`
-this is, when it was taken and why. It also makes a second published snapshot impossible,
-because the loose `chapters/` of the next one would overwrite this one's.
-
-The `.docx` inside stays ignored at any depth — a large binary git cannot diff.
-
-Delete an old export outright once its review round is closed:
+Delete an export outright once its review round is closed:
 
 ```powershell
 Remove-Item -Recurse -Force "06_thesis_writing\docx-exported-snapshots\2026-09-01_18-42"
 ```
+
+Nothing downstream reads a snapshot folder by name, so deleting one breaks nothing. The
+only cost is re-running the exporter if you want it back.
 
 > **Filenames are derived from the document, and re-derive on every run.** Both the
 > chapter number and the subject are read from the heading Word rendered, so a reorder in

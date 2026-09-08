@@ -1,0 +1,11 @@
+{
+  "id": "7",
+  "subject": "Keep the guard rails, retargeted at subjects",
+  "description": "Three guards, ascending: WARN on a Heading 1 whose subject is unknown (this is the ONLY alarm for a renamed chapter -- the one case title-keying cannot self-heal); ABORT on two chapters resolving to one slug; and re-verify the existing 40%-of-document abort still fires (it caught the 2026-09-05 restyle that merged six chapters into the Abstract).",
+  "activeForm": "Retargeting guard rails",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

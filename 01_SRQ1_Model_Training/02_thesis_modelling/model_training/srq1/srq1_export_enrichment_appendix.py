@@ -62,7 +62,7 @@ from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F4
 
 SRC = (results_root() / "tables")
 
-# Ch6: with-feature vs without-feature model comparisons and their SHAP
+# Ch5: with-feature vs without-feature model comparisons and their SHAP
 # attribution -- modelling results, not data provenance (that is Ch4).
 OUT = get_chapter_tables_dir("model_benchmark")
 REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"

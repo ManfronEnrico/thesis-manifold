@@ -1,7 +1,7 @@
 ---
 pid: P0048
 created: 2026-09-07 13:51:00
-updated: 2026-09-07 16:40:00
+updated: 2026-09-08 14:11:14
 status: in_progress
 focus_detail: "HANDOFF PLAN — written to survive an account switch that loses session history. Read START_HERE.md first. Chapter-by-chapter prose pass from ch4 onward, working the results-folder tables/figures into the text as in-text citations. Session's main discovery: the H1/H3 forecast horizon is never applied to feature construction, so both matrices are one-month tasks and the published 'H3' results do not measure the horizon the prose claims (F1). Two prose blocks are ready to paste now (split correction, feature count); the horizon blocks are blocked on a code fix + re-run."
 ---
@@ -107,7 +107,7 @@ held-out ground truth is retained. Ground truth **is** retained — see F5.
 | 5 | Ch5–Ch9 prose + citations | section by section | pending |
 | 6 | **Inherited: draft bullets** | ch3/ch6 merge, ch4/ch7/ch8, short files, verify | pending (tasks 11–16) |
 | 7 | **Inherited: Brian's writing items** | 5 Word threads, NotebookLM claims verification | pending (tasks 9–10) |
-| 8 | **Chapter reorder: swap Ch5 and Ch6** | remove a forward dependency; add an SRQ→chapter map | pending (from P0050, 09-07) |
+| 8 | **Chapter reorder: swap Ch5 and Ch6** | Word half DONE (Brian, 2026-09-08); 37 prose refs verified + staged in `ch5-ch6-swap-reference-repair.md`. Repo half (PATHS.py, 2 folder renames, 6 diagram stems) still open — P0050 | **prose ready to paste**; see F14 |
 
 **Phase 4 is not fully blocked.** §4.1/§4.2 narrative and §4.3/§4.4 (blocks P1/P2)
 can proceed now; only the horizon subsection and the numbers that move with the
@@ -123,6 +123,10 @@ re-run wait on phase 3.
    once P3 records that XGBoost is pinned to one thread.
 3. **Do not write the §4.2 EDA pass before phase 3.** Every figure there is stale;
    doing it twice is waste.
+4. **Phase 8 (the swap) before phase 5 (Ch5–Ch9 prose).** Every cross-reference
+   written before the swap has to be rewritten after it. The swap is now a small,
+   fully-specified edit (findings F(new)); doing it first is strictly cheaper.
+   It does **not** block phase 4 — Ch4's anchors are unaffected by renumbering.
 
 ## Related
 

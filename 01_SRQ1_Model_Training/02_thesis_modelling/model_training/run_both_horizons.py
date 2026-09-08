@@ -49,27 +49,76 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SRQ1 = HERE / "srq1"
 
+
+def _interpreter() -> str:
+    """The project venv's python, not whatever `python` resolves to.
+
+    A bare `python` on this machine is a system 3.14 carrying DIFFERENT library
+    versions from the venv (measured 2026-09-08: xgboost 3.4.1/3.2.0, lightgbm
+    4.7.0/4.6.0, sklearn 1.9.0/1.8.0). Model output is version-sensitive, so a
+    suite run under the wrong interpreter produces numbers that cannot be
+    compared with the committed results -- and silently, because both
+    interpreters import cleanly and run to completion.
+
+    That would defeat DEC-DETERMINISM (F18): pinning XGB_N_JOBS=1 makes a run
+    reproducible only against the same library build. Every script's own usage
+    line names .venv/Scripts/python.exe; this makes that the default rather than
+    a convention someone has to remember.
+    """
+    root = next((q for q in HERE.parents if (q / "PATHS.py").is_file()), None)
+    if root is not None:
+        for rel in ("Scripts/python.exe", "bin/python"):
+            cand = root / ".venv" / rel
+            if cand.is_file():
+                return str(cand)
+    print("  !! .venv not found -- falling back to the current interpreter. "
+          "Library versions may differ from the committed results.", flush=True)
+    return sys.executable
+
+
+PYTHON = _interpreter()
+
 # name -> script path. Ordered by dependency; see the module docstring.
 STAGES: list[tuple[str, Path]] = [
-    ("benchmark",       SRQ1 / "srq1_benchmark.py"),
-    ("benchmark_cv",    SRQ1 / "srq1_benchmark_cv.py"),
-    ("benchmark_tuned", SRQ1 / "srq1_benchmark_tuned.py"),
-    ("baselines_stat",  SRQ1 / "srq1_baselines_stat.py"),
-    ("calibration",     SRQ1 / "srq1_calibration.py"),
-    ("train_persist",   HERE / "train_and_persist.py"),
-    ("shap_figures",    SRQ1 / "srq1_generate_shap_figures.py"),
-    ("perf_figures",    SRQ1 / "srq1_generate_performance_figures.py"),
+    # -- tier 1: no dependencies, produce the inputs everything else selects on
+    ("benchmark",        SRQ1 / "srq1_benchmark.py"),
+    ("benchmark_cv",     SRQ1 / "srq1_benchmark_cv.py"),
+    ("benchmark_tuned",  SRQ1 / "srq1_benchmark_tuned.py"),
+    ("baselines_stat",   SRQ1 / "srq1_baselines_stat.py"),
+    # -- tier 2: read tuned_params.json / cv_params.json
+    ("calibration",      SRQ1 / "srq1_calibration.py"),
+    ("mase",             SRQ1 / "srq1_mase.py"),
+    ("demand_classes",   SRQ1 / "srq1_demand_classes.py"),
+    ("stability",        SRQ1 / "srq1_stability.py"),
+    # -- tier 3: separate modelling questions, same features
+    ("ridge_cv",         SRQ1 / "srq1_ridge_cv.py"),
+    ("pooled",           SRQ1 / "srq1_pooled.py"),
+    ("pooled_perbrand",  SRQ1 / "srq1_pooled_perbrand.py"),
+    ("ridge_pooled",     SRQ1 / "srq1_ridge_pooled.py"),
+    # -- tier 4: feature/ablation evidence (holiday enrichment, VIF, SHAP)
+    ("feature_diag",     SRQ1 / "srq1_feature_diagnostics.py"),
+    ("holiday_ablation", SRQ1 / "srq1_holiday_ablation.py"),
+    ("holiday_tuned",    SRQ1 / "srq1_holiday_ablation_tuned.py"),
+    # -- tier 5: serving + reporting, must follow selection inputs
+    ("train_persist",    HERE / "train_and_persist.py"),
+    ("training_report",  HERE / "training_report.py"),
+    ("shap_figures",     SRQ1 / "srq1_generate_shap_figures.py"),
+    ("perf_figures",     SRQ1 / "srq1_generate_performance_figures.py"),
+    ("enrich_appendix",  SRQ1 / "srq1_export_enrichment_appendix.py"),
 ]
+
 
 # Stages deliberately NOT in the default run, and why.
 #
 #   srq1_profiling.py  -- measures memory/latency at n_jobs=-1 (DEC-DETERMINISM).
 #                         It is a resource measurement, not an accuracy result,
 #                         and it is horizon-insensitive by design.
-#   srq1_stability.py  -- 40 fits; run deliberately, not as part of a suite.
-#   srq1_pooled.py     -- a separate modelling question (pooled vs per-category).
-#   holiday_ablation*  -- answered already; rerun only if features change.
-OPTIONAL = ("profiling", "stability", "pooled")
+#
+# NOTE: stability, pooled and the holiday ablations WERE excluded here. That was
+# wrong -- the horizon fix changed the features they all read, so their tables
+# describe a different task than the one the thesis now reports. Only profiling
+# stays out.
+OPTIONAL = ("profiling",)
 
 HORIZONS = (3, 1)  # primary first, so a run interrupted early still has H=3
 
@@ -96,13 +145,26 @@ def _results_root_for(horizon: int) -> Path:
 # for RAM with everything else on the machine. Without it, a kill in the last
 # stage discards every completed Optuna study before it.
 PRODUCES: dict[str, str] = {
-    "benchmark":       "tables/metrics.csv",
-    "benchmark_cv":    "tables/cv_metrics.csv",
-    "benchmark_tuned": "tables/tuned_metrics.csv",
-    "baselines_stat":  "tables/stat_baselines.csv",
-    "calibration":     "tables/calibration.csv",
-    "train_persist":   "models/index.json",
+    "benchmark":        "tables/metrics.csv",
+    "benchmark_cv":     "tables/cv_metrics.csv",
+    "benchmark_tuned":  "tables/tuned_metrics.csv",
+    "baselines_stat":   "tables/stat_baselines.csv",
+    "calibration":      "tables/calibration.csv",
+    "mase":             "tables/mase.csv",
+    "demand_classes":   "tables/demand_classes.csv",
+    "stability":        "tables/stability.csv",
+    "ridge_cv":         "tables/ridge_cv_alpha.csv",
+    "pooled":           "tables/pooled_metrics.csv",
+    "pooled_perbrand":  "tables/pooled_perbrand.csv",
+    "ridge_pooled":     "tables/ridge_pooled.csv",
+    "feature_diag":     "tables/feature_vif.csv",
+    "holiday_ablation": "tables/holiday_ablation_metrics.csv",
+    "holiday_tuned":    "tables/holiday_ablation_tuned_metrics.csv",
+    "train_persist":    "models/index.json",
+    "training_report":  "tables/training_report.md",
+    "shap_figures":     "tables/shap_importance.csv",
 }
+
 
 
 def _done(name: str, horizon: int, started: float) -> bool:
@@ -135,7 +197,7 @@ def _run(name: str, script: Path, horizon: int, dry: bool,
 
     print(f"\n{'=' * 74}\n  {label}  --  {script.name}\n{'=' * 74}", flush=True)
     t0 = time.perf_counter()
-    r = subprocess.run([sys.executable, str(script)], env=env, cwd=str(script.parent))
+    r = subprocess.run([PYTHON, str(script)], env=env, cwd=str(script.parent))
     dt = time.perf_counter() - t0
     print(f"  -> {label} exit={r.returncode} in {dt:,.1f}s", flush=True)
     if r.returncode != 0:

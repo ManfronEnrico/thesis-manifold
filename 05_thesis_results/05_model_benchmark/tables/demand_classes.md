@@ -20,11 +20,11 @@ categorise and then reporting test accuracy per class would leak.
 
 | Category | smooth | erratic | intermittent | lumpy | total |
 |---|---|---|---|---|---|
-| CSD | 44 | 32 | 5 | 14 | 95 |
-| RTD | 32 | 20 | 2 | 8 | 62 |
+| CSD | 46 | 29 | 6 | 14 | 95 |
+| RTD | 27 | 21 | 7 | 7 | 62 |
 | danskvand | 16 | 9 | 3 | 1 | 29 |
-| energidrikke | 16 | 18 | 2 | 8 | 44 |
-| **all** | **108** | **79** | **12** | **31** | **230** |
+| energidrikke | 15 | 19 | 3 | 7 | 44 |
+| **all** | **104** | **78** | **19** | **29** | **230** |
 
 ## Why this replaces the 1 unit/month volume floor
 
@@ -35,9 +35,9 @@ measured overlap shows how poor:
 | | brands |
 |---|---:|
 | Below the old floor (<1 unit/month) | 38 |
-| — of which **smooth** (well-behaved, merely small) | **8** |
-| — of which lumpy or intermittent | 22 |
-| **Above** the floor yet lumpy/intermittent (the floor missed them) | **21** |
+| — of which **smooth** (well-behaved, merely small) | **3** |
+| — of which lumpy or intermittent | 28 |
+| **Above** the floor yet lumpy/intermittent (the floor missed them) | **20** |
 
 So the floor **removed well-behaved small brands** -- exactly the series a
 forecasting study should keep -- while **leaving irregular ones in**. The SBC

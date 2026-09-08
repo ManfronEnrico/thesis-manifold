@@ -71,6 +71,7 @@ sys.path.insert(0, str(_find_repo_root()))
 from PATHS import (ROOT_DIR, THESIS_RESULTS_DIR, THESIS_RESULTS_SRQ1_DIR,  # noqa: E402
                    THESIS_RESULTS_SRQ4_DIR, CHAPTER_SLUGS,
                    get_category_pipeline_step_outputs_dir,
+                   get_category_engineered_bymonth_dir,
                    get_chapter_tables_dir)
 
 # No single OUT any more: tables are written to the chapter that discusses them
@@ -104,7 +105,8 @@ _TABLE_CHAPTER: dict = {
     # Ch4 -- how the data set was built
     "pipeline_execution": "data_assessment",
     "pipeline_data_reduction": "data_assessment",
-    # Ch6 -- the models, their cost and their stability
+    "feature_matrix": "data_assessment",
+    # Ch5 -- the models, their cost and their stability
     "metric_dictionary": "model_benchmark",
     "statistical_baselines": "model_benchmark",
     "seed_stability": "model_benchmark",
@@ -1174,6 +1176,132 @@ def _clear_previous() -> int:
     return removed
 
 
+# Role of every column in the modelling matrix. The manifest's `features` list
+# is authoritative for WHICH columns are model inputs; this only names the role
+# of each, and the roles are assigned by rule below rather than listed by hand.
+_FM_CATEGORY = "CSD"
+_FM_HORIZON = 3
+
+
+def _fm_role(col: str, features: set) -> str:
+    """The role a matrix column plays, derived from its name and the manifest.
+
+    Every column must match a rule. `table_feature_matrix` asserts that none
+    falls through, so a column added upstream fails loudly here rather than
+    being silently filed as "other" in a table an assessor reads.
+    """
+    if col in ("date", "brand"):
+        return "Identifier"
+    if col == "sales_units":
+        return "Target"
+    if col == "log_sales_units":
+        return "Target, transformed"
+    if col == "split":
+        return "Split label"
+    if col == "period_index":
+        return "Ordering"
+    if col in ("period_year", "period_month"):
+        return "Raw date part, superseded"
+    if col in features:
+        if col.startswith(("lag_", "rolling_")):
+            return "Feature - autoregressive"
+        if col in ("month", "quarter", "peak_month", "days_in_month",
+                   "n_holidays", "non_holiday_days"):
+            return "Feature - calendar"
+        if col.startswith("zero_run"):
+            return "Feature - series quality"
+        if ("promo" in col or "tpr" in col or "disp" in col
+                or "feat" in col):
+            return "Feature - promotional"
+        if ("distribution" in col or "dist" in col or "stores" in col
+                or "items" in col):
+            return "Feature - distribution"
+        return ""                       # caught by the assert in the caller
+    return "Excluded - contemporaneous"
+
+
+def table_feature_matrix() -> None:
+    """What the modelling matrix actually contains, column by column.
+
+    Reads the matrix and its manifest rather than describing them: the feature
+    count in particular has been wrong in the prose more than once (13, then 14,
+    then 16, now 34 after the holiday enrichment), because it was written down
+    instead of counted.
+
+    The important content is not the feature list -- it is the EXCLUDED block.
+    Fourteen contemporaneous sales and baseline columns are carried in the
+    matrix for traceability and are not model inputs; a reader who assumes every
+    column is a feature would conclude the model sees same-period sales, which
+    would make the whole benchmark meaningless.
+    """
+    d = get_category_engineered_bymonth_dir(_FM_CATEGORY)
+    slug = _FM_CATEGORY.lower()
+    mf = d / f"{slug}_manifest_h{_FM_HORIZON}.json"
+    pq = d / f"{slug}_feature_matrix_h{_FM_HORIZON}.parquet"
+    if not (mf.is_file() and pq.is_file()):
+        print(f"  (skip feature matrix: {_FM_CATEGORY} h{_FM_HORIZON} absent)")
+        return
+
+    man = json.loads(mf.read_text(encoding="utf-8"))
+    df = pd.read_parquet(pq)
+    features = set(man["features"])
+
+    rows = []
+    for c in df.columns:
+        role = _fm_role(c, features)
+        assert role, (f"column {c!r} matched no role rule -- add one rather "
+                      f"than letting it fall through into the appendix")
+        nn = df[c].notna().sum()
+        rows.append({"Column": c, "Role": role,
+                     "Type": str(df[c].dtype),
+                     "Populated": f"{nn / len(df) * 100:.0f}%"})
+    out = pd.DataFrame(rows)
+
+    # Order by role so the table reads as a grouping, with features together.
+    order = ["Identifier", "Target", "Target, transformed", "Split label",
+             "Ordering", "Feature - autoregressive", "Feature - calendar",
+             "Feature - distribution", "Feature - promotional",
+             "Feature - series quality", "Raw date part, superseded",
+             "Excluded - contemporaneous"]
+    out["_k"] = out.Role.map({r: i for i, r in enumerate(order)})
+    assert out._k.notna().all(), "a role is missing from the display order"
+    out = out.sort_values(["_k", "Column"]).drop(columns="_k")
+
+    sd = man["split_dates"]
+    sh = man["shape"]
+    n_feat, n_excl = len(features), int((out.Role.str.startswith("Excluded")).sum())
+
+    _emit("feature_matrix",
+          "Composition of the modelling matrix",
+          f"Every column of the {_FM_CATEGORY} feature matrix at a "
+          f"{man['forecast_horizon']}-month forecast horizon, with the role it "
+          f"plays in training. The matrix holds {sh['rows']:,} brand-months "
+          f"across {sh['brands']} brands in {sh['columns']} columns, of which "
+          f"{n_feat} are model inputs.", out,
+          note=f"The target is {man['target_col']}, modelled as log1p and "
+               f"inverted for reporting. Splits are chronological: training "
+               f"{sd['train_start']} to {sd['train_end']}, validation "
+               f"{sd['val_start']} to {sd['val_end']}, test "
+               f"{sd['test_start']} to {sd['test_end']}. The "
+               f"{n_excl} columns marked excluded are same-period sales and "
+               f"baseline measures, retained so a prediction can be traced "
+               f"back to the observation it was made from; they are not "
+               f"available to the model, which would otherwise observe the "
+               f"quantity it is asked to predict. Populated is the share of "
+               f"rows with a value: autoregressive features are empty for a "
+               f"brand's earliest months by construction.",
+          review=f"Read from {pq.name} and {mf.name} at render time; the "
+                 f"feature list is the manifest's own, not a copy. Role "
+                 f"assignment is BY RULE (_fm_role) and asserts that no column "
+                 f"falls through -- a column added upstream fails the export "
+                 f"rather than appearing unclassified. Counts here supersede "
+                 f"the 13/14/16-feature figures in earlier drafts (P0048 F3, "
+                 f"F10): the current matrix carries {n_feat} features after the "
+                 f"holiday enrichment. CSD is shown as the worked category; the "
+                 f"other three differ in the promotional block, which is absent "
+                 f"at source for the promo-zero categories.")
+
+
 def main() -> None:
     _chapters = sorted(set(_TABLE_CHAPTER.values()))
     print(f"Writing tables into {len(_chapters)} chapter folders under "
@@ -1184,6 +1312,7 @@ def main() -> None:
     table_metric_dictionary()
     table_pipeline_execution()
     table_pipeline_data_reduction()
+    table_feature_matrix()
     table_resource_profile()
     table_sandbox_profile()
     table_param_drift()

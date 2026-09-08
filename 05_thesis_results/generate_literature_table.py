@@ -7,7 +7,7 @@ Every other artefact in this tier is derived from measured data. This one is not
 and pretending otherwise would be the exact failure P0046 exists to prevent. It
 has two halves with different provenance, and the table marks the boundary:
 
-  * PARSED from ch2-literature-review.md -- the section titles, their
+  * PARSED from literature-review.md -- the section titles, their
     `*Maps to ...*` SRQ mapping, and their `**Claims**` bullets. These cannot
     drift: if a section is renamed, re-mapped or re-argued, re-running this
     picks the change up.
@@ -42,7 +42,7 @@ from PATHS import (THESIS_WRITING_DRAFTS_DIR,
 # Ch2: the map from each strand of the literature to the design decision it
 # informed. It is parsed from the literature chapter, and read beside it.
 OUT = get_chapter_tables_dir("literature_review")
-CH2 = THESIS_WRITING_DRAFTS_DIR / "ch2-literature-review.md"
+CH2 = THESIS_WRITING_DRAFTS_DIR / "literature-review.md"
 
 # The curated half: what each strand changed in the build. Keyed by section
 # number so a renamed section still matches, and every value names something

@@ -244,8 +244,20 @@ Gives data → models → architecture → synthesis → evaluation: the DSR bui
 and the repo's own tier order agree with it. Ch5's per-SRQ sections stay intact
 and Ch7–Ch10 do not move.
 
-**Check before executing**: Ch6 §6.3.2 is "Feature engineering" — confirm Ch6 has
-no dependency on something Ch5 currently establishes first. Not verified here.
+**Check before executing: DONE 2026-09-08, and it passes.** Measured against
+snapshot `2026-09-07_19-41_internal-links`:
+
+| Direction | Count | Nature |
+|---|---|---|
+| Ch5 → Ch6 | 4 | all **forward** pointers ("benchmarked in Chapter 6") |
+| Ch6 → Ch5 | **0** | Ch6 never cites Ch5 |
+
+Ch6 is self-contained: it defines its own model set, split, metrics and protocol,
+and uses the word "substrate" exactly once, inside a sentence about Ch2. §6.3.2
+"Feature engineering" describes the matrix directly and does not lean on Ch5.
+The dependency is strictly one-way, so the swap converts four forward promises
+into backward references — the reader meets the evidence before the architecture
+that assumes it.
 
 **Two wins independent of the swap:**
 - An SRQ→chapter map table in Ch1 does more for the reader than any reordering.
@@ -255,6 +267,50 @@ no dependency on something Ch5 currently establishes first. Not verified here.
 **Cost**: touches every cross-reference, figure and table number, and the Word
 document. Cheaper now than after the remaining prose lands — an argument for
 deciding soon, not for doing it hastily.
+
+### Execution recipe (measured 2026-09-08, P0050 session)
+
+**Cost is lower than the paragraph above assumed.** No path contains a chapter
+number that is typed by hand, so the code half is one line.
+
+**1. Code — one edit.** Swap the two entries in `CHAPTER_SLUGS` (`PATHS.py:175`):
+`"architecture"` and `"model_benchmark"`. `CHAPTER_ORDER` derives from position,
+`_chapter_folder()` derives the `NN_` prefix from that, and every constant and
+helper derives from those. `export_appendix.py`'s `_TABLE_CHAPTER` keys on
+**slugs**, so it needs nothing.
+
+**2. Results folders — two renames.**
+`05_thesis_results/05_architecture/` → `06_architecture/`, and
+`06_model_benchmark/` → `05_model_benchmark/`. Do these together; the numbers
+collide if done one at a time without a temp name.
+
+**3. Diagram stems — 6 files + the generator.**
+`ch5_layered_architecture_v2`, `ch5_tool_interface_v1`, `ch5_architecture_v1`
+(superseded, retained) → `ch6_*`; `ch6_model_selection_v2`,
+`ch6_modelling_pipeline_v1`, `ch6_resource_profile_v2` → `ch5_*`. Stems are
+string literals in `generate_architecture_diagrams.py` (lines ~360, 448, 533,
+886, 968); `_out_for()` parses the `ch<N>_` prefix to route, so a renamed stem
+lands in the renumbered folder automatically. `_check_stem()` raises on a stem
+without the prefix, so a typo fails loudly rather than silently.
+
+**4. Word prose — ~30 edits.** 2 chapter titles, ~10 cross-chapter references
+(Ch1×5, Ch3×1, Ch7×1, Ch8×3, Ch9×2, plus the ToC), and ~18 internal `§6.x` refs
+inside the benchmark chapter that become `§5.x`.
+
+**⚠ The trap: three `§5.2` references in Ch6 are CITATIONS, not sections** —
+*Hyndman & Athanasopoulos (2021, §5.2)*, at ch6 lines 17, 27 and 259 of the
+snapshot. A find-and-replace of `§5.` or `§6.` across that chapter corrupts them.
+Exclude them explicitly.
+
+**5. Draft image links.** `06_thesis_writing/sections-drafts/ch5-framework-design.md`
+carries `05_thesis_results/05_architecture/figures/ch5_layered_architecture_v2.svg`.
+Re-resolve every image path after the rename — P0050's end-of-day pass found three
+links broken this exact way (repointed before a later rename).
+
+**6. One judgement call.** Ch6 §6.7's SRQ table row reads "integration readiness
+is addressed in Ch3 and Ch5" — after the swap that becomes a forward reference.
+Still correct, no longer "as established". The same sentence in Ch7 and Ch8 is
+unaffected.
 
 ---
 
@@ -341,3 +397,60 @@ because all four ran. Pooling helps the small categories and hurts CSD:
 | RTD | +0.7 pp | +1.3 pp |
 
 ⚠ These numbers are pre-fix (see F9) — the *pattern* is the citable claim, not the digits.
+
+
+## F14 — The Ch5/Ch6 swap is DONE in Word; prose refs repaired in a note (2026-09-08)
+
+Snapshot `2026-09-08_14-05_chapter-reorder` confirms the swap landed:
+**Ch5 = Model Benchmark & Selection** (4,738 w), **Ch6 = Predictive-Extension
+Architecture** (2,153 w). Ch7-Ch10 unmoved, as phase 8 predicted.
+
+**Word auto-renumbered every heading.** `## 5.1 Rationale for model selection` etc. are
+already correct. **Body-text references did not** — they are plain text. That split is the
+whole content of the repair.
+
+**37 stale references found and written as verified find/replace pairs** in
+`06_thesis_writing/writing-notes/ch5-ch6-swap-reference-repair.md`:
+
+| block | count | what |
+|---|---:|---|
+| A | 20 | `§6.x` → `§5.x` inside the benchmark chapter |
+| B | 2 | `Section 5.x` → `Section 6.x` inside the architecture chapter |
+| C | 12 | cross-chapter refs in ch1-ch4, ch8, ch9 |
+| D | 3 | the SRQ3 table row, which appears in ch5, ch7 AND ch8 |
+
+**Every find-string was verified to occur exactly once** against the snapshot
+(scripted check). Three of my first drafts did not match and were corrected:
+
+1. **A20** used a straight apostrophe; the document has a curly one.
+2. **C3a** — I recorded the wrong sentence ending. The real ch3 reference is
+   *"the RSS measurements are reported in Chapter 6"*, a **fourth** ch3 ref sitting at the
+   tail of a `psutil`/`tracemalloc` sentence, nowhere near another chapter pointer.
+3. **D** — the SRQ3 row is in **three chapters**, not one, and lives in the *benchmark*
+   chapter rather than the architecture chapter. It also points at integration readiness,
+   which is §6.6 — so all three rows now say Ch5 where they mean Ch6.
+
+**Two traps recorded in the note:**
+
+- **Three `§5.2` refs in the benchmark chapter are citations to Hyndman & Athanasopoulos
+  (2021, §5.2)**, not thesis sections (lines 17, 27, 259). A blanket find/replace on
+  `§5.` or `§6.` corrupts them into self-references. Every pair is word-anchored.
+- **Snapshot filenames are now inverted**: `chapters/ch5-framework-design.md` holds
+  *Model Benchmark*, `chapters/ch6-model-benchmark.md` holds *Architecture*. The exporter
+  keeps the slug it first assigned. Key scripts off `MANIFEST.md`, never the filename.
+
+**Also fixed, pre-existing:** A4/A9 cite **§6.2.0**, a section number that exists in
+neither numbering. Correct target is **§5.2.1** ("Simple benchmarks").
+
+**Also correct-by-accident, do not "fix":** ch2's *"shown in Chapter 5 to sit well within
+the budget"* — the realised RAM footprint is §5.5.6, in the benchmark chapter. Right
+before the swap for the wrong reason, right after it for the right one.
+
+**Repo-side half (PATHS.py, folder renames, 6 diagram stems) is NOT done** — still P0050's.
+
+## F15 — Archived snapshots untracked from git (2026-09-08)
+
+Four archived snapshots were tracked as **1,306 files** of derived markdown. Now
+gitignored via `06_thesis_writing/docx-exported-snapshots/.archive/`; files remain on disk.
+Only the current snapshot is tracked. Rationale in that folder's README: a snapshot mirrors
+the `.docx` at one moment, and the `.docx`'s own history is the OneDrive version history.

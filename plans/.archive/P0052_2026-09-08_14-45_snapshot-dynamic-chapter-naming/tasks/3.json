@@ -1,0 +1,11 @@
+{
+  "id": "3",
+  "subject": "Replace CHAPTER_MAP number keys with subject keys + prefix stripper",
+  "description": "Add CHAPTER_SUBJECTS (no chapter numbers) and a _CH_PREFIX regex stripping `Chapter N` plus a separator (pipe, colon, hyphen, en-dash, em-dash -- the document has used pipe and hyphen within four days, F7). _slug() strips then matches. Keep longest-key-first for genuine ties. Order comes from document position (already available at line 999), never from the map.",
+  "activeForm": "Rewriting chapter resolution",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "2"
+  ]
+}

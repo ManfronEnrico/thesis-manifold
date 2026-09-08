@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Record document order in MANIFEST.md",
+  "description": "Add a table of position + subject + heading-as-written, so a future reorder shows up in a git diff rather than being inferred from mangled drift numbers. This is what would have made the current bug visible on day one.",
+  "activeForm": "Recording document order in the manifest",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

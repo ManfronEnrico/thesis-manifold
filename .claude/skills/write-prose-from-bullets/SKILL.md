@@ -336,3 +336,34 @@ at the same path under a different root.
 - `.claude/rules/writing-surface-authority.md` — why the `.docx` is authoritative
 - `utility_scripts/scripts/thesis_snapshot.py` — snapshot generator (`--label`)
 - `06_thesis_writing/notebookLM/04-Claims_Verification/` — unverified-citation destination
+
+## Note layout
+
+Writing notes use a fixed heading structure so every note in the project reads
+the same way: `#` for the title and top-level groupings, `##` for one fix, `###`
+for a sub-fix, `####` for **Anchor** / **Action** / **Replace with**, and
+`### Note - ...` for anything that is not itself an edit. Every fix is separated
+from the next by a horizontal rule.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **Note layout** for the
+full pattern and the reasoning behind each level.
+
+## The note folder
+
+A chapter pass **starts** by listing `writing-notes/<chapter>/`, before opening
+the snapshot. Other sessions write notes there, and a note nobody reads means the
+same work gets done twice, differently.
+
+For each live note, measure its anchors against the current snapshot to decide
+whether it is applied, partly applied, or untouched — the note's own `status:`
+field records intent, not what reached the `.docx`.
+
+Applied notes move to `writing-notes/<chapter>/.archive/<YYYY-MM-DD>_<name>-applied.md`.
+Not deleted (the reasoning behind a shipped edit is worth keeping) and not left in
+place (two notes with contradicting anchors, neither marked stale). Unapplied blocks
+from a partly-applied note are carried forward into the new note.
+
+State what was swept at the top of the new note, so the author can see another
+session's work was not dropped.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **The note folder**.

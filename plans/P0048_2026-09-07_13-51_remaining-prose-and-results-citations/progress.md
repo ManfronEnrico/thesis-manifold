@@ -89,3 +89,20 @@ produced and he should be asked first (task 2).
 2. Brian pastes blocks P1 and P2 (closes 8 Word threads).
 3. Raise the horizon question with Enrico — wording is in `START_HERE.md`.
 4. On confirmation, apply the fix, regenerate, re-benchmark **with `XGB_N_JOBS=1`**.
+
+## 2026-09-08 — Chapter-swap dependency verified (from the P0050 session)
+
+Not a work session on this plan; findings transferred in from the figures/tables
+session at Brian's request. He has decided to **execute the swap in this plan's
+session**, not P0050's, because this session carries the prose context.
+
+- Measured Ch5↔Ch6 dependency against snapshot `2026-09-07_19-41_internal-links`:
+  **Ch5→Ch6 = 4 refs, all forward pointers; Ch6→Ch5 = 0.** The swap is safe and
+  needs no argument rewritten — only renumbering.
+- Wrote a full execution recipe into findings F(new): the one-line `CHAPTER_SLUGS`
+  edit, two folder renames, six diagram stems, ~30 Word edits, and the
+  `§5.2`-is-a-citation trap that would corrupt three Hyndman references.
+- Added sequencing constraint 4: do phase 8 **before** phase 5, so cross-references
+  are written once.
+
+Nothing was executed. No code, folders or prose were changed by this transfer.

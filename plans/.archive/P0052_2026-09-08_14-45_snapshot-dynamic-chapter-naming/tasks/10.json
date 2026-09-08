@@ -1,0 +1,11 @@
+{
+  "id": "10",
+  "subject": "Update the snapshot README and P0048 F14",
+  "description": "The README currently documents the inverted-filename trap as a live caveat and the ch7/ch8 drift absence as a known limitation. Both stop being true. Also update P0048 F14's note that snapshot filenames are inverted, so a later prose session does not work around a fixed bug.",
+  "activeForm": "Updating documentation",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "9"
+  ]
+}

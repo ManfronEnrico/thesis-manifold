@@ -50,27 +50,53 @@ import matplotlib.pyplot as plt
 
 from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_chapter_figures_dir,
                    get_category_eda_results_dir,
-                   THESIS_RESULTS_DIR,
+                   THESIS_RESULTS_DIR, CHAPTER_ORDER,
+                   THESIS_DATA_RAW_NIELSEN_DIR,
                    get_category_engineered_bymonth_dir,
                    get_category_pipeline_step_outputs_dir)
 
 # Diagrams are filed by chapter like every other artefact. The chapter comes
 # from the filename prefix that _check_stem() already enforces, so the routing
 # needs no second list to keep in step with the figure names.
-_CH_DIR = {
-    1: "introduction", 2: "literature_review", 3: "methodology",
-    4: "data_assessment", 5: "architecture", 6: "model_benchmark",
-    7: "decision_synthesis", 8: "experimental_evaluation",
-    9: "discussion", 10: "conclusion",
-}
+#
+# DERIVED from CHAPTER_ORDER, never typed. A hardcoded {number: slug} map is a
+# second copy of the chapter numbering, and on 2026-09-08 it silently went stale
+# through the Ch5/Ch6 swap: it still said 5:"architecture", 6:"model_benchmark"
+# while PATHS.py had already swapped them. The output was only correct because
+# the figure stems were renamed in the same pass, so two errors cancelled.
+_CH_DIR = {n: slug for slug, n in CHAPTER_ORDER.items()}
 
 
 def _out_for(stem: str) -> Path:
-    """The figures/ folder of the chapter this diagram's prefix names."""
+    """The figures/ folder of the chapter this diagram's prefix names.
+
+    Also removes any copy of this diagram sitting in a DIFFERENT chapter's
+    figures/ folder, so a renumbering leaves no stale twin behind.
+
+    Without this the generator only ever added files. A chapter swap renames the
+    stems, the new names are written to the new folders, and the old names stay
+    where they were -- two copies of every affected figure, differing only in a
+    prefix, with nothing to say which is current. Observed 2026-09-08 during the
+    Ch5/Ch6 swap. Unlike export_appendix.py this script has no list of its own
+    stems to clear from (they live inside the fig_* bodies), so the sweep keys
+    on the diagram's SLUG: it removes `ch<other>_<same-slug>.svg` elsewhere and
+    cannot touch a figure it does not itself produce.
+    """
     n = int(re.match(r"ch(\d+)_", stem).group(1))
     if n not in _CH_DIR:
         raise ValueError(f"{stem!r} names chapter {n}, which does not exist")
-    return get_chapter_figures_dir(_CH_DIR[n])
+    out = get_chapter_figures_dir(_CH_DIR[n])
+
+    slug = stem.split("_", 1)[1]
+    for other_n, other_slug in _CH_DIR.items():
+        if other_n == n:
+            continue
+        stale = get_chapter_figures_dir(other_slug) / f"ch{other_n}_{slug}.svg"
+        if stale.exists():
+            stale.unlink()
+            print(f"  (removed stale {stale.parent.parent.name}/"
+                  f"figures/{stale.name})")
+    return out
 
 TABLES = THESIS_RESULTS_SRQ1_DIR / "tables"
 MODELS = THESIS_RESULTS_SRQ1_DIR / "models"
@@ -357,7 +383,7 @@ def fig_model_selection():
                 "identical data and profiled for peak memory as well as "
                 "accuracy; the model achieving the lowest error in each "
                 "category is the one deployed.")
-    _save(g, "ch6_model_selection_v2")
+    _save(g, "ch5_model_selection_v2")
 
 
 def fig_scenarios():
@@ -445,7 +471,7 @@ def fig_resource_profile():
     # Transparent, matching the graphviz figures: the page supplies the ground.
     # Saved directly rather than through _save(), so the chapter-prefix check is
     # called explicitly here -- otherwise this one figure would escape it.
-    stem = _check_stem("ch6_resource_profile_v2")
+    stem = _check_stem("ch5_resource_profile_v2")
     fig.savefig(_out_for(stem) / f"{stem}.svg", transparent=True)
     plt.close(fig)
     print(f"  {stem}.svg")
@@ -530,7 +556,7 @@ def fig_layered_architecture():
                 f"deployment envelope of {RAM_BUDGET_MB/1024:.0f} GB is spent on "
                 f"data and models alone — the most demanding model observed "
                 f"requires {largest:.0f} MB to fit.")
-    _save(g, "ch5_layered_architecture_v2")
+    _save(g, "ch6_layered_architecture_v2")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -883,7 +909,7 @@ def fig_modelling_pipeline():
                 "— and is evaluated against statistical baselines on held-out "
                 "months." + split + " The model with the lowest error in each "
                 "category is retrained on the full training window and deployed.")
-    _save(g, "ch6_modelling_pipeline_v1")
+    _save(g, "ch5_modelling_pipeline_v1")
 
 
 def fig_tool_interface():
@@ -965,7 +991,7 @@ def fig_tool_interface():
                 "cut-off, and on how large a calibration sample. Every call is "
                 "retained, so any recommendation can be traced back to the "
                 "forecast it rests on.")
-    _save(g, "ch5_tool_interface_v1")
+    _save(g, "ch6_tool_interface_v1")
 
 
 def fig_gap_diagram():
@@ -1014,6 +1040,126 @@ def fig_gap_diagram():
     _save(g, "ch2_gap_diagram_v2")
 
 
+# ── Ch4: the raw source schema ───────────────────────────────────────────────
+# Categories in scope. Totalbeer exists in the source database (16.3M fact rows)
+# but is out of the thesis's scope on compute grounds, so it is not drawn.
+_SCHEMA_CATS = ["CSD", "Danskvand", "Energidrikke", "RTD"]
+
+
+def _read_raw_schema() -> dict:
+    """Column names per view, read from the first line of each raw .jsonl.
+
+    Every name and count in the schema figure comes from here, so the drawing
+    cannot drift from the extract it documents. Reading one line is enough --
+    these are JSON-lines exports of SQL views, so the first object carries the
+    full column set, and the fact files run to ~10 GB.
+    """
+    out = {}
+    root = THESIS_DATA_RAW_NIELSEN_DIR / "data_jsonl"
+    for cat in _SCHEMA_CATS:
+        views = root / cat / "views"
+        if not views.exists():
+            raise SystemExit(f"missing raw views for {cat}: {views}")
+        cols = {}
+        for f in sorted(views.glob("*_v.jsonl")):
+            kind = f.stem.split("_clean_")[1][:-2]      # strip trailing "_v"
+            with f.open(encoding="utf-8") as fh:
+                cols[kind] = list(json.loads(fh.readline()))
+        out[cat] = cols
+    return out
+
+
+def _read_manifest_rows() -> dict:
+    """{view_name: row_count} from the extract manifest written at download."""
+    f = THESIS_DATA_RAW_NIELSEN_DIR / "data_jsonl" / "MANIFEST.json"
+    if not f.exists():
+        raise SystemExit(f"missing extract manifest: {f}")
+    m = json.loads(f.read_text(encoding="utf-8"))
+    return {e["name"]: e.get("rows") for e in m.get("files", [])
+            if e.get("rows") is not None}
+
+
+def fig_raw_schema():
+    """The source star schema, drawn from the raw extract itself."""
+    schema = _read_raw_schema()
+    rows = _read_manifest_rows()
+    csd = schema["CSD"]
+
+    g = _g("raw_schema", rankdir="LR")
+    g.attr(ranksep="1.1", nodesep="0.30")
+
+    def _n(view: str) -> str:
+        return f"{rows.get(view, 0):,}"
+
+    # --- the three dimensions, left column -------------------------------
+    dims = [
+        ("dim_period", "dim_period", "csd_clean_dim_period_v",
+         ["period_id", "period_end_date", "period_year",
+          "period_month", "nielsen_calendar"]),
+        ("dim_market", "dim_market", "csd_clean_dim_market_v",
+         ["market_id", "market_description", "market_hierarchy_level"]),
+        ("dim_product", "dim_product", "csd_clean_dim_product_v",
+         ["product_id", "brand", "manufacturer", "packaging",
+          "ru_cola_flavour"]),
+    ]
+    with g.subgraph() as col:
+        col.attr(rank="same")
+        for nid, title, view, shown in dims:
+            n_all = len(csd[title])
+            body = [f"{c}" for c in shown]
+            if n_all > len(shown):
+                body.append(f"... {n_all - len(shown)} more of {n_all}")
+            col.node(nid, _bullets(f"{title}  ({_n(view)} rows)", *body),
+                     width="2.5", fixedsize="false")
+
+    # --- the fact table ---------------------------------------------------
+    fact_cols = csd["facts"]
+    keys = [c for c in fact_cols if c.endswith("_id")]
+    measures = [c for c in fact_cols if not c.endswith("_id")]
+    g.node("facts", _bullets(
+        f"facts  ({_n('csd_clean_facts_v')} rows)",
+        *[f"{k}   (foreign key)" for k in keys],
+        f"{len(measures)} measures, including:",
+        "sales_units, sales_value, sales_in_liters",
+        "baseline_* (the no-promotion counterfactual)",
+        "weighted_distribution_* (availability)"),
+        width="3.4", fixedsize="false",
+        fillcolor="white", color=ACCENT, penwidth="1.5")
+
+    for nid, title, _v, _s in dims:
+        key = f"{title.split('_')[1]}_id"
+        g.edge(nid, "facts", label=f" {key} ")
+
+    # --- what differs between categories ----------------------------------
+    # Measures, not raw columns: the three join keys are common to every
+    # category, so counting them would flatter the categories that carry least.
+    per_cat = []
+    for cat in _SCHEMA_CATS:
+        fc = schema[cat]["facts"]
+        nf = len([c for c in fc if not c.endswith("_id")])
+        npr = len(schema[cat]["dim_product"])
+        per_cat.append((cat, f"{nf} measures · {npr} product attributes"))
+    g.node("variation", _stack("the same shape, four payloads", per_cat),
+           shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+    g.edge("facts", "variation", style="dashed", arrowhead="none",
+           label=" per category ")
+
+    n_dv = len([c for c in schema["Danskvand"]["facts"]
+                if not c.endswith("_id")])
+    n_csd = len(measures)
+    _caption(g, "The source data as delivered, shown for carbonated soft "
+                "drinks, the worked category: one fact table of weekly measures "
+                "joined to three dimensions by product, market and period. The join keys and the period and market dimensions are "
+                "identical across categories, but the payload is not \u2014 the "
+                f"carbonated-soft-drinks fact view carries {n_csd} measures "
+                f"against {n_dv} for bottled water, which lacks the promotional "
+                "and baseline measures entirely, and each category describes its "
+                "products with its own attributes. This is why the categories "
+                "are preprocessed by category-specific scripts rather than one "
+                "shared pass.")
+    _save(g, "ch4_raw_schema_v1")
+
+
 if __name__ == "__main__":
     print("\nRebuilding architecture diagrams from measured artefacts...\n")
     fig_pipeline()
@@ -1025,6 +1171,7 @@ if __name__ == "__main__":
     fig_research_questions_tree()
     fig_gap_diagram()
     fig_data_pipeline()
+    fig_raw_schema()
     fig_eda_pipeline()
     fig_modelling_pipeline()
     fig_tool_interface()

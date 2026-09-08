@@ -104,30 +104,23 @@ graph-engine/
 *.jsonl
 **\settings.local.json
 
-# Thesis snapshots: opt-IN tracking, not opt-out.
+# Thesis snapshots: ALL ignored. None of them are source.
 #
-# Every export writes a fresh timestamped folder of ~325 derived .md files.
-# Tracking them all was the old rule and it cost 1,306 files for no benefit: a
-# snapshot mirrors the .docx at one moment, and the .docx's own history already
-# lives in OneDrive version history.
+# A snapshot is a derived mirror of the OneDrive .docx at one moment -- ~325
+# generated .md files per export, regenerable at any time by re-running
+# thesis_snapshot.py against the document. The .docx's own history already
+# lives in OneDrive version history, which is the real record.
 #
-# So the whole folder is ignored, and snapshots are published by being dragged
-# into shared_snapshot/ -- which Brian does by hand, after checking an export is
-# good. Nothing automatic can promote a bad export into git.
+# Tracking them was tried twice and abandoned twice: first tracking every
+# snapshot (1,306 files of derived markdown), then tracking one published
+# folder under shared_snapshot/. Both bloated source control with regenerable
+# output for no benefit git was providing.
 #
-# A published snapshot keeps its whole slugged folder:
-#     shared_snapshot/2026-09-05_19-52_complete-review-pass/
-# NOT its loose contents. The timestamp and label are the snapshot's identity --
-# which .docx, exported when, and why -- and flattening them into
-# shared_snapshot/ throws all three away and makes a second one impossible.
+# The README stays tracked -- it documents how to RUN the exporter and is the
+# only place that does. It is documentation that happens to live here, not a
+# snapshot.
 06_thesis_writing/docx-exported-snapshots/*
 !06_thesis_writing/docx-exported-snapshots/README.md
-!06_thesis_writing/docx-exported-snapshots/shared_snapshot/
-
-# ...but never the .docx itself, at any depth inside it: a large binary git
-# cannot diff. The negation above re-includes the folder, so this must come
-# after it to win.
-06_thesis_writing/docx-exported-snapshots/shared_snapshot/**/thesis_full.docx
 
 # Trained models: regenerable artefacts, not source.
 # `train_and_persist.py` rebuilds every one in ~30s from the feature matrices

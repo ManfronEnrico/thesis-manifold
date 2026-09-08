@@ -1,0 +1,11 @@
+{
+  "id": "5",
+  "subject": "Rename the four mismatched sections-drafts files",
+  "description": "ch7-synthesis.md -> ch7-decision-synthesis.md, ch8-evaluation.md -> ch8-experimental-evaluation.md, ai-declaration.md -> ai-use-declaration.md (frontpage.md is front matter, leave it). This is why ch7 and ch8 have NEVER appeared in a drift table (F5) -- predates the swap. Apply task 1's convention so these are not renamed twice.",
+  "activeForm": "Renaming mismatched drafts",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

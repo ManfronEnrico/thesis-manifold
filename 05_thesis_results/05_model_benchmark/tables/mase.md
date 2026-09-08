@@ -15,14 +15,14 @@ the typical case and the mean only with that caveat attached.
 
 | Category | Model | MASE (mean) | MASE (median) | WMAPE | medMAPE | n_test | % series scaled | % rows MAPE-scorable |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| CSD | Naive | 0.947 | **0.386** | 29.2% | 36.0% | 665 | 100.0% | 86.2% |
-| CSD | SeasonalNaive | 1.633 | **0.885** | 34.9% | 70.6% | 665 | 100.0% | 86.2% |
-| danskvand | Naive | 0.990 | **0.516** | 24.3% | 35.7% | 174 | 100.0% | 81.6% |
-| danskvand | SeasonalNaive | 1.603 | **1.131** | 44.0% | 50.6% | 174 | 100.0% | 81.6% |
-| energidrikke | Naive | 0.672 | **0.050** | 22.6% | 30.9% | 308 | 100.0% | 71.4% |
-| energidrikke | SeasonalNaive | 2.016 | **1.030** | 30.6% | 95.4% | 308 | 100.0% | 71.4% |
-| RTD | Naive | 6.544 | **0.178** | 67.0% | 34.1% | 372 | 100.0% | 79.3% |
-| RTD | SeasonalNaive | 14.023 | **0.992** | 54.8% | 73.8% | 372 | 100.0% | 79.3% |
+| CSD | Naive | 1.115 | **0.468** | 18.0% | 42.8% | 665 | 100.0% | 86.2% |
+| CSD | SeasonalNaive | 1.857 | **0.995** | 26.8% | 67.9% | 665 | 100.0% | 86.2% |
+| danskvand | Naive | 1.183 | **0.531** | 26.5% | 38.7% | 174 | 100.0% | 81.6% |
+| danskvand | SeasonalNaive | 1.763 | **1.186** | 50.5% | 54.8% | 174 | 100.0% | 81.6% |
+| energidrikke | Naive | 0.843 | **0.129** | 15.3% | 38.2% | 308 | 100.0% | 71.4% |
+| energidrikke | SeasonalNaive | 2.140 | **1.219** | 31.3% | 97.4% | 308 | 100.0% | 71.4% |
+| RTD | Naive | 11.795 | **0.276** | 85.5% | 51.6% | 372 | 100.0% | 79.3% |
+| RTD | SeasonalNaive | 13.477 | **1.300** | 78.1% | 87.7% | 372 | 100.0% | 79.3% |
 
 ## Why the last two columns matter
 
