@@ -104,11 +104,30 @@ graph-engine/
 *.jsonl
 **\settings.local.json
 
-# Thesis snapshots: the .docx copies are large binaries git cannot diff.
-# The extracted .md files ARE tracked -- they are the diffable record.
-# Path was 05_thesis_writing/ before the tier renumber; the stale prefix
-# silently matched nothing, so 3 copies were tracked before this was caught.
-06_thesis_writing/docx-exported-snapshots/*/thesis_full.docx
+# Thesis snapshots: opt-IN tracking, not opt-out.
+#
+# Every export writes a fresh timestamped folder of ~325 derived .md files.
+# Tracking them all was the old rule and it cost 1,306 files for no benefit: a
+# snapshot mirrors the .docx at one moment, and the .docx's own history already
+# lives in OneDrive version history.
+#
+# So the whole folder is ignored, and snapshots are published by being dragged
+# into shared_snapshot/ -- which Brian does by hand, after checking an export is
+# good. Nothing automatic can promote a bad export into git.
+#
+# A published snapshot keeps its whole slugged folder:
+#     shared_snapshot/2026-09-05_19-52_complete-review-pass/
+# NOT its loose contents. The timestamp and label are the snapshot's identity --
+# which .docx, exported when, and why -- and flattening them into
+# shared_snapshot/ throws all three away and makes a second one impossible.
+06_thesis_writing/docx-exported-snapshots/*
+!06_thesis_writing/docx-exported-snapshots/README.md
+!06_thesis_writing/docx-exported-snapshots/shared_snapshot/
+
+# ...but never the .docx itself, at any depth inside it: a large binary git
+# cannot diff. The negation above re-includes the folder, so this must come
+# after it to win.
+06_thesis_writing/docx-exported-snapshots/shared_snapshot/**/thesis_full.docx
 
 # Trained models: regenerable artefacts, not source.
 # `train_and_persist.py` rebuilds every one in ~30s from the feature matrices
@@ -127,3 +146,24 @@ graph-engine/
 # current suite run began, so a stage counts as done only if its artefact is
 # newer. Machine state, not a deliverable.
 .run_both_horizons.stamp
+
+# ---------------------------------------------------------------------------
+# Engineered feature matrices -- TRACKED DELIBERATELY (P0053, 2026-09-08)
+# ---------------------------------------------------------------------------
+# The SRQ1 training suite kept being killed for memory on the laptop, so
+# training moves to the VPS. These matrices are the ONLY data input training
+# needs -- each carries its features, target and train/val/test split in one
+# self-contained file (verified: nothing else is read at train time) -- so
+# tracking them is what lets the VPS `git pull` and run.
+#
+# 32 files, 4.5 MB total. Size was never the obstacle.
+#
+# THEY CONTAIN NIELSEN DATA: brand-level monthly sales for 95 named Danish
+# brands, under the confidentiality agreement with Manifold AI. Brian decided
+# to track them with the repo's public visibility stated (2026-09-08).
+#
+# Scope is deliberately narrow: the blanket *.csv and *.parquet rules above
+# still exclude the raw extracts and every intermediate preprocessing step.
+# Only the final engineered tier is un-ignored. Do not widen this.
+!01_SRQ1_Model_Training/01_thesis_data/_03_engineered/bymonth/**/*.parquet
+!01_SRQ1_Model_Training/01_thesis_data/_03_engineered/bymonth/**/*.csv
