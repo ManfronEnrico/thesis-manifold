@@ -42,8 +42,8 @@ env/
 # reproduce or check it. They also make results diffable: the 2026-08-20 SHAP
 # regeneration changed promo_intensity 0.100 -> 0.041 and dropped
 # weighted_distribution entirely, a change no tracked file recorded.
-!04_thesis_results/srq1/*.csv
-!04_thesis_results/srq4/*.csv
+!05_thesis_results/05_model_benchmark/**/*.csv
+!05_thesis_results/08_experimental_evaluation/**/*.csv
 
 *.7z
 # Exception: literature review CSV is safe to track
@@ -122,18 +122,17 @@ graph-engine/
 06_thesis_writing/docx-exported-snapshots/*
 !06_thesis_writing/docx-exported-snapshots/README.md
 
-# Trained models: regenerable artefacts, not source.
-# `train_and_persist.py` rebuilds every one in ~30s from the feature matrices
-# and cv_params.json, so committing them buys nothing and costs a lot: the
-# LightGBM/Ridge .joblib files are opaque binaries git rewrites wholesale on
-# every re-persist (RTD alone is 10.3 MB), and a re-persist happens whenever
-# tuning or selection changes. Same argument that keeps thesis_full.docx out.
+# Trained models: TRACKED DELIBERATELY (P0053, 2026-09-08) -- supersedes the
+# "regenerable, don't track" decision this section used to hold.
 #
-# The metadata JSONs ARE tracked -- they are small, diffable, and record which
-# model was served with which features, train boundary and q90, which is the
-# provenance the thesis needs.
-04_thesis_results/srq1/models/*_model.json
-04_thesis_results/srq1/models/*_model.joblib
+# Training moved to the VPS (~1-2h per run) and Brian decided Enrico needs the
+# persisted models on his laptop without re-running that suite -- the whole
+# point of training centrally. At ~10 MB per category this is not a git/GitHub
+# size problem (GitHub hard-blocks only single files >100 MB); the cost is
+# opaque-binary history growth on repeat retrains, which the cleaned-up
+# private repo planned for submission will absorb. No exclusion below:
+# models, metadata and tables under 05_thesis_results/05_model_benchmark/ are
+# all tracked as of this decision.
 
 # Run-local marker written by run_both_horizons.py --resume. Records when the
 # current suite run began, so a stage counts as done only if its artefact is
