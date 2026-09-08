@@ -47,6 +47,7 @@ snapshot unsaved edits otherwise.
 ├── thesis_full.md                whole document as text        ~232 KB
 ├── chapters/
 │   ├── ch1-introduction.md       one file per Heading 1        (17 files)
+│   │                             name derived from the heading, every run
 │   ├── ch3-methodology.md
 │   └── …
 ├── comments.md                   every Word comment, all chapters
@@ -221,34 +222,72 @@ run anyway.
 
 ## Housekeeping
 
-**Only the current snapshot is tracked in git.** Superseded ones move to `.archive/`,
-which is gitignored — they stay on disk, they just leave the index.
+**Snapshots are ignored by default. Tracking is opt-in, and manual.**
 
-Why: four archived snapshots were tracked as **1,306 files of derived markdown**, and a
-snapshot exists to mirror the `.docx` at one moment. The `.docx`'s own history is the
-OneDrive version history, so carrying every past mirror forever buys nothing. To compare
-two dates, restore one from `.archive/` rather than keeping all of them staged.
+Every export writes a fresh timestamped folder that git ignores. A snapshot enters the
+repo only when **you copy it into `shared_snapshot/`** by hand — which is the one folder
+under here that is tracked. Nothing automatic can publish an export, so a bad one cannot
+reach Enrico by accident.
+
+Why ignore by default: a snapshot is ~325 files of derived markdown mirroring the `.docx`
+at one moment, and the `.docx`'s own history already lives in OneDrive version history.
+Four archived snapshots were once tracked as **1,306 files** for no benefit.
 
 ```
 docx-exported-snapshots/
-├── 2026-09-08_14-05_chapter-reorder/   the current one -- TRACKED
-├── .archive/                            superseded -- on disk, gitignored
-│   ├── 2026-09-07_19-41_internal-links/
-│   └── ...
-└── README.md
+├── 2026-09-08_15-43_dynamic-naming-verified/   just exported -- IGNORED
+├── shared_snapshot/                                              TRACKED
+│   └── 2026-09-08_15-43_dynamic-naming-verified/   published, slug and all
+├── .archive/                                   kept for reference -- IGNORED
+└── README.md                                                     TRACKED
 ```
 
-Delete an archived snapshot outright once its review round is closed:
+Every snapshot keeps its `YYYY-MM-DD_HH-mm_label` folder wherever it sits. Publishing
+moves the folder; it never unpacks it.
+
+### Publish a snapshot
+
+Check the export first — read `MANIFEST.md`, confirm no `WARN` lines, confirm the drift
+deltas look plausible. Then **drag the whole slugged folder** into `shared_snapshot/`.
+
+In Explorer that is one drag. On the command line, note there is **no `\*`** on the
+source — copying the folder, not its contents:
 
 ```powershell
-Remove-Item -Recurse -Force "06_thesis_writing\docx-exported-snapshots\.archive\2026-09-01_18-42"
+$root = "06_thesis_writing\docx-exported-snapshots"
+Copy-Item -Recurse "$root\2026-09-08_15-43_dynamic-naming-verified" "$root\shared_snapshot\"
 ```
 
-> **Snapshot filenames keep the slug they were first assigned, not the current chapter
-> title.** After the Ch5/Ch6 swap (2026-09-08), `chapters/ch5-framework-design.md` holds
-> *Model Benchmark* and `chapters/ch6-model-benchmark.md` holds *Architecture*. Read
-> `MANIFEST.md`'s chapter table for the real titles, and never key a script off these
-> filenames.
+```
+shared_snapshot/
+└── 2026-09-08_15-43_dynamic-naming-verified/    <- the slug comes WITH it
+    ├── MANIFEST.md
+    └── chapters/
+```
+
+**Do not flatten it.** `Copy-Item "$snap\*"` — with the trailing `\*` — copies the
+contents and drops the folder, and with it the timestamp and label that say which `.docx`
+this is, when it was taken and why. It also makes a second published snapshot impossible,
+because the loose `chapters/` of the next one would overwrite this one's.
+
+The `.docx` inside stays ignored at any depth — a large binary git cannot diff.
+
+Delete an old export outright once its review round is closed:
+
+```powershell
+Remove-Item -Recurse -Force "06_thesis_writing\docx-exported-snapshots\2026-09-01_18-42"
+```
+
+> **Filenames are derived from the document, and re-derive on every run.** Both the
+> chapter number and the subject are read from the heading Word rendered, so a reorder in
+> Word renames these files by itself — `chapters/ch5-model-benchmark.md` is named Ch5
+> because the document currently says Ch5. Two consequences: a filename is only true for
+> the snapshot it sits in, and **a link to `<snapshot>/chapters/chN-*.md` can break when
+> the chapter moves.** Cite the subject, or read `MANIFEST.md`'s *Chapter order* table.
+>
+> Before 2026-09-08 the map was hand-typed and encoded the number twice, so the Ch5/Ch6
+> swap produced files named for the opposite chapter and a drift table showing two
+> fictitious ±1,8xx deltas. That is what derived naming removes. (P0052.)
 
 > If deletion reports **"Device or resource busy"** while the folder is already empty,
 > Windows is briefly holding the directory handle (indexer/sync). It clears on its own —
@@ -263,10 +302,10 @@ Remove-Item -Recurse -Force "06_thesis_writing\docx-exported-snapshots\.archive\
 | `ERROR: source not found` | The OneDrive path moved or is not synced locally. Confirm the file exists, or pass `--source`. |
 | `ABORT: no headings resolved to level 1` | Almost certainly the wrong file. Heading levels are read from the document's own `word/styles.xml`, so custom styles resolve automatically. |
 | `ABORT: '<X>' holds N of M words (P%)` | Chapters merged into one because a heading style did not resolve. Compare the manifest's *Heading styles resolved* table against the previous snapshot's. |
-| `ABORT: two chapters share a filename` | Two headings map to the same slug; the later would overwrite the earlier. Add distinguishing `CHAPTER_MAP` entries. |
-| `WARN ... not in CHAPTER_MAP` | A new or renamed chapter heading. Add it to `CHAPTER_MAP`, or it will not pair with `sections-drafts/`. |
+| `ABORT: two chapters share a filename` | Two headings resolve to the same slug; the later would overwrite the earlier. Usually a duplicated heading in Word; otherwise add a distinguishing `CHAPTER_SUBJECTS` entry. |
+| `WARN ... not in CHAPTER_SUBJECTS` | A new or **renamed** chapter. Reordering needs no code change, but a rename does: add the new subject to `CHAPTER_SUBJECTS`, or the chapter will not pair with `sections-drafts/`. |
 | A table looks garbled | Check for merged cells in Word (`gridSpan`/`vMerge`) — these are not reconstructed. |
 | `PermissionError` on the source | Word has it locked in a way the copy could not bypass. Close Word and re-run. |
-| A chapter is missing from the drift table | There is no matching `sections-drafts/<slug>.md`. **Ch7 and Ch8 currently have none** — absence reads like agreement but isn't. |
-| A chapter file has the wrong content | The heading → filename map (`CHAPTER_MAP`) needs an entry. Check `MANIFEST.md`'s chapter table first. |
+| A chapter is missing from the drift table | There is no `sections-drafts/<subject>.md` — note **subject**, not the numbered slug, so a reorder never breaks the pairing. Absence reads like agreement but isn't. |
+| A chapter file has the wrong content | Check `MANIFEST.md`'s *Chapter order* table — it prints the heading each file was named from. A mismatch there means the heading's subject is unregistered in `CHAPTER_SUBJECTS`. |
 | A chapter is missing entirely | Should now abort rather than happen silently. If it does occur, diff the manifest's *Heading styles resolved* table against an earlier snapshot — a style that vanished means the document was restyled. |
