@@ -169,6 +169,46 @@ the working tree holds.
 
 Then on the laptop: `git pull`, and the results are back for the thesis.
 
+## 5b. Prophet: the one dependency likely to fail on a fresh box
+
+`prophet` compiles a Stan backend via `cmdstanpy` and is the usual install failure
+on a clean Linux VM. **It fails silently in this suite**, so check it explicitly.
+
+`srq1_baselines_stat.py` imports Prophet *inside* `run_prophet()`, and the model
+loop wraps every baseline in `try: ... except Exception: continue`. So a broken
+Prophet does not raise — the stage exits 0 and writes `stat_baselines.csv` with
+Prophet's row present but `n_series = 0`. Same failure shape as P0049 F21/F25:
+**a weaker result, not an error.**
+
+Before the run:
+
+```bash
+.venv/bin/python -c "
+from prophet import Prophet
+import pandas as pd, numpy as np
+d = pd.DataFrame({'ds': pd.date_range('2022-01-01', periods=36, freq='MS'),
+                  'y': np.log1p(np.arange(36)*100.0)})
+m = Prophet(yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False)
+m.fit(d)
+print('prophet OK ->', float(m.predict(pd.DataFrame({'ds':[pd.Timestamp(\"2025-01-01\")]}))['yhat'][0]))"
+```
+
+If it errors: `pip install --upgrade cmdstanpy && python -c "import cmdstanpy; cmdstanpy.install_cmdstan()"`,
+then re-test. A build needs a C++ toolchain (`apt install build-essential`).
+
+After the run, confirm it actually contributed:
+
+```bash
+.venv/bin/python -c "
+import pandas as pd
+d = pd.read_csv('05_thesis_results/05_model_benchmark/tables/stat_baselines.csv')
+print(d[['category','model','n_series','wmape']].to_string(index=False))"
+```
+
+**Every model must show `n_series > 0` for every category.** A zero means that
+baseline silently contributed nothing, and the statistical-baselines table in the
+thesis would be missing a comparator without saying so.
+
 ## 6. Checks that must pass before the results are trusted
 
 ```bash
