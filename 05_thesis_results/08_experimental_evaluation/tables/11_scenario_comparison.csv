@@ -1,0 +1,12 @@
+Measure,A - no firm data
+Runs completed,6
+Usable answers,6
+Median APE (%),56.4
+Mean APE (%),93.7
+"Consistency, CV across repeats (%)",16.2
+"Replicability, identical answers (%)",0
+Top-answer agreement rate,0.50
+Tokens per answer,"83,732"
+of which reasoning tokens,"3,816"
+"Cost per answer, estimated (USD)",$0.5130
+Response time (s),114.6

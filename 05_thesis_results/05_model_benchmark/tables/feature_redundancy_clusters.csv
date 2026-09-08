@@ -1,0 +1,9 @@
+category,cluster,size
+CSD,lag_1 + lag_2 + lag_3 + lag_4 + rolling_mean_13 + rolling_mean_4 + rolling_std_4,7
+CSD,month + quarter,2
+danskvand,lag_1 + lag_2 + lag_3 + lag_4 + rolling_mean_13 + rolling_mean_4 + rolling_std_4,7
+danskvand,month + quarter,2
+energidrikke,lag_1 + lag_2 + lag_3 + lag_4 + rolling_mean_13 + rolling_mean_4 + rolling_std_4,7
+energidrikke,month + quarter,2
+RTD,lag_1 + lag_2 + lag_3 + lag_4 + rolling_mean_4 + rolling_std_4,6
+RTD,month + quarter,2
