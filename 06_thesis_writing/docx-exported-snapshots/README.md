@@ -221,12 +221,34 @@ run anyway.
 
 ## Housekeeping
 
-Nothing prunes old snapshots — each run adds a folder. At ~470 KB tracked apiece that is
-slow growth, but keep the ones tied to a review round and delete idle re-runs:
+**Only the current snapshot is tracked in git.** Superseded ones move to `.archive/`,
+which is gitignored — they stay on disk, they just leave the index.
+
+Why: four archived snapshots were tracked as **1,306 files of derived markdown**, and a
+snapshot exists to mirror the `.docx` at one moment. The `.docx`'s own history is the
+OneDrive version history, so carrying every past mirror forever buys nothing. To compare
+two dates, restore one from `.archive/` rather than keeping all of them staged.
+
+```
+docx-exported-snapshots/
+├── 2026-09-08_14-05_chapter-reorder/   the current one -- TRACKED
+├── .archive/                            superseded -- on disk, gitignored
+│   ├── 2026-09-07_19-41_internal-links/
+│   └── ...
+└── README.md
+```
+
+Delete an archived snapshot outright once its review round is closed:
 
 ```powershell
-Remove-Item -Recurse -Force "05_thesis_writing\docx-exported-snapshots\2026-09-01_18-42"
+Remove-Item -Recurse -Force "06_thesis_writing\docx-exported-snapshots\.archive\2026-09-01_18-42"
 ```
+
+> **Snapshot filenames keep the slug they were first assigned, not the current chapter
+> title.** After the Ch5/Ch6 swap (2026-09-08), `chapters/ch5-framework-design.md` holds
+> *Model Benchmark* and `chapters/ch6-model-benchmark.md` holds *Architecture*. Read
+> `MANIFEST.md`'s chapter table for the real titles, and never key a script off these
+> filenames.
 
 > If deletion reports **"Device or resource busy"** while the folder is already empty,
 > Windows is briefly holding the directory handle (indexer/sync). It clears on its own —

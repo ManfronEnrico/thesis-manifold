@@ -1,0 +1,124 @@
+# Comments -- 3.5 Analytical Approach
+
+> Objections on **Chapter 3 | Methodology > 3.5 Analytical Approach**
+>
+> Prose: `chapters/sections/07-ch3-methodology/05-3-5-analytical-approach.md`
+>
+> 9 comment(s) in 9 thread(s).
+
+Extracted 2026-09-08 from `thesis_full.docx`.
+9 comment(s) in 9 thread(s). Resolved status available.
+
+> **Read-only extract.** Reply in Word, not here -- this file is regenerated on every snapshot and any edit is lost.
+
+## Index
+
+| # | section | tags | replies | opens with |
+|---|---|---|---:|---|
+| [118](#c118) | 3.5 Analytical Approach |  |  | REFERENCE: Here a good reference to the ethical implications and transparency co... |
+| [119](#c119) | 3.5 Analytical Approach | CONTEXT |  | REFERENCE & CONTEXT: We cant just state it with no justification or citation... |
+| [120](#c120) | 3.5 Analytical Approach | SOURCE |  | We also track new metrics of evaluation, amongst others the Median APE. We need ... |
+| [121](#c121) | 3.5 Analytical Approach | WATERMARK, ACADEMIC |  | WATERMARK: I feel like brackets is also not really academic. I was trying to rep... |
+| [122](#c122) | 3.5 Analytical Approach | WATERMARK |  | WATERMARK: Parenthesis issue as before... |
+| [123](#c123) | 3.5 Analytical Approach | OUTDATED |  | OUTDATED: This is no longer true. We have one prompt per category that we keep c... |
+| [124](#c124) | 3.5 Analytical Approach | CONTEXT |  | CONTEXT: We are literally using E2B, also because that is what Manifold uses. Sh... |
+| [125](#c125) | 3.5 Analytical Approach |  |  | That is kind of untrue. E2B is not run locally either way, but if this sentence ... |
+| [126](#c126) | 3.5 Analytical Approach | OUTDATED, CONTEXT |  | OUTDATED: LLM as a Judge not up to date. CONTEXT: Also I feel like we must menti... |
+
+---
+
+<a id="c118"></a>
+
+## [118] Brian Rohde -- Chapter 3 | Methodology
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:11:00
+- **On:** “ARIMA” and “Ridge Regression” provide interpretable statistical and linear baselines with well-understood memory footprints”
+
+REFERENCE: Here a good reference to the ethical implications and transparency considerations when delaing with ML models (super important and prevelant topic in AI & ML literature) would be crucial.
+
+
+REFERENCE: Also for each model and the claims we made about it, would also benefit from a source
+
+<a id="c119"></a>
+
+## [119] Brian Rohde -- Chapter 3 | Methodology  `CONTEXT`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:12:00
+- **On:** “Hyperparameters for the gradient-boosted models are tuned with “Optuna”
+
+REFERENCE & CONTEXT: We cant just state it with no justification or citation
+
+<a id="c120"></a>
+
+## [120] Brian Rohde -- Chapter 3 | Methodology  `SOURCE`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:13:00
+- **On:** “All models are evaluated on a common held-out test set using mean absolute percentage error (MAPE) and root mean squared error (RMSE) as accuracy metrics, peak RAM consumption and runtime as efficiency metrics, and coefficient of variation across repeated runs as a stability metric, following the methodology proposed by Klee and Xia (2025).”
+
+We also track new metrics of evaluation, amongst others the Median APE. We need a source
+
+<a id="c121"></a>
+
+## [121] Brian Rohde -- Chapter 3 | Methodology  `WATERMARK * ACADEMIC`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:20:00
+- **On:** “(the Prometheus production system, whose Graph Engine is the concrete integration target examined under SRQ3)”
+
+WATERMARK: I feel like brackets is also not really academic. I was trying to rephrase this sentence and remove the brackets, but was kind of struggling, while retaining the information.
+
+<a id="c122"></a>
+
+## [122] Brian Rohde -- Chapter 3 | Methodology  `WATERMARK`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:21:00
+- **On:** “(Prometheus, whose Graph Engine is the concrete integration interface)”
+
+WATERMARK: Parenthesis issue as before
+
+<a id="c123"></a>
+
+## [123] Brian Rohde -- Chapter 3 | Methodology  `OUTDATED`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:22:00
+- **On:** “The two pipelines are run on a common set of approximately fifty decision-support prompts”
+
+OUTDATED: This is no longer true. We have one prompt per category that we keep consistent and have varying number of trials of, not 50 different prompts with different trials.
+
+<a id="c124"></a>
+
+## [124] Brian Rohde -- Chapter 3 | Methodology  `CONTEXT`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:23:00
+- **On:** “sandboxed environment (for example E2B),”
+
+CONTEXT: We are literally using E2B, also because that is what Manifold uses. Should be correctly mentioned.
+
+<a id="c125"></a>
+
+## [125] Brian Rohde -- Chapter 3 | Methodology
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:24:00
+- **On:** “is runnable locally and does not require access to the production system”
+
+That is kind of untrue. E2B is not run locally either way, but if this sentence is supposed to hint at Scenario B here the sandbox is instantiated via the OpenAI API and a passed along parameter, again not hosted locally but by OpenAI in this case.
+
+<a id="c126"></a>
+
+## [126] Brian Rohde -- Chapter 3 | Methodology  `OUTDATED * CONTEXT`
+
+- **Section:** Chapter 3 | Methodology > 3.5 Analytical Approach
+- **Date:** 2026-09-03T12:26:00
+- **On:** “Scoring uses an LLM-as-judge protocol with a separate judge model, explicit bias awareness, and a human-rated subset for validation. This evaluation is conducted at pilot scale in the first instance rather than as a full study; a full evaluation across the complete prompt set, and an optional comparison against the non-predictive production reference system, are identified as further work”
+
+OUTDATED: LLM as a Judge not up to date.
+
+
+CONTEXT: Also I feel like we must mention either here, or later on that we did not hold the number of trials per scenario equal (different cost, with Scenario B, C and D, E having significanlty more trials than A)

@@ -1,0 +1,30 @@
+# Comments -- 5.2.3 Prophet (Meta)
+
+> Objections on **Chapter 5 | Model Benchmark & Selection > 5.2 Model descriptions > 5.2.3 Prophet (Meta)**
+>
+> Prose: `chapters/sections/09-ch5-framework-design/02-5-2-model-descriptions/03-5-2-3-prophet-meta.md`
+>
+> 1 comment(s) in 1 thread(s).
+
+Extracted 2026-09-08 from `thesis_full.docx`.
+1 comment(s) in 1 thread(s). Resolved status available.
+
+> **Read-only extract.** Reply in Word, not here -- this file is regenerated on every snapshot and any edit is lost.
+
+## Index
+
+| # | section | tags | replies | opens with |
+|---|---|---|---:|---|
+| [220](#c220) | 5.2.3 Prophet (Meta) | VERIFY, SOURCE, PROSE |  | VERIFY, SOURCES, PROSE... |
+
+---
+
+<a id="c220"></a>
+
+## [220] Brian Rohde -- Chapter 5 | Model Benchmark & Selection  `VERIFY * SOURCE * PROSE`
+
+- **Section:** Chapter 5 | Model Benchmark & Selection > 5.2 Model descriptions > 5.2.3 Prophet (Meta)
+- **Date:** 2026-09-05T15:24:00
+- **On:** “Prophet (Meta)Additive decomposable model, y(t) = g(t) + s(t) + h(t) + ε - trend, seasonality, holidays (Taylor & Letham, 2018, p. 38, Eq. 1)Designed for forecasting at scale by analysts with domain rather than statistical expertise, targeting “piecewise trends, multiple seasonality, floating holidays” (pp. 37–38)No holiday calendar is supplied in this thesis, and none of the multi-seasonality machinery applies at month grainRAM: ~50–100 MB; acceptable”
+
+VERIFY, SOURCES, PROSE
