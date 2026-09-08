@@ -3,7 +3,7 @@ name: p0053-start-here
 description: STATE - Run the SRQ1 training suite on the VPS. Written to be read FROM the VPS with no prior conversation context.
 pid: P0053
 created: 2026_09_08-15_40
-updated: 2026_09_08-15_40
+updated: 2026_09_08-20_15
 status: in_progress
 ---
 
@@ -11,6 +11,52 @@ status: in_progress
 
 **You are probably reading this on the VPS, with no conversation history. This file
 is everything you need.** Follow it top to bottom.
+
+---
+
+---
+
+## ⚠ 0. READ FIRST — decide the feature set before you run
+
+**Added 2026-09-08. This changes what you should run, so it comes before everything else.**
+
+`srq1_benchmark.py::FEATURES` currently holds **13** columns and does **not** include the
+holiday enrichment (`days_in_month`, `n_holidays`, `non_holiday_days`), even though those
+columns are built, time-safe, and 100% populated in every matrix.
+
+That was deliberate under an earlier framing: holidays were held out so a *holiday
+ablation* had something to measure against. **That framing was dropped on 2026-09-08.**
+
+The thesis proposition is *whether trained models help an LLM forecast* — not whether
+exogenous variables improve models. Feature contribution is not an SRQ. M4 and M5 identify
+explanatory (exogenous) variables as the open frontier — a claim about exogenous inputs in
+general, **not** a prescription for holiday calendars. The holiday feature is *one instance*
+of that direction, adopted as a **design choice**, so no in-thesis ablation is needed.
+
+### What this means for this run
+
+If the suite runs with `FEATURES` unchanged, then the headline benchmark,
+`srq1_benchmark_tuned`, `train_persist` (**what SRQ2 actually serves**) and every
+downstream table describe a model **without** the enrichment Chapter 4 will say it has.
+
+**Decide before launching:**
+
+| Option | Do this | Consequence |
+|---|---|---|
+| **A — enriched (intended)** | add `days_in_month` and `n_holidays` to `FEATURES`, then run | Matches the literature-consistent design the chapter describes |
+| **B — as-is** | run unchanged | Ch4 must state the models exclude the calendar enrichment |
+
+**Only two of the three holiday columns may be added.** `non_holiday_days = days_in_month −
+n_holidays` by construction, so all three together are exactly linearly dependent — appendix
+table 97 reports their VIF as `inf` in all four categories. Trees tolerate that; the Ridge
+baseline does not. Add `days_in_month` and `n_holidays`; leave `non_holiday_days` out.
+
+**Also under option A:** stages 4's `holiday_ablation` / `holiday_tuned` become redundant as
+*reported* results. They are cheap and harmless to run — but do not put their table in the
+thesis; it answers a question the thesis does not ask.
+
+**Full reasoning:** `plans/P0051_2026-09-08_00-00_eda-diagnostics-provenance/findings-feature-reduction.md`
+(Part 2, R1). Chapter framing: `06_thesis_writing/writing-notes/ch4_data_assessment/why-thirteen-features.md`.
 
 ---
 

@@ -687,3 +687,27 @@ checked to resolve; and no `*_DIR` constant resolves to a missing directory.
 `THESIS_RESULTS_APPENDIX_DIR` and `THESIS_RESULTS_DIAGRAMS_DIR` were **removed**
 rather than repointed -- their contents now span several chapters, so there is
 no single directory left for either to name.
+
+---
+
+## 2026-09-08 — a table in this tier states a false number
+
+`05_thesis_results/04_data_assessment/tables/04_feature_matrix.md` caption reads:
+
+> "…in 54 columns, of which **34 are model inputs**."
+
+**Models train on 13.** The generator
+(`04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py::table_feature_matrix`)
+reads `manifest["features"]` — the *pipeline's* denylist count — and never reads
+`srq1_benchmark.FEATURES`, so it cannot see the training-side reduction.
+
+Knock-on: `_fm_role` labels 16 distribution/promotional columns "Feature - distribution"
+and "Feature - promotional" when no model has ever consumed them. An assessor reading this
+appendix concludes the model uses same-period distribution data — the exact misreading the
+generator's own docstring says it exists to prevent.
+
+**Fix:** read the trained list, and add a role separating *built but not trained* from
+*excluded — contemporaneous*. Note the trained set is expected to gain two holiday columns
+(see P0051), so read it from the module rather than hardcoding a new number.
+
+Evidence: `plans/P0051_2026-09-08_00-00_eda-diagnostics-provenance/findings-feature-reduction.md` (D1).
