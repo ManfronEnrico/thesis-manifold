@@ -136,8 +136,8 @@ SEED = 42
 # in its output table.
 # ---------------------------------------------------------------------------
 XGB_N_JOBS = 1
-CATS = {"CSD": "csd", "danskvand": "danskvand",
-        "energidrikke": "energidrikke", "RTD": "rtd"}
+CATS = {"CSD": "csd", "Danskvand": "danskvand",
+        "Energidrikke": "energidrikke", "RTD": "rtd"}
 
 DATASETS = {
     "bymonth": THESIS_DATA_ENGINEERED_BYMONTH_DIR,

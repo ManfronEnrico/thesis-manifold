@@ -175,8 +175,8 @@ SEED = 42
 # in its output table.
 # ---------------------------------------------------------------------------
 XGB_N_JOBS = 1
-CATS = {"CSD": "csd", "danskvand": "danskvand",
-        "energidrikke": "energidrikke", "RTD": "rtd"}
+CATS = {"CSD": "csd", "Danskvand": "danskvand",
+        "Energidrikke": "energidrikke", "RTD": "rtd"}
 
 # POOLING NEEDS THE CROSS-CATEGORY INTERSECTION, not the full feature set.
 #

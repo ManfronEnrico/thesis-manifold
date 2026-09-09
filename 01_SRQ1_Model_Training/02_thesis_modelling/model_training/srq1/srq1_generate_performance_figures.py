@@ -98,7 +98,7 @@ SEED = 42
 # Fixed rather than left to the library default so this figure reproduces.
 XGB_N_JOBS = 1
 
-CATS = ["CSD", "danskvand", "energidrikke", "RTD"]
+CATS = ["CSD", "Danskvand", "Energidrikke", "RTD"]
 
 m = pd.read_csv(RES / "metrics.csv")
 # NOTE (P0035): tuned_metrics.csv is no longer read here — its only consumer was

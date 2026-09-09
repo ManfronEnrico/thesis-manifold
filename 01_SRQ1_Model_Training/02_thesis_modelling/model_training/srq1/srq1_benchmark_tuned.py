@@ -126,7 +126,7 @@ SEED = 42
 # in its output table.
 # ---------------------------------------------------------------------------
 XGB_N_JOBS = 1
-CATS = {"CSD": "csd", "danskvand": "danskvand", "energidrikke": "energidrikke", "RTD": "rtd"}
+CATS = {"CSD": "csd", "Danskvand": "danskvand", "Energidrikke": "energidrikke", "RTD": "rtd"}
 # Grain: brand x month only, per DEC-GRAIN (2026-07-12). The "bychain" entry was
 # removed by P0035 (2026-08-01) along with its deleted data directory.
 # NOTE: the tag is "brand" (not "bymonth") because the existing

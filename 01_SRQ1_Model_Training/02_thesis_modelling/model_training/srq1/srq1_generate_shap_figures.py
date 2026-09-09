@@ -124,7 +124,7 @@ SEED = 42
 # in its output table.
 # ---------------------------------------------------------------------------
 XGB_N_JOBS = 1
-CATS = {"CSD": "csd", "danskvand": "danskvand", "energidrikke": "energidrikke", "RTD": "rtd"}
+CATS = {"CSD": "csd", "Danskvand": "danskvand", "Energidrikke": "energidrikke", "RTD": "rtd"}
 # weighted_distribution / weighted_dist is deliberately ABSENT (P0036 task 7,
 # 2026-08-19).
 #

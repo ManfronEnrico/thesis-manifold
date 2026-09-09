@@ -71,8 +71,8 @@ from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F4
 from _features import FEATURES as _FEATURES, LOG_SCALE as _LOG_SCALE, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 MODELS_DIR = results_root() / "models"
 
-CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
-              "energidrikke": "energidrikke", "RTD": "rtd"}
+CATEGORIES = {"CSD": "csd", "Danskvand": "danskvand",
+              "Energidrikke": "energidrikke", "RTD": "rtd"}
 
 # weighted_dist is deliberately absent: tested, cleared for leakage, but worse
 # out-of-sample in 3 of 4 categories (P0036 task 7).

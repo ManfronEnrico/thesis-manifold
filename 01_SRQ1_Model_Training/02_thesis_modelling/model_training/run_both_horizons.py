@@ -221,6 +221,16 @@ def main() -> int:
                           "run. Use after a kill: the suite is hours long and "
                           "competes for RAM, so a late kill would otherwise throw "
                           "away every completed Optuna study."))
+    ap.add_argument("--tuning", choices=("cv", "fast"), default="cv",
+                    help=("cv (default): run benchmark_cv -- 16 studies (4 "
+                          "categories x 2 models x 2 objectives) x 100 trials x "
+                          "4 folds, ~6,400 fits, the rigorous result that ships. "
+                          "fast: drop benchmark_cv from the plan; train_persist "
+                          "falls back to benchmark_tuned's single-split search "
+                          "(30 trials, minutes not hours) -- an accepted, "
+                          "documented fallback (P0044 F27), not a hack. Use "
+                          "fast for a contended/smoke-test run, cv for the "
+                          "result that ships."))
     a = ap.parse_args()
 
     stages = STAGES
@@ -234,6 +244,14 @@ def main() -> int:
             ap.error(f"unknown stage(s): {unknown}. Known: {sorted(known)}")
         stages = [(n, p) for n, p in STAGES if n in want]
 
+    if a.tuning == "fast":
+        dropped = [n for n, _ in stages if n == "benchmark_cv"]
+        stages = [(n, p) for n, p in stages if n != "benchmark_cv"]
+        if dropped:
+            print("--tuning fast: dropping benchmark_cv from the plan -- "
+                  "train_persist will fall back to benchmark_tuned's params "
+                  "(single validation split, not 4-fold CV).", flush=True)
+
     horizons = (a.horizon,) if a.horizon else HORIZONS
 
     missing = [str(p) for _, p in stages if not p.is_file()]
@@ -244,7 +262,7 @@ def main() -> int:
         return 2
 
     print(f"Plan: {len(stages)} stage(s) x {len(horizons)} horizon(s) "
-          f"= {len(stages) * len(horizons)} run(s)")
+          f"= {len(stages) * len(horizons)} run(s)  (tuning={a.tuning})")
     print(f"Horizons: {list(horizons)}  (H=3 writes the primary tree; "
           f"H=1 writes h1/)")
 

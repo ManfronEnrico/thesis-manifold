@@ -148,8 +148,11 @@ SEED = 42
 # in its output table.
 # ---------------------------------------------------------------------------
 XGB_N_JOBS = 1
-CATS = {"CSD": "csd", "danskvand": "danskvand",
-        "energidrikke": "energidrikke", "RTD": "rtd"}
+# Directory names are CAPITALISED on disk (Danskvand/, Energidrikke/). On Linux
+# the lowercase keys silently matched nothing and two of four categories were
+# dropped from every run -- fixed on the HPC, 2026-09-09.
+CATS = {"CSD": "csd", "Danskvand": "danskvand",
+        "Energidrikke": "energidrikke", "RTD": "rtd"}
 # The modelling feature set, defined once in srq1/_features.py. Eleven copies of
 # this literal existed and had already drifted -- srq1_pooled.py was missing
 # promo_intensity, silently confounding the pooled-vs-per-category comparison
