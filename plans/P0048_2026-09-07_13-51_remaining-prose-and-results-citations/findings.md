@@ -454,3 +454,133 @@ Four archived snapshots were tracked as **1,306 files** of derived markdown. Now
 gitignored via `06_thesis_writing/docx-exported-snapshots/.archive/`; files remain on disk.
 Only the current snapshot is tracked. Rationale in that folder's README: a snapshot mirrors
 the `.docx` at one moment, and the `.docx`'s own history is the OneDrive version history.
+
+---
+
+## F16 — The model feature set changed mid-session, from 13 to 18
+
+**2026-09-09.** A Chapter 4 verification pass established the model input set as
+**13 columns**, measured against `srq1_benchmark.py:171` and confirmed identical
+in eight scripts. Correct at the time.
+
+Commit **`3f8b0a9`**, pushed the same afternoon, replaced the eleven duplicated
+`FEATURES` literals with a single definition in `srq1/_features.py` and admitted
+two groups that had been engineered but consumed by nothing:
+
+| Group | n | Before | After |
+|---|---:|---|---|
+| Holiday calendar | 3 | ablation arm only | standard input |
+| Intermittency (`zero_run_flag`, `zero_run_length`) | 2 | used by no script | standard input |
+
+Resolved counts, verified against all eight matrices: **18** for CSD and
+energidrikke, **17** for danskvand and RTD, the difference being
+`promo_intensity`.
+
+**The retracted number reached the thesis.** Section 4.3 now reads "eighteen are
+model inputs" in one paragraph and "The thirteen inputs are" three paragraphs
+later, because part A of the fix was applied and part B was not. That is the
+visible symptom; the underlying one is that a verified number has a shelf life.
+
+**Why the commit matters beyond the count.** Its message records that the holiday
+ablation *"reported a benefit the served model could not receive"* — the columns
+were measured but absent from every feature list, and `available_features()`
+intersects the literal with the matrix and never *adds* a column the literal
+omits. So retraining alone would never have fixed it. An ablation measuring
+something the production path cannot use is a failure mode a code read finds only
+if you check both halves.
+
+**Procedural consequence, now a rule.** `git fetch` before verifying any claim,
+and name the commit verified against. "Verified against the repository" does not
+survive; "verified at `3f8b0a9`" does. Written into
+`.claude/rules/prose-insertion-discipline.md` → *Remote currency*.
+
+---
+
+## F17 — Three Chapter 4 claims describe a pipeline that does not exist
+
+Measured against the pipeline's own `step_2_14_measure_quality.csv` and
+`step_2_07_zero_types.csv`, per category:
+
+| Chapter 4 claim | Measured |
+|---|---|
+| weighted distribution null in **7.1 %** of CSD rows | **0 nulls**, all four categories |
+| "imputed using a **brand-and-market median**" | **no median imputation exists** in the pipeline |
+| "True zero-sales rows are rare (CSD 12, danskvand 1…)" | zero-type table reports **"no zeros"**, all four |
+
+The median-imputation sentence is the serious one. What the code actually does
+(`engineer_features.py:341`) is convert zeros to nulls and forward-fill — close
+to the opposite operation. The chapter described a method to an examiner that the
+thesis does not use, and carried a matching limitation in §4.5 for that
+non-existent method.
+
+**My own earlier measurement was also wrong.** A previous pass reported CSD
+weighted distribution at 7.115 % null, taken *before* the market scoping, so it
+did not describe the in-scope facts. Both the chapter and my correction to it were
+wrong, in different directions.
+
+Negatives across the entire panel: **8 rows** (4 CSD, 0 danskvand, 1
+energidrikke, 3 RTD), always in a promotional variant, never in a sales measure.
+
+---
+
+## F18 — The Zotero export on disk was two weeks stale
+
+`citations.json` and `bibtex.bib` were dated **25 August**; the session ran on
+9 September. Both are *exports*, regenerated only when someone runs
+`utility_scripts/scripts/zotero_client.py`.
+
+Re-pulled: still 86 items, so nothing was actually missed this time. **The
+failure would have been silent and one-directional** — a source added in those
+two weeks reads as absent, so a pass either omits a citation that exists or files
+a "must add to Zotero" task that is already done.
+
+**Two metadata defects found in the fresh pull**, both reaching the bibliography
+unchanged if not fixed in Zotero:
+
+- **Hyndman & Athanasopoulos** is stored with **no year** (renders "n.d." against
+  prose citing 2021), under the title of a *single section* — "5.2 Some simple
+  forecasting methods" — which is the section Chapter 5 cites but not the one
+  Chapter 4 needs, and with a `?utm_source=chatgpt.com` parameter in its URL.
+- **Hastie et al.** exists twice: as a book section (`LR3KF2SX`) and as a whole
+  book. Citing both produces two reference-list entries for one work.
+
+Existence is not sufficiency: an item can be present and unusable.
+
+---
+
+## F19 — A note the author has read cannot be edited in place
+
+Brian's review of the Chapter 4 pass produced three corrections. I applied them
+by editing the pass file itself. That was wrong, and he said so: his workflow is
+to read a note top to bottom, apply what looks right, and batch his comments —
+so in-place edits are invisible, scattered, and have nothing to diff against.
+
+Restored the file to its as-read state (verified byte-identical under
+`--ignore-all-space`) and answered in a separate `-followup-01.md` that opens
+with a table of exactly what it supersedes.
+
+**The regeneration afterwards proved the second half of the lesson.** Brian asked
+for a fresh snapshot before the follow-up was rewritten; the diff showed he had
+already applied **nine of ten fixes**. Without it the follow-up would have
+re-proposed blocks whose anchors no longer existed, and would have missed two new
+comment threads he wrote while reading.
+
+Both are now rules: freeze a reviewed note, and snapshot before *every* follow-up,
+not only before the first pass.
+
+---
+
+## F20 — An anchor must be searchable in the rendered document
+
+An anchor was given as `| Feature | Description | Models |` — a markdown table
+header. It exists only in the snapshot mirror. In Word that row renders as three
+cells in a bordered table with no pipes anywhere, so there is nothing to paste
+into the find box.
+
+Every anchor now carries three things: **the section by number and title**, **a
+rendered landmark** (a caption, heading or bolded lead-in the author can see),
+and **first and last five words** of running prose. For a table, the caption and
+a distinctive cell value, never the pipe syntax.
+
+The general form of the error: *the writing note is generated from a
+representation the reader does not have.*

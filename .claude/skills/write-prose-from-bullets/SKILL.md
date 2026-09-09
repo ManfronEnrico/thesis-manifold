@@ -367,3 +367,146 @@ State what was swept at the top of the new note, so the author can see another
 session's work was not dropped.
 
 See `.claude/rules/prose-insertion-discipline.md` -> **The note folder**.
+
+## Prose is submission-ready, never a diff
+
+Every `Replace with` block goes to an examiner, so it must not refer to the
+document's own editing history. "Two clarifications resolve an ambiguity carried
+by earlier drafts", "Figures verified (resolved)", "Renamed from HOLIDAY_MONTHS
+(2026-08-18)", "closing the gap flagged in §4.6" — each tells a reader there
+were earlier versions, which is not information the thesis owes them.
+
+The test: would this sentence make sense to someone who has never seen a
+previous draft? If it only reads as a diff, it belongs in a `### Note` under the
+fix. Keep the *conclusion* in the prose and the *history* in the note.
+
+## When a rerun is in flight, relabel rather than delete
+
+A pass documents the repository as it stands. If training or regeneration is
+already running and will change what stands, do not delete the row that is about
+to become wrong, and do not write the future state as though it were true.
+
+Relabel it, and state in a note the single edit that lands when the run does.
+Write the prose so the invariant carries the paragraph — provenance,
+construction and arithmetic survive a rerun; which model consumes a column does
+not.
+
+## Structural items go to the cumulative deferred list
+
+Table placement, appendix siting, cross-references and chapter ordering are not
+sentence-level fixes. They go to
+`06_thesis_writing/writing-notes/deferred-structural-decisions.md`, which is one
+file appended to by every chapter pass — so the appendix question is answered
+once with the whole document visible.
+
+Give each item an ID, a status, and **a recommendation rather than a question**.
+And trace a stale cross-reference before reporting it: "§4.6 does not exist" is a
+finding, "it pointed at the risks section, now §4.5, so delete the clause rather
+than repoint it" is a decision.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **No metacomment in the
+prose itself**, **Prose against a moving codebase**, **The deferred structural
+list**.
+
+## A note the author has read is frozen
+
+Their workflow is: read the note top to bottom, apply what looks right, send
+back comments in one batch. Editing that file in place makes your changes
+invisible and scattered, with nothing to compare against.
+
+Answer review comments in a **new file beside it** —
+`ch4-prose-pass-followup-01.md` next to `ch4-prose-pass.md`. Open with a table
+of exactly what it supersedes, so the author knows which parts of the original
+are dead without re-reading it. Use your own numbering (`F1`, `F2`) rather than
+reusing the pass's `Fix N`. Quote the author's comment, then answer it, then
+give the paste-ready block.
+
+Both files archive together when the chapter is marked complete. Offer to
+regenerate one clean file instead, but default to the follow-up — it preserves
+what they already reviewed.
+
+When a review comment reveals that you were wrong, **say so plainly and name the
+evidence**. The author may already have pasted the wrong version.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **Follow-up notes**.
+
+## Fetch before you verify
+
+The snapshot check covers the `.docx`. The repository moves too, from three
+machines, so start every pass with:
+
+```bash
+git fetch origin && git rev-list --left-right --count origin/main...HEAD
+git log origin/main --oneline -10
+```
+
+Read the messages of anything new before writing. A pass once verified the
+feature set as 13 columns correctly in the morning; a commit that afternoon made
+it 18, and the note would have restated 13 with full confidence. Name the commit
+you verified against, and treat a results-affecting commit as a finding for the
+pass, not background noise.
+
+## Anchors are searched in Word, not in the snapshot
+
+Pipe syntax, heading hashes and escape characters exist only in the markdown
+mirror. The author is looking at a rendered document and cannot search for any
+of them.
+
+Every anchor carries the **section number and title**, a **rendered landmark**
+they can see (a caption, heading or bolded lead-in), and **first and last five
+words** of running prose. For a table, name its caption and a distinctive cell
+value — never the header row's pipes.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **Remote currency** and
+**An anchor must be findable in Word**.
+
+## Regenerate the snapshot before every follow-up
+
+Not only before the first pass. By the time a follow-up is needed the author has
+applied some fixes, skipped others, and usually added comments while reading —
+so anchors written against the old snapshot may quote text that no longer
+exists, and the pass would miss the newest comments entirely.
+
+```bash
+python utility_scripts/scripts/thesis_snapshot.py --label "<slug>-followup"
+```
+
+Then diff the chapter against the previous snapshot to see which fixes landed,
+which were skipped, and which were applied differently from how they were
+proposed. **Do not re-propose a block whose anchor is already gone** — say it
+landed and move on.
+
+Pair it with `git fetch`: snapshot for the prose, fetch for the code. Both
+answer "is what I am about to verify against still what exists?"
+
+## Re-pull Zotero before checking any citation
+
+`citations.json` is an export, as old as the last sync. Measured once at two
+weeks stale.
+
+```bash
+python utility_scripts/scripts/zotero_client.py
+```
+
+State the pull time and item count in the note, the way a snapshot is named in
+frontmatter. Check metadata too, not only existence — a missing year, a book
+stored under a section title, or a tracking parameter in a URL all reach the
+bibliography unchanged.
+
+## Two registers, both cumulative, both at the writing-notes root
+
+**`citations-added-register.md`** — every citation a pass adds, with its Zotero
+key and the thesis sentence it supports, quoted verbatim. Existence in the
+library and support for the claim are separate checks. Request NotebookLM output
+in the fixed block format the register defines: verdict, claim verbatim, direct
+supporting quotation, location, assessment. The quotation is what makes the
+verdict checkable later. Never upload thesis chapters to NotebookLM.
+
+**`post-hpc-validation.md`** — claims written against code that is mid-rerun.
+Record the row when writing the claim, not afterwards. Name the artefact that
+answers it (a banner line, a results file, a config value), what the chapter
+reverts to if it fails, and which rows are gates that invalidate everything below
+them.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **Library currency**,
+**Pending measurements**, **Register every citation you add**.

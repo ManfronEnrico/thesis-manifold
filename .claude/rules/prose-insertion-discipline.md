@@ -5,7 +5,7 @@ category: workflow
 applies-to: [thesis prose, writing-notes, docx insertion, appendix references]
 triggers: [writing prose, converting bullets to prose, preparing paragraphs for Word, citing a table or figure in prose]
 created: 2026_09_07-15_00
-updated: 2026_09_08-18_50
+updated: 2026_09_09-21_15
 ---
 
 # Prose insertion discipline
@@ -21,9 +21,19 @@ the hard part — locating the seam — onto them.
 | Anchor is a verbatim quote | "Add to Ch6" — the human hunts for the spot | [Anchors](#anchors) |
 | Anchor carries its neighbours | The human cannot tell one paragraph from the next | [Anchor context](#anchor-context) |
 | Snapshot named in frontmatter | Anchors that no longer exist | [Snapshot currency](#snapshot-currency) |
+| `git fetch` before verifying any claim | A number verified against a commit that moved hours ago | [Remote currency](#remote-currency) |
+| New snapshot before EVERY follow-up | Anchors quoting text the author already replaced | [Snapshot currency](#snapshot-currency) |
+| Zotero re-pulled before checking a citation | A source "verified" against a two-week-old export | [Library currency](#library-currency) |
+| Every added citation registered with its claim | A real source cited for something it does not say | [Citations](#citations) |
+| Claims awaiting a run recorded when written | A pending number nobody goes back to check | [Pending measurements](#pending-measurements) |
+| Anchor names its section and a rendered landmark | An anchor the author cannot search for in Word | [Anchor context](#anchor-context) |
 | Comments are read before writing | Rewriting text the author already objected to | [Comment-driven passes](#comment-driven-passes) |
 | Chapter's note folder swept before writing | Another session's note silently ignored | [The note folder](#the-note-folder) |
 | Applied notes archived, not left in place | Two notes disagreeing, neither marked stale | [The note folder](#the-note-folder) |
+| A reviewed note is never edited in place | Silent changes inside a file the author already read | [Follow-up notes](#follow-up-notes-never-edit-a-reviewed-note) |
+| No metacomment in pasted prose | "Two clarifications resolve an ambiguity" reaching an examiner | [No metacomment](#no-metacomment-in-the-prose-itself) |
+| Relabel, don't delete, when a rerun is in flight | A row deleted today that must be rebuilt tomorrow | [Pending reruns](#prose-against-a-moving-codebase) |
+| Structural items go to the deferred list | The same appendix question re-derived every pass | [Deferred decisions](#the-deferred-structural-list) |
 | One fix per heading block, ruled off | A wall of prose the author cannot navigate | [Note layout](#note-layout) |
 | Explicit action verb | Ambiguity between adding and replacing | [Actions](#actions) |
 | REWORD offered where a sentence is salvageable | A whole paragraph rewritten to fix six words | [Actions](#actions) |
@@ -78,6 +88,38 @@ the sentence sits mid-paragraph.
 Quoting the following sentence costs one line and removes the commonest failure: prose
 landing in the right section but the wrong seam.
 
+### An anchor must be findable in Word, not in the snapshot
+
+The snapshot is markdown; the author is looking at a rendered `.docx`. Anything
+that exists only in the markdown — pipe syntax, heading hashes, escape
+characters — **cannot be searched for** and is not an anchor.
+
+The failure case, measured: an anchor given as `| Feature | Description |
+Models |` for a table header. In Word that row renders as three cells in a
+bordered table with no pipes anywhere, so there is nothing to paste into the
+find box.
+
+**Every anchor carries three things:**
+
+1. **the section**, by number and title — "Section 4.3 Feature Engineering"
+2. **a rendered landmark** the author can see — a table caption, a heading, a
+   bolded lead-in line
+3. **first and last five words** of running prose, verbatim and searchable
+
+For a table, name the caption above or below it plus a distinctive cell value:
+
+```markdown
+### Anchor
+
+**Section 4.3 Feature Engineering.** The table below the bolded line
+**"Exogenous Variable Enrichment"**, captioned **"Table 4 - Feature Engineering
+Overview"**. Its last row begins *"weighted_distribution"*.
+```
+
+The section number matters even when the quoted words are unique, because it
+tells the author where to scroll before searching — and it survives the case
+where Word finds the same phrase in three chapters.
+
 ## Comment-driven passes
 
 When a chapter is being revised against the author's own Word comments, the comments are
@@ -119,6 +161,130 @@ be found.
 ```bash
 python utility_scripts/scripts/thesis_snapshot.py --label "<slug>"
 ```
+
+## Remote currency
+
+The snapshot rule covers the `.docx`. **The repository moves too**, and on this
+project it moves from three machines — the laptop, the VPS and the HPC — so
+"the repository" is not a fixed thing to verify against.
+
+**A pass begins with a fetch**, before any claim is checked:
+
+```bash
+git fetch origin && git rev-list --left-right --count origin/main...HEAD
+git log origin/main --oneline -10
+```
+
+Measured 2026-09-09: a pass verified the model feature set as 13 columns in the
+morning, correctly. A commit that afternoon added the holiday and intermittency
+groups, making it 18. The follow-up note would have restated 13 with full
+confidence, and the chapter would have gone to an examiner wrong — with the
+wrongness introduced *by the verification pass itself*, which is the worst kind.
+
+**Name the commit when something landed.** "Verified against the repository" is
+not a claim that survives; "verified at `3f8b0a9`" is. When a fetch shows new
+commits, read their messages before writing — a commit titled *"holiday +
+intermittency columns now reach the model"* is telling you which chapter it
+invalidates.
+
+Scan for results-affecting commits too, not only code-shape ones. A commit
+fixing category-name casing that "silently dropped two of four categories on
+Linux" means every HPC result predating it may cover half the panel. That is a
+finding for the pass, not background noise.
+
+### A follow-up needs its own snapshot
+
+**Regenerate before writing a follow-up note, always.** By definition the author
+has been working in the document since the pass was written: they have applied
+some fixes, skipped others, and usually added comments while reading. All three
+change what an anchor must quote.
+
+The failure is silent and specific. A follow-up written against the old snapshot
+quotes *"The 17 features comprise six lags"* as its anchor, but the author
+already replaced that sentence — so the search fails, and the author cannot tell
+whether they missed the paste or the note is wrong.
+
+It also loses new comments. Reading a chapter top to bottom is when most review
+comments get written, so the snapshot taken *after* a review round carries the
+author's freshest thinking. Skipping it means answering the last round's
+questions and none of this one's.
+
+```bash
+python utility_scripts/scripts/thesis_snapshot.py --label "<slug>-followup"
+```
+
+Then **diff the chapter against the previous snapshot** before writing. What
+changed tells you which fixes landed, which were skipped, and — if a fix was
+applied differently from how it was proposed — that the author made a decision
+worth respecting rather than re-proposing:
+
+```bash
+diff <old-snapshot>/chapters/ch4-data-assessment.md \
+     <new-snapshot>/chapters/ch4-data-assessment.md
+```
+
+A block whose anchor has already gone is **not** re-proposed. Say it landed, and
+move on.
+
+**The two currency checks are one habit.** `git fetch` for the code, a new
+snapshot for the prose. Both answer the same question — *is what I am about to
+verify against still what exists?* — and a pass that skips either produces
+confident, checkable, wrong output.
+
+## Library currency
+
+`citations.json` and `bibtex.bib` are **exports**, not the library. They are as
+old as the last time someone ran the sync, and a citation checked against a stale
+export is not checked.
+
+**Re-pull before any pass that touches citations:**
+
+```bash
+python utility_scripts/scripts/zotero_client.py
+```
+
+It makes a live call to the group library, writes `bibtex.bib` as the source of
+truth and derives `citations.json` from it. Seconds to run.
+
+Measured 2026-09-09: the exports on disk were dated 25 August. Two weeks of
+additions by either author would have been invisible, and the failure is
+one-directional and silent — a source added to Zotero last week reads as
+NOT-IN-ZOTERO, so a pass either omits a citation that exists or, worse, records a
+"missing source" task that is already done.
+
+**State the pull time in the note**, the same way a snapshot is named in
+frontmatter. "Verified against the library" is not a claim that survives;
+"verified against the 2026-09-09 21:00 pull, 86 items" is.
+
+**Check metadata, not only existence.** An item can be present and unusable: a
+book entry stored under a single section title, a missing year that renders as
+"n.d.", a URL carrying a `utm_source=chatgpt.com` parameter. Record those as
+defects to fix in Zotero rather than working around them in prose, because the
+bibliography is generated from the library and will carry whatever is there.
+
+## Pending measurements
+
+A claim written against code that is mid-rerun is **provisional**, and the
+moment to record that is when the claim is written — not afterwards, when
+whoever reads the chapter has no way to know which sentences were provisional.
+
+They go to `06_thesis_writing/writing-notes/post-hpc-validation.md`, cumulative
+across chapters, one row per claim:
+
+| Field | Content |
+|---|---|
+| the claim | quoted as the thesis states it |
+| what answers it | the specific artefact — a banner line, a results file, a config value |
+| if wrong | what the chapter reverts to |
+
+**Name the artefact, not the activity.** "Check after the run" is not actionable;
+"the run prints `[features] n/18 resolved` at start-up, and that line is the
+claim" is.
+
+**Mark the gates.** Some items invalidate everything below them — a run that
+covered two categories instead of four, or one that did not pin thread count,
+makes every downstream number unusable. Say which rows are gates so the list is
+worked in the right order.
 
 ## Actions
 
@@ -269,6 +435,139 @@ work was not lost:
 Fix 6 below).
 ```
 
+## Follow-up notes: never edit a reviewed note
+
+Once the author has read a note, **that file is frozen**. Their workflow is to
+read it top to bottom, apply what looks right, and send back comments in one
+batch. A note edited in place breaks that in the worst way: the changes are
+invisible, scattered, and have nothing to compare against. The author is left
+hunting a file they have already read for edits they cannot see.
+
+**Answer review comments in a new file beside it:**
+
+```
+writing-notes/<chapter>/
+  ch4-prose-pass.md               <- frozen the moment it is read
+  ch4-prose-pass-followup-01.md   <- answers the review comments
+```
+
+The follow-up opens with **exactly what it supersedes**, so the author knows
+which parts of the original are now dead without re-reading it:
+
+```markdown
+| In the main pass | Status |
+|---|---|
+| Fix 3, Anchor - part B | one sentence replaced (F1 below) |
+| Fix 4, entire fix | replaced (F2 below) - **do not delete the table rows** |
+
+Everything else in the main pass stands: Fixes 1, 2, 5, 6, 7, 8, 9.
+```
+
+It uses **its own numbering** (`F1`, `F2`) rather than reusing the pass's `Fix N`,
+so a reference is never ambiguous about which file it lives in. And it is read
+top to bottom on its own — quote the author's comment, then answer it, then give
+the paste-ready block. It is a note in its own right, not a diff.
+
+**Both files archive together** when the chapter is marked complete, since the
+follow-up only makes sense beside what it amends.
+
+**Offer to regenerate, do not assume.** Some authors would rather have one clean
+file than a pass plus three follow-ups. Say the offer explicitly and let them
+choose; the default is the follow-up, because it is the one that preserves what
+they have already reviewed.
+
+### When the author's correction changes your reasoning, say so
+
+A follow-up that quietly writes the corrected version has thrown away the most
+useful thing in it. If a review comment revealed a wrong claim, state the
+correction plainly, name the evidence, and keep it visible:
+
+```markdown
+⚠ Fix 4 said the linear dependence "rules out admitting all three to a linear
+model". That is too strong, and your own code is the counterexample:
+`srq1_ridge_cv.py:166` fits all three and drops none.
+```
+
+The author needs this because they may have already pasted the wrong version.
+
+## No metacomment in the prose itself
+
+Every `Replace with` block is submission-ready text. It is going into a thesis
+an examiner reads, not into a note the author reads.
+
+That rules out a whole class of sentence which feels natural to write and is
+invisible until someone looks for it — prose that refers to **the document's own
+editing history**:
+
+| Never write | Because it tells the examiner |
+|---|---|
+| "Two clarifications resolve an ambiguity carried by earlier drafts" | there were earlier drafts, and they were ambiguous |
+| "Figures verified (resolved)" | this is a task tracker |
+| "These figures supersede the all-markets values" | an internal correction happened |
+| "Renamed from HOLIDAY_MONTHS (2026-08-18)" | a variable used to be called something |
+| "closing the gap previously flagged in §4.6" | the chapter is auditing itself |
+
+The test: **would this sentence make sense to a reader who has never seen a
+previous version?** If it only makes sense as a diff, it is a note, not prose.
+
+The same content is usually worth keeping — as a `### Note` under the fix, where
+the author reads it and the examiner does not. A renaming that corrected a false
+implication is a real methodological point; it just belongs in the note, and the
+*conclusion* belongs in the prose:
+
+> **prose:** "The measure is deliberately named for what it detects."
+> **note:** "Renamed from HOLIDAY_MONTHS on 2026-08-18 because…"
+
+## Prose against a moving codebase
+
+A pass documents the repository **as it stands**, and sometimes a rerun is
+already in flight that will change what stands. The instinct is to delete the
+soon-to-be-wrong row and write the future state. Both halves of that are wrong.
+
+**Relabel rather than delete.** A row that is wrong about *how* something is used
+survives the rerun with a one-word edit. A deleted row has to be reconstructed
+from scratch, by someone who no longer remembers what it said.
+
+**Say what the rerun changes.** The note names the single edit that lands when
+the run does, so the author can apply it in seconds:
+
+```markdown
+### Note - what the retraining will and will not change
+
+If the holiday columns are promoted, **one word changes**: the `Used by` cell
+becomes the model list. The rest of the paragraph holds either way, because the
+provenance and the linear dependence are properties of the columns, not of the
+experiment.
+```
+
+Write the prose so the invariant part carries the paragraph. Provenance,
+construction and arithmetic relationships survive a retraining; which model
+consumes a column does not.
+
+## The deferred structural list
+
+Table placement, appendix siting, cross-references and chapter ordering are
+**not sentence-level fixes**, and a chapter pass must not silently drop them or
+re-derive them next time.
+
+They go to `06_thesis_writing/writing-notes/deferred-structural-decisions.md`,
+which is **cumulative across chapters** — one file, appended to by every pass,
+so the appendix question is answered once with the whole document visible rather
+than four times with a quarter of it.
+
+Each item gets an ID (`S1`, `S2`, …), a status (`open` / `recommended` /
+`blocked` / `done`) and, wherever possible, **a recommendation rather than a
+question**. "Table 2 or appendix?" is work handed back; "delete Table 2, because
+an appendix copy would preserve its two superseded figures" is work done.
+
+**Trace a stale cross-reference before reporting it.** `§4.6` does not exist is a
+finding; *it pointed at the risks section, which is §4.5 today, and repointing it
+would leave two sections citing each other about project history, so delete the
+clause* is a decision. The tracing is usually two greps.
+
+Keep `done` rows, with what was decided. The reasoning behind a settled
+structural choice is what stops it being reopened.
+
 ## Assets
 
 Every table, figure or diagram gets a decision, stated in the block:
@@ -322,6 +621,41 @@ and can be pasted immediately. An `UNVERIFIED` tag is a promise to come back.
 
 **If a source is not in the library, it is not a source.** This rule exists because a
 plausible-looking reference was once written from memory and read as though verified.
+
+### Register every citation you add, with its claim
+
+A reference that exists is not a reference that says what you need it to say.
+Both checks are required and they are independent:
+
+| Check | Answers | Recorded as |
+|---|---|---|
+| Is it in the library? | can the bibliography resolve it | `IN-ZOTERO` |
+| Does it support the claim? | is the citation honest | `NLM-CONFIRMED` |
+
+Every citation a pass adds goes to
+`06_thesis_writing/writing-notes/citations-added-register.md` with its Zotero
+key, the section it lands in, and **the thesis sentence it is being used to
+support, quoted verbatim**. The sentence is the thing being verified; a
+paraphrase of a claim can be true when the claim is false.
+
+**Request NotebookLM output in the fixed block format** the register defines —
+verdict, claim verbatim, a direct supporting quotation, location, assessment, and
+a narrowed rewording only when the verdict is PARTIAL. The quotation is the field
+that makes a verdict checkable later; without it the register holds assertions,
+which is what it exists to prevent.
+
+`NOT-ADDRESSED` is a distinct verdict from `REFUTED`. A source silent on a claim
+is not evidence against it, but cannot be cited for it either.
+
+**Never upload thesis chapters to NotebookLM.** It returns our own wording as a
+source, which reads as independent confirmation and is not.
+
+This register and the `CV-NN` claim packs under
+`notebookLM/04-Claims_Verification/Chapter <N> - <Name>/<Topic>/claims.md` run in
+opposite directions: this one starts from a source and asks whether it supports
+the claim; those start from a claim and ask whether a source exists. A pass
+usually feeds both, and the packs have their own conventions — read
+`Claims_Verification-00-MASTER-verification-brief.md` before adding to them.
 
 ## Blocking
 

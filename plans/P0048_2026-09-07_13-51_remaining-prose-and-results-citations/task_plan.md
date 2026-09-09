@@ -1,9 +1,9 @@
 ---
 pid: P0048
 created: 2026-09-07 13:51:00
-updated: 2026-09-08 14:11:14
+updated: 2026-09-09 21:30:00
 status: in_progress
-focus_detail: "HANDOFF PLAN — written to survive an account switch that loses session history. Read START_HERE.md first. Chapter-by-chapter prose pass from ch4 onward, working the results-folder tables/figures into the text as in-text citations. Session's main discovery: the H1/H3 forecast horizon is never applied to feature construction, so both matrices are one-month tasks and the published 'H3' results do not measure the horizon the prose claims (F1). Two prose blocks are ready to paste now (split correction, feature count); the horizon blocks are blocked on a code fix + re-run."
+focus_detail: "Chapter 4 is PROSE and applied — 9 of 10 fixes pasted, 7 Word threads closed (27 to 20). Seven items remain, in ch4_data_assessment/ch4-prose-pass-followup-01.md; F1 is urgent because 4.3 currently states both 18 and 13 as the feature count. THE FEATURE SET CHANGED MID-SESSION: commit 3f8b0a9 admitted the holiday and intermittency columns, so the model consumes 18 (17 without promotion), not 13 (F16). Three Ch4 claims described a pipeline that does not exist, including a median imputation the code never performs (F17). Four cumulative registers now live at the writing-notes root: deferred-structural-decisions, post-hpc-validation, citations-added-register, plus the per-chapter notes. NEXT: Chapter 5 — 39 bold-lead fragments, 49 open threads, and a false bold claim in 5.3.2 that no holiday calendar is used."
 ---
 
 # P0048 — Remaining prose & working in-text citations of results

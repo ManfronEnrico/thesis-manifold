@@ -106,3 +106,64 @@ session**, not P0050's, because this session carries the prose context.
   are written once.
 
 Nothing was executed. No code, folders or prose were changed by this transfer.
+
+---
+
+## 2026-09-09 — Chapter 4 prose pass, applied
+
+**Delivered.** Chapter 4 is prose. Brian applied nine of the ten proposed fixes
+plus the follow-up's table edits, and closed seven Word threads (27 → 20).
+
+Sections rewritten and pasted: the retention rule and coverage figures (§4.1.2),
+the duplicated minimum-history paragraph (§4.1.2), the null/negative/zero claims
+(§4.1.3), the retired filter and the ARIMA sentence (§4.1.4), scope and filtering
+(§4.2.1), the seasonality changelog (§4.2.3), the matrix widths (§4.3), and the
+whole risks section (§4.5), which went from nine bold-lead fragments to five
+prose paragraphs.
+
+**Verification base.** Every figure measured against the pipeline's own
+`step_2_*.csv` EDA tables, the eight feature matrices, the split-date JSON, and
+the SRQ1 training scripts — not against previous notes. Three claims turned out to
+describe a pipeline that no longer exists (F17), and the feature count changed
+under us mid-session (F16).
+
+**Tried and rejected.**
+- *Deleting the holiday and weighted-distribution rows from Table 4.* Brian
+  pushed back because retraining was in flight. He was right, and the columns
+  became standard inputs the same day. Relabelling survives a rerun with a
+  one-word edit; deletion has to be rebuilt.
+- *Claiming the holiday columns' linear dependence rules out a linear model.*
+  `srq1_ridge_cv.py:166` fits all three and drops none — the L2 penalty absorbs
+  it, which is the better point and is what the prose now says.
+- *Editing the reviewed pass file in place* (F19).
+
+**Near-miss.** The follow-up was regenerated against a fresh snapshot only
+because Brian asked. Had it not been, it would have re-proposed nine already-applied
+blocks and missed two new comment threads.
+
+**Left broken, deliberately.** `writing-notes/unverified-claims-to-check.md` is
+referenced five times across the rule and skill and **does not exist** — the real
+system is the `CV-NN` packs under `notebookLM/04-Claims_Verification/`. Three of
+those references predate this session (present in commit `202f75a`). Fixed the two
+I wrote; left the pre-existing three and recorded them as S12 in the deferred
+list rather than repointing committed text at end of day.
+
+**Four new tracking surfaces**, all cumulative across chapters:
+
+| File | Holds |
+|---|---|
+| `writing-notes/deferred-structural-decisions.md` | 12 layout/cross-reference items, each with a recommendation |
+| `writing-notes/post-hpc-validation.md` | 10 claims awaiting the training run, 2 marked as gates |
+| `writing-notes/citations-added-register.md` | 8 citations with Zotero keys and the claim each must support |
+| `ch4_data_assessment/ch4-prose-pass-followup-01.md` | 7 remaining Chapter 4 items |
+
+**Six rules added** to `prose-insertion-discipline.md` and the skill: no
+metacomment in prose, relabel-don't-delete when a rerun is in flight, the deferred
+list, freeze a reviewed note, `git fetch` before verifying, snapshot before every
+follow-up, Zotero re-pull before checking citations, register every added citation
+with its claim, and record pending measurements when the claim is written.
+
+**Next.** Chapter 5 — 39 bold-lead fragments, 55 lines with no terminal period,
+49 open threads, and the chapter is the largest remaining prose job. Its §5.3.2
+still states in bold that *"No holiday calendar is used"*, which is false and
+contradicts Chapter 4 in the same document.
