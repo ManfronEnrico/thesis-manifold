@@ -41,6 +41,7 @@ Output: 04_thesis_results/srq1/{cv_metrics.csv, cv_params.json, cv_convergence.c
 
 import argparse
 import json
+import subprocess
 import sys
 import warnings
 from pathlib import Path
@@ -48,6 +49,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import optuna
+from joblib import Parallel, delayed
 
 _here = Path(__file__).resolve()
 _root = next((p for p in _here.parents if (p / "PATHS.py").is_file()), None)
@@ -295,23 +297,66 @@ def _folds(d, k):
     return out
 
 
+def _fit_fold(model, params, tr, va, feats, fn):
+    """One fold's fit+score. Factored out so it can run under Parallel --
+    the RETURN VALUE is identical to inlining this in a for-loop; only the
+    wall-clock changes."""
+    m = _make(model, params)
+    m.fit(tr[feats].fillna(0.0), tr["log_sales_units"].values)
+    pred = np.expm1(m.predict(va[feats].fillna(0.0)))
+    s = fn(np.expm1(va["log_sales_units"].values), pred)
+    return s if np.isfinite(s) else None
+
+
+# Fold-level parallelism, XGBoost only. Read before touching.
+#
+# XGBoost is already hardcoded to n_jobs=XGB_N_JOBS=1 (determinism -- see the
+# note by that constant). That pinning is what makes fitting its 4 folds
+# under a thread pool SAFE: each thread's fit uses exactly one core, so 4
+# threads = 4 cores, no nested oversubscription, and -- because each fold's
+# fit is independent of the others and Parallel returns results IN INPUT
+# ORDER regardless of completion order -- the returned `scores` list, and
+# therefore its mean, is IDENTICAL to the sequential version. This changes
+# wall-clock only, never a number.
+#
+# LightGBM is deliberately EXCLUDED. Its n_jobs is unset (library default,
+# multi-threaded per fit), so wrapping ITS folds in an outer thread pool
+# would nest thread pools inside thread pools -- real oversubscription risk,
+# and LightGBM's own thread-count sensitivity has never been measured the
+# way XGBoost's was (see XGB_N_JOBS's docstring table). Pin and measure that
+# first; don't fold it into this change.
+FOLD_N_JOBS = 4
+
+
 def tune(model, d, feats, trials, metric_name, folds):
     """Tune by mean CV score across expanding-window folds.
 
     Records the running best per trial so budget adequacy can be SHOWN."""
     fn = METRICS[metric_name]
     curve = []
+    parallel_folds = (model == "XGBoost")
+
+    # Opened ONCE per study, reused across all `trials` calls to objective().
+    # A fresh Parallel(...) per trial (the first version of this change) was
+    # measured SLOWER than the plain sequential loop -- 2m16s vs 2m5s for 10
+    # trials on identical data -- because thread-pool spin-up cost more than
+    # the 4 small fold-fits saved. Reusing one pool for the whole study (100
+    # trials in production) amortises that cost instead of paying it per
+    # trial. `parallel` is None when this study is LightGBM, so `objective`
+    # falls through to the sequential branch unconditionally.
+    parallel = (Parallel(n_jobs=FOLD_N_JOBS, backend="threading")
+                if parallel_folds else None)
 
     def objective(trial):
         params = _space(trial, model)
-        scores = []
-        for tr, va in folds:
-            m = _make(model, params)
-            m.fit(tr[feats].fillna(0.0), tr["log_sales_units"].values)
-            pred = np.expm1(m.predict(va[feats].fillna(0.0)))
-            s = fn(np.expm1(va["log_sales_units"].values), pred)
-            if np.isfinite(s):
-                scores.append(s)
+        if parallel is not None:
+            results = parallel(
+                delayed(_fit_fold)(model, params, tr, va, feats, fn)
+                for tr, va in folds)
+        else:
+            results = [_fit_fold(model, params, tr, va, feats, fn)
+                       for tr, va in folds]
+        scores = [s for s in results if s is not None]
         if not scores:
             return float("inf")
         # MEAN across folds, not best: the best fold would select a configuration
@@ -382,42 +427,10 @@ def _gain_tail(curve, n=25):
     return round(100.0 * (b[-n] - b[-1]) / total, 1)
 
 
-def main():
-    ap = argparse.ArgumentParser(description="SRQ1 CV-tuned benchmark")
-    ap.add_argument("--trials", type=int, default=100)
-    ap.add_argument("--folds", type=int, default=4)
-    ap.add_argument("--categories", nargs="+", default=None)
-    a = ap.parse_args()
-    OUT.mkdir(parents=True, exist_ok=True)
-
-    rows, params, curves = [], {}, []
-    cats = {c: CATS[c] for c in (a.categories or CATS)}
-
-    for cat, slug in cats.items():
-        d, feats = _load(cat, slug)
-        folds = _folds(d, a.folds)
-        print(f"\n########## {cat} -- {len(folds)} expanding folds, "
-              f"{len(feats)} features, {a.trials} trials ##########")
-        for i, (tr, va) in enumerate(folds, 1):
-            print(f"   fold {i}: train={len(tr):5d} rows  val={len(va):4d} rows")
-
-        for model in ("LightGBM", "XGBoost"):
-            for metric in ("wmape", "medmape"):
-                res, best, curve = tune(model, d, feats, a.trials, metric, folds)
-                pl = _plateau(curve)
-                gt = _gain_tail(curve)
-                rows.append(dict(category=cat, model=model, tuned_for=metric,
-                                 plateau_trial=pl, gain_in_last_25_pct=gt, **res))
-                params[f"{cat}/{model}/{metric}"] = best
-                for c in curve:
-                    curves.append({"category": cat, "model": model,
-                                   "tuned_for": metric, **c})
-                print(f"  {model:9s} tuned_for={metric:8s} "
-                      f"test WMAPE={res['test_wmape']:5.1f}% "
-                      f"medMAPE={res['test_medmape']:5.1f}%  "
-                      f"(cv={res['cv_score']:5.1f}, plateau@{pl}, "
-                      f"last25={gt}%)")
-
+def _write_outputs(rows, params, curves, cats, n_folds, trials):
+    """The aggregation + markdown-writing tail. ONE implementation, called by
+    both the sequential default path and --merge-partials, so the two paths
+    cannot drift into writing outputs differently."""
     df = pd.DataFrame(rows)
     df.to_csv(OUT / "cv_metrics.csv", index=False)
     pd.DataFrame(curves).to_csv(OUT / "cv_convergence.csv", index=False)
@@ -425,7 +438,7 @@ def main():
                                         encoding="utf-8", newline="\n")
 
     lines = ["# SRQ1 — CV-tuned benchmark", "",
-             f"Expanding-window time-series CV ({a.folds} folds), {a.trials} Optuna",
+             f"Expanding-window time-series CV ({n_folds} folds), {trials} Optuna",
              "TPE trials per configuration, seed 42. Each configuration is tuned",
              "twice — once for WMAPE, once for median MAPE — to show whether the",
              "objective changes which model is selected.", "",
@@ -456,6 +469,176 @@ def main():
                                        encoding="utf-8", newline="\n")
     print(f"\nSaved cv_metrics.csv + cv_convergence.csv + cv_params.json + "
           f"cv_summary.md in {OUT}")
+
+
+# --study support: one (category, model, metric) study per process. Exists so
+# --parallel can run several studies concurrently as separate OS processes
+# instead of one Python process working through all 16 sequentially.
+#
+# Each partial file is named uniquely by its (cat, model, metric) triple, so
+# 16 concurrent writers can never collide on the same path -- this is the
+# fix for the failure mode P0053 already hit once: srq1_benchmark_cv.py's
+# --categories flag lets you run a SUBSET, but every invocation overwrites
+# the SAME cv_metrics.csv/cv_params.json, so two categories run "in parallel"
+# by hand would race and the loser's results would vanish silently. Distinct
+# per-study files + an explicit --merge-partials step is what makes 16-way
+# concurrency safe: nothing is ever a shared mutable target until the merge,
+# and the merge reads back exactly 16 files it can count.
+PARTIAL_DIR = Path(OUT) / "partial"
+
+
+def _partial_path(cat, model, metric):
+    return PARTIAL_DIR / f"{cat}__{model}__{metric}.json"
+
+
+def _run_one_study(cat, slug, model, metric, trials, n_folds):
+    d, feats = _load(cat, slug)
+    folds = _folds(d, n_folds)
+    print(f"\n########## {cat}/{model}/{metric} -- {len(folds)} expanding "
+          f"folds, {len(feats)} features, {trials} trials ##########",
+          flush=True)
+    res, best, curve = tune(model, d, feats, trials, metric, folds)
+    pl = _plateau(curve)
+    gt = _gain_tail(curve)
+    row = dict(category=cat, model=model, tuned_for=metric,
+              plateau_trial=pl, gain_in_last_25_pct=gt, **res)
+    curve_rows = [{"category": cat, "model": model, "tuned_for": metric, **c}
+                 for c in curve]
+    print(f"  {model:9s} tuned_for={metric:8s} "
+          f"test WMAPE={res['test_wmape']:5.1f}% "
+          f"medMAPE={res['test_medmape']:5.1f}%  "
+          f"(cv={res['cv_score']:5.1f}, plateau@{pl}, last25={gt}%)",
+          flush=True)
+    return row, best, curve_rows
+
+
+def _merge_partials(cats, trials, n_folds):
+    """Read every partial/{cat}__{model}__{metric}.json and write the same
+    final files the sequential path would have. Fails loudly (not silently)
+    if any expected study is missing -- a partial merge that looks complete
+    is worse than a merge that refuses to run."""
+    expected = [(c, m, met) for c in cats
+               for m in ("LightGBM", "XGBoost") for met in ("wmape", "medmape")]
+    missing = [f"{c}/{m}/{met}" for c, m, met in expected
+              if not _partial_path(c, m, met).is_file()]
+    if missing:
+        raise SystemExit(f"--merge-partials: missing {len(missing)} of "
+                         f"{len(expected)} studies: {missing}")
+
+    rows, params, curves = [], {}, []
+    for cat, model, metric in expected:
+        d = json.loads(_partial_path(cat, model, metric).read_text(encoding="utf-8"))
+        rows.append(d["row"])
+        params[f"{cat}/{model}/{metric}"] = d["best_params"]
+        curves.extend(d["curve"])
+    _write_outputs(rows, params, curves, cats, n_folds, trials)
+
+
+def _parallel_orchestrate(cats, trials, n_folds):
+    """Run all (category, model, metric) studies as subprocesses of THIS
+    script, then merge. XGBoost studies run up to 8-way concurrent -- safe
+    because XGB_N_JOBS=1 is already pinned, so N processes = N cores, no
+    nested oversubscription. LightGBM studies run ONE AT A TIME, exactly the
+    existing sequential behaviour: its n_jobs is unset (library default,
+    multi-threaded per fit), and pinning/measuring that is a separate,
+    not-yet-made decision -- see FOLD_N_JOBS's docstring. Don't parallelize
+    what hasn't been measured."""
+    PARTIAL_DIR.mkdir(parents=True, exist_ok=True)
+    xgb = [(c, "XGBoost", met) for c in cats for met in ("wmape", "medmape")]
+    lgb = [(c, "LightGBM", met) for c in cats for met in ("wmape", "medmape")]
+
+    def _cmd(cat, model, metric):
+        return [sys.executable, str(_here), "--study", f"{cat}/{model}/{metric}",
+               "--trials", str(trials), "--folds", str(n_folds)]
+
+    print(f"--parallel: {len(xgb)} XGBoost studies concurrent, "
+          f"{len(lgb)} LightGBM studies sequential", flush=True)
+    procs = {(c, m, met): subprocess.Popen(_cmd(c, m, met))
+            for c, m, met in xgb}
+    failed = []
+    for key, p in procs.items():
+        if p.wait() != 0:
+            failed.append(key)
+    for c, m, met in lgb:
+        if subprocess.run(_cmd(c, m, met)).returncode != 0:
+            failed.append((c, m, met))
+    if failed:
+        raise SystemExit(f"--parallel: {len(failed)} stud(y/ies) failed: "
+                         f"{failed}")
+    _merge_partials(list(cats), trials, n_folds)
+
+
+def main():
+    global FOLD_N_JOBS
+    ap = argparse.ArgumentParser(description="SRQ1 CV-tuned benchmark")
+    ap.add_argument("--trials", type=int, default=100)
+    ap.add_argument("--folds", type=int, default=4)
+    ap.add_argument("--categories", nargs="+", default=None)
+    ap.add_argument("--study", default=None, metavar="CAT/MODEL/METRIC",
+                    help="run exactly one study, write partial/<...>.json, "
+                         "exit. Used by --parallel; not for direct use.")
+    ap.add_argument("--parallel", action="store_true",
+                    help="run all studies as concurrent subprocesses of this "
+                         "script, then merge (see _parallel_orchestrate).")
+    ap.add_argument("--merge-partials", action="store_true",
+                    help="skip computation; aggregate partial/*.json written "
+                         "by earlier --study runs into the final outputs.")
+    a = ap.parse_args()
+    OUT.mkdir(parents=True, exist_ok=True)
+    cats = {c: CATS[c] for c in (a.categories or CATS)}
+
+    if a.study:
+        cat, model, metric = a.study.split("/")
+        # This process supplies its own core via --parallel's concurrency,
+        # not via threading a single study's folds -- stacking both would
+        # oversubscribe. See FOLD_N_JOBS's docstring for the measured
+        # per-trial-pool-creation cost this avoids.
+        FOLD_N_JOBS = 1
+        slug = CATS[cat]
+        row, best, curve_rows = _run_one_study(cat, slug, model, metric,
+                                               a.trials, a.folds)
+        PARTIAL_DIR.mkdir(parents=True, exist_ok=True)
+        _partial_path(cat, model, metric).write_text(
+            json.dumps({"row": row, "best_params": best, "curve": curve_rows}),
+            encoding="utf-8", newline="\n")
+        return
+
+    if a.merge_partials:
+        _merge_partials(list(cats), a.trials, a.folds)
+        return
+
+    if a.parallel:
+        _parallel_orchestrate(list(cats), a.trials, a.folds)
+        return
+
+    rows, params, curves = [], {}, []
+
+    for cat, slug in cats.items():
+        d, feats = _load(cat, slug)
+        folds = _folds(d, a.folds)
+        print(f"\n########## {cat} -- {len(folds)} expanding folds, "
+              f"{len(feats)} features, {a.trials} trials ##########")
+        for i, (tr, va) in enumerate(folds, 1):
+            print(f"   fold {i}: train={len(tr):5d} rows  val={len(va):4d} rows")
+
+        for model in ("LightGBM", "XGBoost"):
+            for metric in ("wmape", "medmape"):
+                res, best, curve = tune(model, d, feats, a.trials, metric, folds)
+                pl = _plateau(curve)
+                gt = _gain_tail(curve)
+                rows.append(dict(category=cat, model=model, tuned_for=metric,
+                                 plateau_trial=pl, gain_in_last_25_pct=gt, **res))
+                params[f"{cat}/{model}/{metric}"] = best
+                for c in curve:
+                    curves.append({"category": cat, "model": model,
+                                   "tuned_for": metric, **c})
+                print(f"  {model:9s} tuned_for={metric:8s} "
+                      f"test WMAPE={res['test_wmape']:5.1f}% "
+                      f"medMAPE={res['test_medmape']:5.1f}%  "
+                      f"(cv={res['cv_score']:5.1f}, plateau@{pl}, "
+                      f"last25={gt}%)")
+
+    _write_outputs(rows, params, curves, cats, a.folds, a.trials)
 
 
 if __name__ == "__main__":
