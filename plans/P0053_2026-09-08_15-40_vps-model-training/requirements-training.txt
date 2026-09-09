@@ -14,6 +14,12 @@
 #   .venv/bin/pip install -r plans/P0053_2026-09-08_15-40_vps-model-training/requirements-training.txt
 #
 # Scope: the training stack only. Snapshot/docx tooling is not needed to train.
+#
+# tabulate added 2026-09-09: srq1_export_enrichment_appendix.py (enrich_appendix
+# stage) imports it and was missing from the original lock -- it exited 1 on
+# both the VPS and the first UCloud run. Not on train_persist's dependency
+# path, so it never blocked the servable models, but the enrichment appendix
+# table was never produced by either run.
 alembic==1.18.5
 cloudpickle==3.1.2
 cmdstanpy==1.3.0
@@ -43,6 +49,7 @@ scipy==1.17.1
 shap==0.52.0
 six==1.17.0
 slicer==0.0.8
+tabulate==0.10.0
 SQLAlchemy==2.0.51
 statsmodels==0.14.6
 threadpoolctl==3.6.0

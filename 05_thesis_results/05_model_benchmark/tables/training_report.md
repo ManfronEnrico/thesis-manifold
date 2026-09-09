@@ -14,10 +14,10 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 
 | Category | Brands | Train | Val | Test | Train span | Val span | Test span |
 |---|---:|---:|---:|---:|---|---|---|
-| CSD | 95 | 1805 | 665 | 665 | 2023-11 to 2025-05 | 2025-06 to 2025-12 | 2026-01 to 2026-07 |
-| danskvand | 29 | 464 | 174 | 174 | 2024-04 to 2025-07 | 2025-08 to 2026-01 | 2026-02 to 2026-07 |
-| energidrikke | 44 | 748 | 264 | 308 | 2024-02 to 2025-06 | 2025-07 to 2025-12 | 2026-01 to 2026-07 |
-| RTD | 62 | 992 | 372 | 372 | 2024-04 to 2025-07 | 2025-08 to 2026-01 | 2026-02 to 2026-07 |
+| CSD | 95 | 1615 | 665 | 665 | 2024-01 to 2025-05 | 2025-06 to 2025-12 | 2026-01 to 2026-07 |
+| danskvand | _matrix missing_ | | | | | | |
+| energidrikke | _matrix missing_ | | | | | | |
+| RTD | 62 | 868 | 372 | 372 | 2024-06 to 2025-07 | 2025-08 to 2026-01 | 2026-02 to 2026-07 |
 
 **Rows are dropped** where `log_sales_units`, `lag_1` or `lag_13` is null -- a series cannot be modelled before it has 13 months of history, so early months are warm-up, not training data.
 
@@ -26,8 +26,6 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 | Category | train < val | val < test | verdict |
 |---|---|---|---|
 | CSD | True | True | PASS |
-| danskvand | True | True | PASS |
-| energidrikke | True | True | PASS |
 | RTD | True | True | PASS |
 
 ---
@@ -38,19 +36,24 @@ Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). Categories
 
 | Feature | CSD | danskvand | energidrikke | RTD | what it is |
 |---|:-:|:-:|:-:|:-:|---|
-| `lag_1` | yes | yes | yes | yes | sales 1 month back |
-| `lag_2` | yes | yes | yes | yes | sales 2 months back |
-| `lag_3` | yes | yes | yes | yes | sales 3 months back |
-| `lag_4` | yes | yes | yes | yes | sales 4 months back |
-| `lag_8` | yes | yes | yes | yes | sales 8 months back |
-| `lag_13` | yes | yes | yes | yes | same month last year |
-| `rolling_mean_4` | yes | yes | yes | yes | 4-month mean, excluding current |
-| `rolling_std_4` | yes | yes | yes | yes | 4-month volatility |
-| `rolling_mean_13` | yes | yes | yes | yes | 13-month mean (annual level) |
-| `month` | yes | yes | yes | yes | calendar month |
-| `quarter` | yes | yes | yes | yes | calendar quarter |
-| `peak_month` | yes | yes | yes | yes | flag for the category's seasonal peak |
-| `promo_intensity` | yes | - | yes | - | promotion share at t-1 (lagged: contemporaneous would leak) |
+| `lag_1` | yes | - | - | yes | sales 1 month back |
+| `lag_2` | yes | - | - | yes | sales 2 months back |
+| `lag_3` | yes | - | - | yes | sales 3 months back |
+| `lag_4` | yes | - | - | yes | sales 4 months back |
+| `lag_8` | yes | - | - | yes | sales 8 months back |
+| `lag_13` | yes | - | - | yes | same month last year |
+| `rolling_mean_4` | yes | - | - | yes | 4-month mean, excluding current |
+| `rolling_std_4` | yes | - | - | yes | 4-month volatility |
+| `rolling_mean_13` | yes | - | - | yes | 13-month mean (annual level) |
+| `month` | yes | - | - | yes | calendar month |
+| `quarter` | yes | - | - | yes | calendar quarter |
+| `peak_month` | yes | - | - | yes | flag for the category's seasonal peak |
+| `promo_intensity` | yes | - | - | - | promotion share at t-1 (lagged: contemporaneous would leak) |
+| `days_in_month` | yes | - | - | yes |  |
+| `n_holidays` | yes | - | - | yes |  |
+| `non_holiday_days` | yes | - | - | yes |  |
+| `zero_run_flag` | yes | - | - | yes |  |
+| `zero_run_length` | yes | - | - | yes |  |
 
 **Deliberately excluded** from model inputs, though present in the matrix for EDA:
 
@@ -67,14 +70,14 @@ Tuned with Optuna against **validation** WMAPE, then refit on train+val and eval
 
 ### XGBoost (the model Scenario C serves)
 
-| Parameter | CSD | RTD | danskvand | energidrikke |
+| Parameter | CSD | Danskvand | Energidrikke | RTD |
 |---|---|---|---|---|
-| `colsample_bytree` | 0.924966 | 0.771471 | 0.639164 | 0.876099 |
-| `learning_rate` | 0.0888086 | 0.0309348 | 0.0270346 | 0.0349769 |
-| `max_depth` | 7 | 9 | 8 | 10 |
-| `min_child_weight` | 2.91381 | 2.6671 | 1.63659 | 1.12573 |
-| `n_estimators` | 926 | 744 | 1167 | 1146 |
-| `subsample` | 0.899297 | 0.601168 | 0.695805 | 0.839152 |
+| `colsample_bytree` | 0.999557 | 0.900399 | 0.77732 | 0.746545 |
+| `learning_rate` | 0.0493212 | 0.0255649 | 0.0641038 | 0.0220045 |
+| `max_depth` | 9 | 8 | 6 | 7 |
+| `min_child_weight` | 3.68103 | 4.79204 | 1.20116 | 1.97646 |
+| `n_estimators` | 983 | 879 | 440 | 632 |
+| `subsample` | 0.777714 | 0.936215 | 0.861954 | 0.716858 |
 
 _8 tuned configurations in total (LightGBM, XGBoost)._
 
@@ -86,12 +89,12 @@ Reported as **median per-series MAPE** and **WMAPE** (volume-weighted -- the bus
 
 ### WMAPE (lower is better)
 
-| Model | CSD | danskvand | energidrikke | RTD |
-|---|---:|---:|---:|---:|
-| SeasonalNaive | 34.9% | 44.0% | 30.6% | 54.8% |
-| Ridge | 21.9% | 19.2% | 20.8% | 57.3% |
-| LightGBM | 18.5% | 33.1% | 17.8% | 32.2% |
-| XGBoost | 17.1% | 32.6% | 14.9% | 31.8% |
+| Model | CSD | RTD |
+|---|---:|---:|
+| SeasonalNaive | 26.8% | 78.1% |
+| Ridge | 19.1% | 71.5% |
+| LightGBM | 21.4% | 27.7% |
+| XGBoost | 21.4% | 28.7% |
 
 ---
 
@@ -105,10 +108,8 @@ Getting this wrong does not raise an error -- it produces intervals that look im
 
 | Category | Calibration rows | q90 (log space) | Median 90% interval width |
 |---|---:|---:|---|
-| CSD | 665 | 1.209 | ~3.1x the point forecast |
-| danskvand | 174 | 2.233 | ~9.2x the point forecast |
-| energidrikke | 264 | 1.697 | ~5.3x the point forecast |
-| RTD | 372 | 1.112 | ~2.7x the point forecast |
+| CSD | 665 | 2.096 | ~8.0x the point forecast |
+| RTD | 372 | 1.932 | ~6.8x the point forecast |
 
 A wide interval is not a failure of the model -- it is an honest statement about monthly brand-level demand. Reporting a narrow one that is not earned would be.
 
@@ -118,7 +119,7 @@ A wide interval is not a failure of the model -- it is an honest statement about
 
 The exact payload handed back to the LLM for one brand. Every field beyond the number is provenance: SRQ2 defines traceability as a recorded mapping from tool call to forecast to recommendation, so these fields are the claim, not decoration.
 
-_could not call the tool: FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\_dev-ssd\\thesis-manifold\\01_SRQ1_Model_Training\\02_thesis_modelling\\scenario_setup\\srq4_experiment.py'_
+_could not call the tool: FileNotFoundError: [Errno 2] No such file or directory: '/work/Master Thesis/thesis-manifold/01_SRQ1_Model_Training/02_thesis_modelling/scenario_setup/srq4_experiment.py'_
 
 ---
 

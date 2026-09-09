@@ -3,7 +3,7 @@ name: p0053-start-here
 description: STATE - Run the SRQ1 training suite on the VPS. Written to be read FROM the VPS with no prior conversation context.
 pid: P0053
 created: 2026_09_08-15_40
-updated: 2026_09_08-20_15
+updated: 2026_09_09-21_15
 status: in_progress
 ---
 
@@ -12,15 +12,23 @@ status: in_progress
 **You are probably reading this on the VPS, with no conversation history. This file
 is everything you need.** Follow it top to bottom.
 
----
+> **⚠ Read `findings.md` in this folder before anything else.** Training has moved
+> off the VPS onto a CBS UCloud HPC job (still runnable from here per §3-4 below,
+> but the VPS is now the fallback, not the primary path — see findings.md F2). A
+> full 18-feature retrain completed there on 2026-09-09; 14/20 stages succeeded and
+> the servable models are current, but 5 stages are still broken (findings.md F3)
+> and there's a thesis-prose verification checklist waiting (findings.md F4).
 
 ---
 
-## ⚠ 0. READ FIRST — decide the feature set before you run
+---
 
-**Added 2026-09-08. This changes what you should run, so it comes before everything else.**
+## ⚠ 0. READ FIRST — the feature-set decision below is RESOLVED, differently than it recommends
 
-`srq1_benchmark.py::FEATURES` currently holds **13** columns and does **not** include the
+**Added 2026-09-08, resolved 2026-09-09 — kept for its reasoning, but do not follow its
+"only two of three" recommendation. Read the note at the bottom of this section first.**
+
+`srq1_benchmark.py::FEATURES` used to hold **13** columns and did **not** include the
 holiday enrichment (`days_in_month`, `n_holidays`, `non_holiday_days`), even though those
 columns are built, time-safe, and 100% populated in every matrix.
 
@@ -57,6 +65,16 @@ thesis; it answers a question the thesis does not ask.
 
 **Full reasoning:** `plans/P0051_2026-09-08_00-00_eda-diagnostics-provenance/findings-feature-reduction.md`
 (Part 2, R1). Chapter framing: `06_thesis_writing/writing-notes/ch4_data_assessment/why-thirteen-features.md`.
+
+> **2026-09-09 update — what actually happened:** the FEATURES centralization fix
+> (`3f8b0a9`/`67a5474`, see P0049 findings.md F31) shipped Option A but added **all
+> three** holiday columns, not the two this section recommends — the canonical
+> `FEATURES` list is 18 items, including `non_holiday_days`. Whether that reintroduces
+> the exact `VIF = inf` collinearity problem this section warns about is **currently
+> unverified**: `srq1_feature_diagnostics.py` (the script that computes VIF) is one of
+> the 5 scripts broken by this same fix — see `findings.md` F3. Check appendix table
+> 97 against the new 18-feature set once that script is fixed and re-run, before
+> assuming this is fine for the Ridge baseline.
 
 ---
 

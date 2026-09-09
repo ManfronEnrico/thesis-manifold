@@ -185,7 +185,15 @@ def _done(name: str, horizon: int, started: float) -> bool:
 
 def _run(name: str, script: Path, horizon: int, dry: bool,
          started: float | None = None) -> tuple[str, int, float]:
-    env = dict(os.environ, SRQ1_HORIZON=str(horizon))
+    # PYTHONUNBUFFERED: every stage's own stdout is a pipe (this orchestrator
+    # runs `... | tee logfile`), not a TTY, so Python defaults each CHILD
+    # process to full block buffering -- prints sit in a buffer and only
+    # flush at exit, regardless of how many print(..., flush=True) calls a
+    # stage script has. Measured: srq1_benchmark_cv.py already prints one
+    # line per completed study (16 over the run), and none of them reached
+    # the log until the process exited. This env var fixes it for every
+    # stage at once, without touching individual scripts.
+    env = dict(os.environ, SRQ1_HORIZON=str(horizon), PYTHONUNBUFFERED="1")
     label = f"H={horizon} {name}"
     if dry:
         print(f"  [dry] {label:<28} {script.name}")

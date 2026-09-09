@@ -1,7 +1,7 @@
 {
-  "category": "CSD",
-  "model": "XGBoost(tuned)",
-  "model_file": "model.json",
+  "category": "Energidrikke",
+  "model": "LightGBM(tuned)",
+  "model_file": "model.joblib",
   "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
   "features": [
     "lag_1",
@@ -26,22 +26,22 @@
   "n_features": 18,
   "clip_negative_features": false,
   "hyperparameters": {
-    "n_estimators": 870,
-    "learning_rate": 0.02778003607809537,
-    "max_depth": 10,
-    "min_child_weight": 1.5823606774688288,
-    "subsample": 0.8482978098830655,
-    "colsample_bytree": 0.7841531426806553
+    "n_estimators": 1052,
+    "learning_rate": 0.02416984943404565,
+    "num_leaves": 105,
+    "min_child_samples": 5,
+    "subsample": 0.8122302599381822,
+    "colsample_bytree": 0.9583930514115212
   },
   "seed": 42,
   "trained_on": "train+val",
   "trained_through": "2025-12",
-  "n_train_rows": 2280,
+  "n_train_rows": 924,
   "calibrated_on": "val",
   "calibrated_through": "2025-12",
-  "n_calibration_rows": 665,
+  "n_calibration_rows": 264,
   "calibration_note": "90th percentile of |residual| on held-out validation rows",
-  "q90_log": 2.027129843594453,
+  "q90_log": 2.6914957935347394,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "test_from": "2026-01",
   "test_through": "2026-07",
@@ -54,9 +54,9 @@
     "2026-06",
     "2026-07"
   ],
-  "n_test_rows": 665,
-  "brands": 95,
-  "train_seconds": 4.798,
-  "train_peak_ram_mb": 47.45,
-  "trained_at_utc": "2026-09-09T18:48:30+00:00"
+  "n_test_rows": 308,
+  "brands": 44,
+  "train_seconds": 4.961,
+  "train_peak_ram_mb": 43.72,
+  "trained_at_utc": "2026-09-09T18:48:37+00:00"
 }

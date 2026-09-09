@@ -2,33 +2,33 @@
   "CSD": {
     "model_file": "model.json",
     "trained_through": "2025-12",
-    "q90_log": 1.2408536323774033,
+    "q90_log": 2.027129843594453,
     "test_from": "2026-01",
     "test_through": "2026-07",
-    "trained_at_utc": "2026-09-01T18:49:01+00:00"
+    "trained_at_utc": "2026-09-09T18:48:30+00:00"
   },
-  "danskvand": {
+  "Danskvand": {
     "model_file": "model.json",
     "trained_through": "2026-01",
-    "q90_log": 2.273821446726016,
+    "q90_log": 2.0396355073227945,
     "test_from": "2026-02",
     "test_through": "2026-07",
-    "trained_at_utc": "2026-09-01T18:49:04+00:00"
+    "trained_at_utc": "2026-09-09T18:48:32+00:00"
   },
-  "energidrikke": {
-    "model_file": "model.json",
+  "Energidrikke": {
+    "model_file": "model.joblib",
     "trained_through": "2025-12",
-    "q90_log": 1.7361822528523032,
+    "q90_log": 2.6914957935347394,
     "test_from": "2026-01",
     "test_through": "2026-07",
-    "trained_at_utc": "2026-09-01T18:49:06+00:00"
+    "trained_at_utc": "2026-09-09T18:48:37+00:00"
   },
   "RTD": {
     "model_file": "model.joblib",
     "trained_through": "2026-01",
-    "q90_log": 1.230462165286533,
+    "q90_log": 1.8900230184106184,
     "test_from": "2026-02",
     "test_through": "2026-07",
-    "trained_at_utc": "2026-09-01T18:49:10+00:00"
+    "trained_at_utc": "2026-09-09T18:48:38+00:00"
   }
 }

@@ -11,33 +11,33 @@ budget; there is no citable convention for a trial count.
 
 | Category | Model | Tuned for | test WMAPE | test medMAPE | CV score | plateau |
 |---|---|---|---|---|---|---|
-| CSD | LightGBM | wmape | 17.8% | 41.2% | 20.2 | 11 |
-| CSD | LightGBM | medmape | 27.4% | 39.9% | 44.6 | 19 |
-| CSD | XGBoost | wmape | 17.8% | 42.1% | 19.6 | 30 |
-| CSD | XGBoost | medmape | 26.4% | 38.7% | 42.6 | 53 |
-| danskvand | LightGBM | wmape | 30.5% | 42.0% | 28.5 | 69 |
-| danskvand | LightGBM | medmape | 33.9% | 43.6% | 37.9 | 94 |
-| danskvand | XGBoost | wmape | 24.7% | 41.3% | 25.1 | 65 |
-| danskvand | XGBoost | medmape | 26.8% | 45.3% | 37.1 | 6 |
-| energidrikke | LightGBM | wmape | 17.1% | 55.4% | 11.6 | 22 |
-| energidrikke | LightGBM | medmape | 26.4% | 51.6% | 43.4 | 93 |
-| energidrikke | XGBoost | wmape | 15.9% | 52.6% | 12.5 | 10 |
-| energidrikke | XGBoost | medmape | 23.6% | 53.3% | 41.4 | 57 |
-| RTD | LightGBM | wmape | 33.1% | 46.1% | 36.3 | 55 |
-| RTD | LightGBM | medmape | 33.3% | 46.4% | 46.9 | 75 |
-| RTD | XGBoost | wmape | 33.2% | 44.7% | 34.3 | 70 |
-| RTD | XGBoost | medmape | 45.1% | 50.0% | 46.4 | 71 |
+| CSD | LightGBM | wmape | 19.3% | 45.7% | 19.4 | 23 |
+| CSD | LightGBM | medmape | 27.9% | 40.4% | 43.0 | 71 |
+| CSD | XGBoost | wmape | 18.4% | 41.4% | 18.8 | 0 |
+| CSD | XGBoost | medmape | 18.9% | 38.8% | 42.5 | 20 |
+| Danskvand | LightGBM | wmape | 27.3% | 37.5% | 28.7 | 51 |
+| Danskvand | LightGBM | medmape | 35.7% | 42.6% | 37.0 | 71 |
+| Danskvand | XGBoost | wmape | 27.1% | 40.4% | 25.7 | 69 |
+| Danskvand | XGBoost | medmape | 24.2% | 45.4% | 35.0 | 58 |
+| Energidrikke | LightGBM | wmape | 16.2% | 54.8% | 11.5 | 25 |
+| Energidrikke | LightGBM | medmape | 23.8% | 52.3% | 43.5 | 82 |
+| Energidrikke | XGBoost | wmape | 15.5% | 56.0% | 12.2 | 79 |
+| Energidrikke | XGBoost | medmape | 24.7% | 47.7% | 42.4 | 32 |
+| RTD | LightGBM | wmape | 30.3% | 49.8% | 34.2 | 62 |
+| RTD | LightGBM | medmape | 31.1% | 48.9% | 47.8 | 83 |
+| RTD | XGBoost | wmape | 30.2% | 46.2% | 34.5 | 20 |
+| RTD | XGBoost | medmape | 29.4% | 47.2% | 45.6 | 39 |
 
 ## Does the objective change the answer?
 
 | Category | Model | WMAPE when tuned for WMAPE | ... for medMAPE | delta |
 |---|---|---|---|---|
-| CSD | LightGBM | 17.8% | 27.4% | +9.6pp |
-| CSD | XGBoost | 17.8% | 26.4% | +8.6pp |
-| danskvand | LightGBM | 30.5% | 33.9% | +3.4pp |
-| danskvand | XGBoost | 24.7% | 26.8% | +2.1pp |
-| energidrikke | LightGBM | 17.1% | 26.4% | +9.3pp |
-| energidrikke | XGBoost | 15.9% | 23.6% | +7.6pp |
-| RTD | LightGBM | 33.1% | 33.3% | +0.3pp |
-| RTD | XGBoost | 33.2% | 45.1% | +11.9pp |
+| CSD | LightGBM | 19.3% | 27.9% | +8.7pp |
+| CSD | XGBoost | 18.4% | 18.9% | +0.5pp |
+| Danskvand | LightGBM | 27.3% | 35.7% | +8.3pp |
+| Danskvand | XGBoost | 27.1% | 24.2% | -2.9pp |
+| Energidrikke | LightGBM | 16.2% | 23.8% | +7.6pp |
+| Energidrikke | XGBoost | 15.5% | 24.7% | +9.3pp |
+| RTD | LightGBM | 30.3% | 31.1% | +0.8pp |
+| RTD | XGBoost | 30.2% | 29.4% | -0.8pp |
 

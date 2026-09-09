@@ -94,79 +94,79 @@ CSD,ØKOBRUS,1.2,2.159,erratic,24,20,5309.14
 CSD,ØNDLINGS,1.412,3.717,lumpy,24,17,0.0
 CSD,ØRBÆK,1.0,0.044,smooth,24,24,2206.24
 CSD,ØVRIGE BRAND,1.0,0.113,smooth,24,24,2782.45
-danskvand,ACQUA PANNA,1.0,0.862,erratic,20,20,909.33
-danskvand,ACTIVE 02,1.0,0.652,erratic,20,20,972.71
-danskvand,AQUA D'OR,1.0,0.134,smooth,20,20,245686.52
-danskvand,BLUE KELD,1.0,0.042,smooth,20,20,534927.51
-danskvand,CARLSBERG KURVAND,1.0,0.214,smooth,20,20,3846.86
-danskvand,DENICE,1.111,9.093,erratic,20,18,438.41
-danskvand,EGEKILDE,1.0,0.162,smooth,20,20,273989.3
-danskvand,EVIAN,1.0,0.301,smooth,20,20,5046.12
-danskvand,FEVER TREE,1.667,0.393,intermittent,20,12,1.83
-danskvand,FIRST PRICE,1.0,0.129,smooth,20,20,495704.86
-danskvand,FREM,1.0,0.072,smooth,20,20,1549.51
-danskvand,HANCOCK,1.0,0.088,smooth,20,20,13917.57
-danskvand,HARBOE,1.0,0.091,smooth,20,20,2729209.0
-danskvand,KILDEVÆLD,1.0,0.175,smooth,20,20,242630.05
-danskvand,KIRVI,1.0,0.196,smooth,20,20,498.67
-danskvand,LIQUID DEATH,1.0,1.518,erratic,20,20,3.33
-danskvand,NATUR FRISK,1.538,0.383,intermittent,20,13,2.0
-danskvand,NERO,1.429,4.325,lumpy,20,14,0.17
-danskvand,OK PLUS,1.053,3.774,erratic,20,19,1196.67
-danskvand,OTHER BRAND,1.25,1.323,erratic,20,16,0.0
-danskvand,PERRIER,1.0,0.348,smooth,20,20,5237.5
-danskvand,RAMLOESA,1.25,0.088,smooth,20,16,0.0
-danskvand,SALTUM,1.0,0.097,smooth,20,20,442.96
-danskvand,SAN BENEDETTO,1.0,0.598,erratic,20,20,1615.7
-danskvand,SAN PELLEGRINO,1.0,0.067,smooth,20,20,138942.92
-danskvand,SIRMA,2.5,0.163,intermittent,20,8,0.0
-danskvand,THY,1.0,0.542,erratic,20,20,781.83
-danskvand,ULUDAG,1.0,0.25,smooth,20,20,5.83
-danskvand,WATER BOX,1.0,2.363,erratic,20,20,206.33
-energidrikke,4MOVE,1.0,0.924,erratic,21,21,8894.72
-energidrikke,AQUA D'OR,1.0,0.499,erratic,21,21,1442.16
-energidrikke,BANG,7.0,0.715,lumpy,21,3,0.0
-energidrikke,BOBLI VITAMINS,4.2,2.445,lumpy,21,5,0.0
-energidrikke,BODYLAB,1.75,1.135,lumpy,21,12,0.0
-energidrikke,BUTTERFLY,1.0,0.867,erratic,21,21,12965.29
-energidrikke,CLUTCH COGNITION,1.0,0.734,erratic,21,21,409.14
-energidrikke,CLUTCH INNOSODA,1.4,0.796,lumpy,21,15,83.86
-energidrikke,COLLAB,1.0,0.098,smooth,21,21,12742.14
-energidrikke,CULT,1.0,0.098,smooth,21,21,81448.14
-energidrikke,EASIS,1.0,1.336,erratic,21,21,2.57
-energidrikke,ENERVIT,1.909,1.116,lumpy,21,11,42.57
-energidrikke,FAXE KONDI BOOSTER,1.0,0.025,smooth,21,21,2426199.28
-energidrikke,FAXE KONDI PRO,1.0,0.258,smooth,21,21,56250.2
-energidrikke,FIRE ENERGY,1.0,2.598,erratic,21,21,7072.83
-energidrikke,GATORADE,1.0,0.286,smooth,21,21,7554.16
-energidrikke,GLACEAU,10.5,0.0,intermittent,21,2,0.0
-energidrikke,HEAVE,1.0,0.749,erratic,21,21,698.83
-energidrikke,HERO,1.05,1.581,erratic,21,20,0.14
-energidrikke,INZYM,1.909,6.236,lumpy,21,11,0.0
-energidrikke,KICK IN,1.75,0.16,intermittent,21,12,2136.09
-energidrikke,LINUSPRO,1.0,1.516,erratic,21,21,40.43
-energidrikke,LOHILO,1.05,0.504,erratic,21,20,144.29
-energidrikke,MANA ENERGY,1.167,1.793,erratic,21,18,7.71
-energidrikke,MATCHA ENERGY,1.0,2.337,erratic,21,21,0.0
-energidrikke,MONSTER ENERGY,1.0,0.021,smooth,21,21,2842379.96
-energidrikke,MORTAL KOMBAT,1.105,3.695,erratic,21,19,0.0
-energidrikke,MUST ESSENTIALS,1.0,3.223,erratic,21,21,1.86
-energidrikke,NAILED,2.1,0.282,intermittent,21,10,104185.66
-energidrikke,NOCCO,1.0,0.069,smooth,21,21,94399.37
-energidrikke,NUTRAMINO,1.0,0.569,erratic,21,21,391.71
-energidrikke,OTHER BRAND,3.0,1.439,lumpy,21,7,0.0
-energidrikke,POWERADE,1.0,0.08,smooth,21,21,165956.53
-energidrikke,POWERKING,1.0,0.213,smooth,21,21,73477.22
-energidrikke,PRIME,1.0,1.911,erratic,21,21,17.57
-energidrikke,PRO:VOLU,1.0,1.756,erratic,21,21,35.14
-energidrikke,RED BULL,1.0,0.026,smooth,21,21,2649629.5
-energidrikke,ROCKSTAR,1.0,0.868,erratic,21,21,6.43
-energidrikke,RUBICON,1.05,1.031,erratic,21,20,0.14
-energidrikke,SMAG,1.0,0.397,smooth,21,21,8552.86
-energidrikke,STATE,1.0,0.029,smooth,21,21,279049.99
-energidrikke,STATE VITAMIN,1.0,0.177,smooth,21,21,30560.35
-energidrikke,VITAMIN WELL,1.0,0.096,smooth,21,21,267018.66
-energidrikke,X-RAY,1.167,0.087,smooth,21,18,0.0
+Danskvand,ACQUA PANNA,1.0,0.862,erratic,20,20,909.33
+Danskvand,ACTIVE 02,1.0,0.652,erratic,20,20,972.71
+Danskvand,AQUA D'OR,1.0,0.134,smooth,20,20,245686.52
+Danskvand,BLUE KELD,1.0,0.042,smooth,20,20,534927.51
+Danskvand,CARLSBERG KURVAND,1.0,0.214,smooth,20,20,3846.86
+Danskvand,DENICE,1.111,9.093,erratic,20,18,438.41
+Danskvand,EGEKILDE,1.0,0.162,smooth,20,20,273989.3
+Danskvand,EVIAN,1.0,0.301,smooth,20,20,5046.12
+Danskvand,FEVER TREE,1.667,0.393,intermittent,20,12,1.83
+Danskvand,FIRST PRICE,1.0,0.129,smooth,20,20,495704.86
+Danskvand,FREM,1.0,0.072,smooth,20,20,1549.51
+Danskvand,HANCOCK,1.0,0.088,smooth,20,20,13917.57
+Danskvand,HARBOE,1.0,0.091,smooth,20,20,2729209.0
+Danskvand,KILDEVÆLD,1.0,0.175,smooth,20,20,242630.05
+Danskvand,KIRVI,1.0,0.196,smooth,20,20,498.67
+Danskvand,LIQUID DEATH,1.0,1.518,erratic,20,20,3.33
+Danskvand,NATUR FRISK,1.538,0.383,intermittent,20,13,2.0
+Danskvand,NERO,1.429,4.325,lumpy,20,14,0.17
+Danskvand,OK PLUS,1.053,3.774,erratic,20,19,1196.67
+Danskvand,OTHER BRAND,1.25,1.323,erratic,20,16,0.0
+Danskvand,PERRIER,1.0,0.348,smooth,20,20,5237.5
+Danskvand,RAMLOESA,1.25,0.088,smooth,20,16,0.0
+Danskvand,SALTUM,1.0,0.097,smooth,20,20,442.96
+Danskvand,SAN BENEDETTO,1.0,0.598,erratic,20,20,1615.7
+Danskvand,SAN PELLEGRINO,1.0,0.067,smooth,20,20,138942.92
+Danskvand,SIRMA,2.5,0.163,intermittent,20,8,0.0
+Danskvand,THY,1.0,0.542,erratic,20,20,781.83
+Danskvand,ULUDAG,1.0,0.25,smooth,20,20,5.83
+Danskvand,WATER BOX,1.0,2.363,erratic,20,20,206.33
+Energidrikke,4MOVE,1.0,0.924,erratic,21,21,8894.72
+Energidrikke,AQUA D'OR,1.0,0.499,erratic,21,21,1442.16
+Energidrikke,BANG,7.0,0.715,lumpy,21,3,0.0
+Energidrikke,BOBLI VITAMINS,4.2,2.445,lumpy,21,5,0.0
+Energidrikke,BODYLAB,1.75,1.135,lumpy,21,12,0.0
+Energidrikke,BUTTERFLY,1.0,0.867,erratic,21,21,12965.29
+Energidrikke,CLUTCH COGNITION,1.0,0.734,erratic,21,21,409.14
+Energidrikke,CLUTCH INNOSODA,1.4,0.796,lumpy,21,15,83.86
+Energidrikke,COLLAB,1.0,0.098,smooth,21,21,12742.14
+Energidrikke,CULT,1.0,0.098,smooth,21,21,81448.14
+Energidrikke,EASIS,1.0,1.336,erratic,21,21,2.57
+Energidrikke,ENERVIT,1.909,1.116,lumpy,21,11,42.57
+Energidrikke,FAXE KONDI BOOSTER,1.0,0.025,smooth,21,21,2426199.28
+Energidrikke,FAXE KONDI PRO,1.0,0.258,smooth,21,21,56250.2
+Energidrikke,FIRE ENERGY,1.0,2.598,erratic,21,21,7072.83
+Energidrikke,GATORADE,1.0,0.286,smooth,21,21,7554.16
+Energidrikke,GLACEAU,10.5,0.0,intermittent,21,2,0.0
+Energidrikke,HEAVE,1.0,0.749,erratic,21,21,698.83
+Energidrikke,HERO,1.05,1.581,erratic,21,20,0.14
+Energidrikke,INZYM,1.909,6.236,lumpy,21,11,0.0
+Energidrikke,KICK IN,1.75,0.16,intermittent,21,12,2136.09
+Energidrikke,LINUSPRO,1.0,1.516,erratic,21,21,40.43
+Energidrikke,LOHILO,1.05,0.504,erratic,21,20,144.29
+Energidrikke,MANA ENERGY,1.167,1.793,erratic,21,18,7.71
+Energidrikke,MATCHA ENERGY,1.0,2.337,erratic,21,21,0.0
+Energidrikke,MONSTER ENERGY,1.0,0.021,smooth,21,21,2842379.96
+Energidrikke,MORTAL KOMBAT,1.105,3.695,erratic,21,19,0.0
+Energidrikke,MUST ESSENTIALS,1.0,3.223,erratic,21,21,1.86
+Energidrikke,NAILED,2.1,0.282,intermittent,21,10,104185.66
+Energidrikke,NOCCO,1.0,0.069,smooth,21,21,94399.37
+Energidrikke,NUTRAMINO,1.0,0.569,erratic,21,21,391.71
+Energidrikke,OTHER BRAND,3.0,1.439,lumpy,21,7,0.0
+Energidrikke,POWERADE,1.0,0.08,smooth,21,21,165956.53
+Energidrikke,POWERKING,1.0,0.213,smooth,21,21,73477.22
+Energidrikke,PRIME,1.0,1.911,erratic,21,21,17.57
+Energidrikke,PRO:VOLU,1.0,1.756,erratic,21,21,35.14
+Energidrikke,RED BULL,1.0,0.026,smooth,21,21,2649629.5
+Energidrikke,ROCKSTAR,1.0,0.868,erratic,21,21,6.43
+Energidrikke,RUBICON,1.05,1.031,erratic,21,20,0.14
+Energidrikke,SMAG,1.0,0.397,smooth,21,21,8552.86
+Energidrikke,STATE,1.0,0.029,smooth,21,21,279049.99
+Energidrikke,STATE VITAMIN,1.0,0.177,smooth,21,21,30560.35
+Energidrikke,VITAMIN WELL,1.0,0.096,smooth,21,21,267018.66
+Energidrikke,X-RAY,1.167,0.087,smooth,21,18,0.0
 RTD,AERIS,1.25,2.822,erratic,20,16,12.33
 RTD,ANDERSEN WINERY,1.0,0.357,smooth,20,20,12.5
 RTD,ANGIOLETTI,1.0,3.351,erratic,20,20,6.44
