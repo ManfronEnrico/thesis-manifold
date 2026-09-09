@@ -1,0 +1,4 @@
+trials,folds,seconds,peak_rss_mb,wmape,num_leaves,ratio_vs_refit
+0,0,2.93,35.0,0.1257,63,1.0
+30,4,107.85,86.6,0.1527,110,36.7
+100,4,417.3,65.3,0.1677,89,142.2

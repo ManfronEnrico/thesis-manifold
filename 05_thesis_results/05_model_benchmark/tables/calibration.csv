@@ -1,0 +1,9 @@
+category,nominal,empirical_coverage,mean_rel_width,n_test,n_calib,quantile_level
+CSD,80,83.8,3.62,665,665,0.8015
+CSD,90,91.0,7.92,665,665,0.9023
+danskvand,80,70.1,2.65,174,174,0.8046
+danskvand,90,83.9,15.76,174,174,0.908
+energidrikke,80,75.3,12.06,308,264,0.803
+energidrikke,90,83.1,26.65,308,264,0.9053
+RTD,80,76.1,3.37,372,372,0.8038
+RTD,90,88.2,9.2,372,372,0.9032

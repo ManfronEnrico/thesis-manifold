@@ -1,0 +1,4 @@
+Measure,Ridge,LightGBM,XGBoost
+Fit time (s),***0.524***,2.092,1.426
+"Peak fit memory, RSS (MB)",***1.4***,28.2,6.5
+Share of container limit (%),***0.03***,0.68,0.16

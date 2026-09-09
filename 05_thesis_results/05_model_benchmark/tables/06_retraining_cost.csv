@@ -1,0 +1,4 @@
+Operation,Elapsed time (s),Relative to refit,"Peak memory, RSS (MB)",Share of budget (%),Test WMAPE (%)
+Refit on stored hyperparameters,2.93,1x,35.0,0.85,12.57
+"Re-tune, 30 trials x 4 folds",107.85,37x,86.6,2.11,15.27
+"Re-tune, 100 trials x 4 folds",417.30,142x,65.3,1.59,16.77

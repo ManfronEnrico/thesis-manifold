@@ -36,3 +36,29 @@ data-handling decisions". They do not. One-line fix, no dependencies.
 
 - **P0048** owns the Ch4 prose pass — same paragraphs. Check before writing.
 - **P0050** owns the EDA figures/tables these diagnostics produce.
+
+---
+
+## 2026-09-08 — scope widened, and one item is now time-critical
+
+The original P0051 finding (diagnostics computed, never consumed) still holds. Two things
+were added on 2026-09-08 — see **`findings-feature-reduction.md`**:
+
+1. **The 54 → 13 reduction is traced end to end.** Three stages: contemporaneous
+   exclusion (measured, sound), the hardcoded `FEATURES` list (only 1 of 21 exclusions
+   individually tested), and a redundancy reduction that was tested and *rejected* on
+   held-out error. Not gut feeling — but only partly written down.
+
+2. **⚠ The holiday ablation is out of scope and `FEATURES` should be enriched.** The
+   thesis asks whether trained models help an LLM forecast, not whether exogenous
+   variables improve models. Holiday enrichment is adopted as a design choice consistent
+   with M4/M5's exogenous-variable direction (NOT prescribed by them), not proven
+   in-thesis. **This blocks the VPS training run** — see
+   `P0053_.../START_HERE.md` §0.
+
+3. **`05_thesis_results/04_data_assessment/tables/04_feature_matrix.md` states a false
+   number** — "34 are model inputs". Models train on 13. The generator reads the pipeline
+   manifest, which never sees the training-side list.
+
+Chapter framing lives in
+`06_thesis_writing/writing-notes/ch4_data_assessment/why-thirteen-features.md`.

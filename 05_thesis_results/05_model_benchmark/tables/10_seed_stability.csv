@@ -1,0 +1,13 @@
+Measure,Category,LightGBM,XGBoost
+Median coefficient of variation (%),CSD,***11.24***,12.54
+Median coefficient of variation (%),danskvand,***11.94***,17.17
+Median coefficient of variation (%),energidrikke,***13.67***,16.16
+Median coefficient of variation (%),RTD,14.43,***9.57***
+Standard deviation of WMAPE across seeds (pp),CSD,0.65,***0.56***
+Standard deviation of WMAPE across seeds (pp),danskvand,***0.69***,1.22
+Standard deviation of WMAPE across seeds (pp),energidrikke,1.38,***0.38***
+Standard deviation of WMAPE across seeds (pp),RTD,1.94,***1.50***
+Mean WMAPE across seeds (%),CSD,***15.44***,15.55
+Mean WMAPE across seeds (%),danskvand,***20.79***,21.53
+Mean WMAPE across seeds (%),energidrikke,***13.94***,14.36
+Mean WMAPE across seeds (%),RTD,***32.34***,35.50

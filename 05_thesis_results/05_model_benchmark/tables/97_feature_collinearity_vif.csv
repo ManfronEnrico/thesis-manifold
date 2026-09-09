@@ -1,0 +1,17 @@
+Feature,CSD,RTD,danskvand,energidrikke
+days_in_month,inf,inf,inf,inf
+n_holidays,inf,inf,inf,inf
+non_holiday_days,inf,inf,inf,inf
+rolling_mean_4,234.0,227.5,212.1,256.1
+month,105.0,28.7,17.2,44.8
+quarter,100.1,28.5,17.3,49.5
+rolling_std_4,50.9,33.2,48.8,59.2
+lag_1,39.3,40.8,25.0,40.3
+lag_2,36.9,40.5,24.0,35.3
+lag_3,36.2,40.3,20.1,32.6
+rolling_mean_13,31.8,17.5,34.7,16.0
+lag_4,27.3,26.4,15.9,20.6
+lag_8,12.4,8.7,10.6,6.3
+lag_13,7.4,4.4,7.8,3.5
+peak_month,4.9,3.2,1.4,2.9
+promo_intensity,2.0,,,2.1
