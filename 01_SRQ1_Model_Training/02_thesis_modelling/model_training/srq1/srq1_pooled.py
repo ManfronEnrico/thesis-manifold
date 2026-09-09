@@ -168,8 +168,8 @@ SEED = 42
 # in its output table.
 # ---------------------------------------------------------------------------
 XGB_N_JOBS = 1
-CATS = {"CSD": "csd", "danskvand": "danskvand",
-        "energidrikke": "energidrikke", "RTD": "rtd"}
+CATS = {"CSD": "csd", "Danskvand": "danskvand",
+        "Energidrikke": "energidrikke", "RTD": "rtd"}
 
 # The 12-feature intersection: srq1_benchmark_tuned.py::FEATURES minus
 # `promo_intensity` (absent in danskvand and RTD). `weighted_dist` remains

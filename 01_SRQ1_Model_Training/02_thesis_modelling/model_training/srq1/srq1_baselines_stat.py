@@ -113,7 +113,7 @@ class _SRQ1Out:
 
 RES = _SRQ1Out(results_root())
 RES.mkdir(parents=True, exist_ok=True)
-CATS = {"CSD": "csd", "danskvand": "danskvand", "energidrikke": "energidrikke", "RTD": "rtd"}
+CATS = {"CSD": "csd", "Danskvand": "danskvand", "Energidrikke": "energidrikke", "RTD": "rtd"}
 
 # Features for the Ridge arm -- the same 13 the tabular models use, so the
 # Ridge->GBM comparison isolates nonlinearity rather than feature access.
