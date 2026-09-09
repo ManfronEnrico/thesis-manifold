@@ -579,7 +579,7 @@ def table_baselines_wide() -> None:
              [m for m in sorted(set(df.model)) if m not in order]
 
     # Canonical category order, matching the data chapter.
-    cat_order = ["CSD", "danskvand", "energidrikke", "RTD"]
+    cat_order = ["CSD", "Danskvand", "Energidrikke", "RTD"]
     cats = [c for c in cat_order if c in set(df.category)] + \
            [c for c in sorted(set(df.category)) if c not in cat_order]
 
@@ -666,7 +666,7 @@ def table_pipeline_execution() -> None:
     exists.
     """
     manifests = []
-    for cat in ("CSD", "danskvand", "energidrikke", "RTD"):
+    for cat in ("CSD", "Danskvand", "Energidrikke", "RTD"):
         f = get_category_pipeline_step_outputs_dir(cat) / "run_manifest.json"
         if f.is_file():
             try:
@@ -754,7 +754,7 @@ def table_pipeline_data_reduction() -> None:
     # which would hide the calendar-fill stage that explains why the matrix has
     # MORE rows than the panel it came from.
     rows = []
-    for cat in ("CSD", "danskvand", "energidrikke", "RTD"):
+    for cat in ("CSD", "Danskvand", "Energidrikke", "RTD"):
         d = get_category_pipeline_step_outputs_dir(cat)
         for log in sorted(d.glob("step_4_log_h*.json")):
             try:
@@ -823,7 +823,7 @@ def table_stability() -> None:
         return
     d = pd.read_csv(f)
     models = sorted(set(d.model))
-    cat_order = ["CSD", "danskvand", "energidrikke", "RTD"]
+    cat_order = ["CSD", "Danskvand", "Energidrikke", "RTD"]
     cats = [c for c in cat_order if c in set(d.category)] + \
            [c for c in sorted(set(d.category)) if c not in cat_order]
 

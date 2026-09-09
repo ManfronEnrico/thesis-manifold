@@ -247,9 +247,14 @@ def fetch_billed_cost(start_time, end_time=None):
 # its data directory is deleted, so it now reads brand x month like every other
 # category. Tag kept in the tuple shape so a future grain can be reintroduced.
 # Tag value "bymonth" selects the PATHS.py helper, not a literal path segment.
+# The third tuple element is a DIRECTORY NAME and must match the case on disk:
+# Danskvand/ and Energidrikke/ are capitalised. Windows resolves either spelling,
+# so lowercase keys worked here and silently found nothing on Linux -- the same
+# defect fixed across the SRQ1 scripts on 2026-09-09. Two of four categories were
+# dropped with no error.
 CAT_FILE = {"CSD": ("csd", "bymonth", "CSD"),
-            "danskvand": ("danskvand", "bymonth", "danskvand"),
-            "energidrikke": ("energidrikke", "bymonth", "energidrikke"),
+            "Danskvand": ("danskvand", "bymonth", "Danskvand"),
+            "Energidrikke": ("energidrikke", "bymonth", "Energidrikke"),
             "RTD": ("rtd", "bymonth", "RTD")}
 
 
@@ -424,6 +429,31 @@ def _assert_no_leakage(fit, test, category, brand):
             f"scored month is {int(t['period_year'])}-{int(t['period_month']):02d} "
             f"-- a gap of {gap} month(s), but HORIZON={HORIZON}. The forecast "
             f"would be reported at a horizon it was not made at.")
+
+
+# The fields that make a Scenario C payload what SRQ2 claims it is: a forecast
+# PLUS its measured reliability. Without them C is a forecast in a wrapper, and
+# the B->C comparison measures nothing.
+_PAYLOAD_REQUIRED = ("forecast_units", "interval_90", "confidence_tier",
+                     "historical_wmape", "months_ahead")
+
+
+def _payload_complete(out) -> bool:
+    """True if the tool returned everything Scenario C depends on.
+
+    WHY THIS IS CHECKED PER CALL (P0049). `forecast_tool` reads its track record
+    inside a try/except, so a misplaced results directory made it return a valid
+    payload with the `historical_*` fields simply ABSENT (F21). Scenario C then
+    ran without the very evidence that distinguishes it from Scenario B, every
+    run logged `outcome: ok`, and nothing in the results said otherwise.
+
+    The harness already verifies the LLM queried the right series
+    (`args_match_request`). This verifies the answer it got back was complete.
+    Both are cheap; both failures are invisible without them.
+    """
+    if not isinstance(out, dict) or out.get("status") != "ok":
+        return False
+    return all(out.get(k) is not None for k in _PAYLOAD_REQUIRED)
 
 
 def _eval_forecast(category, brand, month=None):
@@ -626,6 +656,11 @@ def run_scenario_c(category, brand, question=None):
                         "args_match_request": (
                             str(args.get("category", "")).upper() == str(category).upper()
                             and str(args.get("brand", "")).upper() == str(brand).upper()),
+                        # Did the payload actually carry the evidence that makes
+                        # this Scenario C? Recorded per call, because the answer
+                        # can differ between calls and an aggregate would hide it.
+                        "payload_complete": _payload_complete(out),
+                        "months_ahead": out.get("months_ahead"),
                         "tool_output": out})
                     # The tool output is authoritative: whatever the LLM then says
                     # in prose, the dedicated model's number is what Scenario C is
@@ -649,7 +684,15 @@ def run_scenario_c(category, brand, question=None):
                    containers=0, hit_limit=hit_limit,
                    trace_extra={"tool": "forecast_demand", "wrote_code": False,
                                 "target_month": target,
-                                "tool_returned_forecast": tool_forecast is not None})
+                                "tool_returned_forecast": tool_forecast is not None,
+                                # Promoted to the trace, not left in the nested
+                                # tool_calls list: a run that served forecasts
+                                # WITHOUT their track record is not a valid
+                                # Scenario C, and that has to be visible in the
+                                # results table rather than found by reading logs
+                                # (F21). False here invalidates the B->C claim.
+                                "payload_complete": bool(tool_calls) and all(
+                                    c.get("payload_complete") for c in tool_calls)})
     # Flatten the per-round details into the same shape the other two scenarios
     # use, so inspect_runs.py and any later analysis can read one structure
     # rather than branching on which scenario wrote the file. `rounds` is kept

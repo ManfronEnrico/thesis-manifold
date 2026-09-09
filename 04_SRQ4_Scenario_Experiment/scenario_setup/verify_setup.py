@@ -206,10 +206,22 @@ def main():
                 "interval_method", "model"}
         out = m._eval_forecast(a.category, a.brand)
         missing = need - set(out)
-        return (not missing), (f"complete: {out['forecast_units']:,.0f} units, "
-                               f"{out['confidence_tier']} confidence, "
-                               f"trained through {out['trained_through']}"
-                               if not missing else f"missing fields: {sorted(missing)}")
+        # PRESENT-BUT-NULL is the failure this catches. `historical_wmape: None`
+        # satisfies a key check while carrying no evidence -- exactly the shape
+        # F21 produced. `_payload_complete` is the SAME predicate the harness
+        # applies per tool call, so pre-flight and run cannot disagree about what
+        # "complete" means.
+        empty = sorted(k for k in need if out.get(k) is None)
+        ok = (not missing) and (not empty) and m._payload_complete(out)
+        if missing or empty:
+            detail = (f"missing: {sorted(missing)}" if missing else "") + \
+                     (f" null: {empty}" if empty else "")
+        else:
+            detail = (f"complete: {out['forecast_units']:,.0f} units, "
+                      f"{out['confidence_tier']} confidence, "
+                      f"historical WMAPE {out.get('historical_wmape')}%, "
+                      f"trained through {out['trained_through']}")
+        return ok, detail
     c.run("forecast tool returns a full payload", tool_payload)
 
     def prompts_module():

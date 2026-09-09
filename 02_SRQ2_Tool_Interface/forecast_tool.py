@@ -77,8 +77,23 @@ MODELS_DIR = THESIS_RESULTS_SRQ1_DIR / "models"
 TABLES_DIR = get_srq_tables_dir(1)
 LOG_FILE = Path(__file__).resolve().parent / "forecast_log.jsonl"
 
-CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
-              "energidrikke": "energidrikke", "RTD": "rtd"}
+# Keys are DIRECTORY NAMES and must match the case on disk (Danskvand/,
+# Energidrikke/). Windows resolves either spelling; Linux does not, so lowercase
+# keys silently found nothing there -- the defect fixed across SRQ1 on
+# 2026-09-09. The category key is passed straight to
+# get_category_engineered_bymonth_dir(), so it is a path component, not a label.
+CATEGORIES = {"CSD": "csd", "Danskvand": "danskvand",
+              "Energidrikke": "energidrikke", "RTD": "rtd"}
+
+# Case-insensitive lookup, so a caller writing "danskvand" gets the canonical
+# key rather than a KeyError or a silently-missing directory. The tool is called
+# by an LLM in Scenario C, and an LLM will not reliably reproduce our casing.
+_CATEGORY_ALIASES = {k.casefold(): k for k in CATEGORIES}
+
+
+def canonical_category(name: str) -> str | None:
+    """The canonical spelling of `name`, or None if it is not a known category."""
+    return _CATEGORY_ALIASES.get(str(name).strip().casefold())
 
 # Loaded models, keyed by category. Populated on first use and reused for the
 # life of the process: loading a booster is cheap, but doing it per call would
@@ -128,6 +143,22 @@ def _metric(value: float) -> float | str:
     if v > _IMPLAUSIBLE_ERROR_PCT:
         return "n/a (model failed on this category)"
     return round(v, 1)
+
+
+def _cat_key(name) -> str:
+    """Case-folded category key for joining artefacts to callers.
+
+    The results tables are written by whatever spelling the producing script
+    used, and that spelling CHANGED on 2026-09-09 when the SRQ1 scripts were
+    fixed to capitalise Danskvand/Energidrikke for Linux. Joining on the raw
+    string means a table written before the fix cannot be matched by a caller
+    using the new spelling -- and the join failure is silent, dropping the
+    historical_* fields exactly as F21 did.
+
+    Same reasoning as _norm_model below: reconcile at the join, do not assume
+    two artefacts agree on how they spell a shared key.
+    """
+    return str(name).strip().casefold()
 
 
 def _norm_model(name: str) -> str:
@@ -182,7 +213,7 @@ def _track_record(category: str, model_name: str) -> dict:
                 # NOTE: tuned_metrics.csv's test_mape (MEAN APE) is unusable -- it
                 # reaches 9.3e10 because APE divides by actuals and the panel
                 # contains genuine zeros. Neither file's mean-APE column is read.
-                _TRACK["tuned"][(str(r["category"]), _norm_model(str(r["model"])))] = {
+                _TRACK["tuned"][(_cat_key(r["category"]), _norm_model(str(r["model"])))] = {
                     "wmape": float(r[wcol]),
                     "median_mape": float(r[mcol]),
                 }
@@ -227,7 +258,7 @@ def _track_record(category: str, model_name: str) -> dict:
                     continue
                 bm = g.loc[g["median_mape"].idxmin()]
                 bw = g.loc[g["wmape"].idxmin()]
-                _TRACK["base"][str(cat)] = {
+                _TRACK["base"][_cat_key(cat)] = {
                     "by_median": {"model": str(bm["model"]),
                                   "wmape": float(bm["wmape"]),
                                   "median_mape": float(bm["median_mape"])},
@@ -239,7 +270,7 @@ def _track_record(category: str, model_name: str) -> dict:
             print(f"  ! track record: stat_baselines.csv unreadable ({str(e)[:80]})")
 
     out = {}
-    t = _TRACK["tuned"].get((category, _norm_model(model_name)))
+    t = _TRACK["tuned"].get((_cat_key(category), _norm_model(model_name)))
     if t:
         # BOTH metrics, always. They answer different questions and they disagree:
         # WMAPE is volume-weighted ("how many total units are wrong"), median MAPE
@@ -249,7 +280,7 @@ def _track_record(category: str, model_name: str) -> dict:
         out["historical_wmape"] = _metric(t["wmape"])
         out["historical_median_mape"] = _metric(t["median_mape"])
 
-    b = _TRACK["base"].get(category)
+    b = _TRACK["base"].get(_cat_key(category))
     if b:
         bm, bw = b["by_median"], b["by_wmape"]
         out["baseline_best_by_median_mape"] = {
@@ -382,9 +413,16 @@ def forecast_demand(category: str, brand: str, month: str | None = None) -> dict
     can assert it got the month it meant rather than trusting the default.
     """
     t0 = time.perf_counter()
-    if category not in CATEGORIES:
+    # Normalise the caller's spelling before anything uses it as a path.
+    # Scenario C's caller is an LLM choosing tool arguments from a prompt; asking
+    # it to reproduce "Energidrikke" exactly is a requirement it will sometimes
+    # miss, and the failure would land as an unknown_category rather than as a
+    # forecast. The canonical spelling is what reaches the filesystem.
+    resolved = canonical_category(category)
+    if resolved is None:
         return {"status": "unknown_category", "category": category,
                 "known": sorted(CATEGORIES)}
+    category = resolved
 
     m, meta = _load(category)
     feats = meta["features"]

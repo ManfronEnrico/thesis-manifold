@@ -491,3 +491,61 @@ Same shape as F24 and F29: **the plumbing existed and nothing connected it.** Th
 columns were engineered, the ablation read them, the contract gated them — and no
 model consumed them. Trace a value to the line that uses it, not to the last place
 it is mentioned.
+
+---
+
+## F32 — Casing sweep: the SRQ4 half was never fixed, and half the sample was gone (2026-09-09)
+
+The HPC fixed `CATS` casing across the SRQ1 scripts (`9745bf3`). The sweep found
+the same defect still live in **three** places it had not reached, all on the
+experiment side:
+
+| File | Was | Effect |
+|---|---|---|
+| `srq4_experiment.py` `CAT_FILE` | lowercase keys | `KeyError` on Danskvand/Energidrikke -- **two of four categories unusable** |
+| `forecast_tool.py` `CATEGORIES` | lowercase keys | the key is passed to `get_category_engineered_bymonth_dir()`, so it is a path component |
+| `export_appendix.py` | 4 lowercase category lists | tables now write `Danskvand`, so the lists matched nothing |
+
+**Scorable brands went from 120 to 168** once all four categories resolved --
+the funded-run sample was missing 40 % of its population.
+
+### The join was fragile too, and that is the durable part
+
+Fixing the spelling alone would have traded one silent failure for another: the
+results tables on disk were written *before* the casing fix, so they carry
+`danskvand` while the caller now says `Danskvand`. The track-record lookup joins
+on the raw string, so `historical_wmape` came back `None` for Danskvand -- a
+degraded payload, the F21 shape again, from a fix rather than a bug.
+
+`_cat_key()` now case-folds both sides of the join, and `canonical_category()`
+normalises caller input at the entry point. The second matters beyond casing:
+**Scenario C's caller is an LLM choosing tool arguments from a prompt**, and
+requiring it to reproduce "Energidrikke" exactly is a requirement it will
+sometimes miss -- landing as `unknown_category` instead of a forecast.
+
+### The harness logged the payload but never checked it
+
+`run_scenario_c` recorded `tool_output` and carefully verified the LLM had queried
+the right series (`args_match_request`) -- but never checked the answer was
+complete. Scenario C could have run all 10 repeats serving forecasts with **no
+`historical_*` fields** (the very evidence that distinguishes C from B), with
+every run logged `outcome: ok`.
+
+Added `_payload_complete()`, applied per tool call and promoted to the run trace,
+so a degraded run is visible in the results table rather than found by reading
+logs. `verify_setup.py` now uses the **same predicate**, so pre-flight and run
+cannot disagree about what "complete" means -- and it now rejects
+present-but-null fields, which the old key-existence check would have passed.
+
+### Verified
+
+All four categories, real brands, scored month: `status=ok`, `months_ahead=3`,
+track record present, `_payload_complete=True`. `verify_setup.py` 10/10.
+
+### The pattern, stated once
+
+Four findings now share one shape (F21, F25, F31, F32): **an identifier mismatch
+between two artefacts that never raises.** A missing directory, a misplaced file,
+an absent column, a differently-spelled key -- each returns *less* rather than
+failing. The defence is the same every time: normalise at the join, and assert
+the result is complete rather than merely present.
