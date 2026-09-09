@@ -4,8 +4,8 @@ description: NOTE - Running list of thesis claims that must be re-verified or up
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 8, results]
 created: 2026_09_09-21_00
-updated: 2026_09_09-21_00
-status: open
+updated: 2026_09_09-22_05
+status: partly-verified
 ---
 
 # Post-HPC validation list
@@ -20,6 +20,82 @@ when the run lands.
 
 **Why this exists separately from the deferred list:** those items need a
 *decision*, these need a *measurement*. Different work, different moment.
+
+---
+
+# The run landed — 2026-09-09, commit `0e95850`
+
+**"results: SRQ1 suite at H=3, run on UCloud HPC (18-feature codebase)".**
+Checked at end of day, in the gate order this file specifies.
+
+## Both gates pass
+
+**H8, four categories — PASS.** `summary.md` reports CSD, Danskvand,
+Energidrikke and RTD, with test-set row counts 665 / 174 / 308 / 372 and series
+counts 95 / 29 / 44 / 62. All four are present, and the counts match H9 exactly,
+so the casing bug did not silently drop a category.
+
+**H10, determinism — PASS by construction.** The commit title names the
+18-feature codebase, which is the `_features.py` state that also carries
+`XGB_N_JOBS = 1`. Confirm in the run config when working through the rest.
+
+## H1, H2, H3 — the matrices are right, the report is not
+
+Resolved against the current matrices, all four categories:
+
+| Category | Matrix columns | Resolved | Absent |
+|---|---:|---:|---|
+| CSD | 54 | **18** | — |
+| Energidrikke | 54 | **18** | — |
+| Danskvand | 36 | **17** | `promo_intensity` |
+| RTD | 52 | **17** | `promo_intensity` |
+
+**This confirms the chapter's count.** F1a of the Chapter 4 follow-up is correct
+as written: eighteen for carbonated soft drinks and energy drinks, seventeen for
+water and ready-to-drink.
+
+⚠ **But `training_report.md` disagrees with the matrices.** Its per-category
+feature table marks `n_holidays`, `non_holiday_days`, `zero_run_flag` and
+`zero_run_length` as present for **CSD and RTD only**, with dashes against
+danskvand and energidrikke. The parquet files say otherwise: energidrikke has all
+four, and danskvand has all four too.
+
+The report is generated from the matrices at run time, so one of two things is
+true — either the report was generated against older matrices, or its
+column-presence check has a bug. **Neither changes the thesis count**, which is
+measured from the matrices directly, but the report is an appendix candidate and
+would contradict Chapter 4 if published as-is.
+
+**Also note the `what it is` column is empty** for all four rows, which suggests
+the same table is only half-populated rather than deliberately reporting absence.
+
+## H3 answered — the intermittency columns are informative
+
+The concern was that `zero_run_flag` might be constant zero, since the pipeline's
+zero-type table reports "no zeros" for every category. It is not:
+
+| Category | Rows with a non-zero run flag |
+|---|---|
+| CSD | 548 of 4,370 (12.5%) |
+| RTD | 340 of 2,542 (13.4%) |
+
+Roughly one row in eight sits inside a zero-sales run. **The chapter's sentence
+about intermittency is substantive, not decorative**, and the optional §4.1.3
+paragraph is worth adding.
+
+The apparent contradiction with "no zeros" resolves cleanly: that table counts
+brands whose *series* contains a zero at the aggregation stage, while
+`zero_run_flag` is computed on the regular monthly grid after the calendar
+cross-product, where an unobserved month becomes an explicit zero.
+
+## Still open
+
+**H5 and H6**, the redundancy reduction. The 26.4 → 28.8 figures were measured on
+a 16-feature set and the set is now 18. Re-run before those numbers are trusted;
+F3d of the Chapter 4 follow-up already avoids naming the reduced-set size.
+
+**H4**, the promotional lag, and **H7**, the Chapter 5 accuracy figures, which are
+now available and are the input to the Chapter 5 pass.
 
 ---
 
