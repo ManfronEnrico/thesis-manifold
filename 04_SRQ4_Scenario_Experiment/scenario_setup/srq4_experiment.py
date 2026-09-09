@@ -527,6 +527,17 @@ def _trace(scenario, extra=None):
     configuration that produced it."""
     t = {"scenario": scenario, "model": MODEL, "temperature": TEMPERATURE,
          "decoding": DECODING_NOTE, "reasoning_effort": REASONING_EFFORT,
+         # The PROMPT REGISTRY entry (Dong et al., 2024 name execution traces,
+         # tool-call spans and prompt registries as the artefacts an agent needs
+         # to be auditable; ch2 §2.5). schema_id() hashes every prompt string
+         # sent to the model -- the question, all three capability notes, the
+         # exemplar, the sentinel and the tool schema -- while excluding the
+         # per-run substitutions logged separately.
+         #
+         # Without it a results table cannot be tied to the prompt version that
+         # produced it, so two runs whose prompts differ are indistinguishable
+         # after the fact. It existed in prompts.py and was never recorded.
+         "prompt_schema_id": P.schema_id(),
          "run_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
     if extra:
         t.update(extra)

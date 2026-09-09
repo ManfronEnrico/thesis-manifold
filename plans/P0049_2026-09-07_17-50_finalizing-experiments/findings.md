@@ -549,3 +549,76 @@ between two artefacts that never raises.** A missing directory, a misplaced file
 an absent column, a differently-spelled key -- each returns *less* rather than
 failing. The defence is the same every time: normalise at the join, and assert
 the result is complete rather than merely present.
+
+---
+
+## F33 — Traceability checked against ch2 §2.5; the prompt registry was missing (2026-09-09)
+
+Read the literature review from snapshot `2026-09-09_16-05_prose-pass` to derive
+what the experiment must record, rather than deciding it ourselves. §2.5 names
+Dong et al. (2024) "AgentOps", whose taxonomy specifies the artefacts an agent
+needs to be auditable:
+
+> execution traces, tool-call spans, prompt and guardrail registries
+
+Checked the harness against that list:
+
+| Artefact | State |
+|---|---|
+| Execution traces | `_cache_response()` writes the full raw response per run |
+| Tool-call spans | `tool_calls[]` records args, match-check, and now payload completeness |
+| Guardrail registry | `_classify()` failure classes + the `--budget` cap |
+| **Prompt registry** | **MISSING from the record** |
+
+`prompts.schema_id()` already existed -- a SHA-256 over every prompt string sent
+(question, three capability notes, exemplar, sentinel, tool schema), excluding
+per-run substitutions. **The harness never called it.** So a results table could
+not be tied to the prompt version that produced it, and two runs whose prompts
+differed were indistinguishable afterwards. Now in `_trace()` as
+`prompt_schema_id` (currently `v3-recommendation-oneshot+ff9b62a101f0`).
+
+Same shape as every other finding here: the mechanism existed and nothing
+connected it.
+
+**Also load-bearing from §2.5, and now asserted by the smoke test:** the thesis
+adopts split conformal prediction (Lei et al., 2018), whose guarantee is
+*marginal* and whose exchangeability assumption temporal data violates (Barber et
+al., 2023) -- which is why ch6 measures coverage empirically. That measurement is
+only meaningful if the interval is well-formed, so the smoke test checks
+`lo < forecast < hi` rather than merely that a field is present.
+
+§2.3 sharpens why the interval alone is not the deliverable: Goodwin et al. (2010)
+found that supplying intervals **degraded** decision quality against point
+forecasts (correct cost-regime discrimination fell 84% -> 44%), while
+Pathirannehelage et al. (2025) find communicated uncertainty is a precondition of
+trust. The resolution the thesis adopts is that the interpretive step is the
+contribution -- which is exactly what Scenario C's payload carries and B's does
+not. That is the argument `_payload_complete()` protects.
+
+---
+
+## F34 — The smoke test, and what it is not (2026-09-09)
+
+`scenario_setup/smoke_test.py`: one run per scenario, ~$1, before the ~$40 set.
+
+`verify_setup.py` never sends a request, so it cannot see anything that appears
+only when a scenario runs. The smoke test runs `--repeats 1` under a `--budget`
+cap into a `smoke/` subfolder (never the results directory) and asserts nine
+things, each traceable to a requirement rather than chosen for coverage:
+
+- every scenario `outcome == ok`; one target month across all arms
+- Scenario C at `months_ahead == HORIZON` with a complete payload
+- the 90% interval ordered and containing the point forecast
+- `prompt_schema_id`, a cached raw response per run, a tool-call span for C
+- cost within 10x of the measured per-run estimates
+
+**What it does NOT cover: scenarios D and E.** `SCENARIOS` holds A, B and C
+only -- the Prometheus arms are **not implemented in the harness at all**, and
+the E2B template they need is not built. This is stated in the module docstring
+so nobody reads a passing smoke test as clearance for the full five-scenario
+ladder.
+
+That gap is larger than it looks. D->E is the second half of the thesis's central
+comparison: B->C and D->E are **the same intervention on two different
+orchestrators**, and agreement between them is a materially stronger claim than
+either alone (INHERITED_CONTEXT §1). Only one half exists today.
