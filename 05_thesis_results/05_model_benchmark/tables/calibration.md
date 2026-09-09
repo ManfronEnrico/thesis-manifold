@@ -6,14 +6,14 @@ Half-width calibrated on validation residuals (log space); empirical coverage me
 
 | Category | Nominal | Empirical coverage | Median rel. width | n_test |
 |---|---|---|---|---|
-| CSD | 80% | 84.4% | 3.85 | 665 |
-| CSD | 90% | 92.0% | 8.27  **<- too wide to act on** | 665 |
-| danskvand | 80% | 74.1% | 3.27 | 174 |
-| danskvand | 90% | 83.9% | 14.01  **<- too wide to act on** | 174 |
-| energidrikke | 80% | 79.5% | 11.67  **<- too wide to act on** | 308 |
-| energidrikke | 90% | 87.7% | 32.47  **<- too wide to act on** | 308 |
-| RTD | 80% | 80.4% | 3.7 | 372 |
-| RTD | 90% | 89.0% | 8.48  **<- too wide to act on** | 372 |
+| CSD | 80% | 82.3% | 3.83 | 665 |
+| CSD | 90% | 91.0% | 8.62  **<- too wide to act on** | 665 |
+| Danskvand | 80% | 72.4% | 2.93 | 174 |
+| Danskvand | 90% | 83.9% | 11.89  **<- too wide to act on** | 174 |
+| Energidrikke | 80% | 78.9% | 12.39  **<- too wide to act on** | 308 |
+| Energidrikke | 90% | 86.0% | 33.64  **<- too wide to act on** | 308 |
+| RTD | 80% | 80.6% | 3.79 | 372 |
+| RTD | 90% | 90.9% | 8.62  **<- too wide to act on** | 372 |
 
 Coverage near nominal indicates the conformal interval is a usable confidence signal for the agentic layer (SRQ2); systematic over/under-coverage flags residual heteroskedasticity (interval width is global, not per-series).
 

@@ -11,14 +11,14 @@ by ~5% of its own level on seed alone.
 
 | Category | Model | median CV | p90 CV | WMAPE mean | WMAPE sd | WMAPE range |
 |---|---|---|---|---|---|---|
-| CSD | LightGBM | 0.112 | 0.295 | 15.4% | 0.65 | 14.9–16.5% |
-| CSD | XGBoost | 0.125 | 0.368 | 15.6% | 0.56 | 14.8–16.3% |
-| danskvand | LightGBM | 0.119 | 0.687 | 20.8% | 0.69 | 19.7–21.5% |
-| danskvand | XGBoost | 0.172 | 0.822 | 21.5% | 1.22 | 20.0–23.3% |
-| energidrikke | LightGBM | 0.137 | 0.615 | 13.9% | 1.38 | 12.0–15.7% |
-| energidrikke | XGBoost | 0.162 | 0.689 | 14.4% | 0.38 | 13.8–14.8% |
-| RTD | LightGBM | 0.144 | 0.540 | 32.3% | 1.94 | 29.8–35.2% |
-| RTD | XGBoost | 0.096 | 0.450 | 35.5% | 1.50 | 34.3–37.8% |
+| CSD | LightGBM | 0.182 | 0.488 | 18.9% | 0.67 | 18.3–20.0% |
+| CSD | XGBoost | 0.152 | 0.517 | 18.6% | 0.83 | 17.8–19.5% |
+| Danskvand | LightGBM | 0.138 | 0.522 | 27.0% | 2.81 | 24.6–31.9% |
+| Danskvand | XGBoost | 0.174 | 0.611 | 25.8% | 1.04 | 24.7–27.0% |
+| Energidrikke | LightGBM | 0.239 | 0.707 | 16.2% | 0.59 | 15.5–16.9% |
+| Energidrikke | XGBoost | 0.243 | 0.773 | 17.0% | 1.08 | 15.5–18.0% |
+| RTD | LightGBM | 0.099 | 0.236 | 30.5% | 0.30 | 30.2–30.9% |
+| RTD | XGBoost | 0.114 | 0.522 | 30.1% | 1.04 | 29.1–31.6% |
 
 ## Does the selected model change with the seed?
 
@@ -28,10 +28,10 @@ not a finding.
 
 | Category | winner per seed | verdict |
 |---|---|---|
-| CSD | XGBoost, XGBoost, LightGBM, LightGBM, LightGBM | **FLIPS** |
-| danskvand | LightGBM, LightGBM, LightGBM, XGBoost, LightGBM | **FLIPS** |
-| energidrikke | LightGBM, XGBoost, XGBoost, LightGBM, LightGBM | **FLIPS** |
-| RTD | XGBoost, LightGBM, LightGBM, LightGBM, LightGBM | **FLIPS** |
+| CSD | XGBoost, XGBoost, XGBoost, LightGBM, LightGBM | **FLIPS** |
+| Danskvand | LightGBM, LightGBM, XGBoost, XGBoost, XGBoost | **FLIPS** |
+| Energidrikke | XGBoost, LightGBM, LightGBM, LightGBM, XGBoost | **FLIPS** |
+| RTD | XGBoost, LightGBM, XGBoost, XGBoost, XGBoost | **FLIPS** |
 
 **4 of 4 categories change their winning model on the seed
 alone.** Every input is identical; only the random seed differs.

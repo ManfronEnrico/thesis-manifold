@@ -16,19 +16,19 @@ categories and `OTHER BRAND` is a per-category residual bucket.
 
 | Category | pooled WMAPE | per-category WMAPE | delta (pp) | pooled medMAPE | per-cat medMAPE | n test |
 |---|---|---|---|---|---|---|
-| CSD | 17.5% | 16.3% | +1.2 | 40.3% | 37.0% | 665 |
-| danskvand | 21.4% | 23.7% | -2.2 | 37.3% | 47.4% | 174 |
-| energidrikke | 12.1% | 13.7% | -1.6 | 50.3% | 57.8% | 308 |
-| RTD | 35.8% | 35.1% | +0.7 | 55.0% | 43.4% | 372 |
+| CSD | 19.3% | 18.7% | +0.6 | 48.2% | 51.5% | 665 |
+| Danskvand | 21.0% | 26.7% | -5.7 | 45.6% | 57.6% | 174 |
+| Energidrikke | 15.5% | 21.1% | -5.6 | 87.0% | 80.4% | 308 |
+| RTD | 31.3% | 31.9% | -0.6 | 65.1% | 46.9% | 372 |
 
 ## XGBoost
 
 | Category | pooled WMAPE | per-category WMAPE | delta (pp) | pooled medMAPE | per-cat medMAPE | n test |
 |---|---|---|---|---|---|---|
-| CSD | 19.1% | 15.3% | +3.8 | 37.6% | 35.5% | 665 |
-| danskvand | 19.7% | 20.9% | -1.2 | 30.0% | 50.8% | 174 |
-| energidrikke | 12.7% | 15.5% | -2.8 | 50.1% | 41.0% | 308 |
-| RTD | 37.3% | 36.0% | +1.3 | 40.5% | 35.0% | 372 |
+| CSD | 21.7% | 19.1% | +2.6 | 51.3% | 48.9% | 665 |
+| Danskvand | 18.9% | 23.4% | -4.5 | 45.8% | 56.9% | 174 |
+| Energidrikke | 16.8% | 16.8% | +0.1 | 79.9% | 81.3% | 308 |
+| RTD | 40.5% | 30.8% | +9.8 | 62.5% | 51.9% | 372 |
 
 Positive delta = the per-category model is more accurate on that
 category (pooled WMAPE is higher). Negative = pooling wins.

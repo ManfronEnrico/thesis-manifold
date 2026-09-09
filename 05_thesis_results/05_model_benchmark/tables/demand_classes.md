@@ -21,9 +21,9 @@ categorise and then reporting test accuracy per class would leak.
 | Category | smooth | erratic | intermittent | lumpy | total |
 |---|---|---|---|---|---|
 | CSD | 46 | 29 | 6 | 14 | 95 |
+| Danskvand | 16 | 9 | 3 | 1 | 29 |
+| Energidrikke | 15 | 19 | 3 | 7 | 44 |
 | RTD | 27 | 21 | 7 | 7 | 62 |
-| danskvand | 16 | 9 | 3 | 1 | 29 |
-| energidrikke | 15 | 19 | 3 | 7 | 44 |
 | **all** | **104** | **78** | **19** | **29** | **230** |
 
 ## Why this replaces the 1 unit/month volume floor
