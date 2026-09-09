@@ -1,5 +1,5 @@
 {
-  "category": "danskvand",
+  "category": "Danskvand",
   "model": "XGBoost(tuned)",
   "model_file": "model.json",
   "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
@@ -15,27 +15,32 @@
     "rolling_mean_13",
     "month",
     "quarter",
-    "peak_month"
+    "peak_month",
+    "days_in_month",
+    "n_holidays",
+    "non_holiday_days",
+    "zero_run_flag",
+    "zero_run_length"
   ],
-  "n_features": 12,
+  "n_features": 17,
   "clip_negative_features": false,
   "hyperparameters": {
-    "n_estimators": 922,
-    "learning_rate": 0.056054798588722685,
-    "max_depth": 4,
-    "min_child_weight": 1.6343651492491322,
-    "subsample": 0.9441633002161459,
-    "colsample_bytree": 0.9088400896157095
+    "n_estimators": 1130,
+    "learning_rate": 0.04110514148471814,
+    "max_depth": 10,
+    "min_child_weight": 2.319876487612775,
+    "subsample": 0.7581174895531311,
+    "colsample_bytree": 0.6360599302533062
   },
   "seed": 42,
   "trained_on": "train+val",
   "trained_through": "2026-01",
-  "n_train_rows": 638,
+  "n_train_rows": 580,
   "calibrated_on": "val",
   "calibrated_through": "2026-01",
   "n_calibration_rows": 174,
   "calibration_note": "90th percentile of |residual| on held-out validation rows",
-  "q90_log": 2.273821446726016,
+  "q90_log": 2.0396355073227945,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "test_from": "2026-02",
   "test_through": "2026-07",
@@ -49,7 +54,7 @@
   ],
   "n_test_rows": 174,
   "brands": 29,
-  "train_seconds": 2.622,
-  "train_peak_ram_mb": 0.61,
-  "trained_at_utc": "2026-09-01T18:49:04+00:00"
+  "train_seconds": 1.823,
+  "train_peak_ram_mb": 0.24,
+  "trained_at_utc": "2026-09-09T18:48:32+00:00"
 }

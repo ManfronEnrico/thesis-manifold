@@ -152,8 +152,19 @@ def main() -> int:
     ap.add_argument("--no-shap", action="store_true", help="Skip the SHAP pass")
     args = ap.parse_args()
 
-    without = list(FEATURES)
-    with_hol = list(FEATURES) + HOLIDAY_FEATURES
+    # The ablation arms are derived by SUBTRACTION, not addition.
+    #
+    # FEATURES used to be 13 and excluded the holiday columns, so "with" was
+    # built as FEATURES + HOLIDAY_FEATURES. Since the centralization fix
+    # (P0049 F31) the canonical set is 18 and ALREADY CONTAINS them, so that
+    # addition duplicated three columns and LightGBM rejected the run outright:
+    # `Feature (days_in_month) appears more than one time.` (P0053 F3).
+    #
+    # Deriving both arms from the one canonical list keeps them in step with it:
+    # a feature added to _features.py lands in the "with" arm automatically, and
+    # the "without" arm stays exactly the complement.
+    with_hol = list(FEATURES)
+    without = [c for c in FEATURES if c not in set(HOLIDAY_FEATURES)]
 
     metric_rows, shap_rows = [], []
 

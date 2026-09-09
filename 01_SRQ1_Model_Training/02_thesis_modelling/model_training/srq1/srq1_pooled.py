@@ -194,7 +194,7 @@ CATS = {"CSD": "csd", "Danskvand": "danskvand",
 # RE-TRAINED on it rather than read from tuned_metrics.csv, or the pooled model
 # would be handicapped by missing features and the comparison would confound
 # "pooling" with "a smaller feature set".
-FEATURES: list[str] = []          # filled by _pooled_features() in main()
+FEATURES: list[str] = []          # resolved at import; see below
 
 
 def _pooled_features(cats) -> list[str]:
@@ -204,6 +204,21 @@ def _pooled_features(cats) -> list[str]:
         cols = set(pd.read_parquet(matrix_path(cat, slug)).columns)
         common = cols if common is None else (common & cols)
     return _resolve_feats(common or set())
+
+
+# Resolved AT IMPORT, not inside main(). srq1_ridge_pooled.py and
+# srq1_pooled_perbrand.py do `from srq1_pooled import FEATURES`, so a list filled
+# only when main() runs hands importers an EMPTY list -- which is what broke both
+# on the HPC's 18-feature retrain (`Found array with 0 feature(s)`, and LightGBM
+# reporting a maximum feature index of -1). P0053 F3.
+#
+# Wrapped because import must not fail when a matrix is absent: a caller that only
+# wants CATS or _load should still be able to import this module.
+try:
+    FEATURES = _pooled_features(CATS)
+except Exception:                       # matrices missing or unreadable
+    FEATURES = []
+
 
 SPLITS = ("train", "val", "test")
 
@@ -304,8 +319,6 @@ def main():
     # the console output because a pooled run silently using fewer features than
     # the per-category benchmark is exactly the confound this script exists to
     # avoid.
-    global FEATURES
-    FEATURES = _pooled_features(CATS)
     print(f"  pooled features: {len(FEATURES)} common to all "
           f"{len(CATS)} categories")
     dropped = [c for c in _FEATURES if c not in FEATURES]

@@ -80,8 +80,16 @@ TUNED_GRAIN = next(iter(TUNED.DATASETS))
 
 
 def _arm_features(fm: pd.DataFrame, with_holiday: bool) -> list[str]:
-    """Discovered from the matrix, never asserted (DEC-DISCOVER-COLUMNS)."""
-    wanted = list(FEATURES) + (HOLIDAY_FEATURES if with_holiday else [])
+    """Discovered from the matrix, never asserted (DEC-DISCOVER-COLUMNS).
+
+    The arms are derived by SUBTRACTION. FEATURES used to be 13 and excluded the
+    holiday columns, so "with" was FEATURES + HOLIDAY_FEATURES. Since the
+    centralization fix (P0049 F31) the canonical set is 18 and already contains
+    them, so that addition duplicated three columns and LightGBM rejected the run:
+    `Feature (days_in_month) appears more than one time.` (P0053 F3).
+    """
+    wanted = (list(FEATURES) if with_holiday
+              else [c for c in FEATURES if c not in set(HOLIDAY_FEATURES)])
     return [c for c in wanted if c in fm.columns]
 
 

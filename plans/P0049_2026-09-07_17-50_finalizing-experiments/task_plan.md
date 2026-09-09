@@ -1,9 +1,9 @@
 ---
 pid: P0049
 created: 2026-09-07 17:50:00
-updated: 2026-09-07 20:45:00
+updated: 2026-09-09 21:30:00
 status: in_progress
-focus_detail: "PHASE 1 DONE, PHASE 2 PART-RUN. The horizon fix is implemented, verified and committed -- it was THREE defects (features, SRQ4 scoring, tool serving), and fixing only the first would have left the experiment measuring one month ahead. Both horizons are now runnable: srq1/_horizon.py resolves SRQ1_HORIZON (default 3) into BOTH the input matrix and the output dir, so H=1 cannot overwrite H=3. RESUME TOMORROW with: python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/run_both_horizons.py --resume  -- done so far: benchmark (both horizons), benchmark_cv + benchmark_tuned (H=3 only). Remaining: 4 stages at H=3, 7 at H=1. VPS and committing the parquets were both considered and REJECTED (F27): the suite uses 282MB, the kills were two concurrent runs, and the matrices stay gitignored under the Nielsen confidentiality agreement. Also found: F25, train_and_persist.py read model-selection inputs from the wrong directory and silently defaulted to XGBoost for all four categories. See findings.md F23-F27 and progress.md."
+focus_detail: "TRAINING IS ON THE HPC (see P0053); this plan now covers the experiment side only. Four fixes landed 2026-09-09, all pushed: F31 the feature set was 13 and should be 18 -- holiday enrichment reached NO model and FEATURES had 11 drifting copies, now srq1/_features.py; F32 casing swept on the SRQ4 side, which had been raising KeyError on two of four categories (scorable brands 120 -> 168, so the funded sample was missing 40%); F33 the prompt registry was never recorded despite prompts.schema_id() existing, now in every trace; F34 smoke_test.py, ~$0.81, nine checks derived from ch2 2.5 rather than chosen. NEXT, in order: (1) DEC-VENDOR, pure writing and blocks the funded runs; (2) scenarios D/E -- NOT IMPLEMENTED AT ALL, SCENARIOS holds A/B/C only and the E2B template is unbuilt, so half the thesis argument (D->E mirroring B->C) does not exist yet; (3) run the smoke test when HPC results land, then the funded set. verify_setup.py 10/10."
 ---
 
 # P0049 — Finalizing experiments
@@ -83,21 +83,14 @@ not a bag of scripts.
 categories — the plan's own test that the fix took effect. RTD moves the other way;
 F26 records why that is real rather than survivorship, and what still needs confirming.
 
-**Where the run stopped (2026-09-07 20:45)** — resume with `--resume`, which skips
-only what this run already produced:
+**Training moved to the HPC on 2026-09-08** after three OS memory kills on the laptop
+(F27: the suite needs ~282 MB; the machine had ~1.2 GB free with Word, VS Code and two
+Claude sessions resident). The run procedure is **P0053**, written to be read from the
+HPC with no conversation history.
 
-| Stage | H=3 | H=1 |
-|---|---|---|
-| benchmark | ✅ 18:51 | ✅ 18:25 |
-| benchmark_cv | ✅ 19:47 (56 min) | ⬜ |
-| benchmark_tuned | ✅ 19:51 (3 min) | ⬜ |
-| baselines_stat · calibration · train_persist · figures | ⬜ | ⬜ |
-
-```bash
-python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/run_both_horizons.py --resume
-```
-
-CV and tuned dominate the wall clock; the remaining stages are minutes.
+**The HPC must be on `ae4c290` or later.** Anything started before `3f8b0a9` is training
+on 13 features instead of 18 (F31), and anything before `9745bf3` silently drops
+Danskvand and Energidrikke on Linux.
 
 Two defects found while doing this — see `findings.md`:
 - **F24** — 13 scripts hardcoded `_h3`; none could produce H=1.
@@ -114,23 +107,46 @@ Required: **10/10 and no `!` warnings**. A warning here means the tool is servin
 degraded payloads (see F21). Passing as of 2026-09-07, but **re-run after phase 2** —
 the tool loads the persisted model, so retraining changes what it serves.
 
-### Phase 3b — Smoke test before spending (NEW, Brian 2026-09-07)
+### Phase 3b — Smoke test ✅ BUILT (2026-09-09)
 
-**n=1 per scenario, one brand, ~$1.** `verify_setup.py` checks reachability and
-contracts; it does not run a scenario end to end. This does.
+`04_SRQ4_Scenario_Experiment/scenario_setup/smoke_test.py` — one run per scenario,
+**~$0.81**, into a `smoke/` subfolder under a `--budget` cap. Never the results
+directory.
 
-Check before ramping: every scenario returns a parseable forecast, `outcome == "ok"`,
-Scenario C's `tool_output.months_ahead == 3`, latency and token counts are in the
-expected range, and the logged `target_month` is identical across all three.
+`verify_setup.py` never sends a request, so it cannot see what only appears when a
+scenario runs. Nine checks, each traceable to a stated requirement rather than chosen
+for coverage — see F34. Four come straight from ch2 §2.5's auditability taxonomy.
 
-A defect found here costs $1. The same defect found in phase 4 costs $40.
+```bash
+python 04_SRQ4_Scenario_Experiment/scenario_setup/smoke_test.py --dry-run   # free
+python 04_SRQ4_Scenario_Experiment/scenario_setup/smoke_test.py            # ~$0.81
+```
+
+**Run it once the HPC results land**, before phase 4. A defect found here costs $1; the
+same defect in phase 4 costs $40.
 
 ### Phase 4 — Funded runs
 
 P0042's frozen sampling design: 111 runs, ~$40, allocated inversely to per-run cost
 (A n=3, B/C n=10 stratified, C-only cross-category). Decide DEC-VENDOR first.
 
-Then D/E (P0040) — build the E2B template first, or D is silently handicapped.
+**The eligible population changed on 2026-09-09.** F32 fixed a `KeyError` that had made
+Danskvand and Energidrikke unusable, taking scorable brands from **120 to 168**. The
+sampling design was frozen against the smaller population — re-check the per-category
+allocation before running.
+
+### Phase 5 — Scenarios D and E (NOT STARTED, and larger than it looks)
+
+**`SCENARIOS` holds A, B and C only. The Prometheus arms are not implemented at all** —
+this is a build, not a configuration change. The E2B template is also unbuilt, and
+without it scenario D runs without `statsmodels`/`prophet`, so D→E would measure a
+missing library rather than the tool.
+
+Why this matters beyond completeness: **B→C and D→E are the same intervention on two
+different orchestrators**, and agreement between them is a materially stronger claim
+than either alone (`INHERITED_CONTEXT.md` §1). Half that argument does not exist yet.
+
+When they land, add them to `smoke_test.py` first and smoke them before spending.
 
 ## Decisions carried in
 

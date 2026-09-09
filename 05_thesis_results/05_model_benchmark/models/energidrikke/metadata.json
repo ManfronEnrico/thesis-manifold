@@ -1,7 +1,7 @@
 {
-  "category": "energidrikke",
-  "model": "XGBoost(tuned)",
-  "model_file": "model.json",
+  "category": "Energidrikke",
+  "model": "LightGBM(tuned)",
+  "model_file": "model.joblib",
   "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
   "features": [
     "lag_1",
@@ -16,27 +16,32 @@
     "month",
     "quarter",
     "peak_month",
-    "promo_intensity"
+    "promo_intensity",
+    "days_in_month",
+    "n_holidays",
+    "non_holiday_days",
+    "zero_run_flag",
+    "zero_run_length"
   ],
-  "n_features": 13,
+  "n_features": 18,
   "clip_negative_features": false,
   "hyperparameters": {
-    "n_estimators": 387,
-    "learning_rate": 0.04658176746245298,
-    "max_depth": 10,
-    "min_child_weight": 2.537108080736097,
-    "subsample": 0.8239910335590717,
-    "colsample_bytree": 0.808425464313805
+    "n_estimators": 1052,
+    "learning_rate": 0.02416984943404565,
+    "num_leaves": 105,
+    "min_child_samples": 5,
+    "subsample": 0.8122302599381822,
+    "colsample_bytree": 0.9583930514115212
   },
   "seed": 42,
   "trained_on": "train+val",
   "trained_through": "2025-12",
-  "n_train_rows": 1012,
+  "n_train_rows": 924,
   "calibrated_on": "val",
   "calibrated_through": "2025-12",
   "n_calibration_rows": 264,
   "calibration_note": "90th percentile of |residual| on held-out validation rows",
-  "q90_log": 1.7361822528523032,
+  "q90_log": 2.6914957935347394,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "test_from": "2026-01",
   "test_through": "2026-07",
@@ -51,7 +56,7 @@
   ],
   "n_test_rows": 308,
   "brands": 44,
-  "train_seconds": 1.952,
-  "train_peak_ram_mb": 1.53,
-  "trained_at_utc": "2026-09-01T18:49:06+00:00"
+  "train_seconds": 4.961,
+  "train_peak_ram_mb": 43.72,
+  "trained_at_utc": "2026-09-09T18:48:37+00:00"
 }

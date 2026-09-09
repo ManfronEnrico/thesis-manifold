@@ -125,7 +125,13 @@ def _candidate_features(fm: pd.DataFrame, include_holiday: bool) -> list[str]:
     of four categories -- the same DEC-DISCOVER-COLUMNS reasoning the pipeline
     already applies.
     """
-    wanted = list(FEATURES) + (HOLIDAY_FEATURES if include_holiday else [])
+    # Derived by SUBTRACTION: FEATURES already contains the holiday columns
+    # since the centralization fix (P0049 F31). Adding them again produced a
+    # frame with duplicate column NAMES, and `X[col]` on a duplicated name
+    # returns a DataFrame rather than a Series -- which is why compute_vif()
+    # failed with "The truth value of a Series is ambiguous" (P0053 F3).
+    wanted = (list(FEATURES) if include_holiday
+              else [c for c in FEATURES if c not in set(HOLIDAY_FEATURES)])
     return [c for c in wanted if c in fm.columns]
 
 

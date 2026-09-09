@@ -107,3 +107,81 @@ changes** — `engineer_features.py`, `srq4_experiment.py`, `forecast_tool.py`,
 committed under a message about the results restructure. Nothing was lost, but
 the horizon fix is not findable by its commit message. This is what selective
 staging is meant to prevent.
+
+---
+
+## Session 2026-09-09 — experiment-side work, training moved off this machine
+
+Training now runs on the HPC (P0053). This session deliberately covered only what
+is **decoupled from training**, so results plug in when they land.
+
+### Delivered
+
+**F31 — the feature set.** Brian asked why training used 13 features from a
+54-column matrix. Most of that gap is correct (~28 columns are contemporaneous
+Nielsen measures that would leak). Two parts were not:
+
+- holiday enrichment reached NO model, so the ablation measured a benefit the
+  served model could not receive
+- `FEATURES` existed as a literal in 11 live files and had already drifted
+
+Now `srq1/_features.py`, one definition, **13 -> 18 features**. `srq1_pooled.py`
+computes the cross-category intersection (17) rather than carrying a literal.
+
+**F32 — casing sweep.** The HPC's `CATS` fix covered SRQ1; three experiment-side
+files still had lowercase keys. `srq4_experiment.CAT_FILE` raised `KeyError` on
+two of four categories: **scorable brands 120 -> 168**, so the funded-run sample
+was missing 40 % of its population. Added `_cat_key()` (case-folded join) and
+`canonical_category()` (normalises caller input, which matters because Scenario
+C's caller is an LLM).
+
+Also: the harness logged `tool_output` but never checked it. Scenario C could
+have run every repeat with no `historical_*` fields, each logged `outcome: ok`.
+Added `_payload_complete()`, per call and in the run trace.
+
+**F33/F34 — traceability and the smoke test.** Read ch2 §2.5 from snapshot
+`2026-09-09_16-05_prose-pass` to derive requirements rather than choosing them.
+Dong et al. (2024) name four auditable artefacts; three were present, the
+**prompt registry was not** — `prompts.schema_id()` existed and was never
+called. Now in every trace.
+
+`scenario_setup/smoke_test.py`: one run per scenario, ~$0.81, nine checks each
+tied to a stated requirement.
+
+### Corrected mid-session
+
+**Brian's diagnosis of the holiday features was half right.** He proposed that
+retraining on the HPC would pick them up. It would not: `available_features()`
+intersects a hardcoded list with the matrix and never *adds* a column the list
+omits. The HPC run would have produced a holiday-free model and needed doing
+twice. Verified before accepting.
+
+**My blanket edit of `srq1_pooled.py` was wrong.** Replacing its literal with the
+full 18-item list would have made it hard-fail on Danskvand/RTD, which lack
+`promo_intensity`. Pooling needs the intersection, not the union. Caught by
+reading how the file used `FEATURES` rather than assuming.
+
+### Near-misses
+
+- Three figures (`ch6_model_selection_v2` and two siblings) existed ONLY in the
+  stale `06_model_benchmark/` tree I deleted earlier. Restored from git and moved
+  into the live tree. The mistake was inspecting a sample of four files, not the
+  full set, before an irreversible delete.
+- `requirements.txt` pins the laptop's SYSTEM python versions (xgboost 3.4.1) not
+  the venv's (3.2.0). A VPS built from it would produce incomparable numbers,
+  silently. Hence `P0053/requirements-training.txt`.
+
+### State at close
+
+- 4 commits, all pushed: `3f8b0a9`, `67a5474`, `a7002ea`, `ae4c290`
+- `verify_setup.py` 10/10; all four categories resolve; 168 scorable brands;
+  18 features; every payload complete at `months_ahead=3`
+- Working tree holds only the parallel prose session's files
+
+### Open, in order
+
+1. **DEC-VENDOR** — pure writing, blocks the funded runs
+2. **Scenarios D/E** — `SCENARIOS` holds A/B/C only. **Not implemented at all**,
+   and the E2B template is unbuilt. B->C and D->E are the same intervention on
+   two orchestrators; only one half exists
+3. **Run the smoke test** once HPC results land, then the funded set
