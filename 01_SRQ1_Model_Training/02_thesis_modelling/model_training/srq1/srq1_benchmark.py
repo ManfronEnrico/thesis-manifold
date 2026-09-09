@@ -45,6 +45,7 @@ from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_DATA_ENGINEERED_BYMONTH_DIR
 # matrix read and the results written can never describe different horizons
 # (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
 from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+from _features import FEATURES as _FEATURES, LOG_SCALE as _LOG_SCALE, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 
 
 warnings.filterwarnings("ignore")
@@ -168,10 +169,12 @@ DEFAULT_GRAINS = ["bymonth"]
 # important and appears in the data chapter. This removes it only from what the
 # models consume. If reintroduced, use the LAGGED form, which was better in 3 of
 # 4 and removes the timing objection entirely.
-FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-            "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "peak_month",
-            "promo_intensity"]
+# The modelling feature set, defined once in srq1/_features.py. Eleven copies of
+# this literal existed and had already drifted -- srq1_pooled.py was missing
+# promo_intensity, silently confounding the pooled-vs-per-category comparison
+# (P0049 F31). Holiday and intermittency columns are conditional; resolve()
+# intersects against the matrix, so a category lacking one simply omits it.
+FEATURES = list(_FEATURES)
 
 def available_features(fm, wanted=None):
 	"""Return the wanted features that this matrix actually contains.
@@ -227,8 +230,9 @@ def _metrics(y, yhat):
 # This matters beyond tidiness: at 19.2% on danskvand, Ridge BEATS tuned
 # XGBoost (32.6%). The broken baseline was concealing a linear model that wins
 # a category, which changes the SRQ1 model-selection claim.
-LOG_SCALE_FEATURES = ("lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-                      "rolling_mean_4", "rolling_std_4", "rolling_mean_13")
+# Volume-unit features, log-scaled with the target for the linear model.
+# From _features.py so it cannot drift from FEATURES (P0049 F31).
+LOG_SCALE_FEATURES = tuple(_LOG_SCALE)
 
 
 def _log_scale(X):

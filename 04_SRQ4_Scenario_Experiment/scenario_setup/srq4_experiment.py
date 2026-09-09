@@ -78,6 +78,11 @@ sys.path.insert(0, str(_find_repo_root()))
 from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir, SRQ2_DIR
 
 warnings.filterwarnings("ignore")
+
+# The modelling feature set lives with the training code that defines it.
+sys.path.insert(0, str(_find_repo_root() / "01_SRQ1_Model_Training"
+                       / "02_thesis_modelling" / "model_training" / "srq1"))
+from _features import FEATURES as _FEATURES, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _find_repo_root()
 
@@ -310,9 +315,12 @@ def _matrix_path(slug, tag, sub):
 #
 # Worse in 3 of 4. The column REMAINS in the feature matrix for EDA; this removes
 # it only from model inputs. If reintroduced, use the LAGGED form.
-FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-            "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "peak_month", "promo_intensity"]
+# The modelling feature set, defined once in srq1/_features.py. Eleven copies of
+# this literal existed and had already drifted -- srq1_pooled.py was missing
+# promo_intensity, silently confounding the pooled-vs-per-category comparison
+# (P0049 F31). Holiday and intermittency columns are conditional; resolve()
+# intersects against the matrix, so a category lacking one simply omits it.
+FEATURES = list(_FEATURES)
 
 def available_features(fm, wanted=None):
 	"""Return the wanted features that this matrix actually contains.

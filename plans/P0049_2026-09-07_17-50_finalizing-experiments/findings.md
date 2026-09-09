@@ -395,3 +395,99 @@ survives: `--horizon 1` still works if an examiner asks for the comparison.
 studies, so 100 is already documented as sufficient. Cutting to 50 would halve CV
 again but weakens the answer to "did you tune adequately?" -- a poor trade for
 ~25 minutes.
+
+---
+
+## F31 — Holiday features never reached any model, and FEATURES had 11 drifting copies (2026-09-09)
+
+Brian's commit `1065b08` asked why training uses 13 features when the matrix has
+54. Most of that gap is correct; two parts of it were not.
+
+### The 54 -> 13 gap, accounted for
+
+| Group | n | Verdict |
+|---|---:|---|
+| Identifiers, split, target | 8 | correctly excluded |
+| Nielsen measures at time *t* | ~28 | **correctly excluded -- including them leaks.** `sales_value`, `promo_units`, `weighted_dist`, the whole `baseline_*` family are contemporaneous and unknown at forecast time |
+| Holiday: `days_in_month`, `n_holidays`, `non_holiday_days` | 3 | **defect** |
+| Intermittency: `zero_run_flag`, `zero_run_length` | 2 | **defect** |
+| Used | 13 | -> now 18 |
+
+The ~28 exclusions are why the count drops so far, and that part is sound. This
+is worth stating in the thesis: the matrix is wide because it carries the raw
+Nielsen panel, not because 40 features were discarded on a whim.
+
+### Defect 1 — the ablation measured a benefit the model could not receive
+
+Holiday enrichment shipped 2026-08-18 (7/12 cells improved, mean -1.42pp) and
+`srq1_holiday_ablation.py` reports it. But the three columns were **never added to
+any `FEATURES` list**, so the benchmark, the CV, the tuning and the served model
+all ran without them. The ablation was measuring something the production model
+did not do.
+
+**Retraining alone would NOT have fixed this** -- the correction Brian proposed,
+and the reason it matters that it was checked. `available_features()` intersects
+the hardcoded literal with the matrix columns:
+
+```python
+return [c for c in wanted if c in fm.columns]      # never ADDS a column
+```
+
+A column absent from the literal stays absent however many times you retrain. The
+VPS run would have produced a holiday-free model and needed doing twice.
+
+`zero_run_flag` / `zero_run_length` were the same: engineered and leakage-fixed in
+P0038, then referenced by no training script at all.
+
+### Defect 2 — eleven copies, already drifted
+
+`FEATURES = [...]` existed as a literal in **11 live files**, and they no longer
+agreed: `srq1_pooled.py` carried 12 items to everyone else's 13, missing
+`promo_intensity`. So the pooled-vs-per-category comparison -- whose entire point
+is holding everything but pooling constant -- ran on two different feature spaces
+without saying so.
+
+### The fix
+
+`srq1/_features.py`, mirroring `_horizon.py`: one definition, grouped by what each
+group contributes, with the leakage boundary stated (**adding a raw Nielsen column
+here is a leak; shift it in `engineer_features()` first**). All 11 files now import
+it. `LOG_SCALE_FEATURES` (2 copies) likewise.
+
+`resolve()` keeps DEC-DISCOVER-COLUMNS: it intersects against the matrix, so a
+category without promotion omits that column rather than raising, and a matrix
+built without holiday enrichment simply does not see those three.
+
+**`srq1_pooled.py` needed different treatment, not the same list.** Pooling trains
+one model across all four categories, so it can only use columns every category
+carries. That set is now COMPUTED by `_pooled_features()` (17: everything but
+`promo_intensity`) and printed at run start, rather than being a literal that
+cannot notice new columns.
+
+### Verified
+
+- 18 canonical features; per category: CSD 18/18, danskvand 17/18, energidrikke
+  18/18, RTD 17/18 -- `promo_intensity` absent exactly where Nielsen has none
+- All 11 scripts import and report 18; `srq1_pooled` reports 17 common
+- `srq1_benchmark.py` runs end-to-end on the new set
+- `verify_setup.py` 10/10, no warnings
+
+### Effect on the numbers (untuned benchmark, H=3)
+
+| Category | 13 features | 18 features |
+|---|---:|---:|
+| CSD | 20.4 % | **19.1 %** |
+| danskvand | 30.4 % | **30.2 %** |
+| energidrikke | 17.3 % | **17.8 %** |
+| RTD | 28.4 % | **27.7 %** |
+
+Three of four improve. Best-model selection also changes (CSD now Ridge). These
+are untuned single runs -- **the real comparison comes from the VPS run**; they
+are recorded here only as evidence the features are now reaching the models.
+
+### The lesson, again
+
+Same shape as F24 and F29: **the plumbing existed and nothing connected it.** The
+columns were engineered, the ablation read them, the contract gated them — and no
+model consumed them. Trace a value to the line that uses it, not to the last place
+it is mentioned.

@@ -15,12 +15,18 @@ different populations. Instead: train ONE pooled model, then score it SEPARATELY
 each category's test rows, against the per-category model on those SAME rows. One
 variable changes (pooled vs specialised); the evaluation population is identical.
 
-FEATURES: 12, not 13. `promo_intensity` is dropped because danskvand and RTD do not
-carry it (Nielsen reports no promotion for them; the pipeline omits rather than
-zero-fills, per DEC-DISCOVER-COLUMNS). Both sides of the comparison use the same 12,
-so the per-category baseline here is RE-TRAINED rather than read from
-tuned_metrics.csv — otherwise the pooled model would be handicapped by one feature
-and the comparison would confound "pooling" with "one fewer feature".
+FEATURES: the cross-category INTERSECTION, computed at run time by
+`_pooled_features()` and printed at the top of every run. `promo_intensity` is the
+one exclusion -- danskvand and RTD do not carry it (Nielsen reports no promotion
+for them; the pipeline omits rather than zero-fills, per DEC-DISCOVER-COLUMNS).
+Both sides of the comparison use that same set, so the per-category baseline here
+is RE-TRAINED rather than read from tuned_metrics.csv -- otherwise the pooled model
+would be handicapped by a missing feature and the comparison would confound
+"pooling" with "a smaller feature set".
+
+This was a hardcoded 12-item list until 2026-09-09. It had drifted out of step with
+the ten other copies of FEATURES, and a literal could not notice that holiday
+enrichment added three columns (P0049 F31).
 
 COST OF THAT RESTRICTION -- ACTUALLY MEASURED (2026-08-23), not inferred from SHAP.
 
@@ -81,6 +87,7 @@ warnings.filterwarnings("ignore")
 # matrix read and the results written can never describe different horizons
 # (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
 from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+from _features import FEATURES as _FEATURES, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 class _SRQ1Out:
@@ -171,12 +178,32 @@ XGB_N_JOBS = 1
 CATS = {"CSD": "csd", "danskvand": "danskvand",
         "energidrikke": "energidrikke", "RTD": "rtd"}
 
-# The 12-feature intersection: srq1_benchmark_tuned.py::FEATURES minus
-# `promo_intensity` (absent in danskvand and RTD). `weighted_dist` remains
-# deliberately absent — see the long note in srq1_benchmark_tuned.py.
-FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-            "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "peak_month"]
+# POOLING NEEDS THE CROSS-CATEGORY INTERSECTION, not the full feature set.
+#
+# One model is trained on all four categories at once, so it can only use columns
+# EVERY category carries. `promo_intensity` is absent in danskvand and RTD
+# (Nielsen reports no promotion there; the pipeline omits rather than zero-fills,
+# per DEC-DISCOVER-COLUMNS), so the pooled feature set is necessarily smaller.
+#
+# COMPUTED from the matrices at run time, not written as a literal. The previous
+# hardcoded 12-item list was the one copy of FEATURES that had drifted out of
+# step with the other ten (P0049 F31) -- and a literal cannot notice that holiday
+# enrichment added three columns. `_pooled_features()` below derives it.
+#
+# Both sides of the comparison use this same set: the per-category baseline is
+# RE-TRAINED on it rather than read from tuned_metrics.csv, or the pooled model
+# would be handicapped by missing features and the comparison would confound
+# "pooling" with "a smaller feature set".
+FEATURES: list[str] = []          # filled by _pooled_features() in main()
+
+
+def _pooled_features(cats) -> list[str]:
+    """Wanted features present in EVERY category's matrix."""
+    common = None
+    for cat, slug in cats.items():
+        cols = set(pd.read_parquet(matrix_path(cat, slug)).columns)
+        common = cols if common is None else (common & cols)
+    return _resolve_feats(common or set())
 
 SPLITS = ("train", "val", "test")
 
@@ -197,9 +224,12 @@ def _load(cat, slug):
     """One category's splits, tagged with its category for the pooled key."""
     sub = "CSD" if cat == "CSD" else cat
     fm = pd.read_parquet(matrix_path(cat, slug))
+    # FEATURES is already the cross-category intersection, so a missing column
+    # here means the matrices disagree with what _pooled_features() just read --
+    # a real inconsistency, not a category capability difference.
     missing = [c for c in FEATURES if c not in fm.columns]
     if missing:
-        raise SystemExit(f"{cat}: intersection features absent: {missing}")
+        raise SystemExit(f"{cat}: pooled features absent from matrix: {missing}")
     d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
     d["category"] = cat
     # Series key. NOT a model input — recorded so the pooled frame can be audited
@@ -269,6 +299,18 @@ def main():
     ap.add_argument("--trials", type=int, default=30)
     trials = ap.parse_args().trials
     OUT.mkdir(parents=True, exist_ok=True)
+
+    # Resolve the shared feature set before anything reads FEATURES. Stated in
+    # the console output because a pooled run silently using fewer features than
+    # the per-category benchmark is exactly the confound this script exists to
+    # avoid.
+    global FEATURES
+    FEATURES = _pooled_features(CATS)
+    print(f"  pooled features: {len(FEATURES)} common to all "
+          f"{len(CATS)} categories")
+    dropped = [c for c in _FEATURES if c not in FEATURES]
+    if dropped:
+        print(f"  not common, excluded: {', '.join(dropped)}")
 
     parts = {cat: _load(cat, slug) for cat, slug in CATS.items()}
 

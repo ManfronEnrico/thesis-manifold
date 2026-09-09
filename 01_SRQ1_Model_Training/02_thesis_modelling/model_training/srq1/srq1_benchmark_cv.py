@@ -61,6 +61,7 @@ warnings.filterwarnings("ignore")
 # matrix read and the results written can never describe different horizons
 # (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
 from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+from _features import FEATURES as _FEATURES, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 class _SRQ1Out:
@@ -149,9 +150,12 @@ SEED = 42
 XGB_N_JOBS = 1
 CATS = {"CSD": "csd", "danskvand": "danskvand",
         "energidrikke": "energidrikke", "RTD": "rtd"}
-FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-            "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "peak_month", "promo_intensity"]
+# The modelling feature set, defined once in srq1/_features.py. Eleven copies of
+# this literal existed and had already drifted -- srq1_pooled.py was missing
+# promo_intensity, silently confounding the pooled-vs-per-category comparison
+# (P0049 F31). Holiday and intermittency columns are conditional; resolve()
+# intersects against the matrix, so a category lacking one simply omits it.
+FEATURES = list(_FEATURES)
 
 
 def _wmape(y, yhat):

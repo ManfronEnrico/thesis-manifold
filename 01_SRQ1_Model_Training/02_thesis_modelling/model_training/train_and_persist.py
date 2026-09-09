@@ -68,6 +68,7 @@ SEED = 42
 # See srq1/_horizon.py -- one source for the active horizon and its paths.
 sys.path.insert(0, str(_here.parent / "srq1"))
 from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
+from _features import FEATURES as _FEATURES, LOG_SCALE as _LOG_SCALE, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 MODELS_DIR = results_root() / "models"
 
 CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
@@ -75,9 +76,12 @@ CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
 
 # weighted_dist is deliberately absent: tested, cleared for leakage, but worse
 # out-of-sample in 3 of 4 categories (P0036 task 7).
-FEATURES = ["lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-            "rolling_mean_4", "rolling_std_4", "rolling_mean_13",
-            "month", "quarter", "peak_month", "promo_intensity"]
+# The modelling feature set, defined once in srq1/_features.py. Eleven copies of
+# this literal existed and had already drifted -- srq1_pooled.py was missing
+# promo_intensity, silently confounding the pooled-vs-per-category comparison
+# (P0049 F31). Holiday and intermittency columns are conditional; resolve()
+# intersects against the matrix, so a category lacking one simply omits it.
+FEATURES = list(_FEATURES)
 
 
 def available_features(fm, wanted=None):
@@ -194,8 +198,9 @@ def _make(model_name: str, params: dict):
 # Volume-valued columns are in RAW units while the target is LOG. A linear model
 # cannot bridge that (it would have to approximate a logarithm with a straight
 # line) and extrapolates catastrophically; tree models are unaffected.
-LOG_SCALE_FEATURES = ("lag_1", "lag_2", "lag_3", "lag_4", "lag_8", "lag_13",
-                      "rolling_mean_4", "rolling_std_4", "rolling_mean_13")
+# Volume-unit features, log-scaled with the target for the linear model.
+# From _features.py so it cannot drift from FEATURES (P0049 F31).
+LOG_SCALE_FEATURES = tuple(_LOG_SCALE)
 
 
 def _persist(model, model_name: str, path_stem: Path) -> str:
