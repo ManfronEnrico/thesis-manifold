@@ -298,8 +298,11 @@ def section_tool_payload(L):
           "these fields are the claim, not decoration.", ""]
     try:
         import importlib.util
-        p = (Path(__file__).resolve().parents[1] / "scenario_setup"
-             / "srq4_experiment.py")
+        # scenario_setup moved from 03_thesis_modelling/ to
+        # 04_SRQ4_Scenario_Experiment/ in the 2026-08 SRQ-folder rename;
+        # parents[1] pointed at the pre-rename location.
+        p = (_find_repo_root() / "04_SRQ4_Scenario_Experiment"
+             / "scenario_setup" / "srq4_experiment.py")
         spec = importlib.util.spec_from_file_location("srq4", p)
         m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(m)
