@@ -123,7 +123,48 @@ A wide interval is not a failure of the model -- it is an honest statement about
 
 The exact payload handed back to the LLM for one brand. Every field beyond the number is provenance: SRQ2 defines traceability as a recorded mapping from tool call to forecast to recommendation, so these fields are the claim, not decoration.
 
-_could not call the tool: FileNotFoundError: [Errno 2] No such file or directory: '/work/Master Thesis/thesis-manifold/01_SRQ1_Model_Training/02_thesis_modelling/scenario_setup/srq4_experiment.py'_
+```json
+{
+  "status": "ok",
+  "category": "CSD",
+  "brand": "HARBOE",
+  "forecast_month": "2026-01",
+  "months_ahead": 1,
+  "forecast_units": 4244056.0,
+  "interval_90": [
+    558996.4,
+    32221992.9
+  ],
+  "confidence": 5.9,
+  "confidence_tier": "Low",
+  "historical_wmape": 18.4,
+  "historical_median_mape": 41.4,
+  "baseline_best_by_median_mape": {
+    "model": "SeasonalNaive",
+    "wmape": 19.2,
+    "median_mape": 54.7
+  },
+  "baseline_best_by_wmape": {
+    "model": "SeasonalNaive",
+    "wmape": 19.2,
+    "median_mape": 54.7
+  },
+  "improvement_vs_baseline_median_pp": 13.3,
+  "improvement_vs_baseline_wmape_pp": 0.8,
+  "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+  "model": "XGBoost(tuned)",
+  "model_file": "model.json",
+  "trained_on": "train+val",
+  "trained_through": "2025-12",
+  "calibrated_on": "val",
+  "calibrated_through": "2025-12",
+  "n_calibration_rows": 665,
+  "interval_method": "split conformal, 90% quantile of validation residuals",
+  "n_features": 18,
+  "serve_seconds": 0.2909,
+  "served_at_utc": "2026-09-10T11:56:58+00:00"
+}
+```
 
 ---
 
