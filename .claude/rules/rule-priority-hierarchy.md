@@ -32,6 +32,14 @@ These rules maintain data integrity and plan discipline.
   - Why: Single source of truth; frontmatter is scannable; eliminates duplicate status tracking
   - When: Every plan execution must update frontmatter with outcome summary before being archived
 
+- **Path handling** (`path-handling.md`): every filesystem path resolves through `PATHS.py` — no directory-name string literals, no `Path(__file__).parents[N]` above the script's own dir, no lowercase category keys used as folder names. Missing a path? Add it to `PATHS.py`.
+  - Why: the repo has been reorganised 4+ times; every literal path broke silently on a rename (P0053 F1/F6/F9)
+  - When: before writing any file read/write/glob or path-based import
+
+- **Generated-artefact provenance** (`generated-artefact-provenance.md`): every number in a generated table/report/appendix/figure is computed from an input consumed that run — never a hardcoded literal, including in `review=`/internal-note blocks.
+  - Why: a hardcoded result is true when typed and wrong after the next re-run (P0053 F8: table 98 cited a WMAPE pair from a superseded 16-feature run)
+  - When: writing or auditing any `generate_*.py`, `export_appendix.py`, `training_report.py`, or `srq1_*` summary writer
+
 ---
 
 ## Quality Tier (Yield to Trust + Correctness)
