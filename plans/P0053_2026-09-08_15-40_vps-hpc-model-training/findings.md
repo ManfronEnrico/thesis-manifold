@@ -1,9 +1,9 @@
 ---
 name: p0053-findings
-description: STATE - VPS/HPC training session findings. F1 casing bug, F2 HPC migration, F3 the 5 FEATURES-fix scripts (RE-RUN & VERIFIED 2026-09-10), F4 thesis-prose checklist, F5 --parallel (timing still unmeasured), F6 training_report.py casing (FIXED), F7 redundancy tables predate 18 features, F8 table 98's WMAPE figures are hardcoded not computed, F9 training_report.py's three stale references all fixed.
+description: STATE - VPS/HPC training session findings. F1 casing bug, F2 HPC migration, F3 the 5 FEATURES-fix scripts (RE-RUN & VERIFIED), F4 thesis-prose checklist, F5 --parallel (won't be reported, timing not measured), F6 training_report.py casing (FIXED), F7 redundancy tables predate 18 features, F8 table 98's WMAPE now computed not hardcoded (FIXED), F9 training_report.py's three stale refs (FIXED), F10 hardcoded-number audit + two new Correctness-tier rules.
 pid: P0053
 created: 2026_09_09-21_15
-updated: 2026_09_10-14_15
+updated: 2026_09_10-15_00
 ---
 
 # P0053 — Findings
@@ -20,23 +20,29 @@ updated: 2026_09_10-14_15
       figures are hardcoded and did NOT refresh.
 - [x] ~~Re-run `training_report`~~ — 2026-09-10. F6 fixed (`b1dfd3c`), section-6
       path fixed (`b9e41ca`), report regenerated (`b89f2c2`).
-- [x] ~~Check appendix table 97's VIF~~ — done. **All three holiday columns
-      show VIF = inf in all four categories** on the 18-feature set (§0's
-      concern is real). Trees ignore it; Ridge's L2 penalty regularizes through
-      it, so no model result is affected — only table 97 carries three `inf`
-      rows. **DECISION PENDING** (see F3 close): keep all three + a thesis
-      sentence, or drop `non_holiday_days` from `_features.py` and retrain.
-- [ ] **DECISION: F8 — table 98's "26.44 → 28.82" WMAPE figures.** Hardcoded
-      from a 2026-09-06 validation on the 16-feature set; a re-run does not
-      refresh them. Either run the mini re-evaluation on the 18-feature reduced
-      sets, or take the ch4 prose fallback (drop both decimals, keep the
-      directional claim). Tracked as H5/H6 in `post-hpc-validation.md`.
+- [x] ~~Check appendix table 97's VIF~~ — done. All three holiday columns show
+      VIF = inf in all four categories on the 18-feature set. Trees ignore it;
+      Ridge's L2 penalty regularizes through it, so no model result is affected
+      — only table 97 carries three `inf` rows. **DECIDED 2026-09-10 (Brian):
+      keep all three, add one thesis sentence noting the exact identity is a
+      harmless descriptive redundancy. No retrain.** → laptop, ch4 prose.
+- [x] ~~F8 — table 98's WMAPE figures~~ — **FIXED, not fallback.**
+      `feature_diagnostics.py` now computes the reduced-vs-full comparison every
+      run (`feature_reduction_eval.csv`); table 98 reads it. See F8 + F10.
 - [ ] Work through the F4 thesis-prose checklist against the OneDrive `.docx`
-      (laptop) — now has fully current numbers for everything except F8.
-- [ ] **OPTIONAL: F5 — measure `--parallel` at 100 trials.** HPC job
-      `j-12387709` is up and idle with ~3h left as of 2026-09-10 14:00. One
-      `--parallel` run at `--trials 100` against yesterday's 87-min sequential
-      baseline settles it.
+      (laptop) — now has fully current, fully computed numbers.
+- [x] ~~F5 — measure `--parallel` at 100 trials~~ — **not doing it.** Brian:
+      won't be reported either way, it's only for our own efficiency. The code
+      is on `main`, opt-in via `--parallel`, unused by default. Expected
+      faster-or-marginally-slower at 100 trials; not worth proving.
+- [x] ~~Hardcoded-number audit (F10)~~ — every generator swept. Submitted-output
+      literals all converted to computed values (F8's 26.44/28.82,
+      calibration.md's 70.7%/9-17x, stability.md's 4.7%/13x). Two rules added.
+      One open item: `export_appendix.py`'s `review=` blocks — see F10.
+- [ ] **Optional follow-up:** convert `export_appendix.py`'s ~6 `review=`-block
+      numbers to `see F28`-style pointers (F10). Not submitted, low priority.
+- [ ] **Optional:** `training_report.py` §6 sample payload shows `months_ahead:
+      1`; pass H=3 or annotate if that section is published (F9).
 - [x] ~~UCloud job~~ — new 4h job `j-12387709` launched 2026-09-10 ~13:31,
       port 2165. Git push works from it now (SSH key added to Brian's GitHub
       account, remote switched to `git@github.com:...`).
@@ -562,3 +568,49 @@ lowercase `"danskvand"` — the only live hit outside `.archive/` was
 `05_thesis_results/generate_architecture_diagrams.py:103`, fixed in `97b5ecc`
 (laptop-only script; its `_step4_logs()` would drop two categories on a
 case-sensitive FS). F1's casing bug should now be fully closed.
+
+---
+
+## F10 — Hardcoded-number audit of the artefact generators (2026-09-10)
+
+Prompted by F8. Brian: *"All of the cited numbers for any of the tables,
+reports, or appendices must under no circumstances be hard coded."* Two rules
+now enforce this — `.claude/rules/generated-artefact-provenance.md` and
+`path-handling.md`, both in the Correctness tier.
+
+Audited every script that writes a `.md`/`.csv`/`.svg` thesis artefact
+(`grep -nE '"[^"]*[0-9]+\.[0-9]+'` per file, then classified each hit).
+
+### Fixed — now computed every run
+
+| Where | Was | Now |
+|---|---|---|
+| `enrich_appendix.py` table 98 caption | literal `"26.44 to 28.82"` (a 2026-09-06 run on 16 features) | `feature_diagnostics.py::evaluate_reduction()` fits full vs reduced per category×model, writes `feature_reduction_eval.csv`; the caption reads its means. First real run: 29.31 → 32.13 over 12 cells. Commits `1b0de33`, `b5634e97`, `0206402` |
+| `enrich_appendix.py` table 98 threshold | literal `0.95` | read from `feature_proposed_set.csv`'s new `rho` column |
+| `enrich_appendix.py` table 97 review | `"< 0.01pp in all eight cells"` (uncomputed) | mechanism argument, no number |
+| `feature_diagnostics.py` docstring + NOTE | `"28.82 reduced vs 26.44"` | points at the CSV; the run prints the computed table |
+| `calibration.py` → `calibration.md` | `"danskvand row (70.7% against a nominal 80%)"`, `"spanning 9-17x"` | interpolated from `calibration.csv` — current values 72.4% and 12-34x, and the framing adapts to whether a category under-covers. Commit `eedf3df` |
+| `stability.py` → `stability.md` | `"~4.7% of its own level"`, `"~13%"`, `"three times more"` | computed from `stability.csv` rows (mean `wmape_std/wmape_mean`, mean `median_cv`, their ratio). **`stability.md` won't show the change until the next ~90-min stability re-run** — the code is fixed, the artefact lags |
+
+### Acceptable as-is (rule carve-outs)
+
+- **`training_report.py` §5** — `"gave q90 = 0.305 against an honest 1.194:
+  intervals 3.9x too narrow"`. Historical narrative about a *fixed* bug
+  (P0037 F10), explaining why calibration is done correctly now. The rule
+  explicitly allows past-tense descriptions of corrected mistakes.
+- **`export_appendix.py` `metric_dictionary`** — `"a weighted MAPE of 19.4
+  denotes 19.4%"`. Illustrative of the notation, not a cited result.
+
+### Open — catalogued, not yet converted
+
+**`04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py`** — ~6 numbers
+in `review=` blocks (the "INTERNAL REVIEW — NOT FOR SUBMISSION" sections):
+`3.97pp`, `~0.3pp`, `417.3 s vs 2.93 s = 142x`, `2.11% of budget`, `~266x
+(0.1 vs 29.2 MB)`, `+0.414 pp/month` with `month 4: -3.74, month 7: +3.60`.
+
+Every one is an editorial cross-reference to a finding (F21, F28, F44) that
+is *itself* the authoritative one-time-measurement record. They do not reach
+the submitted appendix. **Recommended fix:** replace each number with a
+"see F28" pointer rather than re-deriving the experiment — the finding is the
+source of truth, and a bare pointer cannot go stale. Lower priority than the
+submitted-output items above, which are all done.
