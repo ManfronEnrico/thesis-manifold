@@ -3,21 +3,27 @@ name: p0053-start-here
 description: STATE - Run the SRQ1 training suite on the VPS. Written to be read FROM the VPS with no prior conversation context.
 pid: P0053
 created: 2026_09_08-15_40
-updated: 2026_09_10-14_15
+updated: 2026_09_10-15_40
 status: in_progress
 ---
 
-# P0053 — Run SRQ1 training on the VPS: START HERE
+# P0053 — Run SRQ1 training on the VPS/HPC: START HERE
 
-**You are probably reading this on the VPS, with no conversation history. This file
-is everything you need.** Follow it top to bottom.
+**You are probably reading this with no conversation history. This file is the
+setup playbook; `findings.md` in this folder is the current state.** Read
+findings.md first.
 
-> **⚠ Read `findings.md` in this folder before anything else.** Training has moved
-> off the VPS onto a CBS UCloud HPC job (still runnable from here per §3-4 below,
-> but the VPS is now the fallback, not the primary path — see findings.md F2). A
-> full 18-feature retrain completed there on 2026-09-09; 14/20 stages succeeded and
-> the servable models are current, but 5 stages are still broken (findings.md F3)
-> and there's a thesis-prose verification checklist waiting (findings.md F4).
+> **⚠ State as of 2026-09-10.** Training runs on a CBS UCloud HPC job now, not
+> the VPS (findings.md F2 — the VPS is the fallback). The full 18-feature
+> retrain completed 2026-09-09 (`0e95850`); the six stages it left broken were
+> fixed and re-run 2026-09-10 (F3), and every generated table now holds current,
+> computed (not hardcoded) numbers (F8, F10). The suite is now **21 stages**
+> — `export_appendix.py` was added (F11).
+>
+> **Open work is on the laptop:** the F4 thesis-prose checklist against the
+> `.docx`, and one sentence in ch4 noting `non_holiday_days`'s harmless VIF
+> redundancy (decided: keep all three holiday columns, no retrain). See the
+> checklist at the top of findings.md for the full list.
 
 ---
 
@@ -204,7 +210,7 @@ began*, so a stale table from an earlier run never counts as done.
 
 ### What it runs
 
-20 stages in dependency order. The order is not cosmetic: several stages guard
+21 stages in dependency order. The order is not cosmetic: several stages guard
 their reads with `is_file()` and **degrade silently** rather than failing, which is
 exactly how model selection once fell through to a hardcoded default (P0049 F25).
 
@@ -214,7 +220,7 @@ exactly how model selection once fell through to a hardcoded default (P0049 F25)
 | 2 | calibration, mase, demand_classes, stability | **stability ~25 min**, 5 seeds × 2 models × 4 cats |
 | 3 | ridge_cv, pooled, pooled_perbrand, ridge_pooled | minutes |
 | 4 | feature_diag, holiday_ablation, holiday_tuned | the holiday-enrichment result |
-| 5 | train_persist, training_report, shap_figures, perf_figures, enrich_appendix | train_persist is what SRQ2 serves |
+| 5 | train_persist, training_report, shap_figures, perf_figures, enrich_appendix, export_appendix | train_persist is what SRQ2 serves; export_appendix owns appendix tables 04-15 (added to the suite 2026-09-10, P0053 F11) |
 
 `srq1_profiling.py` is deliberately excluded: it measures resource cost at
 `n_jobs=-1` and is horizon-insensitive (DEC-DETERMINISM). **Do not add it** — its

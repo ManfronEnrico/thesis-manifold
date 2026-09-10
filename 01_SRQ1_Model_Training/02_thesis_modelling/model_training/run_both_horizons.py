@@ -49,6 +49,17 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SRQ1 = HERE / "srq1"
 
+# Repo root and the SRQ4 harness dir, via PATHS.py rather than folder-name
+# literals (.claude/rules/path-handling.md).
+_ROOT = next((q for q in HERE.parents if (q / "PATHS.py").is_file()), None)
+if _ROOT is not None and str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+try:
+    from PATHS import SRQ4_SCENARIO_SETUP_DIR  # noqa: E402
+except Exception:  # PATHS not importable (unusual) -- degrade, don't crash
+    SRQ4_SCENARIO_SETUP_DIR = (_ROOT / "04_SRQ4_Scenario_Experiment"
+                               / "scenario_setup") if _ROOT else HERE
+
 
 def _interpreter() -> str:
     """The project venv's python, not whatever `python` resolves to.
@@ -105,6 +116,11 @@ STAGES: list[tuple[str, Path]] = [
     ("shap_figures",     SRQ1 / "srq1_generate_shap_figures.py"),
     ("perf_figures",     SRQ1 / "srq1_generate_performance_figures.py"),
     ("enrich_appendix",  SRQ1 / "srq1_export_enrichment_appendix.py"),
+    # export_appendix.py owns appendix tables 04-15. Its 04-10 tables read
+    # only training result CSVs; its 11-15 SRQ4-scenario tables skip cleanly
+    # when scenario-run data is absent. It is NOT an SRQ1 script, but leaving
+    # it out meant those tables silently kept pre-retrain numbers (P0053 F11).
+    ("export_appendix",  SRQ4_SCENARIO_SETUP_DIR / "export_appendix.py"),
 ]
 
 

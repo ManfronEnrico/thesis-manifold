@@ -2,11 +2,11 @@
 
 | Column                                       | Role                       | Type           | Populated   |
 |:---------------------------------------------|:---------------------------|:---------------|:------------|
-| brand                                        | Identifier                 | object         | 100%        |
+| brand                                        | Identifier                 | str            | 100%        |
 | date                                         | Identifier                 | datetime64[us] | 100%        |
 | sales_units                                  | Target                     | float64        | 100%        |
 | log_sales_units                              | Target, transformed        | float64        | 100%        |
-| split                                        | Split label                | object         | 100%        |
+| split                                        | Split label                | str            | 100%        |
 | period_index                                 | Ordering                   | int32          | 100%        |
 | lag_1                                        | Feature - autoregressive   | float64        | 93%         |
 | lag_13                                       | Feature - autoregressive   | float64        | 67%         |

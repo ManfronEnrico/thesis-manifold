@@ -12,4 +12,4 @@
 
 <!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
 
-Do NOT claim re-tuning is less accurate. Optuna seed alone moves test WMAPE by 3.97pp, swamping the ~0.3pp between strategies (F21). 100 trials = 417.3 s vs 2.93 s = 142x (F28). Memory is NOT the constraint -- peak 2.11% of budget. The case is elapsed time alone.
+Do NOT claim re-tuning is less accurate. Optuna seed alone moves test WMAPE by more than the gap between the two strategies (F21), and the accuracy figures sit inside the seed-variance band. The case for refit-not-retune is elapsed time alone: re-tuning multiplies one fit by trials and folds (F28), while peak memory stays a small fraction of budget in every row above. The time and memory numbers are in the table -- do not restate them here.

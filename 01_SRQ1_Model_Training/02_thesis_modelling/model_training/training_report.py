@@ -307,12 +307,13 @@ def section_tool_payload(L):
         m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(m)
         # Score at the reported horizon, not the tool's one-month default:
-        # the HORIZON-th test month is HORIZON months past the training cutoff.
+        # the HORIZON-th DISTINCT test month is HORIZON months past the training
+        # cutoff (the matrix is brand x month, so dedupe before indexing).
         fm = _matrix("CSD")
-        te = fm[fm["split"] == "test"].sort_values(["period_year", "period_month"])
-        ym = (te["period_year"].astype(int).astype(str) + "-"
-              + te["period_month"].astype(int).map("{:02d}".format)).tolist()
-        h_month = ym[m.HORIZON - 1] if len(ym) >= m.HORIZON else None
+        te = fm[fm["split"] == "test"]
+        months = sorted({f"{int(y)}-{int(mo):02d}" for y, mo
+                         in zip(te["period_year"], te["period_month"])})
+        h_month = months[m.HORIZON - 1] if len(months) >= m.HORIZON else None
         out = m._eval_forecast("CSD", "HARBOE", h_month)
         L += ["```json", json.dumps(out, indent=2), "```", ""]
     except Exception as e:

@@ -1,19 +1,19 @@
 **Sensitivity of the substrate to random seed.** Variation in fitted accuracy across repeated fits that differ only in the random seed supplied to the training procedure, over 5 seeds per model and category. The more stable model in each row is shown in bold italic.
 
-| Measure                                       | Category     | LightGBM    | XGBoost    |
-|:----------------------------------------------|:-------------|:------------|:-----------|
-| Median coefficient of variation (%)           | CSD          | ***11.24*** | 12.54      |
-| Median coefficient of variation (%)           | danskvand    | ***11.94*** | 17.17      |
-| Median coefficient of variation (%)           | energidrikke | ***13.67*** | 16.16      |
-| Median coefficient of variation (%)           | RTD          | 14.43       | ***9.57*** |
-| Standard deviation of WMAPE across seeds (pp) | CSD          | 0.65        | ***0.56*** |
-| Standard deviation of WMAPE across seeds (pp) | danskvand    | ***0.69***  | 1.22       |
-| Standard deviation of WMAPE across seeds (pp) | energidrikke | 1.38        | ***0.38*** |
-| Standard deviation of WMAPE across seeds (pp) | RTD          | 1.94        | ***1.50*** |
-| Mean WMAPE across seeds (%)                   | CSD          | ***15.44*** | 15.55      |
-| Mean WMAPE across seeds (%)                   | danskvand    | ***20.79*** | 21.53      |
-| Mean WMAPE across seeds (%)                   | energidrikke | ***13.94*** | 14.36      |
-| Mean WMAPE across seeds (%)                   | RTD          | ***32.34*** | 35.50      |
+| Measure                                       | Category     | LightGBM    | XGBoost     |
+|:----------------------------------------------|:-------------|:------------|:------------|
+| Median coefficient of variation (%)           | CSD          | 18.16       | ***15.19*** |
+| Median coefficient of variation (%)           | Danskvand    | ***13.76*** | 17.39       |
+| Median coefficient of variation (%)           | Energidrikke | ***23.92*** | 24.29       |
+| Median coefficient of variation (%)           | RTD          | ***9.85***  | 11.35       |
+| Standard deviation of WMAPE across seeds (pp) | CSD          | ***0.67***  | 0.83        |
+| Standard deviation of WMAPE across seeds (pp) | Danskvand    | 2.81        | ***1.04***  |
+| Standard deviation of WMAPE across seeds (pp) | Energidrikke | ***0.59***  | 1.08        |
+| Standard deviation of WMAPE across seeds (pp) | RTD          | ***0.30***  | 1.04        |
+| Mean WMAPE across seeds (%)                   | CSD          | 18.87       | ***18.61*** |
+| Mean WMAPE across seeds (%)                   | Danskvand    | 27.01       | ***25.80*** |
+| Mean WMAPE across seeds (%)                   | Energidrikke | ***16.24*** | 16.95       |
+| Mean WMAPE across seeds (%)                   | RTD          | 30.50       | ***30.08*** |
 
 *Note.* Models with a stochastic fitting procedure, which includes gradient-boosted trees, can return different parameters from identical data. Seed sensitivity is therefore measured rather than assumed, following the stability criterion of Klee and Xia (2025). The coefficient of variation measures dispersion of the forecasts themselves; the standard deviation of WMAPE measures how far the resulting accuracy moves, and is the quantity against which any difference between models should be judged material.
 
@@ -21,4 +21,4 @@
 
 <!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
 
-THIS IS THE 3.97pp NUMBER'S HOME. wmape_std here is why we must not claim re-tuning is less accurate -- seed noise swamps the ~0.3pp between refit and re-tune. Cross-ref retraining_cost.
+The WMAPE-sd column here is the seed-noise magnitude that the retraining_cost table's caveat rests on: it is larger than the refit-vs-retune accuracy gap, which is why that gap cannot be called material. Cross-ref retraining_cost. Read the number off this table, do not transcribe it into prose.
