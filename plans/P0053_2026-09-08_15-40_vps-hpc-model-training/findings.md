@@ -1,34 +1,45 @@
 ---
 name: p0053-findings
-description: STATE - VPS/HPC training session findings. F1 category-casing bug, F2 HPC migration, F3 the 5 scripts broken by the FEATURES fix, F4 what changed in the retrain (thesis-prose checklist), F5 unfinished parallelism work, F6 training_report.py still carries F1 (no retrain needed), F7 redundancy appendix tables predate the 18-feature set.
+description: STATE - VPS/HPC training session findings. F1 casing bug, F2 HPC migration, F3 the 5 FEATURES-fix scripts (RE-RUN & VERIFIED 2026-09-10), F4 thesis-prose checklist, F5 --parallel (timing still unmeasured), F6 training_report.py casing (FIXED), F7 redundancy tables predate 18 features, F8 table 98's WMAPE figures are hardcoded not computed, F9 training_report.py's three stale references all fixed.
 pid: P0053
 created: 2026_09_09-21_15
-updated: 2026_09_10-13_40
+updated: 2026_09_10-14_15
 ---
 
 # P0053 — Findings
 
 ## Next-session checklist (read this first)
 
-- [x] ~~Fix the 5 scripts F3 names~~ — **patched 2026-09-09 in `4b38c53`**, see
-      F3's "RESOLVED in code" block. Four files changed; `ridge_pooled` and
-      `pooled_perbrand` needed no edit (they were downstream of an empty
-      `FEATURES` export in `srq1_pooled.py`)
-- [ ] **RUN those stages — the fix is unverified.** Include `pooled` and put it
-      FIRST, since the other two import from it:
-      `--only pooled,pooled_perbrand,ridge_pooled,feature_diag,holiday_ablation,holiday_tuned`
-      — cheap, none needs the CV search redone
-- [ ] Then re-run `enrich_appendix`, which reads their tables
-- [ ] Check appendix table 97's VIF against the 18-feature set once
-      `feature_diagnostics` runs — `FEATURES` admits all three holiday columns,
-      but §0 of START_HERE recommends only two (see F3)
+- [x] ~~Fix the 5 scripts F3 names~~ — patched 2026-09-09 in `4b38c53`
+- [x] ~~RUN those stages~~ — **2026-09-10, HPC job `j-12387709`: 6/6 passed
+      in 18.3 min** (`pooled` 320s, `pooled_perbrand` 309s, `ridge_pooled` 1.3s,
+      `feature_diag` 4.2s, `holiday_ablation` 12.3s, `holiday_tuned` 450s).
+      Results committed `0614766`. The 4b38c53 fix is verified.
+- [x] ~~Re-run `enrich_appendix`~~ — 2026-09-10, appendix tables 94-99 refreshed
+      on the 18-feature set (`cf5fdbe`). **But see F8** — table 98's WMAPE
+      figures are hardcoded and did NOT refresh.
+- [x] ~~Re-run `training_report`~~ — 2026-09-10. F6 fixed (`b1dfd3c`), section-6
+      path fixed (`b9e41ca`), report regenerated (`b89f2c2`).
+- [x] ~~Check appendix table 97's VIF~~ — done. **All three holiday columns
+      show VIF = inf in all four categories** on the 18-feature set (§0's
+      concern is real). Trees ignore it; Ridge's L2 penalty regularizes through
+      it, so no model result is affected — only table 97 carries three `inf`
+      rows. **DECISION PENDING** (see F3 close): keep all three + a thesis
+      sentence, or drop `non_holiday_days` from `_features.py` and retrain.
+- [ ] **DECISION: F8 — table 98's "26.44 → 28.82" WMAPE figures.** Hardcoded
+      from a 2026-09-06 validation on the 16-feature set; a re-run does not
+      refresh them. Either run the mini re-evaluation on the 18-feature reduced
+      sets, or take the ch4 prose fallback (drop both decimals, keep the
+      directional claim). Tracked as H5/H6 in `post-hpc-validation.md`.
 - [ ] Work through the F4 thesis-prose checklist against the OneDrive `.docx`
-- [ ] Decide what to do with the UCloud job — user extended it +1h tonight
-      (9-Sep) after the run had already finished; it may since have been
-      auto-terminated by the platform, or may still be sitting idle burning
-      budget. Check before assuming either way.
-- [ ] Decide whether to commit to `--parallel` for the next real CV run, or
-      leave it unused until timing is actually measured at 100 trials (see F5)
+      (laptop) — now has fully current numbers for everything except F8.
+- [ ] **OPTIONAL: F5 — measure `--parallel` at 100 trials.** HPC job
+      `j-12387709` is up and idle with ~3h left as of 2026-09-10 14:00. One
+      `--parallel` run at `--trials 100` against yesterday's 87-min sequential
+      baseline settles it.
+- [x] ~~UCloud job~~ — new 4h job `j-12387709` launched 2026-09-10 ~13:31,
+      port 2165. Git push works from it now (SSH key added to Brian's GitHub
+      account, remote switched to `git@github.com:...`).
 
 ---
 
@@ -336,11 +347,12 @@ Only then is the speed claim actually verified rather than inferred.
 
 ---
 
-## F6 — `training_report.py` still carries the F1 casing bug; no retrain needed (2026-09-10)
+## F6 — `training_report.py` carried the F1 casing bug — FIXED 2026-09-10 (`b1dfd3c`)
 
 **Found by the Chapter 4 closing prose pass**, which read
 `05_thesis_results/05_model_benchmark/tables/training_report.md` as an appendix
-candidate and found it contradicting the thesis.
+candidate and found it contradicting the thesis. **Fixed and re-run 2026-09-10 —
+see F9 for the full set of three stale references in this file.**
 
 ### The symptom
 
@@ -464,3 +476,89 @@ from a superseded feature set is defensible; a decimal from one is not. The
 that debt too.
 
 Tracked as H5 and H6 in `06_thesis_writing/writing-notes/post-hpc-validation.md`.
+
+### 2026-09-10 — re-run done, and F7 is worse than stated (see F8)
+
+Ran `feature_diag` + `enrich_appendix` on the 18-feature set. Table 98's
+*structure* updated — "18 (17) features available", "9-10 after reduction", "3
+clusters" (the new third cluster is `zero_run_flag + zero_run_length`). **The
+"26.44 → 28.82" WMAPE comparison did not.** It is a hardcoded constant, not a
+computed value — F8.
+
+The VIF table (97) also regenerated: `days_in_month`, `n_holidays`,
+`non_holiday_days` = `inf` in all four categories, confirming §0's collinearity
+concern on the 18-feature set. `rolling_mean_4` is the next-highest at ~220-270.
+
+---
+
+## F8 — Table 98's redundancy-reduction WMAPE figures are hardcoded, not computed (2026-09-10)
+
+**A re-run of `feature_diagnostics.py` + `enrich_appendix.py` does NOT refresh
+the "26.44 → 28.82" comparison in appendix table 98.** F7 assumed it would.
+
+The string lives in three places, all as a literal:
+
+| File | Line | Text |
+|---|---|---|
+| `srq1_feature_diagnostics.py` | 240 | docstring: `WMAPE 28.82 reduced vs 26.44 unreduced` |
+| `srq1_feature_diagnostics.py` | 374 | printed NOTE: `mean test WMAPE 28.82 reduced vs 26.44 unreduced` |
+| `srq1_export_enrichment_appendix.py` | 313 | table 98 body: `raised mean test WMAPE from 26.44 to 28.82` |
+
+`feature_diagnostics.py` *proposes* a reduced set (`feature_proposed_set.csv`)
+but never fits models on it — the WMAPE comparison was a **manual validation run
+on 2026-09-06**, on the 16-feature set, and its result was written into the code
+as a cited constant. The `propose_reduced_set()` docstring says so: "VALIDATED
+on 2026-09-06 and REJECTED".
+
+### What this means
+
+The reduced sets are now different (9-10 features from 17-18, and they now
+include the holiday columns), so the 2026-09-06 numbers describe a reduction
+that no longer exists. Table 98 currently pairs a **fresh structure** with a
+**stale outcome**.
+
+### Two ways to close it
+
+1. **Run the mini re-evaluation.** For each category, fit LightGBM + XGBoost +
+   Ridge on (a) the full 18/17 set and (b) `feature_proposed_set.csv`'s
+   reduced set, compare mean test WMAPE, update the three hardcoded strings.
+   ~10-15 min of compute. This is the only way to keep decimals in Chapter 4.
+2. **Prose fallback (already drafted).** Chapter 4 drops both decimals and
+   keeps *"a reduced feature set was evaluated against the benchmark and
+   performed worse"*. Direction is defensible from first principles (tree
+   models lose information when correlated features are removed); the specific
+   numbers from a superseded feature set are not. Also sidesteps the uncited
+   0.95 threshold debt.
+
+Recommend (2): the reduction is a rejected negative result, not a headline, and
+is not worth a bespoke experiment this late.
+
+---
+
+## F9 — `training_report.py` carried THREE stale references, all fixed 2026-09-10
+
+Found while re-running it after F6. The file is generated into
+`training_report.md`, an appendix candidate, so each of these would have
+reached an examiner.
+
+| # | Problem | Symptom in the report | Fix |
+|---|---|---|---|
+| 1 | `CATEGORIES` dict used lowercase keys (F1, in a tenth script F1's sweep missed) | Section 2 feature table: `_matrix missing_` for Danskvand and Energidrikke; every feature dashed for those two | `b1dfd3c` — capitalize the two keys |
+| 2 | `desc` dict had no entry for the 5 columns the FEATURES centralization added | Section 2: blank "what it is" cell for `days_in_month`, `n_holidays`, `non_holiday_days`, `zero_run_flag`, `zero_run_length` | `b1dfd3c` — add the five descriptions |
+| 3 | Section 6 built the `scenario_setup` path with `parents[1]`, pointing at the pre-2026-08-rename location | Section 6: `_could not call the tool: FileNotFoundError_` instead of the sample payload | `b9e41ca` — resolve from the repo root, `04_SRQ4_Scenario_Experiment/scenario_setup/` |
+
+**Verified 2026-09-10** on the HPC: all four categories populate, the holiday
+and intermittency rows show `yes` in all four, and section 6 renders a real
+`forecast_demand` JSON payload.
+
+**One thing left in section 6:** the sample payload shows `"months_ahead": 1`
+because `_eval_forecast("CSD", "HARBOE")` uses its default horizon. The thesis
+reports H=3. Section 6 is illustrative (it shows the payload *shape*), so this
+is cosmetic, but if the section is published, either pass a horizon or add a
+line noting the example is H=1.
+
+**Also swept 2026-09-10:** full-repo `grep` for `CATS`/`CATEGORIES` dicts with
+lowercase `"danskvand"` — the only live hit outside `.archive/` was
+`05_thesis_results/generate_architecture_diagrams.py:103`, fixed in `97b5ecc`
+(laptop-only script; its `_step4_logs()` would drop two categories on a
+case-sensitive FS). F1's casing bug should now be fully closed.

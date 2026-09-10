@@ -3,7 +3,7 @@ name: p0053-start-here
 description: STATE - Run the SRQ1 training suite on the VPS. Written to be read FROM the VPS with no prior conversation context.
 pid: P0053
 created: 2026_09_08-15_40
-updated: 2026_09_09-21_15
+updated: 2026_09_10-14_15
 status: in_progress
 ---
 
@@ -125,7 +125,7 @@ git clone https://github.com/ManfronEnrico/thesis-manifold.git
 cd thesis-manifold
 
 python3 -m venv .venv
-.venv/bin/pip install -r plans/P0053_2026-09-08_15-40_vps-model-training/requirements-training.txt
+.venv/bin/pip install -r plans/P0053_2026-09-08_15-40_vps-hpc-model-training/requirements-training.txt
 ```
 
 **Install that file, NOT the repo-root `requirements.txt`.** The two disagree, and
@@ -161,7 +161,9 @@ print('versions match the committed results')"
 import sys; sys.path.insert(0,'.')
 from PATHS import get_category_engineered_bymonth_dir as D
 import pandas as pd
-for cat,slug in (('CSD','csd'),('danskvand','danskvand'),('energidrikke','energidrikke'),('RTD','rtd')):
+# Category keys are the on-disk folder names -- CAPITALIZED. Lowercase here
+# resolves to nothing on a case-sensitive FS (F1). Slug values stay lowercase.
+for cat,slug in (('CSD','csd'),('Danskvand','danskvand'),('Energidrikke','energidrikke'),('RTD','rtd')):
     a=pd.read_parquet(D(cat)/f'{slug}_feature_matrix_h1.parquet')
     b=pd.read_parquet(D(cat)/f'{slug}_feature_matrix_h3.parquet')
     k=['brand','period_year','period_month']
@@ -318,19 +320,21 @@ built from different data than the run just produced.
 
 ---
 
-## Two open items found after the HPC run (2026-09-10)
+## Post-HPC-run items (status as of 2026-09-10 14:15)
 
-Both surfaced by the Chapter 4 closing prose pass. **Neither needs a retrain.**
+All surfaced by the Chapter 4 closing prose pass. **None needs a retrain.**
 
-- **F6** — `training_report.py` still has the F1 casing bug (a tenth script; F1
-  patched nine). Its report claims danskvand and energidrikke have no feature
-  matrix. Fix is two capital letters plus a re-run of one script. It matters
-  because the report is an appendix candidate and currently contradicts
-  Chapter 4.
-- **F7** — the redundancy-reduction appendix tables (97, 98) were built from a
-  cluster file dated 2026-09-06, three days before the feature set became 18.
-  `srq1_feature_diagnostics.py` already imports the shared list, so re-running
-  it needs no code change.
-
-Chapter 4 cites F7's numbers today, with a documented fallback if they cannot be
-regenerated in time.
+- **F3** — the five FEATURES-fix scripts: **RE-RUN & VERIFIED**, 6/6 passed on
+  the HPC in 18.3 min. Results on `main`.
+- **F6** — `training_report.py` casing bug (a tenth script): **FIXED** (`b1dfd3c`)
+  and re-run. See F9 for the two other stale references in that file, also fixed.
+- **F7 / F8** — the redundancy tables (97, 98): re-run refreshed table 97 (VIF)
+  and table 98's *structure*, but **table 98's "26.44 → 28.82" WMAPE figures are
+  hardcoded** (F8) and did not update. **Decision pending**: run a ~15-min
+  mini re-evaluation, or take the ch4 prose fallback (drop both decimals).
+- **VIF = inf** — confirmed for all three holiday columns, all four categories,
+  on the 18-feature set (§0 above). No model result affected; table 97 carries
+  three `inf` rows. **Decision pending**: keep all three + a thesis sentence, or
+  drop `non_holiday_days` from `_features.py` and retrain.
+- **F5** — `--parallel` timing at 100 trials still unmeasured. HPC job is up
+  and idle if you want it settled.
