@@ -378,7 +378,7 @@ Any pass that writes a claim resting on a pending run adds a row here **at the
 time it writes the claim**, not afterwards. A claim that depends on a future
 measurement and is not recorded is a claim nobody will re-check.
 
-## H11 - The per-seed winner data (GATE) -- RESOLVED 2026-09-10
+## H11 - The per-seed winner data -- WITHDRAWN 2026-09-10 (my error, not a gap)
 
 **Claim as the thesis states it (§5.5.9):** *"the winning model changes with the
 seed in every category"*, supported by a table listing a winner per seed per
