@@ -4,7 +4,7 @@ description: NOTE - Running list of thesis claims that must be re-verified or up
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 8, results]
 created: 2026_09_09-21_00
-updated: 2026_09_09-22_05
+updated: 2026_09_10-15_10
 status: partly-verified
 ---
 
@@ -20,6 +20,70 @@ when the run lands.
 
 **Why this exists separately from the deferred list:** those items need a
 *decision*, these need a *measurement*. Different work, different moment.
+
+---
+
+# Second check — 2026-09-10, after eight more commits (`f5bad3e`)
+
+The reporting round landed: `training_report.py` fixed, appendix tables 94-99
+refreshed on the 18-feature set, and the six stages that crashed on the first
+run re-executed on the HPC (`0614766`).
+
+**The accuracy results are unchanged since `0e95850`.** `summary.md` has not
+been touched by any of the eight commits. Everything since was reporting, so the
+gate verdicts below still hold and no number in Chapter 5 moved.
+
+## Now closed
+
+| # | Was | Now |
+|---|---|---|
+| H1, H2, H3 | 18/17 verified against matrices only | **CONFIRMED by the report** — all four categories, holiday and intermittency rows `yes` throughout |
+| F6 (training_report casing) | contradicted Chapter 4 | **FIXED** — keys capitalised, all four categories populate, every feature row filled |
+| F3 six crashed stages | not re-run since the fix | **RE-RUN**, 6/6 succeeded in 18.3 min on the same HPC job |
+
+The feature table in `training_report.md` now reads `yes` for `n_holidays`,
+`non_holiday_days`, `zero_run_flag` and `zero_run_length` in all four
+categories, with the five previously-empty descriptions filled in. It agrees
+with Chapter 4, so the appendix contradiction is gone.
+
+## H5/H6 — my F7 diagnosis was wrong, and the HPC session caught it
+
+I said re-running `srq1_feature_diagnostics.py` would refresh the 26.44 → 28.82
+comparison because it imports the shared feature list. **It does not**, and P0053
+F8 explains why: `feature_diagnostics.py` *proposes* a reduced set but never
+fits models on it. The WMAPE pair was a manual validation run on 2026-09-06 and
+was written into the code as a literal, in three places.
+
+So table 98 now pairs a **fresh structure** (18/17 features, 9-10 after
+reduction, 3 clusters) with a **stale outcome** (26.44/28.82 from the
+16-feature run). That is a worse state than either half alone, because the table
+looks regenerated.
+
+**Recommendation stands, and P0053 F8 independently reaches the same one:** drop
+both decimals from Chapter 4 §4.3. Keeping them requires a bespoke 10-15 minute
+fit that exists only to support two numbers in a rejected negative result.
+
+## ⚠ New — the holiday adoption claim needs its evidence named
+
+Chapter 4 §4.3 says the holiday columns' *"contribution was measured by an
+ablation against an otherwise identical model before they were adopted"*. Two
+ablation tables now exist and they do not say the same thing:
+
+| Table | Design | Result |
+|---|---|---|
+| `holiday_ablation_delta.csv` | untuned, fixed hyperparameters | **worse in 8 of 12** cells; mean delta -0.01pp |
+| `94_holiday_ablation_tuned.md` | each arm tuned independently, refit on train+val | **improved in 6 of 9** cells |
+
+The tuned table is the appendix-grade one and is the defensible basis for
+adoption: an untuned comparison penalises the arm with more features, because
+the fixed hyperparameters were not chosen for it.
+
+**But the chapter must not imply the untuned result agrees.** Say which
+comparison supports the decision. See Fix 9 in `ch4-complete-pass.md`.
+
+Table 94's own review note also warns: **do not quote the mean of the delta
+column** — it averages over model families that respond differently, and that
+difference is the finding.
 
 ---
 

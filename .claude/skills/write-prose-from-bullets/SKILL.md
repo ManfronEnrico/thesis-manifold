@@ -510,3 +510,24 @@ them.
 
 See `.claude/rules/prose-insertion-discipline.md` -> **Library currency**,
 **Pending measurements**, **Register every citation you add**.
+
+## Date a results file before citing it
+
+A results table can be regenerated in part. Table 98 refreshed its structure
+columns against the new feature set while still printing a WMAPE pair that was
+hardcoded in the generator four days earlier — fresh structure, stale outcome,
+and more convincing than either half alone.
+
+Before quoting a number from a results file: check the file's date against the
+commit that last changed the code path, `grep` the figure in the generator to see
+whether it is computed or a literal, and check whether the upstream `.csv` it
+reads predates it.
+
+Read the `INTERNAL REVIEW` note if the table has one. One said *"do NOT quote the
+mean of this column"* — and the mean was the easiest number to reach for.
+
+Where two artefacts answer the same question differently (an untuned and a tuned
+ablation, say), **name which one the prose rests on**. Both may be correct
+experiments answering different questions.
+
+See `.claude/rules/prose-insertion-discipline.md` -> **Results currency**.
