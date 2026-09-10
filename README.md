@@ -1,70 +1,80 @@
-# Manifold AI Thesis — Predictive Analytics Framework
+# Manifold AI Thesis — Lightweight Forecasting for Agentic Decision-Support
 
 > **Master's Thesis** — Business Administration & Data Science
-> Copenhagen Business School (CBS), in collaboration with Manifold AI
-> **Group thesis** — 2 students — 120 pages — Deadline: 15 May 2026
+> Copenhagen Business School, in collaboration with Manifold AI
+> Group thesis, 2 students · Deadline 15 May 2026
 
 ---
 
-## Research Question
+## What this is
 
-> *How can AI systems be designed to provide reliable, cost-justified predictive decision-support in real-world business environments under computational constraints?*
+A production conversational AI assistant, deployed with Danish retailers and
+consumer-goods manufacturers, can explain what has already happened but cannot
+forecast. This thesis extends it with lightweight forecasting that fits a
+small-business cloud memory budget, and evaluates whether doing so beats letting
+a language model write its own forecasting code.
 
-**Sub-questions:**
-- **SRQ1** — Which predictive modelling approaches provide the best balance between forecasting accuracy and computational efficiency under realistic cloud resource constraints (≤8 GB RAM)?
-- **SRQ2** — How can a multi-agent architecture coordinate predictive models and heterogeneous data signals to generate actionable managerial recommendations?
-- **SRQ3** — To what extent does additional contextual information (Prometheus integration) improve the predictive and decision-support capabilities of AI systems? (Currently scoped as an integration-readiness assessment — Prometheus access pending.)
-- **SRQ4** — How does the proposed predictive AI system compare to a code-as-action LLM baseline, on correctness/consistency/replicability (primary) and cost/latency (secondary)?
+**Full framing, research questions and scope:**
+[`00_thesis_context/thesis-topic/`](00_thesis_context/thesis-topic/)
 
-See [00_thesis_context/thesis-topic/project-state.md](00_thesis_context/thesis-topic/project-state.md) for the full list of frozen decisions and open questions, and [01_thesis_research/research-questions/](01_thesis_research/research-questions/) for the canonical RQ text.
+**Canonical research-question text:**
+[`00_thesis_context/research-questions/`](00_thesis_context/research-questions/)
+
+Deliberately not restated here. This file is for orientation and setup; the
+questions have one home, and a second copy would drift from it.
 
 ---
 
-## Repo Structure
+## Repository layout
 
-**As of 2026-07-11**, the repo root is organized into six numbered thesis tiers plus supporting tooling/docs folders. Full authoritative reference: [.claude/rules/repo-tier-structure.md](.claude/rules/repo-tier-structure.md).
+The root is organised **by research question**, so the folder a script lives in
+tells you which question it answers. Authoritative reference:
+[`.claude/rules/repo-tier-structure.md`](.claude/rules/repo-tier-structure.md).
 
-| Tier | Purpose |
-|------|---------|
-| [00_thesis_context/](00_thesis_context/) | Thesis topic, scope, frozen decisions, CBS compliance |
-| [01_thesis_research/](01_thesis_research/) | Research questions, literature corpus |
-| [02_thesis_data/](02_thesis_data/) | Data pipeline: raw → converted → preprocessed → engineered |
-| [03_thesis_modelling/](03_thesis_modelling/) | Model training scripts + serving code (System A/B) |
-| [04_thesis_results/](04_thesis_results/) | Final SRQ1/SRQ2/SRQ4 results |
-| [05_thesis_writing/](05_thesis_writing/) | Thesis chapter drafts, final sections, figures |
-
-| Other folder | Purpose |
+| Folder | Holds |
 |---|---|
-| `utility_scripts/` | Tooling-only helper scripts (not thesis content) |
-| `user-docs/` | Architecture, integration guides, handovers, reference docs |
-| `plans/` | Dated P-ID session plan folders |
-| `.claude/` | Claude Code rules, skills, agents, commands |
+| [`00_thesis_context/`](00_thesis_context/) | Topic, research questions, methodology, CBS requirements |
+| [`01_SRQ1_Model_Training/`](01_SRQ1_Model_Training/) | Data pipeline and model training — the forecasting substrate |
+| [`02_SRQ2_Tool_Interface/`](02_SRQ2_Tool_Interface/) | The typed forecast tool the agent calls |
+| [`03_SRQ3_Integration_Readiness/`](03_SRQ3_Integration_Readiness/) | Integration-readiness criteria (argued, not code) |
+| [`04_SRQ4_Scenario_Experiment/`](04_SRQ4_Scenario_Experiment/) | The scenario comparison harness and its runs |
+| [`05_thesis_results/`](05_thesis_results/) | Generated figures and tables, one folder per chapter |
+| [`06_thesis_writing/`](06_thesis_writing/) | Writing notes, citations, drafts, read-only prose snapshots |
+
+| Supporting | Purpose |
+|---|---|
+| `PATHS.py` | **Every path in the repo resolves through here.** Never hardcode a directory name |
+| `plans/` | Dated plan folders, one per work stream |
+| `user-docs/` | Architecture, integration guides, handovers |
+| `utility_scripts/` | Tooling only — never thesis content |
+| `.claude/` | Rules, skills and agents for AI-assisted development |
+
+### Two rules worth knowing before you write code
+
+**Paths go through `PATHS.py`.** The repository has been reorganised four times
+and every hardcoded directory string broke silently — the script ran, the file
+was not found, and a stage degraded instead of failing. If a path you need is
+missing from `PATHS.py`, add it there.
+
+**Generated numbers are computed, never typed.** Every figure in a results table,
+caption or report is read from an input consumed on that run. A hardcoded result
+is true when written and wrong after the next re-run. See
+[`.claude/rules/generated-artefact-provenance.md`](.claude/rules/generated-artefact-provenance.md).
 
 ---
 
-## What This Repository Contains
+## Where the prose lives
 
-Two systems that must not be confused:
+**The thesis text is a Word document in OneDrive, shared between the two
+authors. That is the only editable copy.**
 
-| System | Location | Purpose | In Thesis? |
-|---|---|---|---|
-| **System A** — Research Framework | `03_thesis_modelling/model_serving/system_a_forecast/` + `model_training/` | The multi-agent forecasting system being studied and evaluated (SRQ1/SRQ2) | ✅ Yes |
-| **System B** — Thesis Production | `03_thesis_modelling/model_serving/system_b_conversational/` + `.claude/` agents/skills | Internal tooling for writing and managing the thesis | ❌ No — invisible to reader |
+This repository holds a read-only mirror under
+`06_thesis_writing/docx-exported-snapshots/`, regenerated by
+`utility_scripts/scripts/thesis_snapshot.py`. It exists so prose can be grepped
+and diffed. **Never edit it** — it is overwritten on every snapshot.
 
-> ⚠️ **System B never modifies System A logic.** System A is the research object; System B supports the writing process.
-
-### System A — AI Research Framework
-
-**Hard constraint: ≤ 8 GB RAM total** — every architectural decision is justified against this.
-
-Models benchmarked (SRQ1): AutoARIMA, Prophet, LightGBM, XGBoost, Ridge — run **sequentially**, never in parallel, to stay within budget. Current baselines: XGBoost 45.5% median MAPE (test), LightGBM 46.7% median MAPE (test) — see `02_thesis_data/preprocessing/` and `03_thesis_modelling/model_training/` for the benchmark scripts.
-
-### Data Sources
-
-| Dataset | Format | Status |
-|---|---|---|
-| Nielsen/Prometheus CSD | Power BI/Fabric API exports (JSONL → Parquet → engineered) | ✅ Active — see [02_thesis_data/nielsen/](02_thesis_data/nielsen/) |
-| Indeks Danmark | Consumer-survey CSV | ❌ Dropped from scope (2026-06-19) — not used |
+Staged edits, verification notes and open questions live in
+`06_thesis_writing/writing-notes/`.
 
 ---
 
@@ -72,130 +82,132 @@ Models benchmarked (SRQ1): AutoARIMA, Prophet, LightGBM, XGBoost, Ridge — run 
 
 ### Prerequisites
 
-- Python 3.11+
-- An **Anthropic API key** (required for all LLM agent calls)
+- **Python 3.11+**
+- An **OpenAI API key** for the scenario experiments
+- **Graphviz** installed as a system package, not only the Python binding —
+  without it the import succeeds and rendering fails
 
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/ManfronEnrico/thesis-manifold.git
 cd thesis-manifold
 ```
 
-### 2. Configure credentials
-
-Copy the `.env` template and fill in values (ask your co-author for the Nielsen credentials):
+### 2. Credentials
 
 ```bash
-cp .env.example .env   # then open .env and fill in all values
+cp .env.example .env    # then fill in every value
 ```
 
-### 3. Install dependencies
+Ask your co-author for the data-provider credentials. They are not in the
+repository and must not be committed.
+
+### 3. Dependencies
 
 ```bash
-pip install -r requirements.txt
-# or, if using uv:
-uv sync
+uv sync                             # preferred
+pip install -r requirements.txt     # alternative
 ```
 
-### 4. Install Claude Code and GitHub CLI (for AI-assisted development)
+`requirements.txt` is annotated: several pins carry a comment explaining why that
+version, and a few record a dependency that is retained deliberately rather than
+actively used. Read the comment before changing a pin.
+
+### 4. Claude Code and GitHub CLI
+
+For AI-assisted development:
 
 ```bash
 npm install -g @anthropic-ai/claude-code
-claude  # run from project root
+claude    # from the project root
 ```
 
-**GitHub CLI** (`gh`) is required for creating draft PRs at the end of each session:
+The GitHub CLI is used for pull requests at session end. Each collaborator
+authenticates once per machine, with their own account:
 
 ```powershell
-# Windows (PowerShell) — run once, then restart your terminal
-winget install --id GitHub.cli
+winget install --id GitHub.cli    # Windows; restart the terminal afterwards
+gh auth login                     # GitHub.com -> HTTPS -> web browser
 ```
 
-After restarting, authenticate with your own GitHub account (one-time setup per machine):
-
-```powershell
-gh auth login
-# Choose: GitHub.com → HTTPS → Yes → Login with web browser
-```
-
-> Each collaborator runs this independently with their own account. `gh` is a system tool, not a Python package.
-
-### 5. Generate architecture figures
+### 5. Verify the setup
 
 ```bash
-pip install graphviz matplotlib
-python 05_thesis_results/generate_architecture_diagrams.py
-# Output: 05_thesis_writing/figures/*.svg and *.png
+python 04_SRQ4_Scenario_Experiment/scenario_setup/verify_setup.py
 ```
 
----
-
-## Running Tests
-
-```bash
-python -m pytest utility_scripts/ -v
-```
+Free pre-flight checks — credentials, imports, reachable services — before
+anything that costs money runs.
 
 ---
 
-## Workflow Phases
+## Regenerating figures and tables
 
-Every phase transition requires **explicit human approval** before proceeding.
+Every figure and table in the thesis is generated, never drawn by hand. The
+generators live beside the results they produce, under `05_thesis_results/` and
+`04_SRQ4_Scenario_Experiment/scenario_setup/`.
 
-```
-Phase 0 — Setup & pre-start checklist                         [Complete]
-Phase 1 — Literature Review & Gap Analysis                    [Complete]
-Phase 2 — Data Assessment & Preprocessing                     [Complete]
-Phase 3 — SRQ1: Model Selection & Benchmark                   [Complete]
-Phase 4 — SRQ2: Synthesis Module                              [In progress]
-Phase 5 — SRQ3/SRQ4: Evaluation & Validation                  [In progress]
-Phase 6 — Thesis Writing            [bullets only → human approval → prose]
-```
+Two conventions apply to all of them, and both are enforced by rule:
 
-See [00_thesis_context/thesis-topic/project-state.md](00_thesis_context/thesis-topic/project-state.md) for the current TODO list and risk flags.
+- **Landscape, SVG, no PNG twin.** A second file that must be kept in step is a
+  second file that can fall out of step. See
+  [`.claude/rules/figure-generation-standards.md`](.claude/rules/figure-generation-standards.md).
+- **Internal notes are separated from captions.** Anything marked
+  `INTERNAL REVIEW` is not for submission and must not reach the document.
 
 ---
 
-## Key Documents
+## Working conventions
 
-| Document | Location | Purpose |
-|---|---|---|
-| Master instructions | `CLAUDE.md` | Read by Claude Code at every session |
-| Agent instructions | `AGENTS.md` | Same navigation hub, for non-Claude-Code agents |
-| Repo tier structure | `.claude/rules/repo-tier-structure.md` | Authoritative folder-layout reference |
-| Repository map | `user-docs/contributing/repository_map.md` | File-to-purpose mapping |
-| Project state | `00_thesis_context/thesis-topic/project-state.md` | Frozen decisions, open questions, TODOs |
-| Formal requirements | `00_thesis_context/formal-requirements/` | CBS compliance checks |
-| Research questions | `01_thesis_research/research-questions/` | Canonical RQ text (v4) |
-
----
-
-## CBS Compliance Notes
-
-- **Page limit**: 120 standard pages (group thesis, 2 students)
-- **Standard page**: 2,275 characters including spaces
-- **Excluded from count**: appendices, bibliography
-- **Citation format**: APA 7th edition
-- All sections checked against CBS guideline PDFs — see `00_thesis_context/formal-requirements/`
-
----
-
-## Tech Stack
-
-| Layer | Technology |
+| Convention | Rule |
 |---|---|
-| Agent orchestration | LangGraph (System A) + custom coordinator (System B) |
-| LLM | Claude API |
-| ML / Forecasting | pmdarima, Prophet, LightGBM, XGBoost, scikit-learn |
-| Data | Nielsen/Prometheus SQL star schema (JSONL → Parquet pipeline) |
-| Figures | Graphviz + Matplotlib |
-| Runtime | Local Python 3.11 |
+| Branches | One per session. Never commit directly to `main` |
+| Staging | Explicit paths only. Never `git add -A` or `git add .` — it sweeps in other sessions' files |
+| Prose | Bullets first. Prose only after explicit human approval |
+| Sources | If it is not in the Zotero library, it is not a source |
+| Data | Never commit the raw panel. `.gitignore` enforces it |
+| Secrets | API keys come from the environment, never from a file in the repo |
+
+Full rule set: [`.claude/rules/`](.claude/rules/). Conflicts between rules are
+resolved by tier — see `rule-priority-hierarchy.md`.
 
 ---
 
-## Security Notes
+## CBS requirements
 
-- **Never commit** actual Nielsen data — `.gitignore` enforces this
-- `ANTHROPIC_API_KEY` must be set as an environment variable — never hardcoded
-- Nielsen dataset must not leave the local environment (confidentiality agreement)
+| | |
+|---|---|
+| Page limit | 120 standard pages (group thesis, 2 students) |
+| Standard page | 2,275 characters including spaces, on average |
+| Excluded from count | Front page, appendices, bibliography |
+| Citations | APA 7th edition |
+
+Checked against the CBS guideline documents in
+[`00_thesis_context/formal-requirements/`](00_thesis_context/formal-requirements/).
+
+---
+
+## Confidentiality
+
+The retail measurement panel is commercial data governed by a licence and a
+non-disclosure agreement.
+
+- **No raw data is committed**, and `.gitignore` enforces that
+- The dataset must not leave the local environment
+- Results derived from it are aggregate and appear only in the thesis
+
+---
+
+## Key documents
+
+| Document | Location |
+|---|---|
+| Session instructions for Claude Code | `CLAUDE.md` |
+| Same, for other agents | `AGENTS.md` |
+| Folder layout, authoritative | `.claude/rules/repo-tier-structure.md` |
+| File-to-purpose map | `user-docs/contributing/repository_map.md` |
+| Architecture | `user-docs/architecture/architecture.md` |
+| Research questions | `00_thesis_context/research-questions/` |
+| CBS compliance | `00_thesis_context/formal-requirements/` |
+| Active plans | `plans/PLANS_INDEX.md` |

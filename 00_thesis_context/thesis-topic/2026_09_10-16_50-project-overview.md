@@ -131,10 +131,10 @@ extension, which is also the order in which they have to be answered:
 | **SRQ3** | the host system | what a production agentic system must already be able to do before forecasting can be attached |
 | **SRQ4** | the evidence | whether dedicated models actually beat an agent that writes its own forecasting code, at justified cost |
 
-**SRQ4 is the one that can fail**, and it is designed so that it can. Its
-baseline is a capable one — a language model with the firm's data and the ability
-to write, run and correct its own analysis code — rather than a straw man. If
-purpose-built models do not beat that, the thesis reports it.
+SRQ4's comparator is a language model given the firm's data and the ability to
+write, run and correct its own analysis code. The comparison is therefore
+between two ways of obtaining a forecast, not between a forecasting system and
+an absence of one.
 
 ---
 

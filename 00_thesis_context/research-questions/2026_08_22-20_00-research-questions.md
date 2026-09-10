@@ -39,8 +39,17 @@ updated: 2026_08_22-20_00
   - **LLM-as-judge is DROPPED** (B-DEC-2) — all metrics are programmatic.
   - **Prompt set is 1 prompt × N repeats**, not ≈50 varied prompts; repeats are what
     measure consistency. Brands are stratified across the volume range.
-  - **Five scenarios, not two arms** — A_plain, B_data, C_model, D_prometheus,
-    E_prometheus_model (F_ensemble proposed). See the SRQ4 scope file.
+  - **A scenario ladder, not two arms.** The design is five scenarios — A_plain,
+    B_data, C_model, D_prometheus, E_prometheus_model (F_ensemble proposed). See
+    the SRQ4 scope file.
+
+    ⚠ **Only A, B and C are implemented** (verified 2026-09-10 against
+    `srq4_experiment.py`, whose `SCENARIOS` tuple holds three entries). D and E
+    are a build task tracked as P0049's next step, not a blocked one — the
+    Prometheus engine is reachable locally. **Until they run, no chapter may
+    describe the evaluation as five scenarios in the past tense**, and the
+    `B→C` / `D→E` replication that SRQ4's v5 wording promises has one half
+    measured and one half pending.
 
 ## Per-SRQ scope files
 

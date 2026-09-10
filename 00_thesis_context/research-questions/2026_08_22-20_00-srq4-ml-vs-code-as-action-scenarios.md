@@ -60,10 +60,22 @@ Consequence: code-as-action is **no longer "future work"** — it is the central
   production reference system — are stated as further work. Do not describe Ch. 8 as a
   full-scale study.
 
-## The scenario ladder as implemented (2026-08-22)
+## The scenario ladder as designed (2026-08-22)
+
+> ⚠ **This section describes the design, not the current build.** Verified
+> 2026-09-10 against `srq4_experiment.py`: its `SCENARIOS` tuple holds
+> **`A_plain`, `B_data`, `C_model` only.** `D_prometheus` and `E_prometheus_model`
+> are **not implemented**, and `F_ensemble` was never more than a proposal.
+>
+> This heading previously read "as implemented", which was wrong from the moment
+> it was written and is the kind of error that reaches a chapter unchallenged.
+>
+> D and E are a **build task, not a blocker** — the Prometheus engine runs
+> locally. Tracked as P0049's next step. Until they run, the `D→E` half of the
+> replication below is a plan, and no chapter may report it in the past tense.
 
 The two-arm framing in the research question understates the design. Five scenarios
-are implemented, with a sixth proposed:
+are designed, with a sixth proposed:
 
 | Scenario | Engine | Forecast access |
 |----------|--------|-----------------|
@@ -87,9 +99,13 @@ nobody outside the collaboration could reproduce. Neither tier alone covers both
 internal and external validity — present this as a design property, not an apology.
 
 **A note on `B_data`'s role:** it was built as a proxy for Prometheus while access was
-pending. Now that `D_prometheus` exists, B is no longer standing in for anything — it
-is "a generic LLM with code execution." State this explicitly in the methodology; a
+pending. Once `D_prometheus` is built, B stops standing in for anything and becomes
+"a generic LLM with code execution." State this explicitly in the methodology; a
 reviewer who notices the reframing unprompted will read it as drift.
+
+⚠ **Until D exists, B is still the proxy**, and a methodology chapter that
+describes it as a standalone generic-LLM rung is describing the intended design
+rather than the experiment that ran.
 
 **RQ wording updated to v5 (2026-08-22, Brian-approved).** The question now says
 "the same system with only data access and code execution" rather than "a
