@@ -1,9 +1,9 @@
 ---
 pid: P0049
 created: 2026-09-07 17:50:00
-updated: 2026-09-10 19:40:00
+updated: 2026-09-10 21:55:00
 status: in_progress
-focus_detail: "EXPERIMENT SIDE. Both free D/E tests PASS (F41): the Prometheus engine starts (graph compiles, gpt-5.5 both roles, 17 tools) and its coder tools are composable, so a D-variant with only execute_code is a local change not a fork. Engine .env now written from the thesis .env with renamed keys (F42) -- note config/loader.py reads the PARENT dir, prometheus-graph-engine/.env, not graph-engine/. No git repo exists under Z:/_dev-ssd/prometheus, so the keys cannot leak from there. DECISIONS MADE: DEC-VENDOR (gpt-5.5, ecological validity), DEC-D-SNAPSHOT (D/E read the same series B gets, SQL tools OFF), DEC-SHARE-CSV (per-brand CSVs ship so assessors can re-run A-C). NEXT: write run_scenario_d/e -- P0040 task 4 is now discharged. THREE OPEN QUESTIONS in findings.md need Brian: whether D/E run the same 3 stratified brands per category, how the reduced dataset is declared in BOTH design and limitations, and whether the 39-row aggregate is the right shared input (the warehouse hierarchy traps argue yes). verify_setup.py 10/10."
+focus_detail: "EXPERIMENT SIDE. **Scenarios D and E are WRITTEN and wired (a941927)** -- `SCENARIOS` now holds all five and `--scenarios D,E` selects them. NOT YET RUN: no engine run has been costed, so both cost estimates are placeholders that print (ESTIMATE NOT MEASURED). verify_setup is 13/13 with the engine and 11+2-skipped without it, so an assessor running A-C is never blocked. Three corrections landed while building: F45 Prometheus is a TWO-agent delegation and the SQL tools are hardcoded in the nested coder, so DEC-D-SNAPSHOT is MEASURED (a warehouse query is detected and excluded) rather than enforced; F46 the engine and thesis venvs are disjoint so D/E cross a process boundary, and E works because the PARENT evaluates the model and injects the payload; F44 adding D/E changed schema_id to v4, which is why this had to happen BEFORE the funded set, never after. NEXT: smoke D and E (~$0.90, replaces the estimates with measurements), then the funded set. THREE OPEN QUESTIONS still need Brian -- Q-A the brand sample for D/E and its cost, Q-B how the reduced dataset is declared in BOTH design and limitations, Q-C whether the 39-row aggregate is the right shared input."
 ---
 
 # P0049 — Finalizing experiments
@@ -152,32 +152,39 @@ highest/median/lowest volume per category, which is population-relative by const
 still 3 per category at either size. The larger population makes those picks more
 representative, not the design different. No re-freeze needed.
 
-### Phase 5 — Scenarios D and E (a PORT, not a build — corrected 2026-09-10)
+### Phase 5 — Scenarios D and E ✅ BUILT (2026-09-10), not yet run
 
-**`SCENARIOS` holds A, B and C only, and a repo-wide search for `run_scenario_d` /
-`run_scenario_e` returns nothing.** That is the whole gap.
+`SCENARIOS` holds all five; `--scenarios D,E` selects them like any other.
 
-**The infrastructure is NOT the blocker, contrary to what this plan said until
-2026-09-10 (see F35).** Verified:
+| | Mirrors | Gets | Verified |
+|---|---|---|---|
+| `D_prometheus` | B | the same series `_brand_history()` gives B | prompts render, degrades cleanly with no engine |
+| `E_prometheus_model` | C | the same payload `_eval_forecast()` gives C | payload completeness checked as in C |
 
-| Prerequisite | State |
-|---|---|
-| E2B template `prometheus` | built 2026-08-21, alias resolves (P0040 F42) |
-| statsmodels / prophet / xgboost / pyodbc / sqlalchemy in it | all five verified present |
-| Engine venv | live today, both hard pins satisfied |
-| Engine location | `Z:\_dev-ssd\prometheus\prometheus-graph-engine` |
-| RU warehouse creds, E2B cost (~$0.0001/run) | verified |
+**Everything vendor-shaped is in `prometheus_bridge.py`**, which runs the engine
+in its own interpreter. Importing it is allowed to fail: an assessor with A–C,
+the shipped CSVs and an OpenAI key must still be able to run the harness.
 
-What remains is **P0040 tasks 4–7**: launch the engine locally (its env is built
-but has never been started), run `D_prometheus` with logging, port
-`forecast_demand` to the engine's tool API, register the tooled project and run
-`E_prometheus_model`.
+Three things the build corrected, all in `findings.md`:
 
-Why it matters: **B→C and D→E are the same intervention on two different
-orchestrators**, and agreement between them is a materially stronger claim than
-either alone (`INHERITED_CONTEXT.md` §1). Half that argument does not exist yet.
+- **F45** — Prometheus is a **two-agent delegation**. The conversational agent's
+  only data verb is `invoke_prometheus_coder`; the five data tools belong to a
+  nested coder and are **hardcoded at module scope**, not passed through
+  `ProjectDeps`. So DEC-D-SNAPSHOT cannot be enforced by configuration. It is
+  **measured** instead: a run that queries the warehouse is detected and
+  classified `warehouse_access`, and excluded. That is stronger evidence than a
+  filtered tool list, because it is observed per run rather than trusted once.
+- **F46** — the two venvs are **disjoint** (thesis 3.14 has xgboost, no
+  langgraph; engine 3.13 the reverse). D/E therefore cross a process boundary,
+  and **E works because the parent evaluates the model and injects the payload**
+  — which also gives E's number the same origin as C's.
+- **F44** — adding the D/E notes changed `schema_id()` to **v4-five-scenarios**.
+  A/B/C strings are byte-identical to v3 (verified), but v3 and v4 rows are
+  deliberately not pooled. **This is why D/E had to land before the funded set.**
 
-When they land, add them to `smoke_test.py` first and smoke them before spending.
+**Next: smoke them.** `python smoke_test.py --scenarios D,E` (~$0.90 estimated).
+That run replaces both placeholder cost estimates with measurements. A defect
+found there costs $1; the same defect in the funded set costs $40.
 
 ## Decisions carried in
 
@@ -189,7 +196,7 @@ When they land, add them to `smoke_test.py` first and smoke them before spending
 | **DEC-DETERMINISM** | Accuracy at `n_jobs=1`; resource profiling at `-1` | **MADE**, implemented, verified |
 | **DEC-GRAIN** | brand × month | Locked, earlier |
 | **DEC-SHARE-CSV** | The filtered per-brand CSVs Scenario B receives DO ship to assessors, so A–C stay re-runnable with their own OpenAI key. Prometheus and `.env` do not | **MADE 2026-09-10** (Brian). Those CSVs are already filtered and aggregated — not live access, not the dataset — so they disclose no more than the thesis tables. Export must materialise them as files; the engineered matrices are not shipped. See F42 |
-| **DEC-D-SNAPSHOT** | Scenarios D/E read the same local snapshot Scenario B gets — NOT the live `Nielsen_clean` warehouse, even though Prometheus ships with access to it | **MADE 2026-09-10** (Brian). Matching B's data path is what keeps D→E comparable to B→C; a live query would also bypass every leakage guard, since none can see SQL issued inside a sandbox. See F36 |
+| **DEC-D-SNAPSHOT** | Scenarios D/E read the same local snapshot Scenario B gets — NOT the live `Nielsen_clean` warehouse | **MADE 2026-09-10** (Brian). Matching B's data path is what keeps D→E comparable to B→C. **Mechanism corrected 2026-09-10 (F45): it is MEASURED, not enforced** — the SQL tools are hardcoded into the vendor's nested coder agent and cannot be removed without forking it, so a run that queries the warehouse is detected and excluded instead. Disclosed in the limitations as written |
 
 ## What this plan does NOT cover
 
