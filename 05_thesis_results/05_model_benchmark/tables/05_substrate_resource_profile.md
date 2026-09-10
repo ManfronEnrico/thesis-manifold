@@ -18,6 +18,6 @@
 
 <!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
 
-tracemalloc understates XGBoost by ~266x (0.1 vs 29.2 MB). The 3.7 MB pickle is the third witness -- a 3.7 MB artefact cannot be built in 0.1 MB. Keep both rows so the correction stays auditable, but RSS is the headline. P0044 F1-F2.
+tracemalloc materially understates the native-library models: the serialised model size is the independent witness that RSS, not the Python-heap figure, is what a deployment must provision (P0044 F1-F2). Keep both rows so the correction stays auditable, but RSS is the headline. All three figures are in the table -- do not restate them here.
 
 MERGED from three tables (profile + budget share + retraining) per Brian 2026-09-03: same unit system, same subject, so the comparison belongs in one screenshot. Drift stays separate -- its unit is pp of error, not time or memory.

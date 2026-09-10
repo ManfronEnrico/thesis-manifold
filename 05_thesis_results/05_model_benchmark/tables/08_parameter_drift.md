@@ -14,6 +14,6 @@
 
 <!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
 
-INCONCLUSIVE -- do not cite the +0.414 pp/month slope. Carried by two opposite outliers (month 4: -3.74, month 7: +3.60) on n=7, and three months are exactly 0.00 because re-tuning rediscovered the frozen num_leaves=93. Recommend refit-per-query + SCHEDULED re-tune, cadence not optimised. F31.
+INCONCLUSIVE -- do not fit or cite a per-month drift slope. The origins fall on both sides of zero, the window is a handful of months, and some origins are exactly zero because re-tuning rediscovered the frozen parameters. Recommend refit-per-query + SCHEDULED re-tune, cadence not optimised. F31. The per-origin differences are in the table; the mean is in the note.
 
 Kept SEPARATE from the merged resource table: unit is pp of forecast error across origins, not time/memory.
