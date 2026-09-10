@@ -15,8 +15,8 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 | Category | Brands | Train | Val | Test | Train span | Val span | Test span |
 |---|---:|---:|---:|---:|---|---|---|
 | CSD | 95 | 1615 | 665 | 665 | 2024-01 to 2025-05 | 2025-06 to 2025-12 | 2026-01 to 2026-07 |
-| danskvand | _matrix missing_ | | | | | | |
-| energidrikke | _matrix missing_ | | | | | | |
+| Danskvand | 29 | 406 | 174 | 174 | 2024-06 to 2025-07 | 2025-08 to 2026-01 | 2026-02 to 2026-07 |
+| Energidrikke | 44 | 660 | 264 | 308 | 2024-04 to 2025-06 | 2025-07 to 2025-12 | 2026-01 to 2026-07 |
 | RTD | 62 | 868 | 372 | 372 | 2024-06 to 2025-07 | 2025-08 to 2026-01 | 2026-02 to 2026-07 |
 
 **Rows are dropped** where `log_sales_units`, `lag_1` or `lag_13` is null -- a series cannot be modelled before it has 13 months of history, so early months are warm-up, not training data.
@@ -26,6 +26,8 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 | Category | train < val | val < test | verdict |
 |---|---|---|---|
 | CSD | True | True | PASS |
+| Danskvand | True | True | PASS |
+| Energidrikke | True | True | PASS |
 | RTD | True | True | PASS |
 
 ---
@@ -34,26 +36,26 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 
 Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). Categories differ in *capability*, not only in values: Nielsen reports no promotion data for some categories, so `promo_intensity` is omitted there rather than zero-filled -- a constant-zero column would assert "no promotion ran", which the data does not support.
 
-| Feature | CSD | danskvand | energidrikke | RTD | what it is |
+| Feature | CSD | Danskvand | Energidrikke | RTD | what it is |
 |---|:-:|:-:|:-:|:-:|---|
-| `lag_1` | yes | - | - | yes | sales 1 month back |
-| `lag_2` | yes | - | - | yes | sales 2 months back |
-| `lag_3` | yes | - | - | yes | sales 3 months back |
-| `lag_4` | yes | - | - | yes | sales 4 months back |
-| `lag_8` | yes | - | - | yes | sales 8 months back |
-| `lag_13` | yes | - | - | yes | same month last year |
-| `rolling_mean_4` | yes | - | - | yes | 4-month mean, excluding current |
-| `rolling_std_4` | yes | - | - | yes | 4-month volatility |
-| `rolling_mean_13` | yes | - | - | yes | 13-month mean (annual level) |
-| `month` | yes | - | - | yes | calendar month |
-| `quarter` | yes | - | - | yes | calendar quarter |
-| `peak_month` | yes | - | - | yes | flag for the category's seasonal peak |
-| `promo_intensity` | yes | - | - | - | promotion share at t-1 (lagged: contemporaneous would leak) |
-| `days_in_month` | yes | - | - | yes |  |
-| `n_holidays` | yes | - | - | yes |  |
-| `non_holiday_days` | yes | - | - | yes |  |
-| `zero_run_flag` | yes | - | - | yes |  |
-| `zero_run_length` | yes | - | - | yes |  |
+| `lag_1` | yes | yes | yes | yes | sales 1 month back |
+| `lag_2` | yes | yes | yes | yes | sales 2 months back |
+| `lag_3` | yes | yes | yes | yes | sales 3 months back |
+| `lag_4` | yes | yes | yes | yes | sales 4 months back |
+| `lag_8` | yes | yes | yes | yes | sales 8 months back |
+| `lag_13` | yes | yes | yes | yes | same month last year |
+| `rolling_mean_4` | yes | yes | yes | yes | 4-month mean, excluding current |
+| `rolling_std_4` | yes | yes | yes | yes | 4-month volatility |
+| `rolling_mean_13` | yes | yes | yes | yes | 13-month mean (annual level) |
+| `month` | yes | yes | yes | yes | calendar month |
+| `quarter` | yes | yes | yes | yes | calendar quarter |
+| `peak_month` | yes | yes | yes | yes | flag for the category's seasonal peak |
+| `promo_intensity` | yes | - | yes | - | promotion share at t-1 (lagged: contemporaneous would leak) |
+| `days_in_month` | yes | yes | yes | yes | calendar length of the month |
+| `n_holidays` | yes | yes | yes | yes | Danish public holidays that month |
+| `non_holiday_days` | yes | yes | yes | yes | days_in_month minus n_holidays (exact linear combination of the two) |
+| `zero_run_flag` | yes | yes | yes | yes | the month falls inside a run of zero-sales months |
+| `zero_run_length` | yes | yes | yes | yes | how many months that zero-sales run has lasted |
 
 **Deliberately excluded** from model inputs, though present in the matrix for EDA:
 
@@ -89,12 +91,12 @@ Reported as **median per-series MAPE** and **WMAPE** (volume-weighted -- the bus
 
 ### WMAPE (lower is better)
 
-| Model | CSD | RTD |
-|---|---:|---:|
-| SeasonalNaive | 26.8% | 78.1% |
-| Ridge | 19.1% | 71.5% |
-| LightGBM | 21.4% | 27.7% |
-| XGBoost | 21.4% | 28.7% |
+| Model | CSD | Danskvand | Energidrikke | RTD |
+|---|---:|---:|---:|---:|
+| SeasonalNaive | 26.8% | 50.5% | 31.3% | 78.1% |
+| Ridge | 19.1% | 30.2% | 23.9% | 71.5% |
+| LightGBM | 21.4% | 34.7% | 17.8% | 27.7% |
+| XGBoost | 21.4% | 35.5% | 19.7% | 28.7% |
 
 ---
 
@@ -109,6 +111,8 @@ Getting this wrong does not raise an error -- it produces intervals that look im
 | Category | Calibration rows | q90 (log space) | Median 90% interval width |
 |---|---:|---:|---|
 | CSD | 665 | 2.096 | ~8.0x the point forecast |
+| Danskvand | 174 | 2.062 | ~7.7x the point forecast |
+| Energidrikke | 264 | 2.849 | ~17.2x the point forecast |
 | RTD | 372 | 1.932 | ~6.8x the point forecast |
 
 A wide interval is not a failure of the model -- it is an honest statement about monthly brand-level demand. Reporting a narrow one that is not earned would be.

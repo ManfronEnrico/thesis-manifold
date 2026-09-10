@@ -1,13 +1,10 @@
 Category,Model,"Baseline WMAPE, fixed config (%)","Baseline WMAPE, tuned (%)",Baseline gain (pp),"Holiday delta, fixed (pp)","Holiday delta, tuned (pp)"
-CSD,LightGBM,18.48,15.80,+2.68,+1.55,+0.10
-CSD,Ridge,21.93,21.25,+0.67,+0.76,+0.95
-CSD,XGBoost,17.09,14.99,+2.10,+2.17,+1.73
-RTD,LightGBM,32.21,35.10,-2.89,-1.67,-5.36
-RTD,Ridge,57.27,56.30,+0.97,-10.15,-8.97
-RTD,XGBoost,31.78,36.02,-4.24,-2.88,-0.14
-danskvand,LightGBM,33.12,23.65,+9.47,+0.11,-3.70
-danskvand,Ridge,19.21,21.70,-2.49,+0.32,-0.74
-danskvand,XGBoost,32.56,20.88,+11.68,+1.57,+0.62
-energidrikke,LightGBM,17.82,14.56,+3.26,-0.41,-0.84
-energidrikke,Ridge,20.83,20.31,+0.52,+0.79,-1.21
-energidrikke,XGBoost,14.94,13.12,+1.82,+1.75,+0.51
+CSD,LightGBM,20.20,19.74,+0.46,+1.23,-0.95
+CSD,Ridge,19.73,20.70,-0.97,-0.60,-0.15
+CSD,XGBoost,20.53,17.15,+3.37,+0.88,+1.22
+Danskvand,LightGBM,33.88,25.71,+8.18,+0.86,+0.98
+Danskvand,XGBoost,34.19,21.20,+12.99,+1.29,+2.21
+Energidrikke,LightGBM,17.72,20.98,-3.26,+0.12,-0.64
+Energidrikke,XGBoost,19.17,17.98,+1.19,+0.57,-0.61
+RTD,LightGBM,29.18,33.26,-4.08,-1.51,-1.40
+RTD,XGBoost,30.68,35.67,-4.98,-1.96,-4.92

@@ -2,10 +2,10 @@
 
 | Category     | Features available (n)   | Features after reduction (n)   | Clusters found (n)   |
 |:-------------|:-------------------------|:-------------------------------|:---------------------|
-| CSD          | 16                       | 9                              | 2                    |
-| danskvand    | 15                       | 8                              | 2                    |
-| energidrikke | 16                       | 9                              | 2                    |
-| RTD          | 15                       | 9                              | 2                    |
+| CSD          | 18                       | 9                              | 3                    |
+| Danskvand    | 17                       | 9                              | 3                    |
+| Energidrikke | 18                       | 10                             | 3                    |
+| RTD          | 17                       | 10                             | 3                    |
 
 *Note.* Features were grouped where pairwise absolute Spearman correlation was at least 0.95, keeping the member with the highest permutation importance on the validation split. The reduction was evaluated against the benchmark and REJECTED: it raised mean test WMAPE from 26.44 to 28.82.
 

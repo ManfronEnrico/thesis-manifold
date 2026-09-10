@@ -2,25 +2,22 @@
 
 | Category     | Model    | WMAPE without (%)   | WMAPE with (%)   | Delta (pp)   | Direction   |
 |:-------------|:---------|:--------------------|:-----------------|:-------------|:------------|
-| CSD          | LightGBM | 15.80               | 15.90            | +0.10        | worsened    |
-| CSD          | Ridge    | 21.25               | 22.20            | +0.95        | worsened    |
-| CSD          | XGBoost  | 14.99               | 16.72            | +1.73        | worsened    |
-| RTD          | LightGBM | 35.10               | 29.74            | -5.36        | improved    |
-| RTD          | Ridge    | 56.30               | 47.33            | -8.97        | improved    |
-| RTD          | XGBoost  | 36.02               | 35.88            | -0.14        | improved    |
-| danskvand    | LightGBM | 23.65               | 19.95            | -3.70        | improved    |
-| danskvand    | Ridge    | 21.70               | 20.96            | -0.74        | improved    |
-| danskvand    | XGBoost  | 20.88               | 21.50            | +0.62        | worsened    |
-| energidrikke | LightGBM | 14.56               | 13.73            | -0.84        | improved    |
-| energidrikke | Ridge    | 20.31               | 19.10            | -1.21        | improved    |
-| energidrikke | XGBoost  | 13.12               | 13.63            | +0.51        | worsened    |
+| CSD          | LightGBM | 19.74               | 18.78            | -0.95        | improved    |
+| CSD          | Ridge    | 20.70               | 20.55            | -0.15        | improved    |
+| CSD          | XGBoost  | 17.15               | 18.38            | +1.22        | worsened    |
+| Danskvand    | LightGBM | 25.71               | 26.68            | +0.98        | worsened    |
+| Danskvand    | XGBoost  | 21.20               | 23.41            | +2.21        | worsened    |
+| Energidrikke | LightGBM | 20.98               | 20.34            | -0.64        | improved    |
+| Energidrikke | XGBoost  | 17.98               | 17.37            | -0.61        | improved    |
+| RTD          | LightGBM | 33.26               | 31.85            | -1.40        | improved    |
+| RTD          | XGBoost  | 35.67               | 30.75            | -4.92        | improved    |
 
-*Note.* Negative delta indicates the holiday features improved accuracy. They helped in 7 of 12 category-model combinations. Each arm was tuned independently on the validation split, refit on train+validation, and scored once on the held-out test split.
+*Note.* Negative delta indicates the holiday features improved accuracy. They helped in 6 of 9 category-model combinations. Each arm was tuned independently on the validation split, refit on train+validation, and scored once on the held-out test split.
 
 ---
 
 <!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
 
-Do NOT quote the mean of this column. It averages over model families that respond differently, and that difference is itself the finding: Ridge benefits in 3 of 4 categories while the tree models benefit in 4 of 8 cells.
+Do NOT quote the mean of this column. It averages over model families that respond differently, and that difference is itself the finding: Ridge benefits in 1 of 1 categories while the tree models benefit in 5 of 8 cells.
 
-danskvand LightGBM is the least stable cell in the study (it swings 3.81pp between the untuned and tuned runs, table 95).
+RTD XGBoost is the least stable cell in the study (it swings 2.95pp between the untuned and tuned runs, table 95).
