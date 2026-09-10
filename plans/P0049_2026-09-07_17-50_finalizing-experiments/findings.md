@@ -1366,3 +1366,37 @@ D and E have **never been run**, so their per-run cost is unknown. Both the
 dry-run estimator and the smoke test now carry placeholders that print
 `(ESTIMATE NOT MEASURED)`. Replace them from the first smoke run — a made-up
 number that looks measured is exactly what the provenance rule exists to stop.
+
+---
+
+## F48 — Correction: the shipped CSVs are evidence, not what keeps A–C runnable (2026-09-10)
+
+Caught while writing the export requirements into P0054. F43 and
+`export_scenario_inputs.py`'s docstring both claimed the per-brand CSVs are what
+lets an assessor re-run scenarios A–C. **That is not true of the repository that
+actually ships.**
+
+**Verified:** the harness builds every series at run time from
+`_03_engineered/bymonth/*.parquet` via `_brand_history()` — three
+`read_parquet()` calls, and **no code path reads `scenario_inputs/` at all**.
+
+The claim was written against an assumption that the submission export would
+strip `_03_engineered`. That assumption is obsolete: **32 matrix files are
+tracked** (Brian's decision to un-ignore them), and P0054 ships
+`_03_engineered/bymonth/**` explicitly. So A–C run from the parquet, with or
+without the CSVs.
+
+**What the CSVs are actually worth**, which is still worth shipping:
+
+- **Inspection without execution.** An assessor sees the exact bytes Scenario B
+  was handed, without running anything or opening a parquet.
+- **Verification.** `index.csv` carries the scored month and the held-out actual,
+  which is what lets a reported run be checked.
+
+Both the docstring and P0054's requirement note now say this. The byte-identity
+and leakage checks in F43 stand — they were measurements, and they are unaffected.
+
+**The general lesson**, which is the F21 pattern again in a different costume: a
+rationale written against an assumed future state reads as a verified fact three
+days later. The fix is the same as always — state what was measured, and name the
+assumption separately so it can be checked when it changes.

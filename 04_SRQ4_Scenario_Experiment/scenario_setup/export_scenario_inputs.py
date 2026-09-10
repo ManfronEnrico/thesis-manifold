@@ -8,16 +8,27 @@ Scenarios B and D are handed one brand's monthly history and asked to forecast a
 held-out month. Today that series is built at run time from
 `_03_engineered/*.parquet` via `_brand_history()`.
 
-**The submission export deletes `_03_engineered`** (`submission-export` SKILL,
-Q1 "ship nothing"). So an assessor cloning the clean repository would have the
-harness, the prompts and no data -- and scenarios A-C would stop being runnable,
-which is the entire point of having a reproducible tier (ch2 §2.6).
+An assessor reading the results has no way to see what Scenario B was actually
+given. The series is built at run time and pasted into a prompt; it exists in the
+logs, in a form nobody wants to read, and nowhere else.
 
-DEC-SHARE-CSV (Brian, 2026-09-10) resolves it: these series **do** ship. What
-Scenario B receives is already filtered to one brand and aggregated to monthly --
-not live warehouse access, and not the dataset -- so it discloses no more than the
-thesis tables already do, and it is what lets an assessor re-run A-C with their
-own OpenAI key.
+DEC-SHARE-CSV (Brian, 2026-09-10) permits shipping it: what Scenario B receives
+is already filtered to one brand and aggregated to monthly -- not live warehouse
+access, and not the dataset -- so it discloses no more than the thesis tables do.
+
+WHAT THESE FILES ARE, AND ARE NOT
+---------------------------------
+They are **evidence, not a dependency**. The harness reads
+`_03_engineered/bymonth/*.parquet` and never reads this directory; the
+engineered matrices are tracked and ship with the submission, so scenarios A-C
+run with or without these CSVs.
+
+What they add is inspection without execution: an assessor can see the exact
+bytes Scenario B was handed, and `index.csv` carries the held-out actual, which
+is what lets a scored run be verified. An earlier version of this docstring
+claimed the CSVs were what kept A-C runnable -- that was written against an
+assumption that the matrices would be stripped, and it is not true of the
+repository that actually ships.
 
 WHAT IS WRITTEN, AND WHY IT IS EXACTLY WHAT THE HARNESS USES
 ------------------------------------------------------------
