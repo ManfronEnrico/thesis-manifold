@@ -757,3 +757,106 @@ Cost therefore splits: launching the engine is free, E2B is ~$0.0001/run
 (F38), and the gpt-5.5 calls are the real spend. The open question is only
 whether the engine **starts** -- its venv is verified (F46, re-checked
 2026-09-10) but has never been run.
+
+---
+
+## F38 — What Scenario B actually receives, and why it is NOT warehouse-equivalent (2026-09-10)
+
+Brian pushed on three things. All three check out, and together they change the
+D/E port design.
+
+### 1. The 39 rows are real (verified)
+
+All 39 rows join to the feature matrix on (year, month) and `sales_units` is
+**identical**. Not hallucinated, not synthesised. 39 of HARBOE's 46 months,
+because the 7 held-out test months are correctly withheld.
+
+### 2. My "June 30" date was wrong
+
+`MANIFEST.json` says `2026-06-30`, but that is a **stale manifest timestamp**.
+The converted parquets were written **2026-08-12**, and the data runs to
+**2026-07** in both the converted `dim_period` and the engineered matrix — 46
+distinct months, identical range in both. Brian was right; feature engineering
+was done on the converted parquet, and the two agree.
+
+**Lesson: a manifest is a claim with a timestamp, like a stated blocker.** Read
+the data, not the file that describes it.
+
+### 3. The CSV is heavily pre-processed, and that is the real problem
+
+| | Raw warehouse (CSD) | What Scenario B gets |
+|---|---|---|
+| Shape | **10,311,342 rows x 32 cols**, 732 MB | **39 rows x 4 cols**, 1,701 bytes |
+| Structure | star schema: `facts_v` + 3 dimension views, grain `market_id x period_id x product_id` | one flat table |
+| Scope | every brand, market, product | **one brand, one category** |
+| Aggregation | none | monthly, brand-level, pre-aggregated |
+| Columns | 32 measures | `period_year, period_month, sales_units, promo_intensity` |
+
+Delivered as **CSV text pasted into the prompt**, not a file — 1,701 bytes into
+`code_interpreter` with `container: auto`.
+
+**So Scenario B does not simulate warehouse access at all.** It simulates *"an
+analyst has already found the right brand, joined the star schema, resolved the
+product-hierarchy node, aggregated to monthly, and handed you the series."* Every
+hard part of using this warehouse is done before B starts.
+
+That is defensible as a design, but **it must be stated as an assumption rather
+than left implicit** — Brian's framing is the right one: an agent asked about one
+brand would plausibly filter to that brand first, because it is the cheapest path
+to an answer. What cannot be claimed is that B measures warehouse-querying ability.
+
+### The hierarchy trap makes this sharper, not softer
+
+`warehouse_guide.md` documents five traps, and the first two are severe:
+
+> `<p>_clean_facts_v` carries not only leaf UPC rows but also PRE-AGGREGATED rows
+> (category / manufacturer / brand totals) under their own `product_id`s.
+> `SUM(facts_v)` with no product filter -> includes the aggregate rows -> wildly
+> overcounts.
+
+and
+
+> NEVER SUM ACROSS LEVELS ... within one level there are SEVERAL alternative
+> breakdowns ... each re-partitions the total.
+
+**An agent given the raw warehouse would very likely get the wrong number**, and
+that failure would have nothing to do with forecasting. Handing B and D the raw
+star schema would measure schema-navigation skill, not the intervention the
+thesis is about.
+
+**This is the strongest argument for the pre-aggregated CSV, and it is a better
+one than convenience.** It should go in the methodology in those terms.
+
+---
+
+## F39 — How Prometheus feeds a 700 MB warehouse to an LLM (2026-09-10)
+
+Brian asked how the engine avoids shipping the whole table to GPT-5.5. Read from
+`prometheus_coder.py`; the mechanism is a **two-tier split**, and it matters for
+the port.
+
+```python
+def _ru_show(df, max_rows=100):        # what the MODEL sees
+_MAX_RESULT_CHARS = 8000               # hard cap on tool-result text
+def _ru_stash(df):                     # the FULL frame stays in the kernel
+    globals()["df"] = df               # available to execute_code as df, df_1, ...
+```
+
+| Tier | Holds | Size |
+|---|---|---|
+| Model context | a rendered text table | **100 rows max, 8,000 chars max**, then truncated with an instruction to re-query or aggregate |
+| Sandbox kernel | the full DataFrame | whatever the query returned |
+
+So the model never sees the data — it sees a **preview** and writes code against a
+handle. Charts and derived numbers are computed sandbox-side. Nothing is persisted
+per session; the sandbox is ephemeral.
+
+**Consequence for the port:** the engine's data path is *preview + handle*, while
+B's is *whole series inline in the prompt*. Given B's series is 39 rows and 1.7 KB,
+it fits under both caps comfortably — so the same data can be delivered to D
+without either arm being truncated. The delivery mechanism differs; the
+information does not.
+
+That difference is worth one sentence in the methodology, because it is a genuine
+architectural difference between a general LLM and a production data agent, and
+it favours neither on this task size.
