@@ -16,10 +16,26 @@ from pathlib import Path
 from pyzotero import Zotero
 from dotenv import load_dotenv
 
+# Item types that reach citations.json / bibtex.bib.
+#
+# This is a CITABLE-type list, not a scholarly-type list, and the distinction
+# matters. A thesis cites software, datasets and APIs as well as papers: the
+# Danish public-holiday calendar is a `computerProgram` entry, and the pipeline
+# cites it in Chapter 4.
+#
+# 2026-09-10: `computerProgram`, `dataset`, `software`, `blogPost` and
+# `manuscript` were absent here, so a Nager.Date entry added to Zotero that
+# morning never reached the export. A verification pass then reported the
+# citation as missing from the library when it was present -- a silent,
+# one-directional failure, because an item that is filtered out is
+# indistinguishable from one that was never added.
+#
+# Attachments and notes remain excluded; they are not citable items.
 _SCHOLARLY_TYPES = {
     "journalArticle", "preprint", "book", "bookSection",
     "conferencePaper", "report", "document", "thesis",
     "magazineArticle", "newspaperArticle", "webpage",
+    "computerProgram", "dataset", "software", "blogPost", "manuscript",
 }
 
 # Resolve repo paths through PATHS.py (DEC-P0046-PATHS), anchored on

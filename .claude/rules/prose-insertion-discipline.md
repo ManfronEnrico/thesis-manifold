@@ -5,7 +5,7 @@ category: workflow
 applies-to: [thesis prose, writing-notes, docx insertion, appendix references]
 triggers: [writing prose, converting bullets to prose, preparing paragraphs for Word, citing a table or figure in prose]
 created: 2026_09_07-15_00
-updated: 2026_09_10-15_30
+updated: 2026_09_10-17_50
 ---
 
 # Prose insertion discipline
@@ -165,6 +165,12 @@ python utility_scripts/scripts/thesis_snapshot.py --label "<slug>"
 
 ## Remote currency
 
+**All four currency checks are one command: `/re-snap`.** It runs the fetch,
+the snapshot, the diff against the previous snapshot and the Zotero pull, and
+carries the traps each has produced. Run it before writing any pass or
+follow-up.
+
+
 The snapshot rule covers the `.docx`. **The repository moves too**, and on this
 project it moves from three machines — the laptop, the VPS and the HPC — so
 "the repository" is not a fixed thing to verify against.
@@ -248,6 +254,13 @@ were written into the source as string literals, in three places.
 So the table now pairs a **fresh structure with a stale outcome**, which is worse
 than either half alone: a table that has visibly been regenerated invites more
 trust than one that has not.
+
+**As of 2026-09-10 the generators are governed by a Correctness-tier rule** —
+`.claude/rules/generated-artefact-provenance.md` requires every number in a
+generated artefact to be computed from an input consumed that run. That closes
+the failure at source. This section stays because a prose pass reads artefacts
+it did not generate, some written before the rule and some carrying documented
+carve-outs, so the reader still checks.
 
 **What to check before citing a results number:**
 

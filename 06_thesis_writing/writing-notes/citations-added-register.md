@@ -4,7 +4,7 @@ description: NOTE - Every citation added to the thesis during a prose or follow-
 category: reference
 applies-to: [chapter 4, chapter 5, citations, verification]
 created: 2026_09_09-21_10
-updated: 2026_09_09-21_10
+updated: 2026_09_10-17_45
 status: open
 ---
 
@@ -44,8 +44,8 @@ register exists to prevent.
 
 | | |
 |---|---|
-| Last Zotero pull | **2026-09-09 21:00** |
-| Items in library | 86 |
+| Last Zotero pull | **2026-09-10 17:40** |
+| Items in library | 87 |
 | Pulled by | `python utility_scripts/scripts/zotero_client.py` |
 
 **Re-pull before every verification pass.** The export that preceded this one was
@@ -242,6 +242,44 @@ by number in text. **Do this before the bibliography is exported.**
 Available for the same skewness claim as C4-02 and C4-03. **Deliberately not
 used** — two sources are sufficient and a third is padding. Recorded so a later
 session does not "discover" it and add it.
+
+---
+
+## C4-09 — Nager.Date (added by Brian, 2026-09-10)
+
+| | |
+|---|---|
+| **Status** | `IN-ZOTERO` / `NLM-N/A` |
+| **Zotero key** | `3MTF7LGL` |
+| **Type / year** | computerProgram, 2026 |
+| **URL** | https://github.com/nager/Nager.Date |
+| **Used in** | §4.3, the holiday-calendar sentence |
+| **Added by** | Brian, directly in Word and Zotero |
+
+**The claim it supports:** that the Danish public-holiday calendar was obtained
+from the Nager.Date service.
+
+**No NotebookLM verification applies.** This is a data source, not an argument —
+the claim is provenance, and the pipeline's own manifest is the evidence:
+`_00_raw/holidays/nager_dk_manifest.json` records the retrieval at
+2026-09-06T15:06:15Z, coverage 2018-2027, and a SHA-256 per year.
+
+⚠ **The in-text form needs fixing**, not the entry: `(nager, 2014/2026)` should
+read `(Nager.Date, 2026)`. A slash-separated year pair means a reprinted work.
+See F2 in `ch4_data_assessment/ch4-complete-pass-followup-02.md`.
+
+### Note - this entry exposed an export bug
+
+`citations.json` is filtered by item type, and `computerProgram` was not in the
+allowed set, so this entry was silently dropped from the export while present in
+the library. A verification pass reported the citation missing when it was there.
+
+**Fixed 2026-09-10:** the filter now also admits `computerProgram`, `dataset`,
+`software`, `blogPost` and `manuscript`. The export went 86 -> 87 items.
+
+**The lesson for this register:** `NOT-IN-ZOTERO` must never be recorded from
+`citations.json` alone. Query the API unfiltered — the `/re-snap` skill carries
+the snippet.
 
 ---
 

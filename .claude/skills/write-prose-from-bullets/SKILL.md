@@ -531,3 +531,13 @@ ablation, say), **name which one the prose rests on**. Both may be correct
 experiments answering different questions.
 
 See `.claude/rules/prose-insertion-discipline.md` -> **Results currency**.
+
+## Start with /re-snap
+
+Before writing a pass or a follow-up, run `/re-snap`. It fetches, snapshots,
+diffs against the previous snapshot and re-pulls Zotero in one step, so there is
+no per-surface judgement call to get wrong.
+
+One trap it carries, learned the hard way: `citations.json` is filtered by item
+type, so **never conclude a source is missing from the library on that file
+alone** — query the API unfiltered.

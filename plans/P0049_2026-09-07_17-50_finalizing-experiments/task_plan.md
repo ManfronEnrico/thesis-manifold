@@ -1,9 +1,9 @@
 ---
 pid: P0049
 created: 2026-09-07 17:50:00
-updated: 2026-09-09 21:30:00
+updated: 2026-09-10 17:15:00
 status: in_progress
-focus_detail: "TRAINING IS ON THE HPC (see P0053); this plan now covers the experiment side only. Four fixes landed 2026-09-09, all pushed: F31 the feature set was 13 and should be 18 -- holiday enrichment reached NO model and FEATURES had 11 drifting copies, now srq1/_features.py; F32 casing swept on the SRQ4 side, which had been raising KeyError on two of four categories (scorable brands 120 -> 168, so the funded sample was missing 40%); F33 the prompt registry was never recorded despite prompts.schema_id() existing, now in every trace; F34 smoke_test.py, ~$0.81, nine checks derived from ch2 2.5 rather than chosen. NEXT, in order: (1) DEC-VENDOR, pure writing and blocks the funded runs; (2) scenarios D/E -- NOT IMPLEMENTED AT ALL, SCENARIOS holds A/B/C only and the E2B template is unbuilt, so half the thesis argument (D->E mirroring B->C) does not exist yet; (3) run the smoke test when HPC results land, then the funded set. verify_setup.py 10/10."
+focus_detail: "TRAINING IS ON THE HPC (P0053); this plan is the experiment side only. DEC-VENDOR SETTLED 2026-09-10: all scenarios run gpt-5.5-2026-04-23, argued on ecological validity -- the Prometheus engine sets main_agent_model and coder_model to gpt-5.5, so D/E run it regardless, and a vendor split would put model family into the B->C vs D->E comparison. Argument in writing-notes/dec-vendor-model-choice.md; ch3 + ch9 prose awaits approval. NEXT: (1) re-check the 111-run sampling allocation -- F32 took scorable brands 120 -> 168, and the design was frozen against the smaller population; (2) scenarios D/E, which are NOT IMPLEMENTED AT ALL (SCENARIOS holds A/B/C) and need the E2B template first -- Prometheus IS reachable locally at Z:/_dev-ssd/prometheus, so this is a build task rather than a blocked one; (3) smoke test when HPC results land, then the funded set. verify_setup.py 10/10."
 ---
 
 # P0049 — Finalizing experiments
@@ -128,7 +128,7 @@ same defect in phase 4 costs $40.
 ### Phase 4 — Funded runs
 
 P0042's frozen sampling design: 111 runs, ~$40, allocated inversely to per-run cost
-(A n=3, B/C n=10 stratified, C-only cross-category). Decide DEC-VENDOR first.
+(A n=3, B/C n=10 stratified, C-only cross-category). DEC-VENDOR is settled (2026-09-10).
 
 **The eligible population changed on 2026-09-09.** F32 fixed a `KeyError` that had made
 Danskvand and Energidrikke unusable, taking scorable brands from **120 to 168**. The
@@ -152,7 +152,7 @@ When they land, add them to `smoke_test.py` first and smoke them before spending
 
 | ID | Decision | State |
 |---|---|---|
-| **DEC-VENDOR** | Claude vs GPT for SRQ4 | **OPEN.** ~$7 vs ~$4 for 50 runs — decide on ecological validity, not cost |
+| **DEC-VENDOR** | All SRQ4 scenarios run `gpt-5.5-2026-04-23` | **MADE 2026-09-10.** Decided on ecological validity: the Prometheus engine's own config sets `main_agent_model` and `coder_model` to `gpt-5.5`, so D/E run it regardless — a vendor split would put model family into the B→C vs D→E comparison. Argument: `writing-notes/dec-vendor-model-choice.md` |
 | **DEC-HORIZON** | Implement both horizons, benchmark both, SRQ4 at 3 months | **MADE** (Brian, via P0048); implemented + verified 2026-09-07 |
 | **DEC-HORIZON-BOTH** | H=1 and H=3 both run properly. H=3 primary, keeps the unsuffixed result paths; H=1 writes to `h1/` | **MADE** (Brian, 2026-09-07) |
 | **DEC-DETERMINISM** | Accuracy at `n_jobs=1`; resource profiling at `-1` | **MADE**, implemented, verified |
