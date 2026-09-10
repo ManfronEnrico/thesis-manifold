@@ -4,7 +4,7 @@ description: NOTE - Running list of structural decisions deferred out of chapter
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 6, chapter 7, chapter 8, appendix]
 created: 2026_09_09-17_10
-updated: 2026_09_09-21_35
+updated: 2026_09_10-16_10
 status: open
 ---
 
@@ -323,3 +323,80 @@ or skip the step.
 A chapter pass adds rows under a new `# Chapter N` heading and extends the quick
 reference table. Do not re-derive items already listed - if a later pass changes
 a recommendation, edit the row and say what changed, so the reasoning survives.
+
+## S13 - Captioning the calibration table renumbers everything after it
+
+**Status:** `recommended`
+
+Chapter 5's split-conformal coverage table (§5.5.7) has no caption and no number,
+while every other table in the chapter has both. Adding one makes it Table 14 and
+pushes the SRQ-contribution table to 15, along with every numbered table in the
+chapters that follow.
+
+**Recommendation: add the caption.** An uncaptioned table cannot be referred to
+and does not appear in the table of figures, which is a formal-requirements
+problem rather than a stylistic one. Word's cross-reference fields renumber on
+F9; **plain-text callouts of the form "Table 14" typed as literal text do not**,
+so grep the document for those before pasting.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---
+
+## S14 - fig4_ram_budget is stale and contradicts §5.5.6
+
+**Status:** `open`
+
+Chapter 5's Remaining-gaps section carries the line *"fig4_ram_budget is stale
+and contradicts §6.5.6"*. That sentence is a note to the authors and must come
+out of the prose either way (F12).
+
+The underlying problem is real: the figure was drawn against an 8 GB budget and
+tracemalloc heap figures, where the chapter now reports a 4 GB budget and
+resident set size. **Regenerate it from
+`tables/05_substrate_resource_profile.md`**, which already carries the
+share-of-budget row.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---
+
+## S15 - Should the five model descriptions become one comparison table?
+
+**Status:** `recommended`
+
+Sections 5.2.2 through 5.2.6 each give role, implementation, memory and a stated
+limitation for one model, in the same order, as a bullet list. Nineteen `PROSE`
+comments cover them.
+
+**Recommendation: one table, not five paragraphs.** A reader comparing six models
+wants columns, and §5.1 argues the ladder is the point without ever showing it.
+Columns for model, family, role, implementation, peak memory and stated
+limitation would carry the same content in a third of the space and make the
+inductive-bias spread visible.
+
+The simple-benchmark definitions in 5.2.1 already work as a table and should
+stay one.
+
+**Not drafted** - say the word and it takes ten minutes.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---
+
+## S16 - Two Zotero entries will render wrong in the bibliography
+
+**Status:** `open`
+
+| Entry | Defect | Renders as |
+|---|---|---|
+| Hyndman & Athanasopoulos | stored under the section title *"5.2 Some simple forecasting methods"*, no year | "n.d.", and alphabetised under the wrong title |
+| Akiba et al. | year field reads "July" | a month where the year belongs |
+
+Both are cited repeatedly in Chapter 5 and both are fixed **in Zotero**, not in
+Word - the bibliography is generated from the library, so a correction typed into
+the document is overwritten on the next refresh.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---

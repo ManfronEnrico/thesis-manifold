@@ -4,7 +4,7 @@ description: NOTE - Running list of thesis claims that must be re-verified or up
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 8, results]
 created: 2026_09_09-21_00
-updated: 2026_09_10-15_10
+updated: 2026_09_10-16_10
 status: partly-verified
 ---
 
@@ -377,3 +377,47 @@ Steps 1 and 2 are gates. Everything below them assumes they passed.
 Any pass that writes a claim resting on a pending run adds a row here **at the
 time it writes the claim**, not afterwards. A claim that depends on a future
 measurement and is not recorded is a claim nobody will re-check.
+
+## H11 - The per-seed winner data (GATE)
+
+**Claim as the thesis states it (§5.5.9):** *"the winning model changes with the
+seed in every category"*, supported by a table listing a winner per seed per
+category. §5.6's entire selection argument rests on it.
+
+**What answers it:** the per-seed WMAPE values the stability run produced before
+aggregation. `10_seed_stability.csv` holds only per-model aggregates - median CV,
+WMAPE mean, WMAPE sd - so the winner-per-seed table cannot be rebuilt from what
+is published. Check whether `srq1_stability.py` retains the per-seed frame, or
+re-run it with the per-seed output preserved.
+
+**Why it is a gate:** the published aggregates point the other way. LightGBM has
+the lower mean WMAPE in all four categories, by 0.1 to 3.2 points. If the flip
+does not hold, §5.5.9's second table comes out and §5.6 is rewritten.
+
+**If wrong, the chapter reverts to:** a between-seed standard deviation of 0.4 to
+1.9 points against a between-model gap of 0.1 to 3.2 puts the difference inside
+noise for CSD, danskvand and energidrikke, and outside it only for RTD. That
+supports choosing on operational grounds for three of four categories, rather
+than the stronger claim that the two models are indistinguishable everywhere.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---
+
+## H12 - Re-profile the operational figures on 18 features
+
+**Claim as the thesis states it (§5.5.6):** the peak-memory and latency figures
+for Ridge, LightGBM, XGBoost and ARIMA.
+
+**What answers it:** `tables/profiling.csv` records `n_features: 13`, so the
+current figures predate the 18-feature set. Re-run the profiling step and check
+the `n_features` column reads 18.
+
+**Not a gate.** No claim in the chapter depends on the exact value, only on the
+memory constraint being non-binding, and the headroom is two orders of magnitude.
+More features cost more rather than less, so the current figures are a floor and
+the direction is safe.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---
