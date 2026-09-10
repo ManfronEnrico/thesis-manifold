@@ -24,6 +24,6 @@
   "model": "haiku",
   "hooks": {},
   "enabledPlugins": {
-    "watermarks-remover@watermarks-remover": true
+    "watermarks-remover@watermarks-remover": false
   }
 }
