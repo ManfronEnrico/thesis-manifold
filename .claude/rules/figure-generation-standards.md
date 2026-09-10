@@ -5,7 +5,7 @@ category: pattern
 applies-to: [05_thesis_results/generate_*.py, any figure or table producer, appendix output]
 triggers: [generating a figure, adding a diagram, writing a caption, styling a chart, reviewing a rendered figure]
 created: 2026_09_07-15_15
-updated: 2026_09_07-15_15
+updated: 2026_09_10-19_24
 ---
 
 # Figure Generation Standards
@@ -26,9 +26,9 @@ what the reader sees.
 | Caption alignment | Centred under the drawing | [Captions](#captions) |
 | Sibling boxes | Equal width, so peers look like peers | [Layout](#layout) |
 | Aspect ratio | **≤ 3.6**, so it is placeable on A4 | [Layout](#layout) |
-| Background | Transparent | [Contrast](#contrast) |
+| Background | **White**, never transparent | [Contrast](#contrast) |
 | Caption text | Submission-ready; no filenames | [Captions](#captions) |
-| Internal notes | Separated, never in the caption | [Captions](#captions) |
+| Internal content | **None in tiers 01-05**, marked or not | [Captions](#captions) |
 | Values | Read from artefacts, never typed | [Provenance](#provenance) |
 | Check | Look at the rendered file | [Verification](#verification) |
 
@@ -89,7 +89,7 @@ Use a **greyscale tier system**, so nesting is visible without colour:
 
 | Element | Fill | Why |
 |---------|------|-----|
-| Page background | `transparent` | the figure sits on whatever the document uses |
+| Page background | `white` | the figure carries its own ground; see below |
 | Cluster / group box | `#878787` | mid grey, so near-white children clearly sit *inside* it |
 | Node inside a cluster | `#fafafa` | nested boxes are *lighter* than their parent |
 | Cluster **label** | `#1a1a1a` (ink) | a muted grey title sinks into a `#878787` fill |
@@ -100,8 +100,15 @@ One accent colour only, and only on the element the figure is *about*. Everythin
 must survive greyscale printing, so never let colour be the sole carrier of
 meaning.
 
-Set `bgcolor="transparent"` on graphviz graphs and
-`savefig(..., transparent=True)` on matplotlib figures.
+Set `bgcolor="white"` on graphviz graphs and
+`savefig(..., facecolor="white", transparent=False)` on matplotlib figures.
+
+**Never transparent.** A transparent figure inherits whatever ground it is
+placed on, and the tier palette above assumes a light one: on a dark slide or
+a dark-themed PDF viewer the near-white node fills stay light while the page
+behind them goes dark, so the nesting the palette encodes inverts and the
+ink-coloured text drops out. Painting the ground white makes a figure carry
+its own context into any document it is pasted into.
 
 ## Captions
 
@@ -121,13 +128,56 @@ Never put in a caption:
 
 Say **what the figure shows and what it means**, in the vocabulary of the thesis.
 
-Internal notes — provenance, staleness flags, regeneration instructions, open
-questions — go **below a horizontal rule under an `INTERNAL REVIEW` marker**, in
-the accompanying `.md`, never in the caption or on the figure itself. A
-screenshot cropped to the figure and its caption must be clean by construction.
+Editorial notes — provenance, staleness flags, regeneration instructions, open
+questions — go in a **separate file**, filed under the chapter that discusses
+the artefact:
 
-This mirrors `export_appendix.py`'s existing `REVIEW_SEP` convention; reuse it
-rather than inventing a second one.
+```
+06_thesis_writing/writing-notes/ch{N}_{chapter}/generated/<slug>.md
+```
+
+Use `05_thesis_results/review_notes.py` (`write_review_note`) rather than
+inventing a second mechanism. It derives the chapter from the artefact's own
+output path, so a producer cannot file a table in one chapter and its note in
+another.
+
+### Tiers 01–05 carry no internal content at all
+
+**Not "marked internal content is separated" — none of it is there.** Tiers 01
+through 05 are read by assessors. That covers every emitted file, whether or not
+it ships, whether or not it is marked, and whether or not the marking is honest.
+
+Never emit into tiers 01–05:
+
+| Never | Because |
+|---|---|
+| a plan ID, finding number or decision code | it points at a file the reader does not have |
+| "for our own review", "not for submission" | it addresses the authors |
+| an author's name | same |
+| a path into `06_thesis_writing/` | it names a tree the reader never sees |
+
+**A marker is a symptom of internal content, not its definition.** An earlier
+pass enforced this by searching for `<!-- INTERNAL REVIEW -->` and relocating
+what sat below it. That found the notes which were honest about being notes and
+missed **nine lines** of ordinary-looking prose that happened to cite a plan
+file. The unmarked class is the dangerous one, precisely because it does not
+announce itself.
+
+**Keep the reasoning, drop the citation.** A sentence like *"the mean MAPE is
+deliberately absent: a single divergent series destroys it (P0038 F75)"* is a
+real methodological point wearing an internal reference. Delete the parenthesis,
+not the sentence. Where the reasoning is genuinely internal, move it to the
+chapter note.
+
+This is enforced, not remembered:
+
+```bash
+python 05_thesis_results/check_reader_facing.py     # exit 1 on any hit
+```
+
+Every appendix producer calls `warn_after_run()` at the end of its own run, so
+the check reports without anyone deciding to run it. Being remembered is exactly
+what failed the first time.
 
 ## Provenance
 
@@ -161,8 +211,10 @@ nesting visible in greyscale, does the caption stand alone without the repo?
 - `05_thesis_results/generate_architecture_diagrams.py` — the shared style
   helpers (`_g`, `_box`, `_save`) implement this rule
 - `05_thesis_results/generate_literature_table.py` — the two-provenance pattern
-- `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` — `REVIEW_SEP`,
-  the submission/internal split, and the output-block allocation
+- `05_thesis_results/check_reader_facing.py` — enforces the reader-facing
+  invariant; `warn_after_run()` is called by every appendix producer
+- `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` — the
+  chapter routing (`_TABLE_CHAPTER`) and the output-block allocation
 - `.claude/rules/writing-surface-authority.md` — where prose lives
 
 
@@ -177,7 +229,7 @@ fall out of step.
 
 ```python
 g.render(OUT / stem, format="svg", cleanup=True)   # and nothing else
-fig.savefig(OUT / f"{stem}.svg", transparent=True)  # matplotlib likewise
+fig.savefig(OUT / f"{stem}.svg", facecolor="white", transparent=False)
 ```
 
 When dropping PNG output, **grep the drafts for `.png` references first** — an

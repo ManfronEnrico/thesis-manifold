@@ -189,3 +189,194 @@ live producer.
 
 Several sessions of moves, rewrites and regenerated artefacts. **Worth committing
 before further work** — and especially before the account switch.
+
+---
+
+## Session 2026-09-10 — provenance audit after the HPC re-run
+
+Triggered by Brian: *is everything in `05_thesis_results/` computed, with no
+hardcoded literals?*, asked because a high-performance-cluster re-run had added
+the holiday enrichment. It was not. Four separate classes of problem, all now
+fixed at the producer rather than in the output.
+
+### Delivered
+
+| | |
+|---|---|
+| **Three stale literals** now computed | F26 — ridge-alpha spread, split ratios, plateau tolerance |
+| **Three superseded figures** regenerated | model selection had moved energidrikke XGBoost → LightGBM |
+| **Three orphan SVGs** deleted | Ch5/Ch6 swap leftovers no producer emits |
+| **63 PNGs → SVG** | 3 producers + the promotion step; every deletion has a replacement |
+| **24 internal-note blocks** moved out of tier 05 | one sidecar per table under `writing-notes/` |
+| **Backgrounds white**, not transparent | 5 call sites + the standards rule |
+| **New methodology figure** | parses ch3 prose; ratio 2.71 |
+| Category casing normalised | `RTD, energidrikke` → `Energidrikke, RTD` |
+
+Nine producers now run clean end to end, `PATHS.py` included.
+
+### What each question turned up
+
+**"Is it all dynamic?"** Three typed values had gone stale (F26). The worst was
+not a literal at all: three figures still named the pre-re-run model selection,
+because the generator was right and its output had simply never been rebuilt.
+
+**"Was `cv_summary.md` regenerated on the HPC?"** Yes — and my first answer
+saying otherwise was wrong (F27). Its numbers matched the source CSV exactly;
+only the plateau sentence was wrong, which was the generator defect. Regenerated
+from stored CSVs without re-running the hours-long benchmark.
+
+**"Why are there still PNGs?"** Because there were 33, not the 3 first reported,
+and a *second* hardcoded `glob("*.png")` in the promotion step silently discarded
+the SVGs on the first conversion attempt (F28).
+
+**"Are the metanotes out of the submitted repo?"** They are now — and the follow-up
+question caught a real defect: `review_notes.py` first lived in `utility_scripts/`,
+which the submission export deletes, so all four importing producers would have
+failed on import in the submitted repo. Moved to `05_thesis_results/` (F28).
+
+**"Is model selection dynamic, and does it still hold?"** Yes to both, verified by
+recomputing it independently from `cv_metrics.csv` (F29). Worth carrying into the
+prose: energidrikke and RTD are decided by 0.7 and 0.4 points.
+
+### Near-misses worth keeping
+
+- **A generator that is correct can still have stale output.** Nothing in the repo
+  reported the gap between the two; mtime actively pointed at the wrong file,
+  since the orphans were newer than their replacements.
+- **A dangling graphviz edge endpoint creates an empty node instead of erroring.**
+  Renaming a node left an edge pointing at the old name and a blank box rendered.
+  Caught by looking at the render, not by the run.
+- **`git status` showed 66 deletions.** Verified before proceeding: 63 PNGs each
+  with an SVG replacement, 3 orphans. Nothing lost.
+
+### Deliberately not done
+
+The methodology figure is **not yet cited** anywhere in the prose — that belongs
+to Phase 5, which owns citation decisions across the whole inventory.
+
+`cv_summary.md`'s numbers were left as they are: they are current, and re-running
+the benchmark to refresh a timestamp would be hours of compute for no change.
+
+### Still uncommitted
+
+Everything above, plus the earlier sessions' work. Now a large diff (~66 deletions,
+~64 modifications, ~65 new files, most of them the SVG replacements).
+
+---
+
+## Session 2026-09-10 (later) — the requirement restated, and what it reopens
+
+Brian corrected a misread. Recorded as its own entry because the previous entry
+reports a fix to the wrong problem, and a future session reading only that entry
+would think the matter closed.
+
+### The correction
+
+The rule is about **content anywhere in tiers 01-05**, not about which tree the
+submission export deletes:
+
+> "I only want any output in `05_thesis_results/` to be submission ready, meaning
+> only descriptions that are meant to be read by the reader of the thesis / the
+> assessors."
+
+And producer location is explicitly free: *"the scripts ... can also live in the
+same folder at root. I don't mind honestly. As long as they all consume actual
+sources and dynamically re-generate the appendices."*
+
+So the `review_notes.py` relocation and `DEC-SHIPPED-IMPORTS`, reported last
+entry as the answer, were a real fix to a question that was not asked (F32).
+
+### What this reopened
+
+Phase 3d stopped at the `INTERNAL REVIEW` **marker**. Searching for a marker
+finds the notes that were honest about being notes; it cannot find a sentence
+that reads as ordinary prose and happens to cite a plan file. Measured after the
+correction: **8 lines, 6 files, 5 producers** still carrying plan IDs and
+internal decision codes into tier-05 output.
+
+`training_report.md` is the worst of them, with three separate leaks in prose an
+assessor would read as ordinary methodological explanation.
+
+### Written, not executed
+
+Phase 8 added to `task_plan.md` with four parts: refile the notes per chapter
+(8a), sweep tiers 01-05 for unmarked internal content (8b), make the invariant a
+check rather than a memory (8c), and revisit the two decisions the previous
+session overstated (8d). F32 and F33 record the reasoning.
+
+**Nothing in Phase 8 has been executed** — Brian asked for the plan first, then a
+compaction, then the work.
+
+### One question to put to Brian before 8a runs
+
+The existing note folders are `ch4_data_assessment`, `ch5_model benchmark` (a
+space, not an underscore), `ch6_architecture`, `ch7_synthesis`, `ch8_experiment`.
+None match `CHAPTER_SLUGS`; two abbreviate; one has a space; and the two chapters
+that own tables but have no folder (literature review, methodology) would need
+new ones. These are folders Brian and Enrico open by hand, so **ask before
+renaming** rather than normalising them on the way past.
+
+### Still uncommitted
+
+Everything from both of today's sessions. ~67 new files, ~66 deletions, ~68
+modifications, most of them the PNG-to-SVG replacements.
+
+---
+
+## Session 2026-09-10 (Phase 8) — executed
+
+Brian answered the folder question ("just create a chapter folder if you are
+missing one, orient yourself on the chapter names not the numbers") and asked for
+the rest to run unattended. All four sub-parts are complete.
+
+### What was built
+
+`05_thesis_results/check_reader_facing.py` — the invariant as a check rather than
+a habit. Seven patterns over every `.md` and `.csv` in the results tree, exit 1
+on any hit, each hit naming which class it matched. Every appendix producer calls
+`warn_after_run()` at the end of its own run.
+
+`PATHS.get_chapter_notes_dir()` / `get_chapter_generated_notes_dir()` — editorial
+notes filed by chapter, folder name derived from `CHAPTER_ORDER`.
+
+`review_notes.chapter_of()` — derives the owning chapter from the artefact's own
+output path rather than taking it as an argument, so a table and its note cannot
+end up in different chapters.
+
+### What was verified, not assumed
+
+- Planted one line of each leak class; all five caught, exit 1
+- Planted a leak and ran a producer; the mid-run warning fired
+- `comm` over the flat and per-chapter listings before deleting anything: 24
+  against 24, zero orphans
+- All seven producers re-run end to end after the `_save` signature change
+
+### Two corrections to what I reported earlier
+
+**The leak count was 9 across 8 files, not 8 across 6** (F34). The two extra were
+bare finding numbers reading as ordinary prose -- the same class of miss that
+created F32, recurring inside the fix for F32.
+
+**`ch5_model benchmark` has an underscore, not a space** (F35). I reported it as
+a space twice, including as a reason renaming might be needed. Nothing was
+renamed; all five existing folders already matched the derived name.
+
+### Judgement calls
+
+`warn_after_run()` warns rather than raising. A generator that has just written
+15 correct tables should not exit non-zero over one sentence, and the run that
+finds a leak is rarely the run that introduced it. The standalone check is the
+one that fails.
+
+Three SRQ1 outputs could not be regenerated without refitting models. The
+identical substitution was applied to their `.md` files, checked
+character-for-character against what the fixed producer now emits, so the next
+real run is a no-op rather than a revert.
+
+`.py` files and `.archive/` folders are deliberately out of scope -- source
+comments are a different audience, and archive READMEs exist to record which plan
+retired an artefact.
+
+### Still uncommitted
+
+Everything from all three of today's sessions.

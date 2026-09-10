@@ -977,6 +977,35 @@ answered on sparse brands too. `_stratified_brands()` already returns exactly 3
 confirmed** is whether D/E run the same 3 or a subset, and what that does to
 cost. Needs deciding before the funded set.
 
+> **Partly answered 2026-09-10 — the cost half.** With D and E implemented, the
+> full five-scenario ladder at 3 stratified brands x 4 categories x 1 repeat now
+> dry-runs concretely:
+>
+> | | runs | $ |
+> |---|---|---|
+> | A_plain | 12 | 5.09 |
+> | B_data | 12 | 3.20 |
+> | C_model | 12 | 0.08 |
+> | D_prometheus | 12 | 7.20 *(estimate, not measured)* |
+> | E_prometheus_model | 12 | 1.80 *(estimate, not measured)* |
+> | **total** | **60** | **~17.37** |
+>
+> Reproduce with:
+> ```
+> python srq4_experiment.py --full --scenarios A,B,C,D,E --dry-run \
+>        --repeats 1 --brand-strategy stratified --brands-per-cat 3 3 3 3
+> ```
+>
+> Two caveats on that total. **D and E have never been run**, so their two rows
+> are estimates from the nearest analogue -- the smoke run is what replaces them.
+> And this is **one repeat**; P0042's frozen design allocates repeats inversely
+> to per-run cost, so the funded figure is not 60 x n.
+>
+> **What still needs Brian:** whether D/E run the same 3 brands as B/C. Running
+> the same 3 is what makes D->E and B->C a paired comparison on identical series
+> -- which is the whole reason for running D and E. A subset would weaken that to
+> an unpaired one, and should only be chosen if cost forces it.
+
 **Q-B: How is the reduced dataset declared?** Brian's position, recorded verbatim
 in substance: the reduced dataset is *not* the scenario originally proposed
 ("data access & code vs. model access for predictive quality"). In production

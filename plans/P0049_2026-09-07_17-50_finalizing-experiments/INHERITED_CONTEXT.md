@@ -165,6 +165,11 @@ C-only cross-category.
 `statsmodels`/`prophet`, so scenario D would be silently handicapped and D→E would
 measure the missing library rather than the tool.
 
+> **Discharged.** The template was built and verified **2026-08-21** (P0040 F42) —
+> the "unbuilt" claim carried in this file was already stale when written. All
+> five libraries were confirmed present. Scenarios D and E were then implemented
+> on 2026-09-10 (`a941927`); see P0049 F45–F47 for what the build corrected.
+
 ---
 
 ## 7. Stale claims in those plans — corrected here
@@ -173,6 +178,10 @@ measure the missing library rather than the tool.
 |---|---|
 | P0039: "blocked on `03_thesis_modelling/.env`" | That path does not exist. `.env` is at repo root (11 keys); `verify_setup.py` passes **10/10**. |
 | P0042: "gate 1 discharged, A/B/C unblocked" | True then. **Now gated on the horizon fix** (F22). |
+| P0040: "the E2B template is unbuilt" | Built **2026-08-21** (P0040 F42). Corrected 2026-09-10. |
+| "`SCENARIOS` holds A, B and C only" | True until 2026-09-10. **All five are now registered** (`a941927`); `--scenarios D,E` selects them. Never run. |
+| "register the tooled project WITHOUT the SQL tools" | **Not achievable by configuration** (F45). Prometheus is a two-agent delegation and its data tools are hardcoded in the nested coder. DEC-D-SNAPSHOT is **measured** — a warehouse query is detected and excluded — not enforced. |
+| "port `forecast_demand` to the engine's tool API" | **Superseded** (F46). The engine's interpreter has no xgboost and must not be modified, so the **harness** evaluates the model and injects the payload. That also gives E's number the same origin as C's. |
 | P0044: "profiling publishes to `04_thesis_results/srq1/`" | Results moved to `05_thesis_results/srq1_model_performance/tables/`. |
 | P0042: results at `04_thesis_results/srq4/` | Now `05_thesis_results/srq4_scenario_experiments/`. |
 

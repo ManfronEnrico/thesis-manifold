@@ -22,26 +22,78 @@ superseded by this plan) and the styling decisions made on 2026-09-07.
 
 ## The state in one paragraph
 
-Eleven diagrams and twenty-five appendix tables regenerate from five producer
+Twelve diagrams and twenty-five appendix tables regenerate from **nine** producer
 scripts, in any order, with no duplicate filenames and no leaked internal
 references. Every number is read from an artefact at render time; a generator
 exits rather than drawing when a source table is missing. The preprocessing
 pipeline logs both its execution and its content, and the appendix consumes
-both. 195 live scripts compile; `PATHS.py` resolves.
+both. `PATHS.py` resolves.
+
+**Updated 2026-09-10** after a provenance audit prompted by the cluster re-run
+(F26-F31), then corrected the same day (F32-F33). What holds now:
+
+| | |
+|---|---|
+| Everything in tier 05 is **SVG**, never PNG | DEC-SVG-ONLY |
+| Figures paint a **white** ground, never transparent | DEC-WHITE-GROUND |
+| Tier 05 output carries **only what a thesis reader should see** | DEC-READER-FACING-ONLY |
+| Editorial notes live in the **chapter folder** they serve | DEC-NOTES-BY-CHAPTER |
+
+The audit found three stale literals, three figures showing a superseded model
+selection, and three orphan SVGs. All fixed at the producer.
+
+## The invariant, and how it is now held
+
+Tiers 01-05 are read by assessors, so **nothing student-facing appears in them**,
+marked or unmarked. Producer scripts may live anywhere (Brian: "I don't mind
+honestly"); only emitted content is governed.
+
+Two passes each caught the class they were looking for and missed the next one --
+the first searched for an `INTERNAL REVIEW` marker, the second for a plan-ID
+shape, and a bare `F17` reading as ordinary prose survived both (F32, F34). So
+the rule is no longer something a person checks:
+
+```powershell
+python 05_thesis_results/check_reader_facing.py     # exit 1 on any hit
+```
+
+Every appendix producer also calls `warn_after_run()` at the end of its own run,
+so a new leak is reported by the run that writes it.
+
+**Editorial notes** live at
+`06_thesis_writing/writing-notes/ch{N}_{chapter}/generated/<slug>.md`, filed by
+the chapter that discusses the artefact. The chapter is derived from the
+artefact's own output path, so a table and its note cannot diverge.
+
+**Phase 8 is complete.** Nothing is committed.
 
 ---
 
-## Run everything (the five producers)
+## Run everything (the nine producers)
 
 ```powershell
 $env:PATH += ";C:\Program Files\Graphviz\bin"   # winget installed it, but not on PATH
 
-python 05_thesis_results/generate_architecture_diagrams.py          # 11 diagrams
+python 05_thesis_results/generate_architecture_diagrams.py          # 12 diagrams
+python 05_thesis_results/generate_methodology_diagram.py            # ch3 figure
 python 05_thesis_results/generate_literature_table.py               # table 89
-python 04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py # tables 01-14
+python 04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py # tables 01-15
 python 01_SRQ1_Model_Training/01_thesis_data/_00_raw/holidays/export_holiday_appendix.py       # 90-93
 python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/srq1/srq1_export_enrichment_appendix.py  # 94-99
+python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/training_report.py
+python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/srq1/srq1_generate_performance_figures.py
+python 01_SRQ1_Model_Training/02_thesis_modelling/model_training/srq1/srq1_generate_shap_figures.py
 ```
+
+The **EDA plots** are not in that list: they are written by pipeline step 2 and
+copied into tier 05 by `promote_eda_artifacts()`. To refresh them:
+
+```powershell
+python 01_SRQ1_Model_Training/01_thesis_data/_02_preprocessing/nielsen/_shared_modules/run_preprocessing.py --category CSD --horizon 3 --from-step 2 --to-step 2
+```
+
+`generate_methodology_diagram.py` reads the **newest docx snapshot**, so run
+`thesis_snapshot.py` first if the methodology chapter was edited in Word.
 
 To regenerate the underlying pipeline data (~2 min, all four categories):
 
@@ -55,8 +107,8 @@ python 01_SRQ1_Model_Training/01_thesis_data/_02_preprocessing/nielsen/_shared_m
 
 1. **`.claude/rules/figure-generation-standards.md`** — the style contract.
    Horizontal layouts, bold box headers, no step numbers, greyscale contrast
-   tiers, transparent background, submission-ready captions, every value read
-   from an artefact.
+   tiers, **white** background, submission-ready captions, every value read
+   from an artefact, and no internal content anywhere in tiers 01-05.
 2. **`findings.md` in this folder** — F1-F14, the things that were wrong and how
    they were found. F5 and F6 in particular are traps that will recur.
 
@@ -104,5 +156,14 @@ producer, or one script will delete another's output (F6):
 
 ## Next action
 
-`task_plan.md` → Phase 5. Publish the inventory **first**, then choose citations.
-Never the reverse — see F2.
+**Phase 5** -- publish the regenerable inventory FIRST, then choose citations.
+Never the reverse (F2). Phases 3b, 6 and 7 are also open; Phase 8 sits above them
+in `task_plan.md` only because it was added last.
+
+Nothing from the last three sessions is committed. Review the working tree and
+stage **by explicit path** -- never `git add -A`, which sweeps in another
+session's files.
+
+One open item is inherited rather than owned here: the horizon blocker above.
+When the horizon fix lands, re-run the data-reduction table and drop the warning
+from its chapter note.

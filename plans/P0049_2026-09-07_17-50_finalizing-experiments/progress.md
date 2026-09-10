@@ -185,3 +185,85 @@ reading how the file used `FEATURES` rather than assuming.
    and the E2B template is unbuilt. B->C and D->E are the same intervention on
    two orchestrators; only one half exists
 3. **Run the smoke test** once HPC results land, then the funded set
+
+---
+
+## Session 2026-09-10 — scenario inputs shipped, then D and E built
+
+Two deliverables. Both are code; neither has been run against a paid endpoint.
+
+### 1. Scenario inputs materialised (`127bbdf`)
+
+12 per-brand CSVs to `05_thesis_results/08_experimental_evaluation/scenario_inputs/`,
+3 per category at max / median / min volume, plus `index.csv` and a README.
+
+Written by `export_scenario_inputs.py`, which calls the harness's own
+`_brand_history()` rather than rebuilding the series — so it cannot drift from
+what the scenarios actually run on. Two checks passed: all 12 byte-identical to
+the string pasted into Scenario B's prompt, and 0 of 12 contain their own scored
+month.
+
+DEC-SHARE-CSV is what makes this shippable: the series are already filtered to
+one brand and aggregated to monthly, so they disclose no more than the thesis
+tables, and they are what lets an assessor re-run A–C with their own key.
+
+### 2. Scenarios D and E written (`a941927`, plan update `b462885`)
+
+`SCENARIOS` now holds all five. `--scenarios D,E` selects them like any other.
+
+Everything vendor-shaped lives in one new file, `prometheus_bridge.py`, and
+importing it is allowed to fail — an assessor with A–C, the shipped CSVs and an
+OpenAI key must still be able to run the harness.
+
+**Verified free:** `verify_setup.py` 13/13 with the engine; 11 passed + 2 skipped
+without it; the full five-scenario ladder dry-runs to 60 runs / ~$17 at 3
+stratified brands per category.
+
+### What the build corrected — read F44 to F47
+
+Three of these were beliefs this plan held in writing, not oversights:
+
+| | Was recorded as | Actually |
+|---|---|---|
+| **F45** | "register the project WITHOUT the SQL tools" | Prometheus is a **two-agent delegation**; the tools are hardcoded in the nested coder. DEC-D-SNAPSHOT is **measured, not enforced** — a warehouse query is detected and excluded |
+| **F46** | one interpreter assumed | the venvs are **disjoint**; D/E cross a process boundary, and E works because the **parent** evaluates the model and injects the payload |
+| **F44** | not considered | adding D/E moved `schema_id()` to **v4**, so this had to land **before** the funded set or every paid row would be re-sent |
+| **F47** | `_classify` had 5 classes | engine failures need their **own** classes; `engine_unavailable` as `code_error` would let an unplugged machine read as evidence about Prometheus |
+
+### Near-misses
+
+- **The graph ends at `interrupt()`**, so it needs a checkpointer. Compiling it
+  bare — as the vendor's own module-level handle does — fails at *invoke*, not at
+  compile. Caught by reading the vendor before running it.
+- **The sandbox leaks `df` between observations.** The engine reuses
+  `code_interpreter_id` and the coder's kernel keeps DataFrames alive, so one
+  brand's data would be visible while forecasting another — and it would look
+  like unusually good performance, not like a bug. Now killed after every run
+  including failures.
+- **A shell heredoc silently collapsed `\n` escapes** in the prompt strings,
+  producing unterminated literals. Reverted and redone by writing the patch to a
+  file. Lesson: prompt text with escapes never goes through a heredoc.
+- I nearly wrote a blunt regex to repair those strings in place; it could have
+  corrupted unrelated literals. Reverting to a known-good file was cheaper and
+  safer than a clever fix.
+
+### State at close
+
+- 4 commits pushed: `127bbdf`, `a941927`, `b462885`, plus this log
+- `verify_setup.py` 13/13; five scenarios registered; schema `v4-five-scenarios`
+- **Nothing has been spent.** D and E have never been run
+- Working tree otherwise holds only P0050's figure session
+
+### Open, in order
+
+1. **Smoke D and E** — `python smoke_test.py --scenarios D,E`, ~$0.90 estimated.
+   This is the step that replaces both placeholder cost estimates with
+   measurements. A defect here costs $1; the same defect in the funded set costs
+   $40. **Needs Brian's go-ahead: it spends money.**
+2. **The three OPEN QUESTIONS** in `findings.md` — Q-A (the brand sample for D/E,
+   now partly answered: the full ladder at 3/category is 60 runs / ~$17), Q-B
+   (how the reduced dataset is declared in BOTH design and limitations), Q-C
+   (whether the 39-row aggregate is the right shared input)
+3. **The funded set** — gated on 1 and 2
+4. **HPC-side (P0053)** — the 4 patched scripts are still unverified; re-run
+   `enrich_appendix`; check appendix table 97's VIF against the 18-feature set

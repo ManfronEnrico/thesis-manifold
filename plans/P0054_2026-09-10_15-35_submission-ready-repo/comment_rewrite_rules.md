@@ -5,7 +5,7 @@ category: reference
 applies-to: [P0054 submission export, every shipped .py file]
 triggers: [running /submission-export, reviewing a rewritten file]
 created: 2026_09_10-15_35
-updated: 2026_09_10-15_35
+updated: 2026_09_10-22_10
 ---
 
 # Comment rewrite rules — working repo → submission repo
@@ -26,6 +26,31 @@ delete it. If it explains the code in front of them, it is reasoning — keep it
 
 This is the same test `prose-insertion-discipline.md` applies to thesis prose.
 The code is now a submission artefact too, so it inherits the rule.
+
+## Scope: source comments only
+
+These rules govern **comments and docstrings in `.py` files**. The other half --
+internal content in *emitted* output, the `.md` and `.csv` files a reader opens --
+was closed by P0050 Phase 8 on 2026-09-10 and is now enforced:
+
+```powershell
+python 05_thesis_results/check_reader_facing.py     # exit 1 on any hit
+```
+
+Every appendix producer also calls `warn_after_run()` at the end of its own run,
+so a leak is reported by the run that writes it.
+
+The distinction is audience, not severity. A `DEC-` code in a comment addresses
+a developer reading the code, which is a judgement call about what an assessor
+needs. The same code in a generated table addresses nobody at all -- it is a
+pointer to a file the reader does not have. That is why one is a pass and the
+other is a check that fails.
+
+One consequence worth carrying: **fix an emitted leak at its producer, never in
+the output file.** The next run puts it back. Two exceptions found in practice --
+`05_thesis_results/05_model_benchmark/models/README.md` and
+`08_experimental_evaluation/RESULTS_2026-08-19.md` are hand-written and have no
+producer.
 
 ---
 

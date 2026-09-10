@@ -1,9 +1,9 @@
 ---
 pid: P0054
 created: 2026-09-10 15:35:00
-updated: 2026-09-10 15:35:00
+updated: 2026-09-10 22:05:00
 status: in_progress
-focus_detail: "Designing the export procedure + /submission-export skill. Nothing executes until the thesis repo is frozen."
+focus_detail: "Designing the export procedure + /submission-export skill. Nothing executes until the thesis repo is frozen. UPDATED 2026-09-10 by P0050 Phase 8: the EMITTED half of the comment pass is already done and enforced -- 05_thesis_results/check_reader_facing.py holds it, so Phase 3 is now source comments ONLY, and Phase 5's first grep is superseded by that script. Precondition 0.2 was rewritten: generated notes regenerate on every producer run and are never archived, so 'only .archive/ remains' can never hold."
 ---
 
 # P0054 — Submission-ready repository export
@@ -43,12 +43,17 @@ Three reasons, and the first is decisive:
 | # | Precondition | Check |
 |---|---|---|
 | 0.1 | All model training runs final; no rerun in flight | `05_thesis_results/05_model_benchmark/` mtimes stable; `post-hpc-validation.md` has no open gates |
-| 0.2 | All chapter writing notes applied and archived | every `writing-notes/ch*/` folder holds only `.archive/` |
+| 0.2 | All **hand-written** chapter notes applied and archived | every `writing-notes/ch*/` folder holds only `.archive/` and `generated/` |
 | 0.3 | Thesis `.docx` frozen | Brian confirms; no pending prose pass |
 | 0.4 | Every generated artefact regenerated post-freeze | `generated-artefact-provenance.md` audit passes |
 
 Executing before 0.1 is the expensive failure: a retrain changes results
 tables, and the export would ship stale numbers under a clean-looking surface.
+
+**0.2 excludes `generated/`.** Each chapter's note folder has a `generated/`
+subfolder holding one editorial note per generated artefact, rewritten on every
+producer run. Those are never "applied and archived" — they exist for as long as
+the artefact does. Only the hand-written notes beside them are gated. (P0050 F33.)
 
 ---
 
@@ -69,7 +74,7 @@ a verdict. Current proposal, from the 2026-09-10 survey:
 | `01_SRQ1_Model_Training/02_thesis_modelling/model_training/**` | SRQ1 benchmarks, tuning, calibration, SHAP |
 | `02_SRQ2_Tool_Interface/forecast_tool.py` | the SRQ2 tool interface |
 | `04_SRQ4_Scenario_Experiment/scenario_setup/**` | SRQ4 harness, prompts, appendix exporter |
-| `05_thesis_results/**` | figures, tables, models — the numbers the thesis cites |
+| `05_thesis_results/**` | figures, tables, models — the numbers the thesis cites. Also holds four generators and two helpers (`review_notes.py`, `check_reader_facing.py`); see Q3 and Q6 |
 | `requirements.txt`, `requirements.lock`, `pyproject.toml`, `.env.example` | reproducibility |
 | `README.md` | **rewritten** — see Phase 3 |
 
@@ -129,8 +134,34 @@ The manifest is a hypothesis until tested. In the export copy:
 
 ## Phase 3 — The comment pass
 
-**This is the substantive work and the reason a skill exists.** 54 of 69
-pipeline `.py` files carry at least one meta marker; `PATHS.py` alone has 49.
+**This is the substantive work and the reason a skill exists.**
+
+**Scope narrowed 2026-09-10 (P0050 Phase 8): SOURCE COMMENTS ONLY.** The other
+half of this pass — internal content in *emitted* output, the `.md` and `.csv`
+files a reader opens — is done and is now enforced by a script, so Phase 3
+neither needs to find it nor can silently reintroduce it:
+
+```powershell
+python 05_thesis_results/check_reader_facing.py     # exit 1 on any hit
+```
+
+Every appendix producer also calls `warn_after_run()` at the end of its own run.
+Nine leaks across eight files were fixed at the producer; two were bare finding
+numbers (`F17`, `F50`) reading as ordinary prose, which is the class a
+human-driven pass misses twice (P0050 F34).
+
+Remaining inventory, measured 2026-09-10 after that pass, excluding `.archive/`:
+
+| Tier | `.py` files carrying a marker |
+|---|---:|
+| `01_SRQ1_Model_Training/` | 37 |
+| `04_SRQ4_Scenario_Experiment/` | 8 |
+| `05_thesis_results/` | 2 |
+| `02_SRQ2_Tool_Interface/` | 1 |
+| **total** | **48** |
+
+`PATHS.py` alone has 32 marker lines, down from 49 — the chapter-notes rewrite
+removed a block of them.
 
 Full rules and worked before/after examples:
 [`comment_rewrite_rules.md`](comment_rewrite_rules.md).
@@ -176,7 +207,8 @@ file-by-file pass with the inventory as its worklist.
 
 | Check | Command / method |
 |---|---|
-| No meta markers survive | `grep -rE "(DEC-[A-Z]\|P00[0-9]{2}\|\bF[0-9]{1,3}\b)" --include="*.py"` returns nothing |
+| No internal content in any **emitted** artefact | `python 05_thesis_results/check_reader_facing.py` -- exit 0. Supersedes a grep for this half: it also catches author names, submission markers and paths into the non-shipping tree, and names which class each hit matched |
+| No meta markers survive in **source** | `grep -rE "(DEC-[A-Z]\|P00[0-9]{2}\|\bF[0-9]{1,3}\b)" --include="*.py"` returns nothing |
 | No Claude references | `grep -rniE "claude\|anthropic\|\.agents\|skill"` — expect only legitimate hits (e.g. an LLM vendor named in SRQ4 methodology) |
 | No names in code | `grep -rniE "brian\|enrico"` returns nothing outside authorship in the README |
 | No internal paths | `grep -rE "plans/P0\|writing-notes\|notebookLM\|user-docs"` returns nothing |
@@ -185,6 +217,8 @@ file-by-file pass with the inventory as its worklist.
 
 The last two checks are the ones that matter. The greps are necessary and not
 sufficient: they catch markers, not comments that merely *sound* machine-written.
+
+Run `check_reader_facing.py` in the **export copy**, not only here. It walks a tree given to it, so it works on either -- and the export applies rewrites, which is exactly when something can be reintroduced.
 
 ---
 
@@ -216,6 +250,7 @@ that makes the code demonstrably runnable without disclosing anything.
 | Q3 | Does `05_thesis_results/` ship whole, or only the artefacts the thesis actually cites? It currently has 316 tracked files including archived and superseded runs. |
 | Q4 | Is a `LICENSE` / confidentiality notice wanted at the root? |
 | Q5 | Does the submission repo need `03_SRQ3_Integration_Readiness/` as an empty folder with a README explaining the scope decision, or is its absence better explained in the thesis alone? |
+| Q6 | Do `05_thesis_results/review_notes.py` and `check_reader_facing.py` ship? Both are *about* the submission boundary rather than about the thesis. `review_notes.py` is imported by five shipped producers, so dropping it breaks their import; `check_reader_facing.py` by five. **Recommendation: ship both** -- a reader who opens them finds an explicit account of why the tree contains only reader-facing prose, which reads as care rather than as machinery. Revisit only if their docstrings survive the Phase 3 pass sounding internal. |
 
 ## Alignment with existing decisions
 

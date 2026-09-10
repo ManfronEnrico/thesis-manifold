@@ -62,18 +62,44 @@ disk are still H=1-trained.
 
 ## 2. Do these in this order
 
+**Updated 2026-09-10.** The experiment side is now code-complete: all five
+scenarios exist and the pre-flight is green. What is left is spending money, and
+two questions that should be answered before it is spent.
+
 | # | Do | State |
 |---|---|---|
 | ~~1~~ | ~~Horizon fix~~ | ✅ **DONE** 2026-09-07 |
-| **2** | **Retrain SRQ1** | **NEXT.** Models on disk are H=1-trained; Scenario C currently serves an H=1 model against H=3 features. **Read F24 first** — it decides what phase 2 *is*. |
-| **3** | Re-verify the SRQ4 harness | Passing now, but re-run after retraining — the tool loads the persisted model. |
-| **3b** | **Smoke test, n=1/scenario, ~$1** | Brian, 2026-09-07. `verify_setup.py` checks contracts, not an end-to-end run. A defect found here costs $1; in step 4 it costs $40. |
-| **4** | P0042's ~111 funded runs (~$40) | Still last. |
+| ~~2~~ | ~~Parameterise the horizon~~ | ✅ **DONE.** F24 is resolved — `SRQ1_HORIZON` drives both the matrix read and the results path, so an H=1 run cannot overwrite an H=3 result |
+| **2b** | **Retrain SRQ1** | **RUNNING ON THE HPC** (P0053). Models on disk are still H=1-trained, so Scenario C serves an H=1 model against H=3 features until it lands. **This gates step 4, not step 3.** |
+| ~~3~~ | ~~Scenarios D and E~~ | ✅ **BUILT 2026-09-10** (`a941927`). Written, wired, verified free. **Never run.** |
+| **3b** | **Smoke D and E — ~$0.90** | **NEXT, and it spends money.** Replaces both placeholder cost estimates with measurements. A defect here costs $1; in step 4 it costs $40 |
+| **3c** | **Answer Q-A / Q-B / Q-C** | `findings.md`, under OPEN QUESTIONS. Q-A is now *partly* answered: the full five-scenario ladder at 3 stratified brands per category dry-runs to **60 runs / ~$17** |
+| **4** | The funded set | Gated on 2b, 3b and 3c |
 
-**An open decision gates step 2** (F24): 13 live SRQ1 scripts hardcode `_h3`, so they now
-read genuine H=3 features — but **none can produce H=1**. Either retrain at H=3 only
-(faster, unblocks the funded runs) or parameterise the horizon across those 13 scripts
-first. Do not find-and-replace to `h1`: that just swaps which horizon is unreachable.
+### What changed on 2026-09-10, in one line each
+
+- **Scenarios D and E exist.** `SCENARIOS` holds all five; `--scenarios D,E`
+  selects them. `verify_setup.py` is **13/13** with the engine and **11 + 2
+  skipped** without it, so an assessor running A–C is never blocked.
+- **DEC-D-SNAPSHOT is measured, not enforced** (F45). Prometheus is a two-agent
+  delegation and its data tools are hardcoded in the nested coder, so they cannot
+  be filtered out by configuration. A run that queries the warehouse is
+  **detected and excluded** instead. Say this in the limitations as written.
+- **The prompt schema is now `v4-five-scenarios`** (F44). A/B/C strings are
+  byte-identical to v3, verified — but v3 and v4 rows are deliberately not
+  pooled. This is why D/E had to land *before* the funded set.
+- **Nothing has been spent.** The scenario-input CSVs and the D/E code were both
+  built and verified without a paid call.
+
+### Before running anything tomorrow
+
+```bash
+git fetch origin && git log origin/main --oneline -5   # the HPC and VPS push here too
+python 04_SRQ4_Scenario_Experiment/scenario_setup/verify_setup.py
+```
+
+The pre-flight is the honest check that the engine is still reachable and that
+the guard is armed. It sends no request and costs nothing.
 
 ---
 
@@ -104,7 +130,7 @@ read is worse than a hard-failing one.
 | Plan | Status | What is genuinely open |
 |---|---|---|
 | **P0039** srq4-system-a-vs-b | focus | **Its stated blocker is STALE.** It says "blocked on `03_thesis_modelling/.env`" — that path no longer exists; `.env` is at repo root with 11 keys, and `verify_setup.py` now passes 10/10. Open decision **DEC-VENDOR** (~$7 Claude vs ~$4 GPT for 50 runs — decide on ecological validity, not cost). |
-| **P0040** prometheus-scenarios-d-e | focus | Scenarios D/E (real Prometheus engine). Tasks 1–3 done; nothing externally blocked. **Next: build the E2B template** — required, because the base image lacks statsmodels/prophet, so D would be silently handicapped. |
+| **P0040** prometheus-scenarios-d-e | focus | Scenarios D/E. **Largely discharged 2026-09-10**: `run_scenario_d` / `run_scenario_e` are written and wired (`a941927`), and the E2B template was already built (2026-08-21, P0040 F42 — the 'unbuilt' claim was stale). What remains is running them. |
 | **P0042** funded-testing-sequencing | focus | The ordering plan. Sampling design frozen at **111 runs / ~$40**. A/B/C ladder already delivered (2026-08-19, $4.92). Gate 1 open for D/E. **Now also gated on the horizon fix (F22).** |
 | **P0044** resource-measurement | in_progress | Ch1 rewrite on the measured 4 GB bound, then scenarios F/G. Measured: refit 2.93 s vs re-tune 417 s (**142×**); 7-month param drift inconclusive. |
 | **P0045** draft-bullet-reconstruction | in_progress | 6 of 11 tasks open. Writing-surface work. |

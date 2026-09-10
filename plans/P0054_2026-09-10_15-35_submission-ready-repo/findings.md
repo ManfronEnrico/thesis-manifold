@@ -122,3 +122,64 @@ The history narrates a Claude-assisted writing workflow.
 The export starts fresh with one commit. This also sidesteps the confidential
 matrices being recoverable from history after deletion, which a `git clone`
 plus `rm` would not.
+
+---
+
+## Three requirements the SRQ4 work of 2026-09-10 places on the export
+
+Written by the P0049 session, so this plan does not have to rediscover them.
+All three are about files whose *absence* fails silently — the assessor gets a
+repo that imports fine and cannot run.
+
+### 1. `scenario_inputs/` — what it is actually for
+
+`05_thesis_results/08_experimental_evaluation/scenario_inputs/` holds 12
+per-brand CSVs, `index.csv` and a README, added 2026-09-10 (`127bbdf`). They are
+already covered by the `05_thesis_results/**` SHIP row; nothing needs adding.
+
+**One correction to how they were first described.** They are *not* what makes
+scenarios A–C runnable. The harness builds every series at run time from
+`_03_engineered/bymonth/**/*.parquet` via `_brand_history()` -- verified: three
+`read_parquet()` calls, and no code path reads `scenario_inputs/`. Since this
+plan already ships those 32 tracked matrix files, **A–C are runnable from the
+parquet, and would be with or without the CSVs.**
+
+What the CSVs are for is *inspection without execution*: an assessor can see
+exactly what Scenario B was given, byte-for-byte, without running anything or
+opening a parquet. `index.csv` additionally carries the held-out actual, which
+is what lets a scored run be checked. Ship them as evidence, not as a
+dependency.
+
+**The check that does matter:** if a later decision reverses course and drops
+the engineered matrices, A–C stop working, and `scenario_inputs/` would not save
+them — a fallback loader would have to be written first. Worth stating in the
+manifest so the dependency is explicit rather than assumed.
+
+### 2. `prometheus_bridge.py` ships; Prometheus itself never does
+
+`04_SRQ4_Scenario_Experiment/scenario_setup/prometheus_bridge.py` is new
+(`a941927`) and is covered by the existing `scenario_setup/**` row. Keep it.
+
+It contains **no credentials** (verified) and no vendor code. It holds one
+absolute path to the engine, overridable by `PROMETHEUS_ENGINE_DIR`, and it is
+written so that **importing it is allowed to fail**: an assessor with no
+Prometheus gets scenarios D and E reporting `engine_unavailable` while A–C run
+normally. That degradation is a shipped feature, so do not "tidy" the try/except
+around its import in `srq4_experiment.py`.
+
+`Z:\_dev-ssd\prometheus\**` is proprietary and outside this repo. It is not in
+the SHIP list and must never be added.
+
+### 3. Two `.env` questions the README must answer
+
+The export ships `.env.example`, and an assessor reading it needs to know:
+
+- **`OPENAI_API_KEY` alone runs scenarios A, B and C.** That is the reproducible
+  tier, and it is the claim the README should make.
+- **D and E additionally need Prometheus**, which is not distributable. Say so
+  plainly rather than leaving an assessor to debug a missing engine.
+
+Related open question for the README rewrite (Phase 3): the harness reads keys
+under their OpenAI *dashboard* labels first, falling back to the standard names.
+`.env.example` should show the standard name, since that is what an assessor
+will set.
