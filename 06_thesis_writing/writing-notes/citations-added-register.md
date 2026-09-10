@@ -369,6 +369,74 @@ from memory and read as verified.
 
 ---
 
+# Chapter 5
+
+Both entries below are added by `ch5_model benchmark/ch5-prose-pass.md`, F16a.
+They are the only citations that pass adds; every other source it names was
+already cited in the chapter.
+
+They arrived by an unusual route, which is worth recording: both come from an
+August reference note that was archived as stale. Its **numbers** were superseded,
+but this citation work was not, because it concerns what a source says rather
+than what a run measured.
+
+## C5-01 - Bergmeir, Hyndman & Koo (2018)
+
+| | |
+|---|---|
+| **Status** | `IN-ZOTERO` / `NLM-PENDING` |
+| **Zotero key** | `LD4FNLEN` |
+| **Full title** | A note on the validity of cross-validation for evaluating autoregressive time series prediction |
+| **Type / year** | journal article, 2018 |
+| **Used in** | §5.3.4, the paragraph justifying the validation scheme |
+| **Added by** | ch5-prose-pass, F16a |
+
+**The claim it must support:**
+
+> Standard K-fold cross-validation is not rejected on principle. It is valid for
+> stationary autoregressive processes with uncorrelated residuals, and on such
+> series it uses the data more efficiently than a single out-of-sample split
+> (Bergmeir et al., 2018).
+
+**To verify:** does the source establish that standard K-fold cross-validation is
+valid for autoregressive models with uncorrelated errors, and that it is more
+data-efficient than out-of-sample evaluation on stationary series?
+
+**Why the wording is cautious.** The citation is being used to state a
+*limitation* of the alternative we rejected, which is the honest direction. The
+tempting sentence - that K-fold is invalid for time series - is contradicted by
+this very paper, so a misreading here would be visible to any examiner who
+follows the reference.
+
+## C5-02 - Cerqueira, Torgo & Mozetic (2020)
+
+| | |
+|---|---|
+| **Status** | `IN-ZOTERO` / `NLM-PENDING` |
+| **Zotero key** | `SZSQ955R` |
+| **Full title** | Evaluating time series forecasting models: an empirical study on performance estimation methods |
+| **Type / year** | journal article, 2020 |
+| **DOI** | 10.1007/s10994-020-05910-7 |
+| **Used in** | §5.3.4, same paragraph as C5-01 |
+| **Added by** | ch5-prose-pass, F16a |
+
+**The claim it must support:**
+
+> Under non-stationarity, methods that preserve temporal order estimate
+> generalisation loss substantially more accurately (Cerqueira et al., 2020).
+
+**To verify:** does the source find empirically that order-preserving evaluation
+outperforms cross-validation on non-stationary series, and does it also note the
+converse for stationary or small-sample cases?
+
+**The converse matters.** The same paper reportedly finds cross-validation
+beneficial when a series is stationary or the sample is small. Our sample *is*
+small, so a verification run should establish whether the paper's position is
+narrower than the sentence implies. If it is, the sentence narrows to
+non-stationarity alone, which is the property we actually rely on.
+
+---
+
 # Relationship to the other registers
 
 | Surface | Holds |

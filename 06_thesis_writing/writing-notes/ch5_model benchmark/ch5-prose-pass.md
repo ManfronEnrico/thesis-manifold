@@ -32,13 +32,33 @@ folder no longer holds two notes that could disagree.
 | `srq1-holiday-ablation-and-the-tuning-inversion.md` | carried into **F12** |
 | `srq1-forecast-horizon-defect-and-split-correction.md` | superseded - the defect it reports is fixed |
 
-All five are in `.archive/`, dated today.
+All five are in `.archive/`, dated today. The three August reference notes
+listed below join them.
 
-**Three notes remain in the folder and none of them is queued work.**
-`srq1-model-ladder-and-baselines.md`, `srq1-pooled-vs-per-category.md` and
-`srq1-tuning-and-validation-protocol.md` are `category: reference` - the
-rationale behind the methodology, written in August, kept because the chapter
-argues from them. They contain no anchors and nothing to paste.
+### The three August notes were checked, not assumed
+
+They were written on 22 August, and their results tables were measured against
+today's artefacts before archiving. **All three are stale on numbers**, one of
+them severely:
+
+| Note | What was checked | Verdict |
+|---|---|---|
+| `srq1-model-ladder-and-baselines.md` | its Ridge clipped-vs-unclipped table | **inverted.** It says the clipping bound is inert on CSD and danskvand, so those figures describe Ridge itself. Both are now false - danskvand reads 74.9% clipped against 5.3e25 unclipped. Its danskvand 10.9% is the exact figure F4 identifies as the chapter's largest single error |
+| `srq1-pooled-vs-per-category.md` | its headline delta table | **argument dead.** It says the sign flips exactly once and both model families agree on all four categories, and tells you to lead with that. They now disagree on two, and the largest delta is 9.8 pp against its claimed 2.5 pp ceiling. F6 carries the correct version |
+| `srq1-tuning-and-validation-protocol.md` | its protocol table and citation guards | **half stale.** The budget is 100 trials as stated, but its plateau figures are superseded by F13. Its citation guards are sound and three were not yet in the chapter - carried into **F16** |
+
+**What survived is in F16.** It is the citation work, because that concerns what
+a source says rather than what a run measured, and it does not go stale when the
+models are retrained.
+
+Two further things in those notes were checked and found **already correct in the
+chapter**, so they needed no fix: the Cawley & Talbot bias wording, and the
+algebraic step from Gneiting's percentage-error result to WMAPE. F16c lists them
+so they are not re-derived.
+
+⚠ **Every path in the two older notes is from the pre-restructure tree**
+(`04_thesis_results/srq1/`, `03_thesis_modelling/`). None of them resolves today.
+That alone is not why they were archived, but it is a good signal of their age.
 
 ### Two corrections are already applied inside the fixes below
 
@@ -82,7 +102,8 @@ and the numbers were re-measured together.
 
 # The fixes
 
-Fifteen fixes. Order matters only for 2 and 3, which touch the same table.
+Sixteen fixes. Order matters only for 2 and 3, which touch the same table,
+and for 16b, which depends on F1 having been applied first.
 
 | # | Fix | Kind |
 |---|---|---|
@@ -101,6 +122,7 @@ Fifteen fixes. Order matters only for 2 and 3, which touch the same table.
 | [13](#f13) | 5.3.5 - the plateau claim | numbers |
 | [14](#f14) | The bullet sections, converted to prose | prose |
 | [15](#f15) | Metacomment, table names, and the Outstanding-decisions block | prose |
+| [16](#f16) | Three attribution guards, carried out of the August notes | new prose |
 
 ---
 
@@ -1210,6 +1232,138 @@ two fixes.
 
 ---
 
+# F16 - Three attribution guards, carried out of the August notes {#f16}
+
+Three reference notes sat in this folder from 22 August: the model ladder, the
+pooled-versus-per-category result, and the tuning protocol. **Their results
+tables are all superseded** - measured against today's artefacts, one of them has
+inverted outright. They are archived.
+
+**Their citation work survives**, because it is about what a source says rather
+than what a run measured, and three items in it are not yet in the chapter. Those
+three are below. Everything else in the notes is either already in the chapter,
+already in F1 through F15, or dead.
+
+## 16a - The cross-validation justification is missing its boundary
+
+**Section 5.3.4 Validation scheme.** The section explains what expanding-window
+cross-validation does and cites Tashman for the scheme, which is correct as far
+as it goes. **It never says why standard K-fold was rejected.**
+
+That is the obvious examiner question, and the honest answer is conditional
+rather than absolute.
+
+### Anchor
+
+**Section 5.3.4 Validation scheme.** The paragraph ending *"...so no model ever
+sees a period later than the one it predicts. The test split is untouched
+throughout."*
+
+### Action
+
+INSERT AFTER - a new paragraph, before the Tashman paragraph that follows.
+
+**Insert:**
+
+> Standard K-fold cross-validation is not rejected on principle. It is valid for
+> stationary autoregressive processes with uncorrelated residuals, and on such
+> series it uses the data more efficiently than a single out-of-sample split
+> (Bergmeir et al., 2018). Monthly brand-level beverage demand does not satisfy
+> that condition: the series are trended, seasonal and non-stationary. Under
+> non-stationarity, methods that preserve temporal order estimate generalisation
+> loss substantially more accurately (Cerqueira et al., 2020), which is why the
+> order-preserving scheme is used here.
+
+### Note - why this wording and not the shorter version
+
+The tempting sentence is *"K-fold cross-validation is invalid for time series."*
+**It is false as stated**, and it is the kind of overreach an examiner who knows
+the field will catch, because Bergmeir et al. prove the opposite for a class of
+series. Writing the conditional version shows the boundary is understood rather
+than assumed.
+
+The same applies to the scheme itself. **Do not write that expanding-window is
+mathematically required** - no such proof exists, and sliding windows trade
+differently by discarding old data to adapt to structural breaks. It is a
+defensible design choice. Say "chosen because", not "required by".
+
+Both sources are in the library and neither is currently cited anywhere in the
+chapter, so this adds two references to the list.
+
+## 16b - The narrowing to two models should be stated, not implied
+
+**Section 5.5.2.** The chapter reports the benchmark table and moves on. It never
+says that the tuned comparison was **narrowed** to two gradient-boosting
+implementations after six families were evaluated.
+
+A reader who sees only LightGBM and XGBoost in the tuned tables assumes
+convenience. A reader who sees the baseline table sees a decision with evidence
+behind it - but only if the chapter says so.
+
+### Anchor
+
+**Section 5.5.2 The simple benchmarks, and where they win.** The opening
+sentence: *"The four benchmarks of §6.2.0 were run on the same test rows."*
+
+⚠ That cross-reference is one of the twenty-one F1 repairs. Apply F1 first, or
+the anchor reads §5.2.0 by the time you reach it.
+
+### Action
+
+INSERT AFTER.
+
+**Insert:**
+
+> Six model families were evaluated in total. The classical univariate methods
+> and the simple benchmarks were outperformed in every category except the two
+> noted below, so the tuned comparison was carried forward on the two
+> gradient-boosting implementations. The full baseline results are reported
+> rather than discarded, which is what makes the narrowing auditable.
+
+### Note - the qualifier matters
+
+The August note phrased this as *"outperformed by a wide margin in every
+category"*. **That is no longer true and would contradict the table above it** -
+Prophet wins danskvand and seasonal naive wins RTD, both of which F4 reports. The
+wording above concedes the two exceptions instead, which is why it survives the
+current numbers.
+
+## 16c - Prophet's limitation is ours, not the authors'
+
+**Section 5.5.2**, the paragraph beginning *"Prophet is applied outside its
+design regime"*. F4 already adds a sentence to it about the danskvand win. This
+is a separate point about how the limitation is attributed.
+
+### Action
+
+VERIFY-ONLY, then reword if needed.
+
+Check the paragraph does **not** say Taylor & Letham state Prophet is unsuitable
+for monthly data, or that it produces flat forecasts. **They state neither**, and
+both are overstatements a reader checking the source would catch.
+
+If either appears, replace the claim with the mechanical argument, which explains
+rather than asserts and needs no source beyond the model definition:
+
+> On monthly data the weekly-seasonality component has nothing to fit, holiday
+> windows are invisible at month grain, and the annual term reduces to roughly
+> twelve points. What remains is a piecewise trend and a coarse annual cycle
+> estimated on approximately thirty observations. The limitation is therefore in
+> the application rather than in the method as its authors documented it.
+
+### Note - what was checked and found already correct
+
+Three other guards from the August notes are **already applied in the chapter**
+and need no edit. Recorded here so nobody re-derives them:
+
+| Guard | Where it already holds |
+|---|---|
+| Cawley & Talbot's bias is "unquantifiable", never "mild" | §5.5.1, worded exactly that way |
+| The WMAPE step from Gneiting's APE result is made explicitly, not implied | §5.4.1 |
+| No claim that M4 was "reproduced" on this data | the chapter does not mention M4 in this connection |
+
+---
+
 # Nothing in this chapter is blocked
 
 An earlier draft of this pass blocked section 5.5.9's winner-flip claim, and with
@@ -1341,7 +1495,18 @@ items:** Hyndman & Athanasopoulos, Makridakis et al., Taylor & Letham, Gneiting,
 Hyndman & Koehler, Tashman, Bergstra et al., Akiba et al., Syntetos Boylan &
 Croston, Hastie et al., Cawley & Talbot, Lei et al., and Klee & Xia.
 
-**No new citations are added by this pass**, so there is nothing to register.
+**Two citations are added, both by F16a**, and both already resolve against
+the same pull:
+
+| Source | Used for | Section |
+|---|---|---|
+| Bergmeir, Hyndman & Koo (2018) | that K-fold is valid for stationary autoregressive series, which is why the rejection here is conditional | 5.3.4 |
+| Cerqueira, Torgo & Mozetic (2020) | that order-preserving evaluation is more accurate under non-stationarity | 5.3.4 |
+
+Both need a row in `citations-added-register.md` with the sentence they support,
+quoted. **Neither has been through NotebookLM confirmation**, so both are
+`IN-ZOTERO` and not yet `NLM-CONFIRMED`. The claims are narrow and the wording in
+F16a states only what each paper establishes, but the register row is still owed.
 
 ⚠ **Two entries have metadata defects that will render wrong in the
 bibliography:**
