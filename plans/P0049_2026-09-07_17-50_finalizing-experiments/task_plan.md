@@ -1,9 +1,9 @@
 ---
 pid: P0049
 created: 2026-09-07 17:50:00
-updated: 2026-09-10 17:15:00
+updated: 2026-09-10 19:40:00
 status: in_progress
-focus_detail: "TRAINING IS ON THE HPC (P0053); this plan is the experiment side only. DEC-VENDOR SETTLED 2026-09-10: all scenarios run gpt-5.5-2026-04-23, argued on ecological validity -- the Prometheus engine sets main_agent_model and coder_model to gpt-5.5, so D/E run it regardless, and a vendor split would put model family into the B->C vs D->E comparison. Argument in writing-notes/dec-vendor-model-choice.md; ch3 + ch9 prose awaits approval. NEXT: (1) re-check the 111-run sampling allocation -- F32 took scorable brands 120 -> 168, and the design was frozen against the smaller population; (2) scenarios D/E, which are NOT IMPLEMENTED AT ALL (SCENARIOS holds A/B/C) and need the E2B template first -- Prometheus IS reachable locally at Z:/_dev-ssd/prometheus, so this is a build task rather than a blocked one; (3) smoke test when HPC results land, then the funded set. verify_setup.py 10/10."
+focus_detail: "EXPERIMENT SIDE. Both free D/E tests PASS (F41): the Prometheus engine starts (graph compiles, gpt-5.5 both roles, 17 tools) and its coder tools are composable, so a D-variant with only execute_code is a local change not a fork. Engine .env now written from the thesis .env with renamed keys (F42) -- note config/loader.py reads the PARENT dir, prometheus-graph-engine/.env, not graph-engine/. No git repo exists under Z:/_dev-ssd/prometheus, so the keys cannot leak from there. DECISIONS MADE: DEC-VENDOR (gpt-5.5, ecological validity), DEC-D-SNAPSHOT (D/E read the same series B gets, SQL tools OFF), DEC-SHARE-CSV (per-brand CSVs ship so assessors can re-run A-C). NEXT: write run_scenario_d/e -- P0040 task 4 is now discharged. THREE OPEN QUESTIONS in findings.md need Brian: whether D/E run the same 3 stratified brands per category, how the reduced dataset is declared in BOTH design and limitations, and whether the 39-row aggregate is the right shared input (the warehouse hierarchy traps argue yes). verify_setup.py 10/10."
 ---
 
 # P0049 — Finalizing experiments
@@ -188,6 +188,7 @@ When they land, add them to `smoke_test.py` first and smoke them before spending
 | **DEC-HORIZON-BOTH** | H=1 and H=3 both run properly. H=3 primary, keeps the unsuffixed result paths; H=1 writes to `h1/` | **MADE** (Brian, 2026-09-07) |
 | **DEC-DETERMINISM** | Accuracy at `n_jobs=1`; resource profiling at `-1` | **MADE**, implemented, verified |
 | **DEC-GRAIN** | brand × month | Locked, earlier |
+| **DEC-SHARE-CSV** | The filtered per-brand CSVs Scenario B receives DO ship to assessors, so A–C stay re-runnable with their own OpenAI key. Prometheus and `.env` do not | **MADE 2026-09-10** (Brian). Those CSVs are already filtered and aggregated — not live access, not the dataset — so they disclose no more than the thesis tables. Export must materialise them as files; the engineered matrices are not shipped. See F42 |
 | **DEC-D-SNAPSHOT** | Scenarios D/E read the same local snapshot Scenario B gets — NOT the live `Nielsen_clean` warehouse, even though Prometheus ships with access to it | **MADE 2026-09-10** (Brian). Matching B's data path is what keeps D→E comparable to B→C; a live query would also bypass every leakage guard, since none can see SQL issued inside a sandbox. See F36 |
 
 ## What this plan does NOT cover

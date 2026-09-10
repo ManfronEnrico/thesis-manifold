@@ -987,3 +987,71 @@ the limitations, not just one.
 
 **Q-C: Which raw shape, if not the aggregate?** The hierarchy traps (F38) argue
 for keeping the 39-row series. Not yet written up as a decision.
+
+---
+
+## F42 — Engine .env written; it loads from the PARENT dir, not `graph-engine/` (2026-09-10)
+
+Brian asked for the keys to be copied over rather than exported in a terminal each
+time. Done, and one non-obvious detail cost a round trip.
+
+**`config/loader.py:42` reads `Path(__file__).parent.parent.parent / ".env"`** —
+that resolves to `prometheus-graph-engine/.env`, **one level ABOVE**
+`graph-engine/`, which is where `.env.example` sits. Writing it beside the example
+does nothing: `Settings` is a plain `BaseModel`, not `BaseSettings`, so it never
+reads a file itself.
+
+The file is written to both locations; the parent one is the live one.
+
+### The rename map
+
+| thesis `.env` | engine name(s) | why |
+|---|---|---|
+| `thesis_manifold_openai_prompts` | `OPENAI_API_KEY` | required by `Settings` |
+| `thesis_manifold_e2b_sandbox` | `E2B_API_KEY` | same indirection `measure_e2b_cost.py` uses |
+| `RU_SERVER_STRING` | `RU_SERVER_STRING`, `SERVER_STRING` | engine reads the first, `Settings` exposes the second |
+| `RU_CLIENT_ID` / `_SECRET` / `_TENANT_ID` | same + `CLIENT_ID` / `CLIENT_SECRET` / `TENANT_ID` | as above |
+| `RU_DATABASE`, `PROMETHEUS_TEMPLATE_ID` | unchanged | |
+| — | `AZURE_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true` | **required** by `Settings`, used only by `utils/blob_storage.py` for chart blobs; the Azurite sentinel satisfies the validator without granting access |
+
+Script: `scratchpad/write_engine_env.py`. It prints key names and value LENGTHS
+only, never values.
+
+**Verified:** engine starts from the file with no terminal exports —
+`main_agent_model: gpt-5.5`, `coder_model: gpt-5.5`, 17 tools registered. Only
+Logfire and Twilio warn, both optional.
+
+### The warehouse credentials are present but will be unused
+
+Copying `RU_*` does **not** give the experiment live access. DEC-D-SNAPSHOT stands:
+D/E register **without** `run_sql` / `inspect_schema` / `distinct_values` /
+`sample_rows`, so the credentials sit idle during a scenario run. They are there so
+the engine boots in its shipped configuration and so an exploratory run is possible
+outside the experiment.
+
+### Leak check
+
+**No git repository exists anywhere under `Z:\_dev-ssd\prometheus`** — not at the
+root, not at `prometheus-graph-engine/`, not at `graph-engine/`. So the `.env`
+cannot be committed from there. (`graph-engine/.gitignore` does list `.env` and
+`.env.*`, but that directory is not a repo either.)
+
+---
+
+## DEC-SHARE-CSV (Brian, 2026-09-10): the filtered per-brand CSVs ship to assessors
+
+Neither Prometheus nor the project `.env` goes in the assessor repository, so
+scenarios D/E are not reproducible by them — which the two-tier design already
+states (ch2 §2.6).
+
+**Scenarios A–C are a different case, and Brian's reasoning resolves it.** What
+Scenario B receives is already a filtered, aggregated 39-row series per brand — not
+live access and not the dataset. Shipping those CSVs therefore discloses no more
+than the thesis tables already do, and it is what lets an assessor re-run A–C with
+their own OpenAI key.
+
+**Consequence for the export:** the per-brand CSVs must be materialised as files in
+the submission repo rather than generated on the fly from
+`_03_engineered/*.parquet`, since those matrices are not shipped. That is a
+`submission-export` task, not an experiment task, but it has to be recorded before
+the export is built or the reproducible tier quietly stops being reproducible.
