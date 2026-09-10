@@ -22,19 +22,19 @@ Brands scored: 460 rows (213 distinct brands x 2 models).
 
 | Model | vs log(train rows) | vs log(mean test units) | n |
 |---|---|---|---|
-| LightGBM | +0.057 | +0.158 | 201 |
-| XGBoost | +0.038 | -0.185 | 201 |
+| LightGBM | +0.121 | -0.011 | 201 |
+| XGBoost | +0.082 | -0.115 | 201 |
 
 ## Delta by volume tercile (WMAPE percentage points)
 
 | Model | Volume tercile | median delta | mean delta | n | pooling wins |
 |---|---|---|---|---|---|
-| LightGBM | small | -12.7 | -72.4 | 67 | 39/67 (58%) |
-| LightGBM | medium | +7.4 | +3.5 | 67 | 26/67 (39%) |
-| LightGBM | large | +0.4 | +0.9 | 67 | 33/67 (49%) |
-| XGBoost | small | -2.2 | +257.9 | 67 | 37/67 (55%) |
-| XGBoost | medium | +5.4 | -3.3 | 67 | 26/67 (39%) |
-| XGBoost | large | -0.7 | +0.1 | 67 | 37/67 (55%) |
+| LightGBM | small | +5.4 | +63.1 | 67 | 29/67 (43%) |
+| LightGBM | medium | +1.0 | -2.2 | 67 | 31/67 (46%) |
+| LightGBM | large | -2.8 | -3.0 | 67 | 41/67 (61%) |
+| XGBoost | small | +10.2 | +5194.2 | 67 | 27/67 (40%) |
+| XGBoost | medium | -1.4 | -7.2 | 67 | 38/67 (57%) |
+| XGBoost | large | -0.8 | -1.1 | 67 | 39/67 (58%) |
 
 ## Delta by demand class (WMAPE percentage points)
 
@@ -44,14 +44,14 @@ weak result on them is visible.
 
 | Model | Demand class | median delta | IQR | n scored | n no-signal | pooling wins |
 |---|---|---|---|---|---|---|
-| LightGBM | smooth | +2.6 | -5.8 to +11.5 | 100 | 8 | 46/100 (46%) |
-| LightGBM | erratic | -1.3 | -26.4 to +12.3 | 76 | 3 | 39/76 (51%) |
-| LightGBM | intermittent | -1.2 | -13.5 to +32.4 | 9 | 3 | 5/9 (56%) |
-| LightGBM | lumpy | -4.4 | -30.6 to +20.8 | 16 | 15 | 8/16 (50%) |
-| XGBoost | smooth | -0.2 | -4.8 to +6.7 | 100 | 8 | 51/100 (51%) |
-| XGBoost | erratic | +1.0 | -16.8 to +14.3 | 76 | 3 | 35/76 (46%) |
-| XGBoost | intermittent | -7.2 | -9.1 to +3.5 | 9 | 3 | 6/9 (67%) |
-| XGBoost | lumpy | +0.2 | -21.7 to +18.8 | 16 | 15 | 8/16 (50%) |
+| LightGBM | smooth | +1.0 | -6.9 to +12.6 | 101 | 3 | 48/101 (48%) |
+| LightGBM | erratic | -4.9 | -26.6 to +11.1 | 75 | 3 | 43/75 (57%) |
+| LightGBM | intermittent | -2.6 | -4.8 to +49.8 | 9 | 10 | 5/9 (56%) |
+| LightGBM | lumpy | +11.7 | -14.2 to +138.3 | 16 | 13 | 5/16 (31%) |
+| XGBoost | smooth | -0.6 | -9.2 to +10.6 | 101 | 3 | 53/101 (52%) |
+| XGBoost | erratic | -0.9 | -23.2 to +11.5 | 75 | 3 | 40/75 (53%) |
+| XGBoost | intermittent | +2.1 | -39.2 to +29.5 | 9 | 10 | 4/9 (44%) |
+| XGBoost | lumpy | +6.2 | -18.0 to +26.7 | 16 | 13 | 7/16 (44%) |
 
 **Reading it.** `smooth` is where a model should do well and where a
 pooling effect is most interpretable. `lumpy` combines long gaps with
@@ -83,12 +83,12 @@ this panel even after the no-signal rows are set aside.
 
 | Model | Category | small | medium | large |
 |---|---|---|---|---|
-| LightGBM | CSD | -7.5 | +8.0 | -0.2 |
-| LightGBM | danskvand | -1.0 | -5.4 | +9.1 |
-| LightGBM | energidrikke | -55.3 | -3.9 | -1.2 |
-| LightGBM | RTD | -8.2 | +7.6 | +1.8 |
-| XGBoost | CSD | -2.9 | +6.0 | +0.0 |
-| XGBoost | danskvand | -11.7 | -11.1 | -1.6 |
-| XGBoost | energidrikke | -81.1 | -10.3 | -0.3 |
-| XGBoost | RTD | +0.9 | +6.8 | -0.2 |
+| LightGBM | CSD | +2.4 | -2.6 | -2.6 |
+| LightGBM | Danskvand | -19.9 | -6.5 | +2.5 |
+| LightGBM | Energidrikke | +36.1 | -5.7 | -5.0 |
+| LightGBM | RTD | +10.0 | +7.7 | +2.8 |
+| XGBoost | CSD | +4.3 | -1.4 | -0.4 |
+| XGBoost | Danskvand | -35.1 | -8.2 | -5.3 |
+| XGBoost | Energidrikke | +4.1 | -23.3 | -3.6 |
+| XGBoost | RTD | +17.0 | +6.7 | +1.0 |
 

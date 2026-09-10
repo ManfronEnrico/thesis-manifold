@@ -1,9 +1,9 @@
 ---
 name: p0053-findings
-description: STATE - VPS/HPC training session findings. F1 category-casing bug, F2 HPC migration, F3 the 5 scripts still broken by the FEATURES fix, F4 what changed in the retrain (thesis-prose checklist), F5 unfinished parallelism work.
+description: STATE - VPS/HPC training session findings. F1 category-casing bug, F2 HPC migration, F3 the 5 scripts broken by the FEATURES fix, F4 what changed in the retrain (thesis-prose checklist), F5 unfinished parallelism work, F6 training_report.py still carries F1 (no retrain needed), F7 redundancy appendix tables predate the 18-feature set.
 pid: P0053
 created: 2026_09_09-21_15
-updated: 2026_09_09-21_15
+updated: 2026_09_10-13_40
 ---
 
 # P0053 — Findings
@@ -333,3 +333,134 @@ Only then is the speed claim actually verified rather than inferred.
   assuming it already covers tonight's numbers
 - `START_HERE.md` (this folder) — the original run-it-on-a-VPS playbook;
   still accurate for setup, now superseded on *where* to run it (F2)
+
+---
+
+## F6 — `training_report.py` still carries the F1 casing bug; no retrain needed (2026-09-10)
+
+**Found by the Chapter 4 closing prose pass**, which read
+`05_thesis_results/05_model_benchmark/tables/training_report.md` as an appendix
+candidate and found it contradicting the thesis.
+
+### The symptom
+
+The report's per-category feature table marks **every** feature — not only the
+holiday and intermittency columns — as present for CSD and RTD and dashed for
+danskvand and energidrikke. Its dataset table is blunter still:
+
+```
+| danskvand    | _matrix missing_ | | | | | | |
+| energidrikke | _matrix missing_ | | | | | | |
+```
+
+### The cause is F1, in a tenth script
+
+`training_report.py:66` still reads:
+
+```python
+CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
+              "energidrikke": "energidrikke", "RTD": "rtd"}
+```
+
+Those **keys** are passed to `matrix_path(cat, slug)`, which builds
+`<engineered>/<cat>/<slug>_feature_matrix_h3.parquet`. On disk the folders are
+`CSD`, `Danskvand`, `Energidrikke`, `RTD`. On Linux the two lowercase keys
+resolve to nothing, `is_file()` returns False, and `_matrix()` returns `None` —
+which the report renders as "matrix missing" rather than raising.
+
+**This is exactly the bug F1 documents**, and the fix is the same one: capitalize
+the keys, leave the lowercase filename slugs alone. F1 patched nine scripts;
+this one was not among them, which is worth noting because the same dict
+literal appears in it verbatim.
+
+### ⚠ It does NOT mean the training must be re-run
+
+Checked before recommending anything:
+
+| Evidence | Says |
+|---|---|
+| `summary.md` | all four categories, WMAPE for each |
+| `stat_baselines.md`, `tuned_summary.md` | all four |
+| the eight feature matrices | 18 features resolve for CSD and energidrikke, 17 for danskvand and RTD |
+
+**The HPC run is sound.** The four-category gate in
+`writing-notes/post-hpc-validation.md` passes on the results themselves. Only
+the *report about* the run is wrong, and it is generated from the matrices at
+read time rather than written during training.
+
+**So the fix is to patch one dict and re-run one script** — seconds, on any
+machine, with no GPU and no training. Not a retrain.
+
+### Why it still matters for the thesis
+
+`training_report.md` is a candidate for the appendix. Published as it stands it
+would tell an examiner that two of four categories have no feature matrix, while
+Chapter 4 states feature counts for all four. That is a self-contradiction
+inside the submitted document, from a table whose own header says every number
+is "computed from the feature matrices and results files at run time, not
+transcribed" — which is true, and is precisely why it is wrong.
+
+### Action
+
+1. Capitalize the two keys in `training_report.py:66`.
+2. Re-run it. Confirm all four categories populate and the feature table shows
+   `yes` for the holiday and intermittency rows in all four.
+3. Fill the empty `what it is` column for `days_in_month`, `n_holidays`,
+   `non_holiday_days`, `zero_run_flag` and `zero_run_length` — they are the only
+   five rows with no description, which is the same half-populated state.
+4. Grep for the remaining copies of the literal before closing F1:
+   `grep -rn 'CATS\|CATEGORIES' --include=*.py | grep '"danskvand"'`
+
+---
+
+## F7 — The redundancy-reduction appendix tables predate the 18-feature set (2026-09-10)
+
+**Also found by the Chapter 4 pass.** Chapter 4 §4.3 states that a feature
+reduction "raised mean test error from 26.4 to 28.8 per cent". Both figures come
+from `98_feature_redundancy_reduction.md`.
+
+### The dependency, precisely
+
+| Artefact | Written | Feature set it describes |
+|---|---|---|
+| `feature_redundancy_clusters.csv` | **2026-09-06 22:00** | 16 features |
+| `97_feature_collinearity_vif.md` | 2026-09-08 18:51 | 16 features |
+| `98_feature_redundancy_reduction.md` | 2026-09-08 18:51 | 16 features |
+| `_features.py` (18 features) | **2026-09-09**, commit `3f8b0a9` | — |
+
+The cluster file is the upstream input and is three days older than the feature
+set it is supposed to describe. Its contents confirm it: the clusters name
+`lag_1 … rolling_std_4` and `month + quarter` only, with **no holiday and no
+intermittency columns anywhere**.
+
+### This is not blocked on anything
+
+`srq1_feature_diagnostics.py` imports `FEATURES` from `srq1_benchmark`, which
+now re-exports the shared `_features.py` list. **It will pick up all 18
+automatically** — no edit required. It was simply not re-run after `3f8b0a9`,
+because the retrain was the priority and this is a diagnostics script rather
+than part of the training path.
+
+It is also **not affected by F6's casing bug**: it takes its category list from
+`srq1_benchmark.CATS`, which F1 already fixed.
+
+### What re-running changes
+
+The reduced-set size and both WMAPE figures. The *direction* is expected to
+hold — dropping correlated features from a tree model lost information at 16 and
+should still lose it at 18 — but adding five features to the pool changes which
+clusters form and therefore what survives reduction.
+
+**Sequence:** run `srq1_feature_diagnostics.py`, then
+`srq1_export_enrichment_appendix.py` to regenerate tables 97 and 98 from the new
+cluster file.
+
+### Thesis fallback if it is not re-run
+
+Chapter 4 keeps the sentence but drops both decimals: *"a reduced feature set
+was evaluated against the benchmark and performed worse"*. A directional claim
+from a superseded feature set is defensible; a decimal from one is not. The
+0.95 grouping threshold also has no cited source, so avoiding the numbers avoids
+that debt too.
+
+Tracked as H5 and H6 in `06_thesis_writing/writing-notes/post-hpc-validation.md`.
