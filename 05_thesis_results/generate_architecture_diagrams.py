@@ -100,7 +100,7 @@ def _out_for(stem: str) -> Path:
 
 TABLES = THESIS_RESULTS_SRQ1_DIR / "tables"
 MODELS = THESIS_RESULTS_SRQ1_DIR / "models"
-CATS = ["CSD", "danskvand", "energidrikke", "RTD"]
+CATS = ["CSD", "Danskvand", "Energidrikke", "RTD"]
 
 # Mirrors export_appendix.py. Confirmed by Brian 2026-09-06 as the correct
 # envelope; the thesis prose still says "8 GB" in eight places (P0046 F15).
