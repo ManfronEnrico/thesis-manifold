@@ -204,7 +204,7 @@ began*, so a stale table from an earlier run never counts as done.
 
 ### What it runs
 
-20 stages in dependency order. The order is not cosmetic: several stages guard
+21 stages in dependency order. The order is not cosmetic: several stages guard
 their reads with `is_file()` and **degrade silently** rather than failing, which is
 exactly how model selection once fell through to a hardcoded default (P0049 F25).
 
@@ -214,7 +214,7 @@ exactly how model selection once fell through to a hardcoded default (P0049 F25)
 | 2 | calibration, mase, demand_classes, stability | **stability ~25 min**, 5 seeds × 2 models × 4 cats |
 | 3 | ridge_cv, pooled, pooled_perbrand, ridge_pooled | minutes |
 | 4 | feature_diag, holiday_ablation, holiday_tuned | the holiday-enrichment result |
-| 5 | train_persist, training_report, shap_figures, perf_figures, enrich_appendix | train_persist is what SRQ2 serves |
+| 5 | train_persist, training_report, shap_figures, perf_figures, enrich_appendix, export_appendix | train_persist is what SRQ2 serves; export_appendix owns appendix tables 04-15 (added to the suite 2026-09-10, P0053 F11) |
 
 `srq1_profiling.py` is deliberately excluded: it measures resource cost at
 `n_jobs=-1` and is horizon-insensitive (DEC-DETERMINISM). **Do not add it** — its
