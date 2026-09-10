@@ -235,16 +235,22 @@ def promote_eda_artifacts(category: str) -> tuple[int, int]:
 	(dst / "tables").mkdir(parents=True, exist_ok=True)
 	(dst / "plots").mkdir(parents=True, exist_ok=True)
 
-	n_md = n_png = 0
+	n_md = n_plots = 0
 	if paths["tables_dir"].is_dir():
 		for f in sorted(paths["tables_dir"].glob("*.md")):
 			shutil.copy2(f, dst / "tables" / f.name)
 			n_md += 1
 	if paths["plots_dir"].is_dir():
-		for f in sorted(paths["plots_dir"].glob("*.png")):
+		# Plots are SVG (.claude/rules/figure-generation-standards.md). Any PNG
+		# in the destination predates that switch: delete it rather than leave
+		# it beside its SVG replacement, since a promoted copy nothing produces
+		# any more is exactly the stale artefact this function exists to avoid.
+		for old in (dst / "plots").glob("*.png"):
+			old.unlink()
+		for f in sorted(paths["plots_dir"].glob("*.svg")):
 			shutil.copy2(f, dst / "plots" / f.name)
-			n_png += 1
-	return n_md, n_png
+			n_plots += 1
+	return n_md, n_plots
 
 
 def print_target_definition() -> None:

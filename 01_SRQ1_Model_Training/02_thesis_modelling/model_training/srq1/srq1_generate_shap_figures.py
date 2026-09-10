@@ -8,7 +8,7 @@ the test set. Produces a per-category mean|SHAP| bar plot and a combined figure.
 
 Self-contained, reproducible (seed=42). No Prometheus/Nika dependency.
 Usage: .venv/bin/python scripts/srq1_shap.py
-Output: 04_thesis_results/srq1/figures/shap_*.png + shap_importance.csv
+Output: 04_thesis_results/srq1/figures/shap_*.svg + shap_importance.csv
 """
 import json
 import sys
@@ -89,6 +89,21 @@ class _SRQ1Out:
 
 RES = _SRQ1Out(results_root())
 FIG = RES / "figures"; FIG.mkdir(parents=True, exist_ok=True)
+
+
+def _save(fig, stem: str) -> None:
+    """Write one figure as SVG, removing any PNG left from before the switch.
+
+    SVG only, per .claude/rules/figure-generation-standards.md. Deleting the
+    old PNG is part of saving rather than a separate cleanup step: a generator
+    that only ever adds files leaves two copies of one figure the moment its
+    format changes, with nothing to say which is current.
+    """
+    stale = FIG / f"{stem}.png"
+    if stale.exists():
+        stale.unlink()
+    fig.savefig(FIG / f"{stem}.svg", facecolor="white", edgecolor="none",
+                transparent=False)
 SEED = 42
 
 # ---------------------------------------------------------------------------
@@ -198,10 +213,10 @@ for ax, (cat, slug) in zip(axes.ravel(), CATS.items()):
     ax.set_title(f"{cat} — mean |SHAP| (XGBoost, test)")
     ax.tick_params(labelsize=8)
 fig.suptitle("SRQ1 feature importance (SHAP) — brand×month, tuned XGBoost", fontsize=13)
-fig.tight_layout(); fig.savefig(FIG / "shap_importance.png", dpi=150); plt.close(fig)
+fig.tight_layout(); _save(fig, "shap_importance"); plt.close(fig)
 
 pd.DataFrame(rows).to_csv(RES / "shap_importance.csv", index=False)
-print("Saved shap_importance.png + shap_importance.csv")
+print("Saved shap_importance.svg + shap_importance.csv")
 # top-3 per category
 imp = pd.DataFrame(rows)
 for cat in CATS:

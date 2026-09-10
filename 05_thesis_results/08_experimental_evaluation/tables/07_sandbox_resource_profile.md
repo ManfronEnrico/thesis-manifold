@@ -7,9 +7,3 @@
 | Share of container limit (%) | ***0.03***  |      0.68  |     0.16  |
 
 *Note.* The limit is read from the container at run time, and so corroborates the provisioned budget independently of the deployment configuration. Absolute figures are lower than those measured on the development machine because the container provides a single processor core, so the tree-based learners allocate fewer parallel working buffers. That the interpreter and its libraries occupy more memory than any model fit is the expected profile for lightweight models, and confirms that the constraint operates on the choice of model class rather than on the footprint of the models finally selected.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-MEASURED 2026-09-03, template `prometheus`. Container limit 4122 MB independently corroborates 4 GB -- cite ALONGSIDE local profiling, not instead. cpus=1 explains lower-than-local RSS; state the reason or it reads as a contradiction. Closes N6.

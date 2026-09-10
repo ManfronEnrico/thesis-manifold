@@ -181,7 +181,7 @@ def main():
 
     # ---- the actual test of the F50 explanation ---------------------------
     lines = ["# SRQ1 — per-brand pooled-vs-per-category breakdown", "",
-             "Tests the F50 explanation directly: *does pooling help large series",
+             "Tests one explanation of the pooling result directly: *does pooling help large series",
              "and hurt small ones within a category?*", "",
              "`delta` = pooled error - per-category error. **Negative = pooling is",
              "better for that brand.** If the explanation holds, delta should rise",

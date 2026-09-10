@@ -412,7 +412,7 @@ def main():
              "**medMAPE (median per-series) is the headline metric here.** "
              "WMAPE is volume-weighted and unbounded above, so one diverged "
              "series sets the category figure -- CSD Prophet's WMAPE is 60% a "
-             "single brand (P0038 F72). Both are reported; prefer medMAPE when "
+             "single brand. Both are reported; prefer medMAPE when "
              "comparing per-series statistical baselines. "
              "For SRQ4 comparison vs the tabular models (tuned_summary.md).", "",
              "| Category | Model | medMAPE | WMAPE | n_series |",

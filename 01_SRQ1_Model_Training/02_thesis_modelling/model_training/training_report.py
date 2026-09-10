@@ -58,6 +58,8 @@ warnings.filterwarnings("ignore")
 
 # See srq1/_horizon.py -- one source for the active horizon and its paths.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent / "srq1"))
+sys.path.insert(0, str(_find_repo_root() / "05_thesis_results"))
+from check_reader_facing import warn_after_run  # noqa: E402
 from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
 from _features import FEATURES as _FEATURES, resolve as _resolve_feats, describe as _describe_feats  # noqa: E402,F401
 
@@ -90,7 +92,25 @@ def _span(df):
             f"{int(b.period_year)}-{int(b.period_month):02d}")
 
 
+def _split_pct(d) -> str:
+    """train/val/test as percentages of `d`, e.g. "69.6/15.2/15.2"."""
+    share = d.split.value_counts(normalize=True) * 100
+    return "/".join(f"{share.get(s, 0.0):.1f}" for s in ("train", "val", "test"))
+
+
 def section_data(L):
+    # The two CSD ratios below are MEASURED from the matrix on every run. They
+    # were typed literals until 2026-09-10 and the modellable-row figure had
+    # gone stale (it read 57.6/21.2/21.2; the matrix now gives 54.8/22.6/22.6),
+    # so the report stated a warm-up loss the table beneath it contradicted.
+    _ref = _matrix("CSD")
+    if _ref is None:
+        _all_pct = _mod_pct = "unavailable"
+    else:
+        _all_pct = _split_pct(_ref)
+        _mod_pct = _split_pct(
+            _ref.dropna(subset=["log_sales_units", "lag_1", "lag_13"]))
+
     L += ["## 1. What the model is trained on", "",
           "One row per brand x month. The `split` column is assigned by the "
           "preprocessing pipeline as a strict forward chain: every train month "
@@ -99,7 +119,7 @@ def section_data(L):
           "**The split is 70/15/15 over MONTHS**, applied before modelling. The "
           "row counts below are lower for train because rows without 13 months of "
           "history are dropped (no `lag_13`), and those are all early *training* "
-          "months. CSD is 69.6/15.2/15.2 of all rows and 57.6/21.2/21.2 of "
+          f"months. CSD is {_all_pct} of all rows and {_mod_pct} of "
           "modellable rows -- the same split, measured before and after warm-up "
           "loss. Quote the month-level figure; the row-level one invites the "
           "question of why train looks small.", "",
@@ -146,7 +166,8 @@ def section_data(L):
 
 def section_features(L):
     L += ["## 2. Features", "",
-          "Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). "
+          "Selected by intersecting what every category actually provides, rather "
+          "than by a fixed list. "
           "Categories differ in *capability*, not only in values: Nielsen reports "
           "no promotion data for some categories, so `promo_intensity` is omitted "
           "there rather than zero-filled -- a constant-zero column would assert "
@@ -179,7 +200,7 @@ def section_features(L):
           "matrix for EDA:", "",
           "| Column | Why excluded |", "|---|---|",
           "| `weighted_dist` | Tested and cleared for leakage, but does not improve "
-          "out-of-sample accuracy -- worse in 3 of 4 categories (P0036 task 7). |",
+          "out-of-sample accuracy -- worse in 3 of 4 categories. |",
           "| `sales_value`, `sales_liters`, `promo_units`, `baseline_*` | "
           "Contemporaneous with the target: measured in the month being forecast, "
           "so using them means reading the answer. |", ""]
@@ -222,7 +243,7 @@ def section_accuracy(L):
     wm = "wmape" if "wmape" in df.columns else None
     L += ["Reported as **median per-series MAPE** and **WMAPE** "
           "(volume-weighted -- the business metric). The mean MAPE is deliberately "
-          "absent: a single divergent series destroys it (P0038 F75), which is a "
+          "absent: a single divergent series destroys it, which is a "
           "property of the metric, not of the model.", ""]
     if "category" in df.columns and "model" in df.columns:
         cats = [c for c in CATEGORIES if c in set(df.category)]
@@ -346,6 +367,7 @@ def main():
     f.write_text("\n".join(L) + "\n", encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nWrote {f}")
+    warn_after_run()
     return 0
 
 

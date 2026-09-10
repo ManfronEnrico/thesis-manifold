@@ -4,7 +4,7 @@ Six benchmarks, ordered simplest to most complex. The first three (naive, season
 
 **Ridge appears twice, deliberately.** `Ridge` applies an extrapolation bound (that series' observed maximum x 3); `Ridge(unclipped)` does not. The bound is an arbitrary constant, so reporting only the bounded figure would describe a different estimator than 'Ridge'. The unclipped figure is the evidence that a per-brand linear fit on ~24 rows against 13 features is unusable -- it is published rather than suppressed. Prefer the POOLED Ridge in `ridge_pooled.md` for the nonlinearity-premium argument.
 
-**medMAPE (median per-series) is the headline metric here.** WMAPE is volume-weighted and unbounded above, so one diverged series sets the category figure -- CSD Prophet's WMAPE is 60% a single brand (P0038 F72). Both are reported; prefer medMAPE when comparing per-series statistical baselines. For SRQ4 comparison vs the tabular models (tuned_summary.md).
+**medMAPE (median per-series) is the headline metric here.** WMAPE is volume-weighted and unbounded above, so one diverged series sets the category figure -- CSD Prophet's WMAPE is 60% a single brand. Both are reported; prefer medMAPE when comparing per-series statistical baselines. For SRQ4 comparison vs the tabular models (tuned_summary.md).
 
 | Category | Model | medMAPE | WMAPE | n_series |
 |---|---|---|---|---|

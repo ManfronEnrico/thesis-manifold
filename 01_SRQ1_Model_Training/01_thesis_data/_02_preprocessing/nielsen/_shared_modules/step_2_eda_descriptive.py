@@ -152,13 +152,27 @@ class EdaContext:
 		self.tables_written.append(name)
 
 	def savefig(self, plt, name: str) -> None:
-		"""Persist the current figure, recording that it was written."""
+		"""Persist the current figure as SVG, recording that it was written.
+
+		SVG only, per .claude/rules/figure-generation-standards.md: it is vector,
+		so it stays sharp at any size in print and pastes into Word directly. A
+		PNG twin is strictly the lower-quality copy of the same figure and a
+		second file that can fall out of step.
+
+		Any PNG left from before this change is removed here rather than left
+		beside its replacement -- two files for one figure, differing only by
+		extension, with nothing to say which is current.
+		"""
 		if not self.make_plots:
 			plt.close()
 			return
 		out = self.paths["plots_dir"]
 		out.mkdir(parents=True, exist_ok=True)
-		plt.savefig(out / f"{name}.png", dpi=DPI, bbox_inches="tight")
+		stale = out / f"{name}.png"
+		if stale.exists():
+			stale.unlink()
+		plt.savefig(out / f"{name}.svg", bbox_inches="tight",
+					facecolor="white", edgecolor="none", transparent=False)
 		plt.close()
 		self.plots_written.append(name)
 

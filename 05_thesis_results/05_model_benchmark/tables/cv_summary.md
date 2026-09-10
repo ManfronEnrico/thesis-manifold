@@ -5,9 +5,10 @@ TPE trials per configuration, seed 42. Each configuration is tuned
 twice — once for WMAPE, once for median MAPE — to show whether the
 objective changes which model is selected.
 
-`plateau_trial` = the trial after which the best CV score improved by
-<0.1% relative. This is the empirical justification for the trial
-budget; there is no citable convention for a trial count.
+`plateau_trial` = the first trial whose best CV score is within
+0.5 percentage points of the final score. This is the
+empirical justification for the trial budget; there is no citable
+convention for a trial count.
 
 | Category | Model | Tuned for | test WMAPE | test medMAPE | CV score | plateau |
 |---|---|---|---|---|---|---|

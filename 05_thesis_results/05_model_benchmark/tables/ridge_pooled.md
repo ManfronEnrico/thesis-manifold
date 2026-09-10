@@ -22,6 +22,6 @@ undefined, not merely unimplemented.
 
 `clipped` counts predictions that hit the extrapolation bound (that
 series' observed maximum x 3). A high count means the bound, not the
-model, is setting the error — the defect that motivated this script
-(P0040 F53). It should be near zero in the pooled regimes.
+model, is setting the error — the unbounded extrapolation defect
+that motivated it. It should be near zero in the pooled regimes.
 

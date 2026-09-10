@@ -4,8 +4,8 @@ SRQ1 publication figures — from corrected DVH EXCL. HD results only.
 
 Reads the committed result tables (metrics.csv untuned ladder, tuned_metrics.csv)
 and produces:
-  fig1_model_ladder.png    — WMAPE per category across the model ladder (brand×month)
-  fig3_forecast_overlay.png— actual vs XGBoost forecast, top CSD brand, test window
+  fig1_model_ladder.svg    — WMAPE per category across the model ladder (brand×month)
+  fig3_forecast_overlay.svg— actual vs XGBoost forecast, top CSD brand, test window
 
 GRAIN NOTE (P0035, 2026-08-01): fig2_granularity.png is no longer produced. It
 compared brand×month against brand×chain, and DEC-GRAIN (2026-07-12) dropped the
@@ -92,6 +92,23 @@ class _SRQ1Out:
 RES = _SRQ1Out(results_root())
 FIG = RES / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
+
+
+def _save(fig, stem: str) -> None:
+    """Write one figure as SVG, removing any PNG left from before the switch.
+
+    SVG only, per .claude/rules/figure-generation-standards.md. Deleting the old
+    PNG is part of saving rather than a separate cleanup step: a generator that
+    only ever adds files leaves two copies of one figure the moment its format
+    changes, with nothing to say which is current.
+    """
+    stale = FIG / f"{stem}.png"
+    if stale.exists():
+        stale.unlink()
+    fig.savefig(FIG / f"{stem}.svg", facecolor="white", edgecolor="none",
+                transparent=False)
+
+
 SEED = 42
 
 # Determinism control -- see srq1_benchmark.py for the measured rationale.
@@ -141,7 +158,7 @@ _verdict = ("every model beats SeasonalNaive" if not _losers
             else "beats SeasonalNaive except " + ", ".join(_losers))
 ax.set_title(f"SRQ1 model ladder (brand×month, untuned) — {_verdict}")
 ax.legend(); ax.grid(axis="y", alpha=0.3)
-fig.tight_layout(); fig.savefig(FIG / "fig1_model_ladder.png", dpi=150); plt.close(fig)
+fig.tight_layout(); _save(fig, "fig1_model_ladder"); plt.close(fig)
 
 # ---- Fig 2: REMOVED (P0035, 2026-08-01) ----
 # Was a brand×month vs brand×chain granularity comparison. DEC-GRAIN (2026-07-12)
@@ -222,8 +239,8 @@ ax.axvline(te0 - 0.5, color="gray", ls=":", label="test start")
 ax.set_xlabel("period index"); ax.set_ylabel("sales units")
 ax.set_title(f"Forecast overlay — CSD top brand '{top}' (brand×month, XGBoost)")
 ax.legend(); ax.grid(alpha=0.3)
-fig.tight_layout(); fig.savefig(FIG / "fig3_forecast_overlay.png", dpi=150); plt.close(fig)
+fig.tight_layout(); _save(fig, "fig3_forecast_overlay"); plt.close(fig)
 
 print("Saved 3 figures to", FIG)
-for p in sorted(FIG.glob("*.png")):
+for p in sorted(FIG.glob("*.svg")):
     print("  ", p.name)

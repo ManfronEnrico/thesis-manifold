@@ -21,7 +21,7 @@ The scenarios are an information ladder: **A -> B** measures what data access bu
 
 ## Outcome taxonomy
 
-Failures are reported as classes, not averaged away. An scenario that answers 60% of the time is not comparable to one that always answers, and a single implausible value destroys a mean (P0038 F72).
+Failures are reported as classes, not averaged away. An scenario that answers 60% of the time is not comparable to one that always answers, and a single implausible value destroys a mean.
 
 | Outcome | C — no firm data |
 |---|---|

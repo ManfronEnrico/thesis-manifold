@@ -254,8 +254,8 @@ def main():
     lines += ["",
               "`clipped` counts predictions that hit the extrapolation bound (that",
               "series' observed maximum x 3). A high count means the bound, not the",
-              "model, is setting the error — the defect that motivated this script",
-              "(P0040 F53). It should be near zero in the pooled regimes.", ""]
+              "model, is setting the error — the unbounded extrapolation defect",
+              "that motivated it. It should be near zero in the pooled regimes.", ""]
     (OUT / "ridge_pooled.md").write_text("\n".join(lines) + "\n",
                                          encoding="utf-8", newline="\n")
     print(f"\nSaved ridge_pooled.csv + ridge_pooled.md in {OUT}")

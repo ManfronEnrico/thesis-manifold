@@ -55,6 +55,10 @@ if str(_REPO_ROOT) not in sys.path:
 
 from PATHS import get_chapter_tables_dir  # noqa: E402
 
+sys.path.insert(0, str(_REPO_ROOT / "05_thesis_results"))
+from review_notes import write_review_note  # noqa: E402
+from check_reader_facing import warn_after_run  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_holidays import CACHE_DIR, MANIFEST_PATH, load_manifest  # noqa: E402
 
@@ -62,7 +66,11 @@ from fetch_holidays import CACHE_DIR, MANIFEST_PATH, load_manifest  # noqa: E402
 # and shaped. The ablation RESULTS that use it are Ch5, and are written by
 # srq1_export_enrichment_appendix.py. Same subject, two chapters, on purpose.
 OUT = get_chapter_tables_dir("data_assessment")
-REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"
+# Review notes go BESIDE the table, not INSIDE it: 05_thesis_results/ ships to
+# assessors, so an internal note appended below a table travelled with the
+# thesis. They are written to 06_thesis_writing/writing-notes/, which the
+# submission export removes.
+_PRODUCER = "01_SRQ1_Model_Training/01_thesis_data/_00_raw/holidays/export_holiday_appendix.py"
 
 # Continues export_appendix.py's sequence. Holiday tables are appendix material
 # for SRQ1's feature set, so they sort after the SRQ4 run tables rather than
@@ -80,10 +88,9 @@ def _emit(seq: int, slug: str, title: str, caption: str, df: pd.DataFrame,
     lines = [f"**{title}.** {caption}", "", df.to_markdown(index=False)]
     if note:
         lines += ["", f"*Note.* {note}"]
-    if review:
-        lines += [REVIEW_SEP, review]
     (OUT / f"{stem}.md").write_text("\n".join(lines) + "\n",
                                     encoding="utf-8", newline="\n")
+    write_review_note(slug, OUT / f"{stem}.md", title, review, _PRODUCER)
     print(f"  {stem:42s} {len(df):>4d} rows  {title}")
 
 
@@ -220,6 +227,7 @@ def main() -> int:
 
     print(f"\n4 tables written ({len(hol)} holiday-days, "
           f"{hol['year'].nunique()} years).")
+    warn_after_run()
     return 0
 
 

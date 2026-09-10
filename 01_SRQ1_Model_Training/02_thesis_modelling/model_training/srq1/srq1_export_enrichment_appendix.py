@@ -54,6 +54,10 @@ if str(_REPO_ROOT) not in sys.path:
 
 from PATHS import get_chapter_tables_dir, get_srq_tables_dir  # noqa: E402
 
+sys.path.insert(0, str(_REPO_ROOT / "05_thesis_results"))
+from review_notes import write_review_note  # noqa: E402
+from check_reader_facing import warn_after_run  # noqa: E402
+
 # The active horizon, and the paths that follow from it. ONE source, so the
 # matrix read and the results written can never describe different horizons
 # (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
@@ -65,7 +69,11 @@ SRC = (results_root() / "tables")
 # Ch5: with-feature vs without-feature model comparisons and their SHAP
 # attribution -- modelling results, not data provenance (that is Ch4).
 OUT = get_chapter_tables_dir("model_benchmark")
-REVIEW_SEP = "\n---\n\n<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->\n"
+# Review notes go BESIDE the table, not INSIDE it: 05_thesis_results/ ships to
+# assessors, so an internal note appended below a table travelled with the
+# thesis. They are written to 06_thesis_writing/writing-notes/, which the
+# submission export removes.
+_PRODUCER = "01_SRQ1_Model_Training/02_thesis_modelling/model_training/srq1/srq1_export_enrichment_appendix.py"
 
 
 def _emit(seq: int, slug: str, title: str, caption: str, df: pd.DataFrame,
@@ -81,10 +89,9 @@ def _emit(seq: int, slug: str, title: str, caption: str, df: pd.DataFrame,
              df.to_markdown(index=False, disable_numparse=True)]
     if note:
         lines += ["", f"*Note.* {note}"]
-    if review:
-        lines += [REVIEW_SEP, review]
     (OUT / f"{stem}.md").write_text("\n".join(lines) + "\n",
                                     encoding="utf-8", newline="\n")
+    write_review_note(slug, OUT / f"{stem}.md", title, review, _PRODUCER)
     print(f"  {stem:44s} {len(df):>4d} rows  {title}")
 
 
@@ -354,7 +361,16 @@ def table_ridge_alpha(seq: int) -> None:
             lambda v: f"{v:+.2f}"),
     })
     out = _as_text(out.sort_values(["Category", "Arm"]))
-    mean_change = (r["test_wmape_cv"] - r["test_wmape_alpha1"]).mean()
+    delta = r["test_wmape_cv"] - r["test_wmape_alpha1"]
+    mean_change = delta.mean()
+    # Every figure in the review note below is COMPUTED from the file just read.
+    # They were typed literals until 2026-09-10 ("0.00-0.44pp", "1e-8", "13.7pp"
+    # and a claim about RTD), and they described a superseded run: the current
+    # file spans 0.21-0.22pp and holds no RTD row at all, so the note asserted a
+    # spread and a category the table beside it did not show.
+    spread_lo, spread_hi = delta.abs().min(), delta.abs().max()
+    cats = ", ".join(sorted(r["category"].unique()))
+    n_cells = len(r)
     _emit(seq, "ridge_alpha_cross_validation",
           "Ridge regularisation strength by rolling-origin cross-validation",
           "Alpha selected on development data only, with the previously "
@@ -365,17 +381,18 @@ def table_ridge_alpha(seq: int) -> None:
                 "precedes validation data. Ordinary k-fold cross-validation is "
                 "not valid for this data, since shuffling would place later "
                 "months in the training fold."),
-          review=(f"Mean change from selecting alpha rather than fixing it at "
-                  f"1.0: {mean_change:+.2f}pp -- i.e. slightly WORSE on test.\n\n"
-                  "The cross-validation curve is flat: the spread between the "
-                  "best alpha and alpha=1 is 0.00-0.44pp, and widening the "
-                  "search grid to 1e-8 changed test WMAPE by less than 0.01pp. "
-                  "Alpha barely matters on this data.\n\n"
-                  "So the hard-coded value was not a defect. Selecting it is "
-                  "worth doing for method, not for accuracy, and the honest "
-                  "reporting is that the correction is negligible. An earlier "
-                  "draft claimed a 13.7pp error for RTD; that figure came from "
-                  "reading a sweep on the TEST split and was wrong."))
+          review=(f"Covers {n_cells} category-arm cell(s): {cats}.\n\n"
+                  f"Mean change from selecting alpha rather than fixing it at "
+                  f"1.0: {mean_change:+.2f}pp"
+                  + (" -- i.e. slightly WORSE on test.\n\n" if mean_change > 0
+                     else " on test.\n\n")
+                  + f"The cross-validation curve is flat: the spread between "
+                    f"the selected alpha and alpha=1 is "
+                    f"{spread_lo:.2f}-{spread_hi:.2f}pp. Alpha barely matters "
+                    "on this data.\n\n"
+                    "So the hard-coded value was not a defect. Selecting it is "
+                    "worth doing for method, not for accuracy, and the honest "
+                    "reporting is that the correction is negligible."))
 
 
 def main() -> int:
@@ -389,6 +406,7 @@ def main() -> int:
     table_ridge_alpha(99)
     print("\nDone. Every value is read from the result CSVs; none is typed "
           "into the generator.")
+    warn_after_run()
     return 0
 
 

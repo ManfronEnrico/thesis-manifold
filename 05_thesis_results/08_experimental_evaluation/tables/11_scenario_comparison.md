@@ -15,9 +15,3 @@
 | Response time (s)                    | 114.6              |
 
 *Note.* The scenarios form an information ladder: A has no access to firm data, B may execute code against it, and C additionally calls the dedicated forecasting model. Correctness, consistency and replicability are the primary dimensions; cost and response time are secondary. The top-answer agreement rate is the share of repeated runs returning the most common answer within a 1% tolerance, where 1.00 denotes complete agreement across repeats.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-'TAR@N' was jargon -- renamed 'top-answer agreement rate' and defined inline + in the dictionary. Cite Atil et al. (2025).

@@ -388,7 +388,12 @@ def tune(model, d, feats, trials, metric_name, folds):
             study.best_params, curve)
 
 
-def _plateau(curve, tol_pp=0.5):
+# The plateau tolerance, named once. The report text below renders this value
+# rather than restating it, so the two cannot disagree.
+_PLATEAU_TOL_PP = 0.5
+
+
+def _plateau(curve, tol_pp=_PLATEAU_TOL_PP):
     """First trial whose best score is within `tol_pp` PERCENTAGE POINTS of final.
 
     The empirical justification for the trial budget, replacing a citation to a
@@ -442,9 +447,14 @@ def _write_outputs(rows, params, curves, cats, n_folds, trials):
              "TPE trials per configuration, seed 42. Each configuration is tuned",
              "twice — once for WMAPE, once for median MAPE — to show whether the",
              "objective changes which model is selected.", "",
-             "`plateau_trial` = the trial after which the best CV score improved by",
-             "<0.1% relative. This is the empirical justification for the trial",
-             "budget; there is no citable convention for a trial count.", "",
+             # Read off _plateau's own default so the description cannot drift
+             # from the computation. It already had: this said "<0.1% relative"
+             # while _plateau used a 0.5pp ABSOLUTE tolerance -- the exact
+             # reading its docstring records as misleading and replaced.
+             f"`plateau_trial` = the first trial whose best CV score is within",
+             f"{_PLATEAU_TOL_PP:g} percentage points of the final score. This is the",
+             "empirical justification for the trial budget; there is no citable",
+             "convention for a trial count.", "",
              "| Category | Model | Tuned for | test WMAPE | test medMAPE | CV score | plateau |",
              "|---|---|---|---|---|---|---|"]
     for _, r in df.iterrows():

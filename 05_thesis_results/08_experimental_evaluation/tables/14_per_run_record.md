@@ -10,9 +10,3 @@
 | CSD        | COCA COLA | A - no firm data |        2 |        3,152,932 |          5,600,000 |      77.6 | ok        |               143.6 |      109664 |         4585 |               4196 | $0.6692      |
 
 *Note.* The full response for each run, including any code generated and the reasoning summary returned by the model, is retained alongside these records.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Currently 6 rows because only a scenario-A pilot has run (CSD, 2 brands, 3 reps). Intended full size is 225 rows: 15 brands x 5 repeats x 3 scenarios. Blocked on API credit (P0042 blocks 1-3, ~$40). NOT the final length.

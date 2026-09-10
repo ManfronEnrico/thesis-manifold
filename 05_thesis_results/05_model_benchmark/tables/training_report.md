@@ -10,7 +10,7 @@ This documents the model that **Scenario C** exposes through the `forecast_deman
 
 One row per brand x month. The `split` column is assigned by the preprocessing pipeline as a strict forward chain: every train month precedes every validation month, which precedes every test month. A random split would let the model learn from the future.
 
-**The split is 70/15/15 over MONTHS**, applied before modelling. The row counts below are lower for train because rows without 13 months of history are dropped (no `lag_13`), and those are all early *training* months. CSD is 69.6/15.2/15.2 of all rows and 57.6/21.2/21.2 of modellable rows -- the same split, measured before and after warm-up loss. Quote the month-level figure; the row-level one invites the question of why train looks small.
+**The split is 70/15/15 over MONTHS**, applied before modelling. The row counts below are lower for train because rows without 13 months of history are dropped (no `lag_13`), and those are all early *training* months. CSD is 69.6/15.2/15.2 of all rows and 54.8/22.6/22.6 of modellable rows -- the same split, measured before and after warm-up loss. Quote the month-level figure; the row-level one invites the question of why train looks small.
 
 | Category | Brands | Train | Val | Test | Train span | Val span | Test span |
 |---|---:|---:|---:|---:|---|---|---|
@@ -34,7 +34,7 @@ One row per brand x month. The `split` column is assigned by the preprocessing p
 
 ## 2. Features
 
-Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). Categories differ in *capability*, not only in values: Nielsen reports no promotion data for some categories, so `promo_intensity` is omitted there rather than zero-filled -- a constant-zero column would assert "no promotion ran", which the data does not support.
+Selected by intersecting what every category actually provides, rather than by a fixed list. Categories differ in *capability*, not only in values: Nielsen reports no promotion data for some categories, so `promo_intensity` is omitted there rather than zero-filled -- a constant-zero column would assert "no promotion ran", which the data does not support.
 
 | Feature | CSD | Danskvand | Energidrikke | RTD | what it is |
 |---|:-:|:-:|:-:|:-:|---|
@@ -61,7 +61,7 @@ Selected by intersection, not by a fixed list (DEC-DISCOVER-COLUMNS). Categories
 
 | Column | Why excluded |
 |---|---|
-| `weighted_dist` | Tested and cleared for leakage, but does not improve out-of-sample accuracy -- worse in 3 of 4 categories (P0036 task 7). |
+| `weighted_dist` | Tested and cleared for leakage, but does not improve out-of-sample accuracy -- worse in 3 of 4 categories. |
 | `sales_value`, `sales_liters`, `promo_units`, `baseline_*` | Contemporaneous with the target: measured in the month being forecast, so using them means reading the answer. |
 
 ---
@@ -87,7 +87,7 @@ _8 tuned configurations in total (LightGBM, XGBoost)._
 
 ## 4. Accuracy
 
-Reported as **median per-series MAPE** and **WMAPE** (volume-weighted -- the business metric). The mean MAPE is deliberately absent: a single divergent series destroys it (P0038 F75), which is a property of the metric, not of the model.
+Reported as **median per-series MAPE** and **WMAPE** (volume-weighted -- the business metric). The mean MAPE is deliberately absent: a single divergent series destroys it, which is a property of the metric, not of the model.
 
 ### WMAPE (lower is better)
 
@@ -110,10 +110,10 @@ Getting this wrong does not raise an error -- it produces intervals that look im
 
 | Category | Calibration rows | q90 (log space) | Median 90% interval width |
 |---|---:|---:|---|
-| CSD | 665 | 2.096 | ~8.0x the point forecast |
-| Danskvand | 174 | 2.062 | ~7.7x the point forecast |
-| Energidrikke | 264 | 2.849 | ~17.2x the point forecast |
-| RTD | 372 | 1.932 | ~6.8x the point forecast |
+| CSD | 665 | 2.177 | ~8.7x the point forecast |
+| Danskvand | 174 | 2.200 | ~8.9x the point forecast |
+| Energidrikke | 264 | 2.701 | ~14.8x the point forecast |
+| RTD | 372 | 1.940 | ~6.8x the point forecast |
 
 A wide interval is not a failure of the model -- it is an honest statement about monthly brand-level demand. Reporting a narrow one that is not earned would be.
 
@@ -161,8 +161,8 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "n_calibration_rows": 665,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "n_features": 18,
-  "serve_seconds": 0.2444,
-  "served_at_utc": "2026-09-10T13:33:53+00:00"
+  "serve_seconds": 0.5288,
+  "served_at_utc": "2026-09-10T17:27:20+00:00"
 }
 ```
 
