@@ -167,3 +167,100 @@ with its claim, and record pending measurements when the claim is written.
 49 open threads, and the chapter is the largest remaining prose job. Its §5.3.2
 still states in bold that *"No holiday calendar is used"*, which is false and
 contradicts Chapter 4 in the same document.
+
+---
+
+# 2026-09-10 — Chapter 5 verified, reorganised, and given a literature spine
+
+## What the chapter turned out to be
+
+Every results table stale, and **two findings changed identity**. Danskvand was
+reported as won by Ridge at 10.9% weighted error, roughly half the tuned models;
+Ridge is now **74.9%, the worst of six baselines**, and the category is won by
+Prophet. The plateau claim moved from a median near 16 trials to 54.
+
+Six sections carry factual errors beyond stale decimals: the feature count (13
+described, 18 used), a bold claim that no holiday calendar is used which became
+false on 2026-08-18, every operational figure, the calibration table's headline
+example, the pooling comparison's cross-family agreement, and the median-APE
+trade-off in 5.4.1.
+
+## Reorganised from fixes to sections, on Brian's instruction
+
+The first pass was sixteen fixes, which meant jumping around the document. **Its
+F1 proposed repairing twenty-one cross-references inside bullet lists that the
+pass itself deletes** — work that would have been thrown away two fixes later.
+
+`ch5-prose-pass-followup-01.md` replaces it: every section in document order, each
+carrying its state, what was verified, its comment verdicts, and paste-ready
+prose. References are rewritten as part of the prose, named rather than numbered.
+All 49 threads carry a verdict.
+
+## An error worth recording
+
+A pass claimed section 5.5.9's per-seed winner table could not be reproduced from
+any artefact, blocked it as a gate, and warned that section 5.6 rested on nothing.
+**The data was in `stability.md` all along** — the pass had searched
+`10_seed_stability.csv`, the appendix export, and concluded the question was
+unanswerable rather than looking for the source.
+
+A follow-up then instructed Brian to **delete a correct, sourced table**. Caught
+and reversed. Recorded in `post-hpc-validation.md` as withdrawn rather than
+resolved, because the failure mode will recur: **an appendix table is a projection
+of a result, not the result.**
+
+## The August reference notes were checked, not assumed
+
+Three notes sat in the Chapter 5 folder from 22 August. Measured against current
+artefacts, all three are stale on numbers and one has **inverted**: the
+pooled-vs-per-category note says the sign flips exactly once and both model
+families agree on all four categories, and tells you to lead with that. They now
+disagree on two, with a 9.8-point delta against its stated 2.5-point ceiling.
+
+Their citation work survived and is now F16 of the pass, because it concerns what
+a source says rather than what a run measured.
+
+## Citations audited per source
+
+Fifteen sources, checked one at a time against the **unfiltered** Zotero API
+rather than `citations.json`, which filters by item type. All fifteen present.
+Brian rebuilt the malformed Hyndman entry; **DEC-FPP-WHOLE-BOOK** now records that
+the book is cited whole, with a section locator only where a passage is quoted and
+never a page number.
+
+Two duplicate-author pairs remain a live risk — two M4 papers and two Bergstra
+papers, indistinguishable in rendered text, where a wrong citation field shows up
+only in the bibliography.
+
+## Six FPP3 sections read directly
+
+Brian printed all 40 section PDFs. Six read, quoting with page numbers.
+**Two findings are defects rather than citation gaps:**
+
+- **13.3** handles bounded forecasts through the transformation and calls an
+  artificial constraint "unrealistic". The thesis clips post-hoc without stating
+  the bound.
+- **5.6** states a back-transformed point forecast is a **median, not a mean**,
+  and that medians do not aggregate additively. The tool serves per-brand
+  forecasts with no warning against summing them — an SRQ2 item.
+
+Also closed Chapter 4's open ARIMA minimum-length claim: it has no source because
+13.7 calls such rules "misleading and unsubstantiated" and names 30 as having no
+justification. **Remove the claim rather than source it.**
+
+⚠ **A caution on how those six were read.** All six were read in full, but the
+quotations came almost entirely from pages 1 and 2 — that is where each section
+states its thesis, and the reading stopped once a usable quote appeared. Brian
+caught the pattern. The quotations are real and checkable; the coverage was not
+what it looked like. **Section 12.2's strongest sentence for this thesis is on its
+last page.** Tomorrow's pass quotes from where the answer is.
+
+## Next
+
+**Chapter 5 to finished prose, plus a retraining decision**, defined as a session
+in `task_plan.md`. Chapter 5 is the last chapter that produces rather than
+consumes SRQ1 output, so the retraining question is settled here or it costs the
+chapter twice.
+
+Five candidates are open and **four are wording problems rather than measurement
+problems**. Only the missing seasonal ARIMA order is arguably worth a re-run.

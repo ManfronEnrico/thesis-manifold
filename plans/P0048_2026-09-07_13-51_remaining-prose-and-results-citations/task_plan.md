@@ -1,9 +1,9 @@
 ---
 pid: P0048
 created: 2026-09-07 13:51:00
-updated: 2026-09-09 21:30:00
+updated: 2026-09-10 21:40:00
 status: in_progress
-focus_detail: "Chapter 4 is PROSE and applied — 9 of 10 fixes pasted, 7 Word threads closed (27 to 20). Seven items remain, in ch4_data_assessment/ch4-prose-pass-followup-01.md; F1 is urgent because 4.3 currently states both 18 and 13 as the feature count. THE FEATURE SET CHANGED MID-SESSION: commit 3f8b0a9 admitted the holiday and intermittency columns, so the model consumes 18 (17 without promotion), not 13 (F16). Three Ch4 claims described a pipeline that does not exist, including a median imputation the code never performs (F17). Four cumulative registers now live at the writing-notes root: deferred-structural-decisions, post-hpc-validation, citations-added-register, plus the per-chapter notes. NEXT: Chapter 5 — 39 bold-lead fragments, 49 open threads, and a false bold claim in 5.3.2 that no holiday calendar is used."
+focus_detail: "NEXT SESSION (2026-09-11): Chapter 5, section by section, to finished prose. Three inputs, all on disk: ch5-prose-pass-followup-01.md (the sequential pass, every section verified against the repo), the 40 FPP3 section PDFs in the Google Drive modelling-papers folder, and fpp3-first-pass-findings.md. Chapter 5 is the LAST chapter that could still justify a re-run, so the session also produces a retraining decision: what would change, what it costs, and which claims can be narrowed instead. Default is narrow, not re-run. Two open items block nothing but need Brian: 5.1 and 5.5.6 state different RAM budgets (4 vs 8 GB), and comment 225 tags the validation scheme OUTDATED with no discernible defect. Ch4 is prose and applied. Registers live at the writing-notes root."
 ---
 
 # P0048 — Remaining prose & working in-text citations of results
@@ -104,7 +104,8 @@ held-out ground truth is retained. Ground truth **is** retained — see F5.
 | 2 | Horizon decision + fix | raise with Enrico, then `engineer_features()` | pending |
 | 3 | Regenerate + re-benchmark | 8 matrices, SRQ1 both horizons, SRQ4 @H3 | blocked on 2 |
 | 4 | Ch4 complete pass | §4.1–§4.6, EDA plots cited | partially blocked on 3 |
-| 5 | Ch5–Ch9 prose + citations | section by section | pending |
+| 5 | **Ch5 prose + source support + retraining decision** | section by section; see the session below | **NEXT (2026-09-11)** |
+| 5b | Ch6–Ch9 prose + citations | section by section | pending |
 | 6 | **Inherited: draft bullets** | ch3/ch6 merge, ch4/ch7/ch8, short files, verify | pending (tasks 11–16) |
 | 7 | **Inherited: Brian's writing items** | 5 Word threads, NotebookLM claims verification | pending (tasks 9–10) |
 | 8 | **Chapter reorder: swap Ch5 and Ch6** | Word half DONE (Brian, 2026-09-08); 37 prose refs verified + staged in `ch5-ch6-swap-reference-repair.md`. Repo half (PATHS.py, 2 folder renames, 6 diagram stems) still open — P0050 | **prose ready to paste**; see F14 |
@@ -112,6 +113,93 @@ held-out ground truth is retained. Ground truth **is** retained — see F5.
 **Phase 4 is not fully blocked.** §4.1/§4.2 narrative and §4.3/§4.4 (blocks P1/P2)
 can proceed now; only the horizon subsection and the numbers that move with the
 re-run wait on phase 3.
+
+## The next session: Chapter 5 to finished prose (2026-09-11)
+
+Chapter 5 is the model-benchmark chapter, and it is **the last chapter where a
+re-run could still change what the thesis claims**. Everything after it consumes
+SRQ1's output rather than producing it. So this session does two things at once:
+write the chapter, and settle whether anything needs retraining before the rest
+of the thesis is built on top of it.
+
+### Three inputs, all on disk
+
+| Input | What it gives |
+|---|---|
+| `writing-notes/ch5_model_benchmark/ch5-prose-pass-followup-01.md` | every section walked in document order, verified against the repository, with paste-ready prose and all 49 comment verdicts |
+| the 40 FPP3 section PDFs (Google Drive, modelling-papers) | the literature the chapter cites, printed section by section |
+| `notebookLM/03-Modelling_Review/fpp3-first-pass-findings.md` | six sections already read, with page-located quotations; 34 unread |
+
+### The method, per section
+
+Work top to bottom through the chapter. For each section:
+
+1. **Verify against the repository first.** The follow-up already did this at
+   `303f00f`; re-check anything the fetch shows has moved.
+2. **Read the FPP3 sections that bear on it**, and quote from **where the answer
+   is**, not from the opening paragraph.
+
+   ⚠ **A caution earned on 2026-09-10.** The first pass read six PDFs in full but
+   quoted almost entirely from pages 1 and 2, because that is where each section
+   states its thesis and the reading stopped once a usable quote appeared. The
+   quotations were real and checkable, but the coverage was not what it looked
+   like. **Where a section works an example over eight pages, the finding that
+   matters is often on page 6.** Section 12.2's strongest sentence for this thesis
+   was on its last page.
+3. **Write the prose**, with the citation attached to the claim it actually
+   supports.
+4. **Record what could only be fixed by retraining**, rather than working around
+   it silently.
+
+### The retraining question, which is the second deliverable
+
+The chapter currently carries claims that a re-run would change. The session
+produces a decision on each, and **the default is to narrow the claim rather than
+re-run**. A re-run costs hours and invalidates every downstream number; a narrowed
+claim costs a sentence.
+
+For each candidate, the note records **what a re-run would change, what it costs,
+and what the chapter says instead if we do not**:
+
+| Candidate | Why it is open | Cheapest alternative to a re-run |
+|---|---|---|
+| **ARIMA has no seasonal order** on monthly data the chapter calls strongly seasonal | FPP3 9.9 works only seasonal models on monthly data; the current limitation calls this a tuning gap when it is structural | state it as a **structural** limitation and say the comparison understates the family. Wording drafted in the first-pass findings |
+| **ETS is absent** from a claimed spectrum of inductive biases | 5.1 says the five families "span the inductive-bias spectrum" and one of the two dominant classical families is missing | **narrow the claim.** Say which biases are spanned rather than claiming the spectrum |
+| **Operational figures measured on 13 features** | `profiling.csv` still reports `n_features: 13`; the model uses 18 (H12) | report them as a **floor** and say so. The margin against the budget is ~100x, so a proportional increase does not approach it |
+| **The pooled comparison ran on 12 features** | every other result in the chapter is on 18; the two arms are internally consistent but not comparable with the rest | state the scope: it answers a question about **training rows**, not features |
+| **Ridge clipping has no stated bound** | FPP3 13.3 handles bounding through the transformation and calls an artificial constraint "unrealistic" | **state the bound** and explain that the log fit already imposes positivity, so this is upper-tail control rather than a positivity fix |
+
+**Only the first is arguably worth a re-run**, and only if a seasonal ARIMA is
+cheap on four categories. Everything else is a wording change.
+
+### One finding that reaches outside the chapter
+
+FPP3 5.6 establishes that a back-transformed log forecast is the **median**, not
+the mean, and that medians do not aggregate additively. The forecast tool serves
+per-brand forecasts and nothing warns a consumer against summing them to a
+category total. **That is an SRQ2 item**, and this session should raise it rather
+than resolve it here.
+
+### Two questions only Brian can settle
+
+Both are recorded in the follow-up and neither blocks the writing:
+
+1. **Sections 5.1 and 5.5.6 state different memory budgets** — 4 GB and 8 GB. The
+   prose carries a placeholder until this is fixed in one place.
+2. **Comment 225 tags the validation scheme `OUTDATED`** and the scheme matches
+   the code, the citation checks out, and the section is already prose. The
+   follow-up guesses it means the missing K-fold justification and drafts that
+   addition. If it means something else, say so.
+
+### Done means
+
+- every section of Chapter 5 is prose, verified, with its comments answered;
+- every citation is attached to a claim the source actually supports, quoted from
+  the page that supports it;
+- the retraining decision is written down with its cost, so it is not re-derived;
+- anything deferred is on a register rather than in someone's head.
+
+---
 
 ## Sequencing constraints
 
@@ -123,7 +211,15 @@ re-run wait on phase 3.
    once P3 records that XGBoost is pinned to one thread.
 3. **Do not write the §4.2 EDA pass before phase 3.** Every figure there is stale;
    doing it twice is waste.
-4. **Phase 8 (the swap) before phase 5 (Ch5–Ch9 prose).** Every cross-reference
+4. **Chapter 5 before any further re-run.** It is the last chapter that consumes
+   SRQ1 as a producer rather than a consumer, so a retraining decision taken after
+   it is written costs the chapter twice. This is why the prose session and the
+   retraining decision are one session and not two.
+5. **Do not re-run to fix a wording problem.** Four of the five open items in the
+   table above are claims that are too strong for what was measured, not
+   measurements that are wrong. Narrowing is the cheaper and usually the more
+   honest fix.
+6. **Phase 8 (the swap) before phase 5 (Ch5–Ch9 prose).** Every cross-reference
    written before the swap has to be rewritten after it. The swap is now a small,
    fully-specified edit (findings F(new)); doing it first is strictly cheaper.
    It does **not** block phase 4 — Ch4's anchors are unaffected by renumbering.
@@ -137,5 +233,13 @@ re-run wait on phase 3.
 - `plans/.archive/P0046_2026-09-05_21-10_exogenous-enrichment-decision/LOCKED_STATE.md`
   — the determinism contract (`XGB_N_JOBS=1`). **Any re-run in phase 3 must honour
   it or the new numbers are not reproducible either.**
+- `06_thesis_writing/writing-notes/ch5_model_benchmark/ch5-prose-pass-followup-01.md`
+  — the sequential Chapter 5 pass, every section verified at `303f00f`
+- `06_thesis_writing/writing-notes/ch5_model_benchmark/ch5-pending-source-review.md`
+  — which Chapter 5 sections must not be closed before the source review lands
+- `06_thesis_writing/notebookLM/03-Modelling_Review/forecasting-book-sections-for-citation-verification.md`
+  — Brian's section-to-claim mapping and the NotebookLM brief
+- `06_thesis_writing/notebookLM/03-Modelling_Review/fpp3-first-pass-findings.md`
+  — six sections read, page-located; 34 unread, with the next six named
 - `.claude/rules/prose-insertion-discipline.md` · `.claude/skills/write-prose-from-bullets/`
 - `.claude/rules/writing-surface-authority.md` — the `.docx` is authoritative
