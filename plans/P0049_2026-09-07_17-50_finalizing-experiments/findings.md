@@ -1103,3 +1103,237 @@ to drift from all three, silently -- the failure mode of F21/F25/F31/F32.
 `submission-export` must be told to keep `scenario_inputs/` when it strips the
 data tiers. Recorded here because the export is built later, and a rule written
 after the fact is a rule someone has to remember.
+
+---
+
+## F44 — Adding D/E prompt notes changes `schema_id()`, invalidating every cached run (2026-09-10)
+
+Found while designing `run_scenario_d`/`run_scenario_e`. This is a sequencing
+constraint on the funded set, not a defect.
+
+`prompts.py:schema_id()` hashes a **fixed list** of prompt strings:
+
+```python
+parts = [SCHEMA_VERSION, USER_QUESTION, OUTPUT_EXEMPLAR, SENTINEL,
+         SENTINEL_INSTRUCTION, SCENARIO_A_NOTE, SCENARIO_B_NOTE,
+         SCENARIO_C_NOTE, _json.dumps(FORECAST_TOOL_SCHEMA, sort_keys=True)]
+```
+
+`run_full()` treats a cached row as a hit **only if its `schema` column equals the
+current id**. So the moment `SCENARIO_D_NOTE` joins that list, every previously
+paid row stops matching and `--resume` re-sends it. At the funded scale that is
+the whole ~$40 spent twice.
+
+**Right now this costs nothing.** `runs.csv` holds 6 rows, all Scenario A, all on
+`v2-units-no-recommendation` — already superseded by v3, so they are not cache
+hits today either.
+
+**The constraint it imposes: add the D/E notes BEFORE the funded A–C runs, not
+after.** The prompt registry must be complete before money is spent against it.
+
+### Why the hash is nonetheless right
+
+The obvious fix — exclude D/E notes from the hash so A–C rows keep matching — is
+wrong, and would reintroduce the failure the hash was built to prevent. The hash
+answers *"were these rows asked the same question?"*, and a D row asked a
+question that a pre-D hash cannot describe. Two runs whose prompts differ would
+become indistinguishable after the fact, which is the v1 DKK confound.
+
+The scenario-note list is also the reason a note cannot simply be appended
+silently: the hash is what makes forgetting to bump the version impossible.
+
+**Decision needed with Q-A**: whether the funded set runs A–E in one block (one
+schema, one cache) or A–C now and D/E later (two schemas, deliberately not
+pooled, and the write-up must say so).
+
+---
+
+## F45 — Prometheus is a TWO-AGENT delegation; the SQL tools are not where the plan assumed (2026-09-10)
+
+Read while designing D/E. This **corrects DEC-D-SNAPSHOT's stated mechanism**,
+though not its intent. Read before writing `run_scenario_d`.
+
+### What the plan said
+
+> "Register the tooled project WITHOUT the SQL tools (`run_sql`, `inspect_schema`,
+> `distinct_values`, `sample_rows`) per DEC-D-SNAPSHOT; keep only `execute_code`."
+
+That describes one agent with a tool list we can filter. **The engine is not
+shaped that way.**
+
+### What it actually is
+
+Two agents, and the conversational one never touches the warehouse
+(`projects/prometheus/prometheus.py:47-64`):
+
+```python
+tool_names=KNOWLEDGE_BASE_TOOLS + MEMORY_TOOLS + PROACTIVE_TOOLS
+          + ["invoke_prometheus_coder"],
+```
+
+The main agent's only data verb is `invoke_prometheus_coder`. All five data tools
+belong to a **second, nested agent** built at module import
+(`prometheus_coder.py:323-336`):
+
+```python
+prometheus_coder_agent = Agent(
+    models.OpenAIModels().standard.powerful,
+    tools=[Tool(run_sql, ...), Tool(inspect_schema, ...), Tool(distinct_values, ...),
+           Tool(sample_rows, ...), Tool(execute_code, ...)],
+    ...)
+```
+
+**That list is hardcoded at module scope, not passed through `ProjectDeps`.**
+There is no `tool_names` filter reaching it, so "register the project without the
+SQL tools" cannot be done the way the plan describes. Doing it literally would
+mean editing the vendor file — forbidden, and it would make D a fork of
+Prometheus rather than Prometheus.
+
+### The seam that does exist, and it is purpose-built for this
+
+`ProjectDeps.runtime_coder_context`, described in
+`types/base_agents_types.py:19` as:
+
+> "Eval/runtime-only context appended to coder tasks (not in prod prompts)"
+
+It is populated **at invoke time** from the LangGraph config, with no code change
+(`graphs/basic_nodes.py:43-51`):
+
+```python
+extra_coder = configurable.get("extra_coder_guardrails")
+deps = dataclasses.replace(project_deps, ...,
+                           runtime_coder_context=extra_coder or None)
+```
+
+and prepended to the coder's brief at `prometheus_coder.py:384-385`.
+
+The same `configurable` dict also overrides `main_agent_model` and `coder_model`
+(lines 46-47) — so **DEC-VENDOR's pinning is enforceable from our side** rather
+than inherited from the vendor default, which is what the harness needs anyway
+(the vendor pins the floating alias `"gpt-5.5"`, we pin the dated snapshot).
+
+### What this means for D
+
+D is invoked with `configurable={"extra_coder_guardrails": <the brand CSV plus an
+instruction to use only execute_code on it>, "coder_model": MODEL,
+"main_agent_model": MODEL}`.
+
+The SQL tools remain *registered* but have nothing to query that is relevant, and
+the injected context tells the coder the data is already in hand. **That is a
+weaker guarantee than removing them**, and it must be recorded honestly:
+
+- **What we can assert:** D was given the same series B was given, through a
+  documented eval seam, with the model pinned to the same snapshot.
+- **What we cannot assert:** that D was *incapable* of issuing SQL.
+- **What makes it checkable:** the run trace. `run_sql` calls are visible in the
+  message history, so a D run that touched the warehouse is **detectable after
+  the fact** rather than assumed away. The harness must assert zero SQL calls and
+  classify a run that made one, exactly as `payload_complete` does for C (F21).
+
+This is strictly better evidence than a filtered tool list would have produced,
+because it is measured rather than configured.
+
+### Two further facts for the write-up
+
+1. **The coder's reasoning effort defaults to `"low"`**, not the provider default
+   (`prometheus_coder.py:319`), env-overridable via
+   `PROMETHEUS_CODER_REASONING_EFFORT`. The comment records "2.3x faster than the
+   provider default with identical accuracy" across their eval suite. Our A-C
+   scenarios run `"medium"`. **This is a real asymmetry between B and D** and must
+   either be pinned to match or disclosed.
+2. **`UsageLimits(request_limit=40)`** caps the coder's loop
+   (`prometheus_coder.py:398`). That is D's `hit_limit` equivalent and maps onto
+   the existing `timeout` failure class.
+
+---
+
+## F46 — The engine and the thesis run in DISJOINT interpreters; D/E cross a process boundary (2026-09-10)
+
+Found when the bridge failed to import the engine from the thesis venv.
+
+| | Python | has | lacks |
+|---|---|---|---|
+| thesis `.venv` | 3.14.2 | xgboost, lightgbm, sklearn | the engine (`No module named 'azure.storage'`) |
+| engine `.venv` | 3.13.13 | langgraph, pydantic-ai, e2b | `No module named 'xgboost'` |
+
+**Scenario E needs both** — the engine to orchestrate, the trained booster to
+forecast. Neither environment can be made to satisfy it.
+
+**Merging them is the wrong fix.** The engine pins Python 3.13 and a dependency
+set this thesis does not control; a result that depended on having modified the
+vendor's environment would be neither reproducible nor honest.
+
+**The process boundary is the fix**, and it pays for itself three times over:
+
+1. the vendor's imports never enter the harness process, so `srq4_experiment`
+   stays importable by an assessor with no engine (verified: D returns
+   `engine_unavailable`, spends nothing, and A–C are unaffected);
+2. a crash inside the engine cannot take down a paid experiment mid-run;
+3. **for E, the parent evaluates the trained model and passes the PAYLOAD in**,
+   so the child never needs xgboost. That is what makes the split work rather
+   than merely tolerable — and it has the independent benefit that E's number
+   and C's number have identical origin (`forecast_tool.forecast_demand`), which
+   is what makes D→E comparable to B→C at all.
+
+`prometheus_bridge.py` dispatches one JSON request per run into
+`ENGINE_PYTHON`; the reply is the last stdout line, because importing the engine
+prints integration warnings that would otherwise corrupt the parse.
+
+### Four vendor details that would each have failed at runtime
+
+Found by reading the engine, not by running it:
+
+| Detail | Consequence if missed |
+|---|---|
+| `prometheus_graph` is an **uncompiled** `StateGraph`; the graph ends at `user_input_node`, which calls `interrupt()` | `interrupt()` requires a checkpointer. Compiling bare fails at **invoke**, not at compile. Now compiled with `InMemorySaver` |
+| In-memory, never the production Postgres saver | Persisted checkpoints would carry state between observations |
+| The vendor pins the **floating alias** `"gpt-5.5"` with no `openai:` prefix | Resolves only via a deprecated legacy path (`DeprecationWarning`, fatal under `-W error`). We pass the dated snapshot with an explicit prefix |
+| `use_memory=True` + a `user_id` calls the Hindsight memory service | Cross-conversation memory would carry one brand's forecast into the next brand's run. `user_id` deliberately omitted |
+
+### The sandbox leak, which would have corrupted results silently
+
+The engine reuses `state["code_interpreter_id"]` across turns, and the coder's
+kernel keeps `df`, `df_1`, `df_2`... alive inside it. A sandbox surviving into
+another observation would make one brand's DataFrame visible while forecasting
+another — and it would look like unusually good performance, not like a bug.
+
+Scenario B gets a fresh container per call by construction (`container: auto`).
+D and E now kill the sandbox after every run, including on failure (a timed-out
+run is the most likely to have created one). Reported as `sandbox_killed` in the
+trace; a failed kill is recorded, never raised.
+
+---
+
+## F47 — Engine failures get their own outcome classes, and the guard is armed (2026-09-10)
+
+`_classify` mapped every error to `code_error`, which would have pooled four
+different statements into one:
+
+| Class | What it says |
+|---|---|
+| `engine_unavailable` | the machine had no Prometheus — says nothing about Prometheus |
+| `warehouse_access` | the run read live data instead of the snapshot, so it is not comparable to B and is **excluded** |
+| `no_evidence` | no tool call observed, so the run is unverifiable — failed, never silently passed (F21) |
+| `no_code` | D answered without running code, i.e. Scenario A's behaviour wearing D's label |
+| `code_error` | the scenario attempted its task and the code failed |
+
+Letting a missing engine read as `code_error` would have made an unplugged
+machine look like evidence about Prometheus.
+
+**The DEC-D-SNAPSHOT guard is now armed and checked for free.**
+`verify_setup.py` asserts the classifier's behaviour rather than trusting it:
+
+```
+sql->warehouse_access, snapshot->ok, no-calls->no_evidence
+```
+
+`verify_setup.py` is **13/13** with the engine present, and **11 passed + 2
+skipped** without it — the new SKIP verdict (`None`) exists so an assessor with
+no engine still gets a green pre-flight for A–C.
+
+### Still to measure
+
+D and E have **never been run**, so their per-run cost is unknown. Both the
+dry-run estimator and the smoke test now carry placeholders that print
+`(ESTIMATE NOT MEASURED)`. Replace them from the first smoke run — a made-up
+number that looks measured is exactly what the provenance rule exists to stop.

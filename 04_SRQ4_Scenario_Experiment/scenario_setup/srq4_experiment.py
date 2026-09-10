@@ -478,7 +478,19 @@ def _eval_forecast(category, brand, month=None):
 # All three scenarios go through _usage() so token accounting is identical across
 # them. Any per-scenario difference in how cost is measured would confound the cost
 # comparison, which B-DEC-6 promoted to a primary outcome.
-FAILURE_CLASSES = ("ok", "code_error", "no_forecast", "timeout", "implausible")
+# The engine classes exist because scenarios D and E can fail in ways A-C
+# cannot, and every one of them is a DIFFERENT statement about the result:
+#   engine_unavailable  the machine had no Prometheus -- says nothing about it
+#   warehouse_access    the run read live data instead of the snapshot, so it
+#                       is not comparable to Scenario B and is excluded
+#                       (DEC-D-SNAPSHOT, measured rather than enforced -- F45)
+#   no_evidence         no tool call was observed, so the run is unverifiable;
+#                       treated as a failure, never as a silent pass (F21)
+#   no_code             D produced an answer without running code, which is
+#                       Scenario A's behaviour wearing D's label
+FAILURE_CLASSES = ("ok", "code_error", "no_forecast", "timeout", "implausible",
+                   "engine_unavailable", "warehouse_access", "no_evidence",
+                   "no_code")
 
 
 def _client():
@@ -508,6 +520,21 @@ def _classify(forecast, hit_limit=False, error=None, actual=None):
     "code-as-action failed 12% of the time" is a stronger statement about
     production readiness than a small accuracy gap."""
     if error:
+        # Engine-side outcomes are their OWN classes, never `code_error`.
+        # `code_error` means the scenario attempted its task and the code
+        # failed; these mean it never got to attempt it, or attempted it
+        # against the wrong data. Pooling them would let a missing engine or a
+        # stray warehouse query read as evidence about forecasting quality.
+        if "engine unavailable" in error:
+            return "engine_unavailable"
+        if "engine_verdict=warehouse_access" in error:
+            return "warehouse_access"
+        if "engine_verdict=no_evidence" in error:
+            return "no_evidence"
+        if "engine_verdict=no_code" in error:
+            return "no_code"
+        if "engine_verdict=no_forecast" in error:
+            return "no_forecast"
         return "code_error"
     if hit_limit:
         return "timeout"
@@ -836,12 +863,185 @@ def run_scenario_a(category, brand, question=None):
 
 
 
+
+# ---------------------------------------------------------------------------
+# Scenarios D and E -- the ladder's second half, on the Prometheus orchestrator
+# ---------------------------------------------------------------------------
+# D is B and E is C, run through the production agent instead of a bare API
+# loop. That makes D->E the SAME intervention as B->C, measured twice on
+# different orchestrators: agreement is a materially stronger claim than either
+# pair alone, and disagreement is itself a finding about how much the result
+# depends on the surrounding system.
+#
+# Everything vendor-shaped lives in prometheus_bridge, which runs the engine in
+# ITS OWN interpreter (the two environments are disjoint -- see that module).
+# Importing it is allowed to fail: an assessor with scenarios A-C, the shipped
+# per-brand CSVs and an OpenAI key must still be able to run the harness, and
+# they will not have Prometheus.
+try:
+    import prometheus_bridge as PB
+except Exception as _e:                                     # noqa: BLE001
+    PB = None
+    _PB_ERR = f"{type(_e).__name__}: {str(_e)[:200]}"
+else:
+    _PB_ERR = None
+
+
+def _engine_unavailable(scenario, why, t0, target):
+    """A recorded outcome, not a crash.
+
+    `engine_unavailable` is deliberately NOT one of the failure classes: those
+    describe how a scenario failed at its task, and this describes a machine
+    that could not attempt it. Pooling the two would let a missing engine read
+    as evidence about Prometheus.
+    """
+    return _result(scenario, "", f"engine unavailable: {why}", t0,
+                   dict(_EMPTY_USAGE), None, containers=0,
+                   trace_extra={"tool": "prometheus", "wrote_code": False,
+                                "target_month": target,
+                                "engine_available": False})
+
+
+def _run_engine_scenario(scenario, category, brand, user_prompt, coder_context,
+                         require_code, target, extra_trace=None):
+    """Shared body for D and E: dispatch, classify from evidence, build a result.
+
+    One function for both, so the two scenarios cannot drift in how they are
+    measured -- the same reason A, B and C all go through `_result` and
+    `_usage`. What differs between D and E is the prompt pair and whether code
+    execution is required; everything about scoring is identical.
+    """
+    t0 = time.perf_counter()
+    if PB is None:
+        return _engine_unavailable(scenario, _PB_ERR or "bridge import failed",
+                                   t0, target)
+    ok, why = PB.engine_available()
+    if not ok:
+        return _engine_unavailable(scenario, why, t0, target)
+
+    r = PB.call_engine(user_prompt, coder_context, MODEL)
+    text = r.get("answer") or ""
+    calls = r.get("calls") or []
+    verdict, ev = PB.classify_engine_run(calls, text, r.get("error"), require_code)
+
+    # Token usage is reported only if the engine surfaced it. When it did not,
+    # the cost estimate would be a fabricated zero -- so `usage_reported` is
+    # traced and the reported figure comes from the billing endpoint, exactly as
+    # Scenario B's container charge already does.
+    u = dict(_EMPTY_USAGE)
+    u.update({k: v for k, v in (r.get("usage") or {}).items() if k in u})
+
+    forecast, via_sentinel = _parse_sentinel(text)
+    fp = r.get("fingerprint") or {}
+    trace = {"tool": "prometheus",
+             "wrote_code": bool(ev.get("code_calls")),
+             "target_month": target,
+             "engine_available": True,
+             "orchestrator": "prometheus_graph_engine",
+             "via_sentinel": via_sentinel,
+             # THE DEC-D-SNAPSHOT CHECK. The SQL tools cannot be removed without
+             # forking the vendor (F45), so compliance is measured rather than
+             # configured: a non-empty list means this run read the live
+             # warehouse instead of the snapshot, and it is excluded.
+             "sql_calls": ev.get("sql_calls"),
+             "code_calls": ev.get("code_calls"),
+             "tool_calls": ev.get("all_calls"),
+             "engine_verdict": verdict,
+             "usage_reported": bool(r.get("usage_reported")),
+             "sandbox_killed": r.get("sandbox_killed"),
+             "coder_reasoning_effort": fp.get("coder_reasoning_effort"),
+             "coder_request_limit": fp.get("coder_request_limit"),
+             "vendor_coder_model": fp.get("vendor_coder_model")}
+    if extra_trace:
+        trace.update(extra_trace)
+
+    # A verdict that is not `ok` is surfaced as the run's error, so it reaches
+    # the results table rather than living only in the trace. `_classify` then
+    # maps it into the failure taxonomy the write-up reports.
+    err = r.get("error")
+    if not err and verdict != "ok":
+        err = f"engine_verdict={verdict}"
+
+    res = _result(scenario, text, err, t0, u, forecast, containers=0,
+                  trace_extra=trace)
+    res["detail"] = {"code_blocks": [], "reasoning": [], "web_queries": [],
+                     "item_types": list(ev.get("all_calls") or []),
+                     "engine_stdout": r.get("stdout_log"),
+                     "engine_evidence": ev}
+    res["prompt"] = user_prompt
+    res["coder_context"] = coder_context
+    return res
+
+
+def run_scenario_d(category, brand, question=None):
+    """D -- Prometheus writes and runs its own forecasting code (B's task).
+
+    The series reaching the coder is the SAME one Scenario B is handed, from
+    `_brand_history()`, so the two arms differ in orchestrator alone.
+    """
+    fit, _, target = _brand_history(category, brand)
+    csv = fit.to_csv(index=False)
+    user = question or P.scenario_d_prompt(brand, category, target)
+    coder = P.scenario_d_coder(brand, category, target, csv)
+    return _run_engine_scenario(
+        "D_prometheus", category, brand, user, coder,
+        require_code=True, target=target,
+        extra_trace={"history_months": len(fit),
+                     "history_ends": (f"{int(fit.period_year.iloc[-1])}-"
+                                      f"{int(fit.period_month.iloc[-1]):02d}"
+                                      if len(fit) else None)})
+
+
+def run_scenario_e(category, brand, question=None):
+    """E -- Prometheus reports the dedicated model's forecast (C's task).
+
+    The payload comes from the SAME call Scenario C makes, so E's number and C's
+    number have identical origin and D->E is comparable to B->C.
+
+    The payload is computed here and injected rather than the engine calling the
+    tool: the trained booster needs xgboost, which is absent from the engine's
+    interpreter and must not be added to a vendor environment this thesis does
+    not control.
+    """
+    _, _, target = _brand_history(category, brand)
+    out = _eval_forecast(category, brand, target)
+    complete = _payload_complete(out)
+    user = question or P.scenario_e_prompt(brand, category, target)
+    coder = P.scenario_e_coder(brand, category, target,
+                               json.dumps(out, indent=2, default=str))
+    res = _run_engine_scenario(
+        "E_prometheus_model", category, brand, user, coder,
+        require_code=False, target=target,
+        # Same check that guards Scenario C (F21): a payload served without its
+        # track record is not Scenario E, and that must be visible in the
+        # results table rather than found by reading logs.
+        extra_trace={"tool": "forecast_demand+prometheus",
+                     "payload_complete": complete,
+                     "tool_returned_forecast": out.get("forecast_units") is not None,
+                     "months_ahead": out.get("months_ahead")})
+    # The dedicated model's number is authoritative for E, exactly as it is for
+    # C: whatever the agent then writes in prose, E is credited with the model's
+    # forecast. Falling back to the parsed number would silently score a
+    # hand-computed figure as if the model had produced it.
+    if out.get("forecast_units") is not None:
+        res["forecast"] = out["forecast_units"]
+    res["detail"]["tool_outputs"] = [out]
+    return res
+
+
 # Ordered as the information ladder, weakest first:
 #   A -> B  adds the firm's data and code execution
 #   B -> C  adds the trained forecasting model
+#   D -> E  repeats that pair on the Prometheus orchestrator
+#
+# D and E are listed here so --scenarios selects them by letter like the rest.
+# They no-op cleanly (outcome `engine_unavailable`) on a machine without the
+# engine, so an assessor running A-C is unaffected by their presence.
 SCENARIOS = (("A_plain", run_scenario_a),
              ("B_data", run_scenario_b),
-             ("C_model", run_scenario_c))
+             ("C_model", run_scenario_c),
+             ("D_prometheus", run_scenario_d),
+             ("E_prometheus_model", run_scenario_e))
 
 
 def _extract_number(text):
@@ -1042,17 +1242,29 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
         # Per-run estimates from measured 2026-08-19 runs. Rough by design --
         # the point is to catch "this costs 4x what I expected" before spending.
         # Costed over what will ACTUALLY be sent, so the cache saving is visible.
-        est = {"A_plain": 0.4243, "B_data": 0.2664, "C_model": 0.0068}
+        # A/B/C are measured (2026-08-19). D and E are NOT yet measured -- no
+        # engine run has been costed. The placeholders are deliberately the
+        # nearest measured analogue (D~B, E~C) plus a margin for the engine's
+        # nested-agent loop, and they are flagged in the output rather than
+        # presented as measurements. Replace with measured values after the
+        # first smoke run; a made-up number that looks measured is the exact
+        # failure the provenance rule exists to stop.
+        est = {"A_plain": 0.4243, "B_data": 0.2664, "C_model": 0.0068,
+               "D_prometheus": 0.60, "E_prometheus_model": 0.15}
+        _unmeasured = {"D_prometheus", "E_prometheus_model"}
         by_scen = {}
         for _, _, sysname, _, _ in todo:
             by_scen[sysname] = by_scen.get(sysname, 0) + 1
         total = sum(n * est.get(k, 0.2) for k, n in by_scen.items())
         print("DRY RUN -- nothing was sent.")
-        print(f"  {len(todo)} calls to send, estimated ${total:.2f} "
-              f"(from measured per-run costs)")
+        _has_unmeasured = bool(set(by_scen) & _unmeasured)
+        print(f"  {len(todo)} calls to send, estimated ${total:.2f}"
+              + (" (A/B/C measured; D/E estimated, see below)"
+                 if _has_unmeasured else " (from measured per-run costs)"))
         for k, n in sorted(by_scen.items()):
-            print(f"    {k:10s} {n:3d} runs x ${est.get(k, 0.2):.4f} "
-                  f"= ${n * est.get(k, 0.2):6.2f}")
+            mark = "  (ESTIMATE NOT MEASURED)" if k in _unmeasured else ""
+            print(f"    {k:20s} {n:3d} runs x ${est.get(k, 0.2):.4f} "
+                  f"= ${n * est.get(k, 0.2):6.2f}{mark}")
         if skipped:
             print(f"  {skipped} cached run(s) skipped -- not re-sent.")
         return None
@@ -1338,7 +1550,7 @@ def _write_summary(df, OUT, repeats, brands, t_start):
         "",
         "Failures are reported as classes, not averaged away. An scenario that answers "
         "60% of the time is not comparable to one that always answers, and a single "
-        "implausible value destroys a mean (P0038 F72).", "",
+        "implausible value destroys a mean.", "",
         "| Outcome | " + " | ".join(hdr.get(a, a) for a in arm_names) + " |",
         "|---|" + "---|" * len(arm_names),
     ]
@@ -1447,7 +1659,7 @@ def main():
     scenarios = tuple((n, f) for n, f in SCENARIOS if n[0] in want)
     if not scenarios:
         raise SystemExit(f"--scenarios {a.scenarios!r} selected nothing; "
-                         "expected some of A,B,C")
+                         "expected some of A,B,C,D,E")
 
     if a.full:
         run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget,

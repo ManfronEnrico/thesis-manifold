@@ -50,20 +50,31 @@ class Checks:
 
     def add(self, ok, name, detail=""):
         self.rows.append((ok, name, detail))
-        mark = "PASS" if ok else "FAIL"
+        mark = "PASS" if ok else ("SKIP" if ok is None else "FAIL")
         print(f"  [{mark}] {name}" + (f"\n         {detail}" if detail else ""))
         return ok
 
-    def run(self, name, fn):
+    def run(self, name, fn, optional=False):
         try:
             ok, detail = fn()
+            if ok is None and not optional:
+                ok = False
             return self.add(ok, name, detail)
         except Exception as e:
-            return self.add(False, name, f"{type(e).__name__}: {e}")
+            return self.add(None if optional else False, name,
+                            f"{type(e).__name__}: {e}")
 
     @property
     def failed(self):
-        return [r for r in self.rows if not r[0]]
+        # `is False`, not falsy: None means SKIP. An optional check whose
+        # subject is absent has not found a problem, and scenarios A-C must stay
+        # verifiable on a machine with no Prometheus -- while a MISCONFIGURED
+        # engine still turns the pre-flight red.
+        return [r for r in self.rows if r[0] is False]
+
+    @property
+    def skipped(self):
+        return [r for r in self.rows if r[0] is None]
 
 
 def main():
@@ -235,6 +246,59 @@ def main():
         return ok, f"target {t} named in every scenario prompt"
     c.run("prompts name the target month", prompts_module)
 
+    # -- scenarios D and E -------------------------------------------------
+    # Reported separately, and a missing engine is NOT a failure: scenarios A-C
+    # must stay runnable by an assessor who has no Prometheus. What would be a
+    # failure is an engine that is present but misconfigured, because that is
+    # only discovered when a paid run returns nothing.
+    print("\n-- prometheus (scenarios D, E) -----------------------------------")
+
+    def engine_reachable():
+        if m.PB is None:
+            return None, f"bridge not importable: {m._PB_ERR}"
+        ok, why = m.PB.engine_available()
+        if not ok:
+            return None, f"{why} -- D/E will report engine_unavailable"
+        return True, f"engine loads in its own interpreter ({m.PB.ENGINE_PYTHON.name})"
+    c.run("prometheus engine reachable", engine_reachable, optional=True)
+
+    def engine_pins():
+        """The engine must run the SAME dated snapshot as A-C.
+
+        The vendor pins the FLOATING alias `gpt-5.5`, which re-points silently.
+        DEC-VENDOR requires the dated one, and the harness overrides it per
+        invocation -- this checks the override is actually wired, not assumed.
+        """
+        if m.PB is None:
+            return None, "engine not available"
+        ok, _ = m.PB.engine_available()
+        if not ok:
+            return None, "engine not available"
+        eff = m.PB.CODER_REASONING_EFFORT
+        same = eff == m.REASONING_EFFORT
+        return same, (f"coder effort {eff!r} vs A-C {m.REASONING_EFFORT!r}"
+                      + ("" if same else " -- MISMATCH would confound B->C vs D->E"))
+    c.run("engine reasoning effort matches A-C", engine_pins, optional=True)
+
+    def engine_snapshot_only():
+        """D/E must read the snapshot, not the live warehouse (DEC-D-SNAPSHOT).
+
+        This cannot be enforced -- the SQL tools are hardcoded into the vendor's
+        nested coder agent (F45) -- so it is MEASURED per run instead. What is
+        checked here is that the measurement exists: the classifier must fail a
+        run that touches the warehouse. A check that the guard is present, not
+        that the warehouse was avoided.
+        """
+        if m.PB is None:
+            return None, "engine not available"
+        v, _ = m.PB.classify_engine_run(["run_sql", "execute_code"], "ok", None, True)
+        clean, _ = m.PB.classify_engine_run(["execute_code"], "ok", None, True)
+        blind, _ = m.PB.classify_engine_run([], "ok", None, True)
+        ok = (v == "warehouse_access" and clean == "ok" and blind == "no_evidence")
+        return ok, (f"sql->{v}, snapshot->{clean}, no-calls->{blind} "
+                    "(a warehouse query is excluded, not silently kept)")
+    c.run("DEC-D-SNAPSHOT guard is armed", engine_snapshot_only, optional=True)
+
     if a.live:
         print("\n-- live API (paid) -----------------------------------------------")
         for name, fn in m.SCENARIOS:
@@ -257,7 +321,11 @@ def main():
             print(f"  - {n}: {d}")
         print("=" * 74)
         return 1
-    print(f"READY -- all {len(c.rows)} checks passed.")
+    _sk = len(c.skipped)
+    print(f"READY -- {len(c.rows) - _sk} check(s) passed"
+          + (f", {_sk} skipped." if _sk else "."))
+    for _, n, d in c.skipped:
+        print(f"  ~ {n}: {d}")
     if not a.live:
         print("Re-run with --live to confirm the API contract (~$0.30).")
     print("=" * 74)

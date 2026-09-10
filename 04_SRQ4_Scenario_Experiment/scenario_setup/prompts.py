@@ -180,6 +180,81 @@ SCENARIO_C_NOTE = (
     "compute the forecast yourself."
 )
 
+# ---------------------------------------------------------------------------
+# Scenarios D and E -- the same two rungs, on the Prometheus orchestrator
+# ---------------------------------------------------------------------------
+# D mirrors B and E mirrors C, so D->E measures the SAME intervention as B->C,
+# on a production agent rather than a bare API loop. The wording stays as close
+# to B and C as the different delivery allows: what must differ between the
+# pairs is the orchestrator, not the question.
+#
+# WHERE THESE STRINGS GO. Prometheus is two agents -- a conversational one whose
+# only data verb is `invoke_prometheus_coder`, and a nested coder owning the
+# data tools (P0049 F45). The USER note reaches the conversational agent; the
+# CODER context is injected through the vendor's documented eval seam
+# (`extra_coder_guardrails`), because the coder never sees the user's message,
+# only the brief the conversational agent writes for it.
+#
+# Both halves are hashed into schema_id(), because both reach a model.
+
+# D -- the brand history, and an instruction to work from it alone.
+SCENARIO_D_NOTE = (
+    "\n\nUse the analysis engine to answer this. The brand's monthly sales "
+    "history has already been retrieved and is available to the engine; it "
+    "does not need to query the data warehouse. "
+    "End your reply with the answer, not with code."
+)
+
+# The coder-side context for D: the data is in hand, in the same CSV form
+# Scenario B receives, and code should be run on it.
+#
+# "Do not query the warehouse" is an INSTRUCTION, not an enforcement. The SQL
+# tools stay registered and cannot be removed without forking the vendor (F45).
+# Compliance is therefore MEASURED per run -- `sql_calls` in the trace -- and a
+# run that queries anyway is classified `warehouse_access` and excluded, not
+# quietly kept. The limitations say exactly this.
+SCENARIO_D_CODER = (
+    "This is a forecasting task on data that has ALREADY been retrieved. "
+    "Do not query the data warehouse: the series below is the authoritative "
+    "input, and a warehouse query would answer a different question from the "
+    "one being asked.\n\n"
+    "Monthly sales history for {brand} ({category}), as CSV:\n\n"
+    "{csv}\n\n"
+    "Write and run Python code on this history with execute_code to produce a "
+    "forecast for {target}. Paste the CSV text into your code and load it "
+    "with pandas via io.StringIO. Report the point forecast, a 90% interval "
+    "and how confident you are."
+)
+
+# E -- the dedicated model's forecast, delivered as the authoritative answer.
+#
+# The payload is computed by the HARNESS and injected rather than the engine
+# calling `forecast_demand` itself. The first reason is not a convenience: the
+# trained booster needs xgboost, which is not installed in the engine's
+# interpreter and must not be added to a vendor environment this thesis does not
+# control. The second is that it keeps E's number identical in ORIGIN to C's --
+# both come from forecast_tool.forecast_demand -- so D->E and B->C differ only
+# in the orchestrator, which is the entire reason for running D and E.
+SCENARIO_E_NOTE = (
+    "\n\nA forecast from a dedicated model trained on the company's internal "
+    "sales history has been supplied to the analysis engine, together with its "
+    "prediction interval, confidence tier and track record. Use it to answer; "
+    "do not compute the forecast yourself."
+)
+
+SCENARIO_E_CODER = (
+    "A dedicated forecasting model trained on the company's internal sales "
+    "history has ALREADY produced the forecast for this request. Do not query "
+    "the data warehouse and do not compute a forecast yourself -- report and "
+    "interpret the figures below.\n\n"
+    "Forecast for {brand} ({category}), {target}:\n\n"
+    "{payload}\n\n"
+    "`forecast_units` is the point forecast, `interval_90` its 90% prediction "
+    "interval, `confidence_tier` the model's own confidence, and "
+    "`historical_wmape` its measured error on held-out data for this series. "
+    "Present these to the category planner with a recommendation."
+)
+
 # The tool schema is part of Scenario C's prompt in every sense that matters: it
 # is the entire surface through which the LLM can reach the trained model. Two
 # strings, and nothing else -- no features, no model object, no data.
@@ -227,7 +302,15 @@ FORECAST_TOOL_SCHEMA = {
 #                   lies) and a one-shot output exemplar fixing the answer shape
 #                   for programmatic extraction. Both applied identically to all
 #                   three scenarios, so no factor varies between them.
-SCHEMA_VERSION = "v3-recommendation-oneshot"
+#   v4  2026-09-10  adds scenarios D and E (the Prometheus orchestrator). The
+#                   A/B/C strings are BYTE-IDENTICAL to v3 -- question, exemplar
+#                   and sentinel unchanged -- so A-C ask exactly what they did.
+#                   The id changes anyway, because the registry it hashes is now
+#                   larger, and v3 and v4 rows are deliberately NOT pooled: a v3
+#                   row came from a harness that had no D or E. See P0049 F44 --
+#                   add D/E BEFORE the funded set, never after, or every paid
+#                   row stops matching and is re-sent.
+SCHEMA_VERSION = "v4-five-scenarios"
 
 
 def schema_id() -> str:
@@ -240,7 +323,9 @@ def schema_id() -> str:
     import json as _json
     parts = [SCHEMA_VERSION, USER_QUESTION, OUTPUT_EXEMPLAR, SENTINEL,
              SENTINEL_INSTRUCTION, SCENARIO_A_NOTE, SCENARIO_B_NOTE,
-             SCENARIO_C_NOTE, _json.dumps(FORECAST_TOOL_SCHEMA, sort_keys=True)]
+             SCENARIO_C_NOTE, SCENARIO_D_NOTE, SCENARIO_D_CODER,
+             SCENARIO_E_NOTE, SCENARIO_E_CODER,
+             _json.dumps(FORECAST_TOOL_SCHEMA, sort_keys=True)]
     h = hashlib.sha256("\x00".join(parts).encode("utf-8")).hexdigest()[:12]
     return f"{SCHEMA_VERSION}+{h}"
 
@@ -267,6 +352,31 @@ def scenario_c_prompt(brand: str, category: str, target: str,
                       sentinel: str = SENTINEL) -> str:
     return (user_question(brand, category, target) + SCENARIO_C_NOTE
             + OUTPUT_EXEMPLAR + SENTINEL_INSTRUCTION.format(sentinel=sentinel))
+
+
+def scenario_d_prompt(brand: str, category: str, target: str,
+                      sentinel: str = SENTINEL) -> str:
+    """The user-facing half of D. The CSV goes to the coder, not here."""
+    return (user_question(brand, category, target) + SCENARIO_D_NOTE
+            + OUTPUT_EXEMPLAR + SENTINEL_INSTRUCTION.format(sentinel=sentinel))
+
+
+def scenario_d_coder(brand: str, category: str, target: str, csv: str) -> str:
+    """The coder-side brief for D, carrying the same series Scenario B gets."""
+    return SCENARIO_D_CODER.format(brand=brand, category=category,
+                                   target=target, csv=csv)
+
+
+def scenario_e_prompt(brand: str, category: str, target: str,
+                      sentinel: str = SENTINEL) -> str:
+    return (user_question(brand, category, target) + SCENARIO_E_NOTE
+            + OUTPUT_EXEMPLAR + SENTINEL_INSTRUCTION.format(sentinel=sentinel))
+
+
+def scenario_e_coder(brand: str, category: str, target: str, payload: str) -> str:
+    """The coder-side brief for E, carrying the trained model's payload."""
+    return SCENARIO_E_CODER.format(brand=brand, category=category,
+                                   target=target, payload=payload)
 
 
 def _demo():

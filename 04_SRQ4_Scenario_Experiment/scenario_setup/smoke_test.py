@@ -41,11 +41,23 @@ USAGE
 Results go to a `smoke/` subfolder, NEVER the main results directory -- a smoke
 run must not be mistaken for, or overwrite, a funded one.
 
-SCENARIOS D AND E ARE NOT COVERED, because they are not implemented -- `SCENARIOS`
-holds A, B and C only. Their infrastructure IS ready: the `prometheus` E2B
-template was built and verified 2026-08-21, and the engine venv satisfies both
-hard pins (P0049 F35). What is missing is `run_scenario_d` / `run_scenario_e`
-themselves. When they land, add them here first and smoke them before spending.
+SCENARIOS D AND E ARE COVERED as of 2026-09-10. They are selected like any other
+(`--scenarios D,E`), because this script reads `E.SCENARIOS` rather than a list
+of its own.
+
+Two things to know before smoking them.
+
+**They need the Prometheus engine, and it runs in a DIFFERENT interpreter.** The
+two environments are disjoint -- the engine venv has no xgboost, the thesis venv
+has no langgraph -- so `prometheus_bridge` dispatches into the engine's own
+Python. On a machine without the engine, D and E return outcome
+`engine_unavailable` and spend nothing; that is a SKIP, not a failure.
+
+**Their cost is not yet measured.** The A/B/C figures below come from real runs
+on 2026-08-19. D and E have never been run, so their entries are estimates from
+the nearest analogue plus a margin for the engine's nested-agent loop. The first
+smoke run is what replaces them -- until then, treat the total as a ceiling to
+watch rather than a number to trust.
 """
 
 from __future__ import annotations
@@ -67,7 +79,11 @@ sys.path.insert(0, str(HERE))
 # Rough per-run cost from the delivered A/B/C ladder (2026-08-19, $4.92 total):
 # A ~$0.49, B ~$0.28, C ~$0.007. An order of magnitude above these is a surprise
 # worth stopping for, because it multiplies by 111 in the funded set.
-_EXPECTED_USD = {"A_plain": 0.50, "B_data": 0.30, "C_model": 0.01}
+# A/B/C measured 2026-08-19. D/E are ESTIMATES -- no engine run has been costed
+# (see the module docstring). Replace with measured values after the first smoke.
+_EXPECTED_USD = {"A_plain": 0.50, "B_data": 0.30, "C_model": 0.01,
+                 "D_prometheus": 0.70, "E_prometheus_model": 0.20}
+_UNMEASURED_USD = {"D_prometheus", "E_prometheus_model"}
 _COST_ALARM = 10.0
 
 
@@ -140,7 +156,11 @@ def main() -> int:
     if a.dry_run:
         est = sum(_EXPECTED_USD.get(n, 0.0) for n, _ in E.SCENARIOS
                   if n[0] in a.scenarios.upper())
+        _un = sorted(n for n, _ in E.SCENARIOS
+                     if n[0] in a.scenarios.upper() and n in _UNMEASURED_USD)
         print(f"\n  [dry] would spend approximately ${est:.2f} and assert:")
+        if _un:
+            print(f"        (NOT MEASURED -- estimate only for: {', '.join(_un)})")
         for line in ("every scenario returns outcome == ok",
                      "all arms answer about ONE target month",
                      f"Scenario C months_ahead == {E.HORIZON}",
