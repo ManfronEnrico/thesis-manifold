@@ -63,8 +63,8 @@ from _features import FEATURES as _FEATURES, resolve as _resolve_feats, describe
 # Mirrors srq4_experiment.CAT_FILE. Kept local so this report can run even if the
 # harness is mid-edit -- a transparency report that breaks when the thing it
 # documents breaks is useless exactly when it is needed.
-CATEGORIES = {"CSD": "csd", "danskvand": "danskvand",
-              "energidrikke": "energidrikke", "RTD": "rtd"}
+CATEGORIES = {"CSD": "csd", "Danskvand": "danskvand",
+              "Energidrikke": "energidrikke", "RTD": "rtd"}
 
 # The modelling feature set, defined once in srq1/_features.py. Eleven copies of
 # this literal existed and had already drifted -- srq1_pooled.py was missing
@@ -150,7 +150,7 @@ def section_features(L):
           "no promotion data for some categories, so `promo_intensity` is omitted "
           "there rather than zero-filled -- a constant-zero column would assert "
           "\"no promotion ran\", which the data does not support.", "",
-          "| Feature | CSD | danskvand | energidrikke | RTD | what it is |",
+          "| Feature | CSD | Danskvand | Energidrikke | RTD | what it is |",
           "|---|:-:|:-:|:-:|:-:|---|"]
     desc = {
         "lag_1": "sales 1 month back", "lag_2": "sales 2 months back",
@@ -162,6 +162,11 @@ def section_features(L):
         "month": "calendar month", "quarter": "calendar quarter",
         "peak_month": "flag for the category's seasonal peak",
         "promo_intensity": "promotion share at t-1 (lagged: contemporaneous would leak)",
+        "days_in_month": "calendar length of the month",
+        "n_holidays": "Danish public holidays that month",
+        "non_holiday_days": "days_in_month minus n_holidays (exact linear combination of the two)",
+        "zero_run_flag": "the month falls inside a run of zero-sales months",
+        "zero_run_length": "how many months that zero-sales run has lasted",
     }
     mats = {c: _matrix(c) for c in CATEGORIES}
     for f in FEATURES:

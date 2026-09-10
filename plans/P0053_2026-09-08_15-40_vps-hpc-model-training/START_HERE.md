@@ -315,3 +315,22 @@ built from different data than the run just produced.
 - `01_SRQ1_Model_Training/02_thesis_modelling/model_training/srq1/_horizon.py` —
   one value drives both the input matrix and the output directory
 - `.claude/rules/repo-tier-structure.md` — where scripts belong
+
+---
+
+## Two open items found after the HPC run (2026-09-10)
+
+Both surfaced by the Chapter 4 closing prose pass. **Neither needs a retrain.**
+
+- **F6** — `training_report.py` still has the F1 casing bug (a tenth script; F1
+  patched nine). Its report claims danskvand and energidrikke have no feature
+  matrix. Fix is two capital letters plus a re-run of one script. It matters
+  because the report is an appendix candidate and currently contradicts
+  Chapter 4.
+- **F7** — the redundancy-reduction appendix tables (97, 98) were built from a
+  cluster file dated 2026-09-06, three days before the feature set became 18.
+  `srq1_feature_diagnostics.py` already imports the shared list, so re-running
+  it needs no code change.
+
+Chapter 4 cites F7's numbers today, with a documented fallback if they cannot be
+regenerated in time.
