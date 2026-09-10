@@ -8,6 +8,7 @@
  viewBox="0.00 0.00 676.00 329.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 324.9)">
 <title>scenarios</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-324.9 672.12,-324.9 672.12,4 -4,4"/>
 <text xml:space="preserve" text-anchor="middle" x="334.06" y="-37.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">The evaluation scenarios, ordered as an information ladder. Each rung adds one capability: A to B measures what access</text>
 <text xml:space="preserve" text-anchor="middle" x="334.06" y="-26.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">to the firm&#39;s own data buys, and B to C measures what the dedicated forecasting model adds beyond it. Scenarios D and</text>
 <text xml:space="preserve" text-anchor="middle" x="334.06" y="-16.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">E repeat that final comparison inside the production engine and are shown dashed: they are specified but not executed</text>

@@ -13,11 +13,3 @@
 | Peak fit memory as share of 4096 MB budget (%) | 0.13       |      0.93  |      0.71 | ***0.05***          |
 
 *Note.* Resident set size and Python-heap allocation are reported side by side because they measure different quantities. Python-heap accounting observes only allocations made through the interpreter, whereas gradient-boosted ensembles are constructed by native libraries; the serialised model size provides an independent check on which of the two reflects the memory a deployment must provision. Fit time is the cost of a single fit given hyperparameters; the cost of retraining in service is reported separately below.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-tracemalloc materially understates the native-library models: the serialised model size is the independent witness that RSS, not the Python-heap figure, is what a deployment must provision (P0044 F1-F2). Keep both rows so the correction stays auditable, but RSS is the headline. All three figures are in the table -- do not restate them here.
-
-MERGED from three tables (profile + budget share + retraining) per Brian 2026-09-03: same unit system, same subject, so the comparison belongs in one screenshot. Drift stays separate -- its unit is pp of error, not time or memory.

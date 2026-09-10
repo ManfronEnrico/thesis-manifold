@@ -13,11 +13,3 @@
 | RTD          | XGBoost  | 35.67               | 30.75            | -4.92        | improved    |
 
 *Note.* Negative delta indicates the holiday features improved accuracy. They helped in 6 of 9 category-model combinations. Each arm was tuned independently on the validation split, refit on train+validation, and scored once on the held-out test split.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Do NOT quote the mean of this column. It averages over model families that respond differently, and that difference is itself the finding: Ridge benefits in 1 of 1 categories while the tree models benefit in 5 of 8 cells.
-
-RTD XGBoost is the least stable cell in the study (it swings 2.95pp between the untuned and tuned runs, table 95).

@@ -8,6 +8,7 @@
  viewBox="0.00 0.00 794.00 536.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 532)">
 <title>eda_pipeline</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-532 789.87,-532 789.87,4 -4,4"/>
 <text xml:space="preserve" text-anchor="middle" x="392.93" y="-58.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">Exploratory analysis of a single product category, shown as the worked example; every category is analysed</text>
 <text xml:space="preserve" text-anchor="middle" x="392.93" y="-47.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">identically. The panel is examined along four lines of enquiry — its structure and quality, the coverage and retention</text>
 <text xml:space="preserve" text-anchor="middle" x="392.93" y="-37.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5a5a5a">of individual brands, its stationarity and seasonality, and the candidate demand drivers together with their</text>
@@ -103,7 +104,7 @@
 <title>out</title>
 <polygon fill="white" stroke="#1f5c8b" stroke-width="1.5" points="529.33,-328.45 385.33,-328.45 385.33,-287.55 529.33,-287.55 529.33,-328.45"/>
 <text xml:space="preserve" text-anchor="start" x="407.08" y="-311.75" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Documented findings</text>
-<text xml:space="preserve" text-anchor="start" x="418.7" y="-298" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">22 tables, 8 figures</text>
+<text xml:space="preserve" text-anchor="start" x="418.7" y="-298" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">22 tables, 0 figures</text>
 </g>
 <!-- g1&#45;&gt;out -->
 <g id="edge5" class="edge">

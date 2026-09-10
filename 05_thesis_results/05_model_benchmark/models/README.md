@@ -44,7 +44,7 @@ Training is seeded (`SEED = 42`), so a regenerated model is identical to the one
 that produced the recorded results, provided `cv_params.json` and the feature
 matrices are unchanged. Both are tracked, so the regeneration is deterministic.
 
-Hyperparameters come from `04_thesis_results/srq1/cv_params.json`
+Hyperparameters come from `cv_params.json`
 (100 trials, 4-fold expanding-window CV). Model *selection* per category comes
 from `cv_metrics.csv`, ranked on `cv_score` — never on `test_wmape`, which would
-be selection on the held-out set (see P0044 F29).
+be selection on the held-out set.

@@ -12,9 +12,3 @@
 | Median MAPE (%)   | RTD (n=62)          | ***44.1*** | 89.4            | 52.9       |    75.6 | 76.4               |    66   | 88.8       |
 
 *Note.* Prophet was evaluated on every category and is reported in full. Its error is high on three of the four because monthly observations do not support the weekly-seasonality and holiday-window components that the method is designed around, leaving a piecewise trend and an annual seasonal term estimated over a short history (Taylor & Letham, 2018). The unclipped Ridge variant is reported alongside the clipped one to show the effect of constraining predictions to be non-negative. On two categories the unconstrained fit diverges to an error many orders of magnitude beyond the plausible range; those entries are marked as divergent and given by order of magnitude, since a decimal figure would imply a precision the result does not have.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Prophet's failure is a RESULT, not a gap -- it IS implemented (srq1_baselines_stat.py:236). NLM Section J: PRO-04 Contradicted (T&L do NOT exclude monthly data), PRO-05 Not Found (they do not prove flat forecasts). Only PRO-06 wording is safe. Taylor & Letham (2018) is MISSING from the Ch2 reference list.

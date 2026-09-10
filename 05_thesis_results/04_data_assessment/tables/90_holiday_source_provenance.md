@@ -11,12 +11,3 @@
 | Access                     | Public tier, no API key                               |
 
 *Note.* Retrieved from the free public tier. The commercial nagerholidays.com/api/pro/ paths require a key and return HTTP 401 without one.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Cache: `Z:\_dev-ssd\thesis-manifold\01_SRQ1_Model_Training\01_thesis_data\_00_raw\holidays\nager_dk`
-Manifest: `Z:\_dev-ssd\thesis-manifold\01_SRQ1_Model_Training\01_thesis_data\_00_raw\holidays\nager_dk_manifest.json`
-
-Per-year sha256 digests in the manifest detect an upstream revision on re-pull. Regenerate with `fetch_holidays.py --force`.

@@ -7,9 +7,3 @@
 | Re-tune, 100 trials x 4 folds   |             417.3  | 142x                |                    65.3 |                  1.59 |            16.77 |
 
 *Note.* Refitting re-estimates model coefficients only. Re-tuning repeats a cross-validated fit for every trial of the search, so its cost is the cost of one fit multiplied by the number of trials and the number of folds. This difference in elapsed time, rather than any difference in accuracy, is the basis on which refitting on request is adopted and re-tuning on request is not: memory remains within budget in every case, and the accuracy figures fall within the range produced by changing only the random seed of the search, so they cannot separate the two strategies.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Do NOT claim re-tuning is less accurate. Optuna seed alone moves test WMAPE by more than the gap between the two strategies (F21), and the accuracy figures sit inside the seed-variance band. The case for refit-not-retune is elapsed time alone: re-tuning multiplies one fit by trials and folds (F28), while peak memory stays a small fraction of budget in every row above. The time and memory numbers are in the table -- do not restate them here.

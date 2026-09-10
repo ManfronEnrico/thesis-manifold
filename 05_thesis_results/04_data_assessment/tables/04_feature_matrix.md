@@ -58,9 +58,3 @@
 | sales_value_any_promo                        | Excluded - contemporaneous | float64        | 87%         |
 
 *Note.* The target is sales_units, modelled as log1p and inverted for reporting. Splits are chronological: training 2022-10 to 2025-05, validation 2025-06 to 2025-12, test 2026-01 to 2026-07. The 12 columns marked excluded are same-period sales and baseline measures, retained so a prediction can be traced back to the observation it was made from; they are not available to the model, which would otherwise observe the quantity it is asked to predict. Populated is the share of rows with a value: autoregressive features are empty for a brand's earliest months by construction.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Read from csd_feature_matrix_h3.parquet and csd_manifest_h3.json at render time; the feature list is the manifest's own, not a copy. Role assignment is BY RULE (_fm_role) and asserts that no column falls through -- a column added upstream fails the export rather than appearing unclassified. Counts here supersede the 13/14/16-feature figures in earlier drafts (P0048 F3, F10): the current matrix carries 34 features after the holiday enrichment. CSD is shown as the worked category; the other three differ in the promotional block, which is absent at source for the promo-zero categories.

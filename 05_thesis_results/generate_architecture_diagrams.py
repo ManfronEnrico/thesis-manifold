@@ -102,6 +102,17 @@ TABLES = THESIS_RESULTS_SRQ1_DIR / "tables"
 MODELS = THESIS_RESULTS_SRQ1_DIR / "models"
 CATS = ["CSD", "Danskvand", "Energidrikke", "RTD"]
 
+
+def _canon_cat(name: str) -> str:
+    """The canonical spelling of a category name.
+
+    Model folders are named by whatever slug train_and_persist wrote --
+    "danskvand" and "energidrikke" lowercase, "CSD" and "RTD" upper -- so a
+    figure built from folder names prints two casings in one line of a thesis
+    figure. Every results table uses the CATS spelling, so display follows that.
+    """
+    return {c.lower(): c for c in CATS}.get(name.lower(), name)
+
 # Mirrors export_appendix.py. Confirmed by Brian 2026-09-06 as the correct
 # envelope; the thesis prose still says "8 GB" in eight places (P0046 F15).
 RAM_BUDGET_MB = 4096.0
@@ -243,11 +254,15 @@ def _g(name: str, rankdir: str = "LR") -> graphviz.Digraph:
     document -- if a left-to-right flow runs too wide, wrap it into two rows
     rather than turning it on its side.
 
-    Background is transparent so the figure sits on whatever ground the document
-    uses rather than carrying a white rectangle into a dark-themed viewer.
+    Background is WHITE, not transparent. A transparent figure inherits whatever
+    ground it is placed on, and the greyscale tier palette below assumes a light
+    one: on a dark slide or a dark-themed PDF viewer the near-white node fills
+    stay light while the page behind them goes dark, so the nesting the palette
+    encodes inverts and the ink-coloured text drops out. Painting the ground
+    makes the figure carry its own context into any document.
     """
     g = graphviz.Digraph(name, format="svg")
-    g.attr(rankdir=rankdir, bgcolor="transparent", splines="polyline",
+    g.attr(rankdir=rankdir, bgcolor="white", splines="polyline",
            nodesep="0.35", ranksep="0.5", fontname=FONT, compound="true")
     g.attr("node", shape="box", style="filled", fillcolor=FILL,
            color=LINE, fontname=FONT, fontsize="10", fontcolor=INK,
@@ -315,12 +330,20 @@ def _check_stem(stem: str) -> str:
     return stem
 
 
-def _save(g: graphviz.Digraph, stem: str) -> None:
+def _save(g: graphviz.Digraph, stem: str) -> Path:
+    """Render one figure and return the path written.
+
+    Returning the path means a caller that needs it -- an editorial note naming
+    the figure it describes -- reads it from here rather than rebuilding the
+    chapter folder by hand, which is how a hardcoded chapter number gets in.
+    """
     _check_stem(stem)
     # SVG only. It is vector, so it stays sharp at any size, and Word takes it
     # on paste directly -- the PNG twin was strictly the lower-quality copy.
-    g.render(_out_for(stem) / stem, format="svg", cleanup=True)
+    out = _out_for(stem) / f"{stem}.svg"
+    g.render(out.with_suffix(""), format="svg", cleanup=True)
     print(f"  {stem}.svg")
+    return out
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -370,7 +393,7 @@ def fig_model_selection():
                    if r else _box(m))
     won = {}
     for cat, meta in srv.items():
-        won.setdefault(_clean(meta["model"]), []).append(cat)
+        won.setdefault(_clean(meta["model"]), []).append(_canon_cat(cat))
     g.node("persist", _box("Deployed per category",
                            *[f"{m} — {', '.join(sorted(c))}"
                              for m, c in sorted(won.items())]),
@@ -472,7 +495,8 @@ def fig_resource_profile():
     # Saved directly rather than through _save(), so the chapter-prefix check is
     # called explicitly here -- otherwise this one figure would escape it.
     stem = _check_stem("ch5_resource_profile_v2")
-    fig.savefig(_out_for(stem) / f"{stem}.svg", transparent=True)
+    fig.savefig(_out_for(stem) / f"{stem}.svg", facecolor="white",
+                edgecolor="none", transparent=False)
     plt.close(fig)
     print(f"  {stem}.svg")
 
@@ -504,7 +528,7 @@ def fig_layered_architecture():
 
     won = {}
     for cat, meta in srv.items():
-        won.setdefault(_clean(meta["model"]), []).append(cat)
+        won.setdefault(_clean(meta["model"]), []).append(_canon_cat(cat))
     g.node("chosen", _box("Deployed per category",
                           *[f"{m} — {', '.join(sorted(c))}"
                             for m, c in sorted(won.items())]),
@@ -867,7 +891,7 @@ def fig_modelling_pipeline():
 
     won = {}
     for cat, meta in srv.items():
-        won.setdefault(_clean(meta["model"]), []).append(cat)
+        won.setdefault(_clean(meta["model"]), []).append(_canon_cat(cat))
     g.node("won", _box("Selected and deployed",
                        *[f"{m} — {', '.join(sorted(c))}"
                          for m, c in sorted(won.items())]),

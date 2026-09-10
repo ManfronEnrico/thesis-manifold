@@ -28,11 +28,3 @@
 | RTD          | quarter          | 0.41                      | 0.27                   | -0.14         |
 
 *Note.* An empty 'without' cell marks a feature absent from that arm. If the holiday features merely re-encoded month-of-year, their attribution would be offset by an equal fall in month and peak_month. The existing calendar features lose substantially less than the holiday features gain, so the calendar carries information those features do not.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-This is the empirical half of the anti-collinearity argument; appendix table 92 is the structural half. Cite both when the enrichment is challenged as month re-encoded.
-
-Note the tension worth stating plainly in the text: the features earn attribution in every category, yet improve accuracy in only some. Attribution is not accuracy.

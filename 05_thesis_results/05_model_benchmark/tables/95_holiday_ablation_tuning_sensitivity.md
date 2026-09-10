@@ -13,11 +13,3 @@
 | RTD          | XGBoost  | 30.68                              | 35.67                       | -4.98                | -1.96                       | -4.92                       |
 
 *Note.* Tuning improved the baseline itself by up to 12.99 percentage points. Where a fixed configuration is badly mis-specified, a feature comparison measured against it reflects that mis-specification rather than the features.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-This table is why the fixed-configuration ablation was not reported. Danskvand's trees were mis-specified by ~12pp, and that category flips from harmful to helpful once the model can fit. An ablation is only interpretable against a properly specified model.
-
-Methodological point worth a sentence in the text: the direction of a feature effect can invert under tuning.

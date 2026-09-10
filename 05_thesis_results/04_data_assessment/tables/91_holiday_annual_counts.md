@@ -14,9 +14,3 @@
 |   2027 |                 14 |
 
 *Note.* The count falls from 15 to 14 in 2024 when Store Bededag (Great Prayer Day) was abolished. A month-of-year encoding cannot represent a one-off permanent change, which is the primary motivation for the count feature.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-Verify against Danish legislation: Store Bededag abolished effective 2024 (L 13, adopted 2023-02-28).

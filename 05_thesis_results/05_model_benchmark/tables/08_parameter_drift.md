@@ -9,11 +9,3 @@
 | 2026-06-01        |           3,040 | ***12.57***                    | 14.49                 |             -1.92 |
 
 *Note.* The mean difference across origins is +0.28 percentage points, and individual origins fall on both sides of zero. Over the period observed there is therefore no detectable penalty from holding hyperparameters fixed. The window is short and the number of origins small, so this should be read as an absence of evidence at this horizon rather than as evidence that no drift occurs over longer ones.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-INCONCLUSIVE -- do not fit or cite a per-month drift slope. The origins fall on both sides of zero, the window is a handful of months, and some origins are exactly zero because re-tuning rediscovered the frozen parameters. Recommend refit-per-query + SCHEDULED re-tune, cadence not optimised. F31. The per-origin differences are in the table; the mean is in the note.
-
-Kept SEPARATE from the merged resource table: unit is pp of forecast error across origins, not time/memory.

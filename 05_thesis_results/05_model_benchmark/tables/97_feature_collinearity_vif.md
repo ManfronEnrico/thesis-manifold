@@ -22,13 +22,3 @@
 | promo_intensity  | 2.0   |             | 2.1            |       |
 
 *Note.* 'inf' marks an exact linear dependency: non_holiday_days is days_in_month minus n_holidays by construction. Higher values indicate a feature more fully determined by the others. The autoregressive lag and rolling-mean features are correlated by construction, since each is computed from the same series.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-12 exact dependencies across all categories.
-
-NO THRESHOLD IS ASSERTED IN THE CAPTION, deliberately. The conventional 5 and 10 cut-offs were attributed in an earlier draft to a source not held in the project library; the attribution was removed. See writing-notes/unverified-claims-to-check.md item 1 before putting any numeric threshold in prose.
-
-StandardScaler plus Ridge's L2 penalty absorbs the rank deficiency, so the exact dependency does not move the error materially -- but that is a mechanism argument, not a number measured here. Report the collinearity; do not claim it explains accuracy, and do not cite a pp figure for its removal unless a script computes one.

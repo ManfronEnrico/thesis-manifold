@@ -16,9 +16,3 @@
 | Mean WMAPE across seeds (%)                   | RTD          | 30.50       | ***30.08*** |
 
 *Note.* Models with a stochastic fitting procedure, which includes gradient-boosted trees, can return different parameters from identical data. Seed sensitivity is therefore measured rather than assumed, following the stability criterion of Klee and Xia (2025). The coefficient of variation measures dispersion of the forecasts themselves; the standard deviation of WMAPE measures how far the resulting accuracy moves, and is the quantity against which any difference between models should be judged material.
-
----
-
-<!-- INTERNAL REVIEW -- NOT FOR SUBMISSION -->
-
-The WMAPE-sd column here is the seed-noise magnitude that the retraining_cost table's caveat rests on: it is larger than the refit-vs-retune accuracy gap, which is why that gap cannot be called material. Cross-ref retraining_cost. Read the number off this table, do not transcribe it into prose.
