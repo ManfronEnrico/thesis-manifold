@@ -41,10 +41,11 @@ USAGE
 Results go to a `smoke/` subfolder, NEVER the main results directory -- a smoke
 run must not be mistaken for, or overwrite, a funded one.
 
-SCENARIOS D AND E ARE NOT COVERED. They are not implemented in the harness
-(`SCENARIOS` holds A, B and C only) and require the Prometheus graph engine plus
-an E2B template. When they land, add them here first and smoke them before
-spending.
+SCENARIOS D AND E ARE NOT COVERED, because they are not implemented -- `SCENARIOS`
+holds A, B and C only. Their infrastructure IS ready: the `prometheus` E2B
+template was built and verified 2026-08-21, and the engine venv satisfies both
+hard pins (P0049 F35). What is missing is `run_scenario_d` / `run_scenario_e`
+themselves. When they land, add them here first and smoke them before spending.
 """
 
 from __future__ import annotations

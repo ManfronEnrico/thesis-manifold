@@ -646,3 +646,47 @@ That gap is larger than it looks. D->E is the second half of the thesis's centra
 comparison: B->C and D->E are **the same intervention on two different
 orchestrators**, and agreement between them is a materially stronger claim than
 either alone (INHERITED_CONTEXT §1). Only one half exists today.
+
+---
+
+## F35 — CORRECTION: the E2B template is built; D/E is not blocked (2026-09-10)
+
+**I have repeatedly written that "the E2B template is unbuilt" and that scenario
+D would run without statsmodels/prophet. That is wrong, and it is in P0049's
+task_plan phase 5, its focus_detail, and the smoke test's docstring.**
+
+Reading P0040 (archived) rather than restating from memory:
+
+| Prerequisite | State | Evidence |
+|---|---|---|
+| E2B template `prometheus` | **BUILT 2026-08-21**, alias resolves | P0040 F42, id `fxe7gzkqjupdhbx4uvpr` |
+| Template carries the libraries | **verified** — pyodbc, sqlalchemy, statsmodels, xgboost, prophet all present | F42 probe, against all five missing on the base image |
+| Engine venv | **live today** — python 3.13.13, `e2b_code_interpreter` 2.0.0, `pydantic_ai` 1.73.0, both hard pins satisfied | F46, re-verified 2026-09-10 |
+| Engine tool API | verified against the blueprint | F13 |
+| RU warehouse credentials | verified live | F35 (P0040) |
+| E2B cost | ~$0.0001/run, negligible | F38 |
+| Engine reachable on this laptop | `Z:\_dev-ssd\prometheus\prometheus-graph-engine` | confirmed 2026-09-10 |
+
+**What actually remains** is P0040 tasks 4-7, and it is a port, not a build:
+
+1. **Launch the engine locally** (task 4, `in_progress`) — the environment is
+   built and verified; it has simply never been started.
+2. **Run `D_prometheus`** on the SRQ4 prompt with logging + cost capture (task 5).
+3. **Port `forecast_demand` to the engine's tool API** (task 6) — drop the
+   `chain` argument, repoint paths through `PATHS`.
+4. **Register the tooled project, run `E_prometheus_model`** (task 7).
+
+**The correction that matters for planning:** D/E was never blocked on
+infrastructure. It is blocked on nobody having written `run_scenario_d` /
+`run_scenario_e` — `SCENARIOS` still holds A, B and C, and a repo-wide search for
+those names returns nothing. That is a smaller and better-understood job than
+"build the template first", which I had been treating as the gate.
+
+**Why I got it wrong:** P0049's `INHERITED_CONTEXT.md` §6 says "The E2B template
+build is REQUIRED before D/E, not optional", written while it was still true. It
+was built the next day and the inherited note was never updated. I then repeated
+it from the plan rather than checking the finding it pointed at.
+
+Same lesson as this plan's own opening: **a stated blocker is a claim with a
+timestamp.** P0049 was created specifically because two of four inherited
+blockers were stale on inspection; this is a third, and it was mine.

@@ -130,21 +130,36 @@ same defect in phase 4 costs $40.
 P0042's frozen sampling design: 111 runs, ~$40, allocated inversely to per-run cost
 (A n=3, B/C n=10 stratified, C-only cross-category). DEC-VENDOR is settled (2026-09-10).
 
-**The eligible population changed on 2026-09-09.** F32 fixed a `KeyError` that had made
-Danskvand and Energidrikke unusable, taking scorable brands from **120 to 168**. The
-sampling design was frozen against the smaller population — re-check the per-category
-allocation before running.
+**The population change does NOT affect the allocation — checked 2026-09-10.** F32 took
+scorable brands from 120 to 168, but `--brand-strategy stratified` picks
+highest/median/lowest volume per category, which is population-relative by construction:
+still 3 per category at either size. The larger population makes those picks more
+representative, not the design different. No re-freeze needed.
 
-### Phase 5 — Scenarios D and E (NOT STARTED, and larger than it looks)
+### Phase 5 — Scenarios D and E (a PORT, not a build — corrected 2026-09-10)
 
-**`SCENARIOS` holds A, B and C only. The Prometheus arms are not implemented at all** —
-this is a build, not a configuration change. The E2B template is also unbuilt, and
-without it scenario D runs without `statsmodels`/`prophet`, so D→E would measure a
-missing library rather than the tool.
+**`SCENARIOS` holds A, B and C only, and a repo-wide search for `run_scenario_d` /
+`run_scenario_e` returns nothing.** That is the whole gap.
 
-Why this matters beyond completeness: **B→C and D→E are the same intervention on two
-different orchestrators**, and agreement between them is a materially stronger claim
-than either alone (`INHERITED_CONTEXT.md` §1). Half that argument does not exist yet.
+**The infrastructure is NOT the blocker, contrary to what this plan said until
+2026-09-10 (see F35).** Verified:
+
+| Prerequisite | State |
+|---|---|
+| E2B template `prometheus` | built 2026-08-21, alias resolves (P0040 F42) |
+| statsmodels / prophet / xgboost / pyodbc / sqlalchemy in it | all five verified present |
+| Engine venv | live today, both hard pins satisfied |
+| Engine location | `Z:\_dev-ssd\prometheus\prometheus-graph-engine` |
+| RU warehouse creds, E2B cost (~$0.0001/run) | verified |
+
+What remains is **P0040 tasks 4–7**: launch the engine locally (its env is built
+but has never been started), run `D_prometheus` with logging, port
+`forecast_demand` to the engine's tool API, register the tooled project and run
+`E_prometheus_model`.
+
+Why it matters: **B→C and D→E are the same intervention on two different
+orchestrators**, and agreement between them is a materially stronger claim than
+either alone (`INHERITED_CONTEXT.md` §1). Half that argument does not exist yet.
 
 When they land, add them to `smoke_test.py` first and smoke them before spending.
 
