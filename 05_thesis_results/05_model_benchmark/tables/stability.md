@@ -53,9 +53,9 @@ per-cell CV because per-cell movements partly cancel in a sum. **Report
 both**: aggregate stability flatters the system relative to what a user
 of an individual forecast experiences.
 
-**Measured gap: aggregate WMAPE moves by ~4.7% of its own level across
-seeds, while the typical individual forecast moves by ~13% -- roughly
-three times more.** A planner reading one brand's number experiences the
-second figure, not the first. Reporting only aggregate stability would
-understate run-to-run variability by a factor of three.
+**Measured gap: aggregate WMAPE moves by ~4.6% of its own level across
+seeds, while the typical individual forecast moves by ~17% -- about 3.6x
+more.** A planner reading one brand's number experiences the second
+figure, not the first. Reporting only aggregate stability would
+understate run-to-run variability by roughly 4x.
 
