@@ -430,10 +430,12 @@ def table_resource_profile() -> None:
                "provision. Fit time is the cost of a single fit given "
                "hyperparameters; the cost of retraining in service is reported "
                "separately below.",
-          review="tracemalloc understates XGBoost by ~266x (0.1 vs 29.2 MB). The "
-                 "3.7 MB pickle is the third witness -- a 3.7 MB artefact cannot be "
-                 "built in 0.1 MB. Keep both rows so the correction stays "
-                 "auditable, but RSS is the headline. P0044 F1-F2.\n\n"
+          review="tracemalloc materially understates the native-library models: "
+                 "the serialised model size is the independent witness that RSS, "
+                 "not the Python-heap figure, is what a deployment must provision "
+                 "(P0044 F1-F2). Keep both rows so the correction stays auditable, "
+                 "but RSS is the headline. All three figures are in the table -- "
+                 "do not restate them here.\n\n"
                  "MERGED from three tables (profile + budget share + retraining) "
                  "per Brian 2026-09-03: same unit system, same subject, so the "
                  "comparison belongs in one screenshot. Drift stays separate -- "
@@ -459,10 +461,13 @@ def table_resource_profile() -> None:
                    "only the random seed of the search, so they cannot separate "
                    "the two strategies.",
               review="Do NOT claim re-tuning is less accurate. Optuna seed alone "
-                     "moves test WMAPE by 3.97pp, swamping the ~0.3pp between "
-                     "strategies (F21). 100 trials = 417.3 s vs 2.93 s = 142x "
-                     "(F28). Memory is NOT the constraint -- peak 2.11% of budget. "
-                     "The case is elapsed time alone.")
+                     "moves test WMAPE by more than the gap between the two "
+                     "strategies (F21), and the accuracy figures sit inside the "
+                     "seed-variance band. The case for refit-not-retune is elapsed "
+                     "time alone: re-tuning multiplies one fit by trials and folds "
+                     "(F28), while peak memory stays a small fraction of budget in "
+                     "every row above. The time and memory numbers are in the "
+                     "table -- do not restate them here.")
 
 
 def table_sandbox_profile() -> None:
@@ -553,11 +558,12 @@ def table_param_drift() -> None:
                "of origins small, so this should be read as an absence of evidence "
                "at this horizon rather than as evidence that no drift occurs over "
                "longer ones.",
-          review="INCONCLUSIVE -- do not cite the +0.414 pp/month slope. Carried "
-                 "by two opposite outliers (month 4: -3.74, month 7: +3.60) on "
-                 "n=7, and three months are exactly 0.00 because re-tuning "
-                 "rediscovered the frozen num_leaves=93. Recommend refit-per-query "
-                 "+ SCHEDULED re-tune, cadence not optimised. F31.\n\n"
+          review="INCONCLUSIVE -- do not fit or cite a per-month drift slope. The "
+                 "origins fall on both sides of zero, the window is a handful of "
+                 "months, and some origins are exactly zero because re-tuning "
+                 "rediscovered the frozen parameters. Recommend refit-per-query "
+                 "+ SCHEDULED re-tune, cadence not optimised. F31. The per-origin "
+                 "differences are in the table; the mean is in the note.\n\n"
                  "Kept SEPARATE from the merged resource table: unit is pp of "
                  "forecast error across origins, not time/memory.")
 
@@ -856,9 +862,11 @@ def table_stability() -> None:
                "themselves; the standard deviation of WMAPE measures how far the "
                "resulting accuracy moves, and is the quantity against which any "
                "difference between models should be judged material.",
-          review="THIS IS THE 3.97pp NUMBER'S HOME. wmape_std here is why we must "
-                 "not claim re-tuning is less accurate -- seed noise swamps the "
-                 "~0.3pp between refit and re-tune. Cross-ref retraining_cost.")
+          review="The WMAPE-sd column here is the seed-noise magnitude that the "
+                 "retraining_cost table's caveat rests on: it is larger than the "
+                 "refit-vs-retune accuracy gap, which is why that gap cannot be "
+                 "called material. Cross-ref retraining_cost. Read the number off "
+                 "this table, do not transcribe it into prose.")
 
 
 # ---------------------------------------------------------------------------

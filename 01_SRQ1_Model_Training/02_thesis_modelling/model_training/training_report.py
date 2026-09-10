@@ -306,7 +306,14 @@ def section_tool_payload(L):
         spec = importlib.util.spec_from_file_location("srq4", p)
         m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(m)
-        out = m._eval_forecast("CSD", "HARBOE")
+        # Score at the reported horizon, not the tool's one-month default:
+        # the HORIZON-th test month is HORIZON months past the training cutoff.
+        fm = _matrix("CSD")
+        te = fm[fm["split"] == "test"].sort_values(["period_year", "period_month"])
+        ym = (te["period_year"].astype(int).astype(str) + "-"
+              + te["period_month"].astype(int).map("{:02d}".format)).tolist()
+        h_month = ym[m.HORIZON - 1] if len(ym) >= m.HORIZON else None
+        out = m._eval_forecast("CSD", "HARBOE", h_month)
         L += ["```json", json.dumps(out, indent=2), "```", ""]
     except Exception as e:
         L += [f"_could not call the tool: {type(e).__name__}: {str(e)[:200]}_", ""]
