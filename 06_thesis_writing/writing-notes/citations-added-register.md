@@ -44,7 +44,7 @@ register exists to prevent.
 
 | | |
 |---|---|
-| Last Zotero pull | **2026-09-10 17:40** |
+| Last Zotero pull | **2026-09-10 19:08** |
 | Items in library | 87 |
 | Pulled by | `python utility_scripts/scripts/zotero_client.py` |
 
@@ -379,6 +379,19 @@ They arrived by an unusual route, which is worth recording: both come from an
 August reference note that was archived as stale. Its **numbers** were superseded,
 but this citation work was not, because it concerns what a source says rather
 than what a run measured.
+
+**Every other Chapter 5 citation was audited on 2026-09-10** against the
+unfiltered Zotero API - fifteen sources, checked one at a time. **All fifteen are
+in the library**, so nothing else needs adding here. Four have metadata defects
+that will render wrong in the bibliography, tracked as S16 on the deferred list
+rather than as register rows, since they are library problems rather than
+questions about whether a source supports a claim.
+
+⚠ **The thirteen pre-existing sources have no rows in this register**, because
+this register records citations that were *added*. If the NotebookLM pass is
+meant to cover every claim in the chapter rather than only new ones, they need
+rows. Worth settling before that run - a source cited since August is no more
+verified than one cited today.
 
 ## C5-01 - Bergmeir, Hyndman & Koo (2018)
 

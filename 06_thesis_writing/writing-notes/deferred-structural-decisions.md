@@ -384,19 +384,58 @@ stay one.
 
 ---
 
-## S16 - Two Zotero entries will render wrong in the bibliography
+## S16 - Zotero metadata defects that will render wrong in the bibliography
 
-**Status:** `open`
+**Status:** `open`. **Widened 2026-09-10** after a per-source audit of every
+Chapter 5 citation against the unfiltered Zotero API - the earlier entry listed
+two defects and there are four.
 
-| Entry | Defect | Renders as |
-|---|---|---|
-| Hyndman & Athanasopoulos | stored under the section title *"5.2 Some simple forecasting methods"*, no year | "n.d.", and alphabetised under the wrong title |
-| Akiba et al. | year field reads "July" | a month where the year belongs |
+### Two entries are malformed
 
-Both are cited repeatedly in Chapter 5 and both are fixed **in Zotero**, not in
-Word - the bibliography is generated from the library, so a correction typed into
-the document is overwritten on the next refresh.
+| Entry | Key | Defect | Renders as |
+|---|---|---|---|
+| Hyndman & Athanasopoulos | `5NFQRRXS` | title is a **section heading**, no year, **Athanasopoulos missing as author**, URL carries `utm_source=chatgpt.com` | "Hyndman, R. J. (n.d.). 5.2 Some simple forecasting methods..." |
+| Akiba et al. | - | date field reads **"July 25, 2019"** | a full date where a year belongs |
 
-**Raised by:** the Chapter 5 pass, 2026-09-10.
+The Hyndman entry is worse than first recorded. It is the most-cited source in
+Chapter 5, appearing in three sections, and it is currently missing a co-author,
+a year, a correct title and a clean URL.
+
+**The fix:** title becomes *Forecasting: Principles and Practice*, add
+Athanasopoulos, year 2021, edition 3rd, publisher OTexts, strip the tracking
+parameter.
+
+### Two author pairs are ambiguous, and the risk is silent
+
+The library holds two papers in each of these pairs. Both render nearly
+identically in text, so a citation field pointing at the wrong one is invisible
+in the document and wrong only in the bibliography.
+
+| Pair | Key | Year | What it supports |
+|---|---|---|---|
+| M4 | `EXNY7D4X` | **2018** | pure-ML entries versus the combination benchmark, p. 803 - **the one Chapter 5 needs** |
+| | `V58EFK8B` | 2020 | the 100,000-series description |
+| Bergstra | `S4WQS877` | **2011** | the TPE density split, p. 2549 - **the one Chapter 5 needs** |
+| | `34DWJUWN` | 2012 | random search versus grid search |
+
+**Both in-text citations in Chapter 5 name the right year**, so the prose is
+correct. What needs checking is which entry each Word citation *field* resolves
+to.
+
+Note that "Bergstra et al." is only correct for the 2011 paper, which has four
+authors; the 2012 paper has two and would take "Bergstra & Bengio".
+
+### Everything else is clean
+
+The audit checked all fifteen Chapter 5 sources individually. **Every one is in
+the library** and the remaining eleven have complete metadata. Nothing needs
+adding to Zotero.
+
+**Why the unfiltered API and not `citations.json`:** that export keeps only
+scholarly item types, so a `computerProgram`, `dataset` or `blogPost` entry is
+silently dropped and reads as missing.
+
+**Raised by:** the Chapter 5 pass, 2026-09-10. **Widened** by the sequential
+Chapter 5 follow-up the same day.
 
 ---

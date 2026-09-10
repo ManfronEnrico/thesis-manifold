@@ -1705,8 +1705,10 @@ On the deferred structural list:
 - **S14** - `fig4_ram_budget` is stale, and Section 5.5.8's reference to it is
   deleted above
 - **S15** - whether 5.2.2 to 5.2.6 become a comparison table
-- **S16** - two Zotero metadata defects that will render wrong in the
-  bibliography
+- **S16** - Zotero metadata defects that will render wrong in the bibliography.
+  **Now four, not two** - the Hyndman & Athanasopoulos entry is worse than
+  previously recorded, and two duplicate-author pairs need their Word citation
+  fields verified. See the Citations section below
 - **S9** - the cross-chapter repetition pass, open since Chapter 4
 
 On the post-run validation list:
@@ -1737,24 +1739,103 @@ at the end and check each against its caption.
 
 # Citations
 
-Every source cited in Chapter 5 resolves against the 2026-09-10 pull, **87
-items**.
+**Every source cited in Chapter 5 is in the library.** Checked one at a time
+against the unfiltered Zotero API rather than against `citations.json`, which
+filters by item type and would hide a `computerProgram` or `dataset` entry.
 
-**Two are added by this pass**, both in Section 5.3.4:
+Library re-pulled 2026-09-10: **87 items**.
 
-| Source | Supports | Register |
+| Cited as | In library | Note |
 |---|---|---|
-| Bergmeir, Hyndman & Koo (2018) | that K-fold is valid for stationary autoregressive series | C5-01 |
-| Cerqueira, Torgo & Mozetic (2020) | that order-preserving evaluation is more accurate under non-stationarity | C5-02 |
+| Hyndman & Athanasopoulos (2021) | yes, `5NFQRRXS` | ⚠ **metadata broken** - see below |
+| Makridakis et al. (2018) | yes, `EXNY7D4X` | ⚠ **two M4 papers in the library** - see below |
+| Taylor & Letham (2018) | yes | complete |
+| Hastie et al. (2009) | yes | complete, stored as a book section |
+| Tashman (2000) | yes | complete |
+| Bergstra et al. (2011) | yes, `S4WQS877` | ⚠ **a second Bergstra paper exists** - see below |
+| Akiba et al. (2019) | yes | ⚠ **date field reads "July 25, 2019"** |
+| Gneiting (2011) | yes | complete |
+| Hyndman & Koehler (2006) | yes | complete |
+| Syntetos, Boylan & Croston (2005) | yes | complete |
+| Cawley & Talbot (2010) | yes | complete |
+| Lei et al. (2018) | yes | complete |
+| Ceran et al. (2024) | yes | complete. Cited only to record that its benchmark does **not** exist |
+| Bergmeir et al. (2018) | yes | **added by this pass**, Section 5.3.4 |
+| Cerqueira et al. (2020) | yes | **added by this pass**, Section 5.3.4 |
 
-Both are `IN-ZOTERO` and `NLM-PENDING` in `citations-added-register.md`.
+**Nothing needs adding to Zotero.** Two sources are new to this chapter and both
+were already in the library.
 
-⚠ **Two library entries will render wrong in the bibliography**, regardless of
-this chapter's prose:
+## Four defects to fix in Zotero, not in Word
 
-| Entry | Defect |
+The bibliography is generated from the library, so it will carry whatever is
+there regardless of how the in-text citation is written.
+
+### 1. Hyndman & Athanasopoulos is stored as a chapter, with no year and no
+second author
+
+| Field | Current value |
 |---|---|
-| Hyndman & Athanasopoulos | stored under a section title with **no year**, so it renders as "n.d." |
-| Akiba et al. | the year field reads **"July"** rather than 2019 |
+| Title | `5.2 Some simple forecasting methods \| Forecasting: Principles and Practice (3rd ed)` |
+| Authors | **Hyndman only** - Athanasopoulos is missing |
+| Date | **empty** |
+| URL | carries a `utm_source=chatgpt.com` parameter |
 
-Both are fixed in Zotero, not in Word. Tracked as S16.
+**It will render as "Hyndman, R. J. (n.d.). 5.2 Some simple forecasting
+methods..."** - a section heading, no year, one author, and a URL that says where
+the reference was found. This is the single most-cited source in the chapter,
+appearing in Sections 5.1, 5.2.1 and 5.5.2.
+
+**Fix in Zotero:** title becomes *Forecasting: Principles and Practice*, add
+Athanasopoulos as second author, set the year to 2021, edition to 3rd, publisher
+OTexts, and strip the tracking parameter from the URL.
+
+### 2. There are two M4 papers, and the chapter needs the 2018 one
+
+| Key | Year | Title | Pages |
+|---|---|---|---|
+| `EXNY7D4X` | **2018** | The M4 Competition: Results, findings, conclusion and way forward | 802-808 |
+| `V58EFK8B` | 2020 | The M4 Competition: 100,000 time series and 61 forecasting methods | 54-74 |
+
+**The chapter cites "Makridakis et al., 2018, p. 803", which is correct** - that
+page falls inside the 2018 paper. No prose change needed.
+
+⚠ **But check which entry Word's citation field is actually pointing at.** Two
+entries with near-identical author lists and titles are exactly the pair a
+reference manager picks wrongly, and the error is invisible in the text: both
+render as "Makridakis et al." and only the year differs.
+
+### 3. There are two Bergstra papers, and they support different claims
+
+| Key | Year | Title | Supports |
+|---|---|---|---|
+| `S4WQS877` | **2011** | Algorithms for Hyper-Parameter Optimization | the **TPE mathematics** - the l(x)/g(x) density split |
+| `34DWJUWN` | 2012 | Random Search for Hyper-Parameter Optimization | that random search beats grid search |
+
+**Section 5.3.5 cites "Bergstra et al., 2011, p. 2549" for the TPE density
+split, which is the correct paper.** The 2012 paper has two authors, so "et al."
+would be wrong for it in any case.
+
+⚠ **Same warning as the M4 pair.** Verify the field points at `S4WQS877`.
+
+### 4. Akiba's date field reads "July 25, 2019"
+
+It renders as a date string rather than a year. Set it to 2019.
+
+## What this does not cover
+
+**None of these sources has been checked against the claim it supports.** The
+audit above establishes only that each entry exists and will render correctly.
+Whether Gneiting says what Section 5.4.1 uses him for, or whether Bergmeir
+supports the sentence in Section 5.3.4, is a separate question.
+
+**That is the NotebookLM pass, and it runs after the chapter is prosed.** The two
+sources this pass adds are registered as `IN-ZOTERO` / `NLM-PENDING` in
+`citations-added-register.md` with the sentence each must support, quoted, so
+they enter that queue rather than being assumed.
+
+The thirteen pre-existing sources are not in the register, because this pass did
+not add them. If the verification pass is meant to cover the whole chapter rather
+than only new citations, they need rows too - **worth deciding before the
+NotebookLM run**, since a source cited since August is no more verified than one
+cited today.
