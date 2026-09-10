@@ -81,7 +81,8 @@ from PATHS import get_srq_tables_dir  # noqa: E402
 # (P0049 F24). Set SRQ1_HORIZON=1 to run the secondary horizon.
 from _horizon import HORIZON, matrix_path, results_root, banner  # noqa: E402,F401
 
-from srq1_benchmark import CATS, FEATURES, SEED, _load, _log_scale  # noqa: E402
+from srq1_benchmark import (CATS, FEATURES, SEED, _load, _log_scale,  # noqa: E402
+                            _fit_predict, _metrics)
 
 HOLIDAY_FEATURES = ["days_in_month", "n_holidays", "non_holiday_days"]
 GRAIN = "bymonth"
@@ -235,28 +236,19 @@ def propose_reduced_set(vif: pd.DataFrame, clusters: list[list[str]],
                         imp: pd.DataFrame) -> tuple[list[str], list[dict]]:
     """Keep the most important member of each redundancy cluster; keep all else.
 
-    MEASURED AND REJECTED FOR TREE MODELS (2026-09-06). This rule was validated
-    against the benchmark before adoption and made accuracy WORSE: mean test
-    WMAPE 28.82 reduced vs 26.44 unreduced, across 4 categories x 3 models.
+    This is a DIAGNOSTIC PROPOSAL for the linear track only. It is not applied
+    anywhere automatically, and `evaluate_reduction()` in this file fits the
+    full and reduced sets and measures the cost every run -- the numbers land in
+    `feature_reduction_eval.csv`, which appendix table 98 reads. Do not restate a
+    WMAPE figure here; it would drift from the CSV the moment the feature set
+    changes (which is exactly what happened between the 16- and 18-column sets).
 
-    The reason is that collinearity is a LINEAR-MODEL pathology. Ridge cannot
-    apportion credit between `lag_1..lag_4` and `rolling_mean_4`, so its
-    coefficients are unstable -- but a gradient-boosted tree splits on whichever
-    correlated feature is locally most useful and loses real information when
-    the others are removed. Collapsing a 7-member lag/rolling cluster to one
-    survivor therefore helps neither: it does not fix Ridge (see below) and it
-    actively harms LightGBM and XGBoost.
-
-    So this function's output is a DIAGNOSTIC PROPOSAL for the linear track
-    only, and it is not applied anywhere automatically. The measurement is the
-    point: an unvalidated reduction rule would have degraded every reported
-    number while looking like methodological rigour.
-
-    ALSO MEASURED (2026-09-06): dropping the exact linear dependency among the
-    holiday features changed test WMAPE by < 0.01pp in all 8 category x feature
-    -set cells. StandardScaler plus Ridge's L2 penalty already absorbs rank
-    deficiency. VIF correctly reports the dependency; the dependency is simply
-    not what drives the error. Report the VIF, do not claim it explains accuracy.
+    The mechanism the measurement confirms: collinearity is a LINEAR-MODEL
+    pathology. Ridge cannot apportion credit between `lag_1..lag_4` and
+    `rolling_mean_4`, so its coefficients are unstable -- but a gradient-boosted
+    tree splits on whichever correlated feature is locally most useful and loses
+    real information when the others are removed. Collapsing a lag/rolling
+    cluster to one survivor helps neither track.
     """
     rank = dict(zip(imp["feature"], imp["importance_mean"]))
     dropped: list[dict] = []
@@ -277,6 +269,46 @@ def propose_reduced_set(vif: pd.DataFrame, clusters: list[list[str]],
 
     keep = [f for f in imp["feature"] if f not in drop_set]
     return keep, dropped
+
+
+def evaluate_reduction(prop_all: list[dict], include_holiday: bool) -> pd.DataFrame:
+    """Fit full vs proposed-reduced feature set, per category x model, on the
+    train/test split. Returns one row per (category, model) with both test
+    WMAPEs and the delta. This is what appendix table 98 cites -- it is
+    computed here every run, never asserted.
+
+    Uses the default-hyperparameter fit (`srq1_benchmark._fit_predict`), the
+    same regime as `metrics.csv`'s ranking ladder -- the reduction is a
+    diagnostic, not a tuned deliverable, so a quick untuned comparison is the
+    right instrument.
+    """
+    rows: list[dict] = []
+    for p in prop_all:
+        cat = p["category"]
+        fm = _load(GRAIN, cat, CATS[cat])
+        if fm is None:
+            continue
+        full = _candidate_features(fm, include_holiday=include_holiday)
+        reduced = [f for f in p["proposed"].split() if f in fm.columns]
+        if not reduced or set(reduced) == set(full):
+            continue
+        d = fm.dropna(subset=["log_sales_units", "lag_1", "lag_13"]).copy()
+        tr, te = d[d.split == "train"], d[d.split == "test"]
+        if len(tr) < 30 or len(te) == 0:
+            continue
+        ytr_log = tr["log_sales_units"].values
+        ytrue = np.expm1(te["log_sales_units"].values)
+        for model in ("LightGBM", "XGBoost", "Ridge"):
+            wm = {}
+            for tag, cols in (("full", full), ("reduced", reduced)):
+                pred = _fit_predict(model, tr[cols].fillna(0.0), ytr_log,
+                                    te[cols].fillna(0.0))
+                wm[tag] = _metrics(ytrue, pred)[2]  # (_, _, WMAPE)
+            rows.append({"category": cat, "model": model,
+                         "n_full": len(full), "n_reduced": len(reduced),
+                         "wmape_full": wm["full"], "wmape_reduced": wm["reduced"],
+                         "delta_pp": wm["reduced"] - wm["full"]})
+    return pd.DataFrame(rows)
 
 
 def main() -> int:
@@ -317,7 +349,7 @@ def main() -> int:
 
         keep, dropped = propose_reduced_set(vif, clusters, imp)
         prop_all.append({"category": cat, "n_candidate": len(feats),
-                         "n_proposed": len(keep),
+                         "n_proposed": len(keep), "rho": REDUNDANCY_RHO,
                          "proposed": " ".join(keep)})
         for d in dropped:
             d["category"] = cat
@@ -348,6 +380,11 @@ def main() -> int:
         pd.DataFrame(drop_all).to_csv(OUT / f"feature_drop_rationale{suffix}.csv",
                                       index=False, encoding="utf-8")
 
+    red_eval = evaluate_reduction(prop_all, include_holiday=not args.no_holiday)
+    if not red_eval.empty:
+        red_eval.to_csv(OUT / f"feature_reduction_eval{suffix}.csv",
+                        index=False, encoding="utf-8")
+
     print(f"\n=== VIF above {VIF_SEVERE:.0f} (serious multicollinearity) ===")
     bad = vif_df[vif_df["vif"] > VIF_SEVERE]
     if bad.empty:
@@ -370,12 +407,20 @@ def main() -> int:
               f"{row['n_proposed']:2d} features")
 
     print(f"\nWritten -> {OUT}")
-    print("\nNOTE: the proposed sets were VALIDATED on 2026-09-06 and REJECTED "
-          "for the tree models\n(mean test WMAPE 28.82 reduced vs 26.44 "
-          "unreduced). Collinearity is a linear-model\npathology; trees use "
-          "correlated lags productively. Treat these proposals as a\n"
-          "diagnostic for the Ridge track, and re-validate before adopting "
-          "anything.")
+    if not red_eval.empty:
+        mf, mr = red_eval["wmape_full"].mean(), red_eval["wmape_reduced"].mean()
+        print(f"\n=== Reduced vs full, test WMAPE ({len(red_eval)} category x "
+              f"model cells) ===")
+        print(red_eval.assign(
+            wmape_full=red_eval["wmape_full"].map("{:.2f}".format),
+            wmape_reduced=red_eval["wmape_reduced"].map("{:.2f}".format),
+            delta_pp=red_eval["delta_pp"].map("{:+.2f}".format),
+        ).to_string(index=False))
+        verdict = "WORSE" if mr > mf else ("BETTER" if mr < mf else "NO CHANGE")
+        print(f"\nMean: reduced {mr:.2f} vs full {mf:.2f} -- reduction is "
+              f"{verdict} for accuracy. Collinearity is a linear-model pathology;"
+              "\ntrees use correlated lags productively. These proposals are a "
+              "diagnostic for\nthe Ridge track only.")
     return 0
 
 

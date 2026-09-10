@@ -1,5 +1,5 @@
-category,n_candidate,n_proposed,proposed
-CSD,18,9,lag_1 lag_13 month promo_intensity non_holiday_days n_holidays peak_month days_in_month zero_run_flag
-Danskvand,17,9,rolling_mean_13 lag_13 lag_8 peak_month month non_holiday_days n_holidays days_in_month zero_run_length
-Energidrikke,18,10,lag_1 lag_13 zero_run_length promo_intensity lag_8 peak_month non_holiday_days days_in_month month n_holidays
-RTD,17,10,lag_1 lag_8 rolling_mean_13 zero_run_length month lag_13 peak_month n_holidays days_in_month non_holiday_days
+category,n_candidate,n_proposed,rho,proposed
+CSD,18,9,0.95,lag_1 lag_13 month promo_intensity non_holiday_days n_holidays peak_month days_in_month zero_run_flag
+Danskvand,17,9,0.95,rolling_mean_13 lag_13 lag_8 peak_month month non_holiday_days n_holidays days_in_month zero_run_length
+Energidrikke,18,10,0.95,lag_1 lag_13 zero_run_length promo_intensity lag_8 peak_month non_holiday_days days_in_month month n_holidays
+RTD,17,10,0.95,lag_1 lag_8 rolling_mean_13 zero_run_length month lag_13 peak_month n_holidays days_in_month non_holiday_days

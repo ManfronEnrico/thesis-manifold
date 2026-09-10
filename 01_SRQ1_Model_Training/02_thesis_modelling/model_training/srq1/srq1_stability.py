@@ -271,6 +271,10 @@ def main():
               "choice between LightGBM and XGBoost does not matter here, which is useful",
               "to a practitioner deciding what to deploy.", ""]
 
+    # Interpolated so the gap sentence tracks the table (provenance rule).
+    _agg_rel = float((df["wmape_std"] / df["wmape_mean"]).mean() * 100)
+    _cell_rel = float(df["median_cv"].mean() * 100)
+    _ratio = _cell_rel / _agg_rel if _agg_rel else float("nan")
     lines += ["",
               "**Reading the table.** `median CV` is the typical cell; `p90 CV` is the",
               "tail — the cells a planner would notice moving. `WMAPE sd` is the",
@@ -278,11 +282,13 @@ def main():
               "per-cell CV because per-cell movements partly cancel in a sum. **Report",
               "both**: aggregate stability flatters the system relative to what a user",
               "of an individual forecast experiences.", "",
-              "**Measured gap: aggregate WMAPE moves by ~4.7% of its own level across",
-              "seeds, while the typical individual forecast moves by ~13% -- roughly",
-              "three times more.** A planner reading one brand's number experiences the",
-              "second figure, not the first. Reporting only aggregate stability would",
-              "understate run-to-run variability by a factor of three.", ""]
+              f"**Measured gap: aggregate WMAPE moves by ~{_agg_rel:.1f}% of its own "
+              f"level across",
+              f"seeds, while the typical individual forecast moves by ~{_cell_rel:.0f}% "
+              f"-- about {_ratio:.1f}x",
+              "more.** A planner reading one brand's number experiences the second",
+              "figure, not the first. Reporting only aggregate stability would",
+              f"understate run-to-run variability by roughly {_ratio:.0f}x.", ""]
     (OUT / "stability.md").write_text("\n".join(lines) + "\n",
                                       encoding="utf-8", newline="\n")
     print(f"\nSaved stability.csv + stability_by_cell.csv + "

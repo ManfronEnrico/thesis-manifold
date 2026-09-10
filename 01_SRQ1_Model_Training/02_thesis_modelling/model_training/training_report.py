@@ -50,7 +50,8 @@ def _find_repo_root() -> Path:
 
 
 sys.path.insert(0, str(_find_repo_root()))
-from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_category_engineered_bymonth_dir,
+from PATHS import (THESIS_RESULTS_SRQ1_DIR, SRQ4_SCENARIO_SETUP_DIR,
+                   get_category_engineered_bymonth_dir,
                    get_srq_tables_dir, get_srq_models_dir)
 
 warnings.filterwarnings("ignore")
@@ -298,11 +299,10 @@ def section_tool_payload(L):
           "these fields are the claim, not decoration.", ""]
     try:
         import importlib.util
-        # scenario_setup moved from 03_thesis_modelling/ to
-        # 04_SRQ4_Scenario_Experiment/ in the 2026-08 SRQ-folder rename;
-        # parents[1] pointed at the pre-rename location.
-        p = (_find_repo_root() / "04_SRQ4_Scenario_Experiment"
-             / "scenario_setup" / "srq4_experiment.py")
+        # PATHS.SRQ4_SCENARIO_SETUP_DIR owns this location (it moved from
+        # 03_thesis_modelling/ in the 2026-09-06 SRQ-folder rename); the old
+        # code built it with parents[1], which broke on the rename.
+        p = SRQ4_SCENARIO_SETUP_DIR / "srq4_experiment.py"
         spec = importlib.util.spec_from_file_location("srq4", p)
         m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(m)
