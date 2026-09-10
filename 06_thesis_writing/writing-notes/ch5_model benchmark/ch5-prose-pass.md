@@ -1,26 +1,57 @@
 ---
 name: ch5-prose-pass
-description: NOTE - Chapter 5 full pass. Every results table is stale against the 2026-09-09/10 re-runs and must be replaced. Carries the replacement tables, the prose conversion for the bullet sections, all 49 comment verdicts, and the cross-reference repair.
-snapshot: 2026-09-10_15-32_ch5-full-pass
+description: NOTE - Chapter 5 full pass, consolidated. Every results table is stale against the 2026-09-09/10 re-runs and must be replaced. Carries the replacement tables, the prose conversion for the bullet sections, all 49 comment verdicts, and the cross-reference repair.
+snapshot: 2026-09-10_16-43_ch5-prose-work
 category: workflow
 applies-to: [chapter 5]
 created: 2026_09_10-16_10
-updated: 2026_09_10-16_10
+updated: 2026_09_10-17_40
 status: ready
 ---
 
 # Chapter 5 - full pass
 
-Verified at commit `71fe47b`, snapshot `2026-09-10_15-32_ch5-full-pass`, Zotero
-re-pulled the same minute: **87 items**.
+**This is the only Chapter 5 note to work from.** Two follow-ups existed while
+the results were still moving; both are folded in here and archived. Nothing
+else in this folder is queued work.
 
-**Notes swept:** `srq1-forecast-horizon-defect-and-split-correction.md`
-(**superseded** - the defect it reports is fixed, archived),
-`ch5-ch6-swap-reference-repair.md` (not applied - carried into Fix 1),
-`srq1-holiday-ablation-and-the-tuning-inversion.md` (not applied - carried into
-Fix 12), and the three August reference notes on the model ladder, pooling and
-tuning (**absorbed** - the chapter already makes their arguments; kept as
-reference, not queued work).
+Verified at commit `ebdb5f7`, snapshot `2026-09-10_16-43_ch5-prose-work`, Zotero
+re-pulled: **87 items**. Chapter 5's prose is byte-identical to the snapshot the
+pass was written against, so every anchor below still holds.
+
+## What happened to the other notes in this folder
+
+Everything paste-ready has been folded into this file and archived, so the
+folder no longer holds two notes that could disagree.
+
+| Note | Where it went |
+|---|---|
+| `ch5-prose-pass-followup-01.md` | folded in - its Prophet corrections are already applied inside F4 |
+| `ch5-prose-pass-followup-02.md` | folded in - it rebuilt F8, which now reads as corrected |
+| `ch5-ch6-swap-reference-repair.md` | carried into **F1** |
+| `srq1-holiday-ablation-and-the-tuning-inversion.md` | carried into **F12** |
+| `srq1-forecast-horizon-defect-and-split-correction.md` | superseded - the defect it reports is fixed |
+
+All five are in `.archive/`, dated today.
+
+**Three notes remain in the folder and none of them is queued work.**
+`srq1-model-ladder-and-baselines.md`, `srq1-pooled-vs-per-category.md` and
+`srq1-tuning-and-validation-protocol.md` are `category: reference` - the
+rationale behind the methodology, written in August, kept because the chapter
+argues from them. They contain no anchors and nothing to paste.
+
+### Two corrections are already applied inside the fixes below
+
+Both came from re-runs that landed while this pass was being written, and both
+are worth knowing about because they moved numbers you may have seen in an
+earlier version:
+
+- **Two Prophet figures** in F4's table changed - danskvand from 19.5 to 19.4
+  per cent, energidrikke from 972.4 to 975.0. The danskvand reversal that F4
+  reports is unaffected.
+- **F8 was rebuilt entirely.** An earlier version read the appendix export
+  rather than the source artefact, and wrongly concluded the winner-flip table
+  had no evidence behind it. It does. F8d records how that happened.
 
 ---
 
@@ -35,7 +66,7 @@ identity:
 
 | Chapter says | Measured now |
 |---|---|
-| On danskvand, **Ridge** reaches 10.9%, half the tuned error | Ridge is **74.9%**, the *worst* baseline. **Prophet** wins danskvand at 19.5% |
+| On danskvand, **Ridge** reaches 10.9%, half the tuned error | Ridge is **74.9%**, the *worst* baseline. **Prophet** wins danskvand at 19.4% |
 | CSD LightGBM 14.5%, XGBoost 15.2% | 19.3% and 18.4% |
 | Plateau trials 3 to 87, median near 16 | 0 to 83, **median 55** |
 
@@ -62,7 +93,7 @@ Fifteen fixes. Order matters only for 2 and 3, which touch the same table.
 | [5](#f5) | Table 11 - MASE | numbers |
 | [6](#f6) | Table 12 and the pooling story | numbers + prose |
 | [7](#f7) | Table 8 - demand classes | numbers |
-| [8](#f8) | Table 13 - seed stability | numbers |
+| [8](#f8) | Table 13 - seed stability, and the winner-flip table | numbers + prose |
 | [9](#f9) | 5.5.6 - the operational profile is wrong in every figure | numbers |
 | [10](#f10) | 5.5.7 - calibration, and the danskvand width claim | numbers + prose |
 | [11](#f11) | 5.3.2 - the feature set is 18, not 13, and it now has holidays | numbers + prose |
@@ -224,7 +255,7 @@ Ridge regression reaches 10.9 per cent on danskvand, roughly half the tuned
 gradient-boosted error, and builds a paragraph on it.
 
 **Measured now, Ridge is 74.9 per cent on danskvand - the worst of the six
-baselines.** The category is instead won by Prophet, at 19.5 per cent.
+baselines.** The category is instead won by Prophet, at 19.4 per cent.
 
 Source: `tables/09_statistical_baselines.csv`, written 2026-09-08 18:51.
 
@@ -243,8 +274,8 @@ REPLACE the table and the caption.
 | Category | Naive | Seasonal naive | Drift | Ridge | ARIMA | Prophet | Best tuned model |
 |---|---|---|---|---|---|---|---|
 | CSD | 42.9% | 19.2% | 47.7% | 23.8% | 21.8% | 105.7% | **18.4%** (XGBoost) |
-| danskvand | 32.5% | 35.9% | 32.0% | 74.9% | 33.5% | **19.5%** | 27.1% (XGBoost) |
-| energidrikke | 18.9% | 23.8% | 17.7% | 23.6% | 19.4% | 972.4% | **15.5%** (XGBoost) |
+| danskvand | 32.5% | 35.9% | 32.0% | 74.9% | 33.5% | **19.4%** | 27.1% (XGBoost) |
+| energidrikke | 18.9% | 23.8% | 17.7% | 23.6% | 19.4% | 975.0% | **15.5%** (XGBoost) |
 | RTD | 89.3% | **27.3%** | 95.9% | 52.4% | 53.3% | 66.8% | 30.2% (XGBoost) |
 
 **Caption:** *Table 10 - Weighted MAPE of the simple and statistical benchmarks
@@ -276,7 +307,7 @@ REPLACE. The claim inverts.
 
 **Replace with:**
 
-> **On danskvand, Prophet reaches 19.5 per cent against the tuned models' 27.1**,
+> **On danskvand, Prophet reaches 19.4 per cent against the tuned models' 27.1**,
 > and it is the only category where the method is competitive at all. Danskvand
 > is also the smallest panel, at twenty-nine series and 174 test rows, where a
 > high-capacity model has least to learn from. The same scarcity that limits the
@@ -305,7 +336,7 @@ configuration - 27.3% against 31.8-36.1%..."*) with:
 
 The paragraph beginning *"Prophet is applied outside its design regime"* now
 sits directly above a table where **Prophet wins a category**. Its argument
-still holds for the 105.7 and 972.4 figures, but it must acknowledge the
+still holds for the 105.7 and 975.0 figures, but it must acknowledge the
 exception or it reads as contradicted by the table above it.
 
 **Add as its final sentence:**
@@ -475,7 +506,10 @@ need editing.
 
 # F8 - Table 13, seed stability {#f8}
 
-Source: `tables/10_seed_stability.md`, 2026-09-08 18:51.
+Source: `05_model_benchmark/tables/stability.md` and `stability.csv`,
+regenerated 2026-09-10 at `471b5a3` on the 18-feature run.
+
+## 8a - The stability table
 
 ### Anchor
 
@@ -485,53 +519,136 @@ beginning *"CSD | LightGBM | 0.112"*.
 
 ### Action
 
-REPLACE the table.
+REPLACE the table and caption.
 
 **Replace with:**
 
-| Category | Model | Median CV | WMAPE mean | WMAPE sd |
-|---|---|---|---|---|
-| CSD | LightGBM | 0.112 | 15.4% | 0.65 |
-| CSD | XGBoost | 0.125 | 15.6% | 0.56 |
-| danskvand | LightGBM | 0.119 | 20.8% | 0.69 |
-| danskvand | XGBoost | 0.172 | 21.5% | 1.22 |
-| energidrikke | LightGBM | 0.137 | 13.9% | 1.38 |
-| energidrikke | XGBoost | 0.162 | 14.4% | 0.38 |
-| RTD | LightGBM | 0.144 | 32.3% | 1.94 |
-| RTD | XGBoost | 0.096 | 35.5% | 1.50 |
+| Category | Model | Median CV | p90 CV | WMAPE mean | WMAPE sd | WMAPE range |
+|---|---|---|---|---|---|---|
+| CSD | LightGBM | 0.182 | 0.488 | 18.9% | 0.67 | 18.3-20.0% |
+| CSD | XGBoost | 0.152 | 0.517 | 18.6% | 0.83 | 17.8-19.5% |
+| danskvand | LightGBM | 0.138 | 0.522 | 27.0% | 2.81 | 24.6-31.9% |
+| danskvand | XGBoost | 0.174 | 0.611 | 25.8% | 1.04 | 24.7-27.0% |
+| energidrikke | LightGBM | 0.239 | 0.707 | 16.2% | 0.59 | 15.5-16.9% |
+| energidrikke | XGBoost | 0.243 | 0.773 | 17.0% | 1.08 | 15.5-18.0% |
+| RTD | LightGBM | 0.099 | 0.236 | 30.5% | 0.30 | 30.2-30.9% |
+| RTD | XGBoost | 0.114 | 0.522 | 30.1% | 1.04 | 29.1-31.6% |
 
 **Caption:** *Table 13 - Forecast and accuracy variation across five random
 seeds, by category and model*
 
-### Note - the p90 column is gone, and one sentence depends on it
+### Note - the WMAPE range column is worth keeping
 
-The published table no longer reports a ninetieth-percentile coefficient of
-variation. The chapter's clause *"and the ninetieth-percentile cell by 30-73%"*
-therefore has no source in the current artefact.
+It is not in the chapter now and it is the most legible column in the table. A
+reader who does not think in standard deviations can see that danskvand's
+LightGBM lands anywhere between 24.6 and 31.9 per cent depending on the seed,
+which is the whole argument in one cell.
 
-**Two options.** Drop the clause, or re-derive p90 from the stability run's raw
-output. **I recommend dropping it** - the median CV of 9.6 to 17.2 per cent
-already carries the argument that individual cells move far more than the
-aggregate, and that ratio is the point.
+## 8b - The first finding, with the computed figure
 
-**Reworded sentence:**
+### Anchor
 
-> Aggregate weighted error moves by roughly 4 per cent of its own level across
-> seeds, while the typical individual forecast moves by 10 to 17 per cent.
+**Section 5.5.9.** The paragraph beginning **"First, aggregate stability flatters
+the system by roughly three times."**
 
-### Note - the winner-flip table needs re-deriving, and I could not
+First five words: *"First, aggregate stability flatters the..."*
+Last five words: *"...would understate instability threefold."*
 
-The second table in 5.5.9, listing the winning model per seed, is **not
-reproducible from the published artefacts** - `10_seed_stability.csv` reports
-per-model aggregates, not per-seed winners.
+### Action
 
-**It is also now in tension with the means.** LightGBM has the lower mean
-weighted error in all four categories, by 0.1 to 3.2 points. The flip may well
-be real, but the chapter cannot cite what is not on disk, and §5.6 rests on it
-entirely.
+REPLACE.
 
-**Tracked as H11 in `post-hpc-validation.md`, marked a gate.** See the Blocked
-section below - this is the one item in the chapter I cannot close.
+**Replace with:**
+
+> First, aggregate stability flatters the system by roughly a factor of four.
+> Aggregate weighted error moves by about 4.6 per cent of its own level across
+> seeds, while the typical individual forecast moves by about 17 per cent, and
+> the ninetieth-percentile cell by between 24 and 77 per cent. Per-cell movements
+> partly cancel within a volume-weighted sum, so a planner reading one brand's
+> number experiences considerably more run-to-run variability than a headline
+> metric implies. Both are therefore reported; quoting only the aggregate would
+> understate instability roughly fourfold.
+
+### Note - these figures are the generator's, not arithmetic
+
+The multiplier is computed from `stability.csv` at render time. Do not substitute
+a figure derived by hand off the aggregate table - that is the transcription the
+provenance rule exists to stop.
+
+### Note - the chapter's "three times" was measured on an older run
+
+The chapter says 4.7 per cent against 13 per cent, roughly threefold. The
+regenerated figures are 4.6 against 17, about 3.6x, which the source file rounds
+to fourfold. The direction and the argument are unchanged; only the multiplier
+moved, and it moved **against** the system, so the finding is slightly stronger
+than the chapter currently claims.
+
+## 8c - The winner-flip table
+
+### Anchor
+
+**Section 5.5.9.** The second table, listing the winner per seed, beginning
+*"CSD | XGBoost, XGBoost, LightGBM..."*.
+
+### Action
+
+REPLACE.
+
+**Replace with:**
+
+| Category | Winner per seed | Verdict |
+|---|---|---|
+| CSD | XGBoost, XGBoost, XGBoost, LightGBM, LightGBM | flips |
+| danskvand | LightGBM, LightGBM, XGBoost, XGBoost, XGBoost | flips |
+| energidrikke | XGBoost, LightGBM, LightGBM, LightGBM, XGBoost | flips |
+| RTD | XGBoost, LightGBM, XGBoost, XGBoost, XGBoost | flips |
+
+**Caption:** *Table 14 - The selected model per category under each of five
+random seeds*
+
+### Note - the orderings changed, so do not keep the old rows
+
+Every row differs from what the chapter currently prints. The verdict is
+identical in all four categories, which is why the surrounding prose survives -
+but the sequences themselves come from the superseded run and must be replaced,
+not left.
+
+### Note - the chapter was right, and this table stays
+
+Four of four categories change their winning model on the seed alone. Section
+5.6 rests on this and is correctly sourced.
+
+## 8d - The paragraph after it
+
+### Anchor
+
+**Section 5.5.9.** The paragraph beginning **"Every input is identical; only the
+random seed differs."**
+
+### Action
+
+REPLACE. This also answers comment 283, tagged `WATERMARK, ACADEMIC`.
+
+**Replace with:**
+
+> Because every input other than the seed is held identical, the selected model
+> is not a property of the categories but an outcome of one draw. A statement
+> that a particular gradient-boosting model is best for a given category is
+> therefore unsupported here, in all four categories. §5.6 states the conclusion
+> this supports instead.
+
+### Note - what went wrong here, and why it is recorded
+
+An earlier draft of this pass searched `10_seed_stability.csv`, which is the
+**appendix export** of the stability run, found only per-model aggregates, and
+concluded the per-seed winners, the p90 column and the aggregate-versus-
+individual figure were all unreproducible. It blocked the section and warned that
+§5.6 rested on nothing.
+
+**All three were in `stability.md` the whole time.** The lesson is worth keeping
+because it will recur: **an appendix table is a projection of a result, not the
+result.** When a projection does not answer a question, find the source artefact
+rather than concluding the question is unanswerable.
 
 ---
 
@@ -1072,7 +1189,7 @@ give a replacement caption in full. The two worst:
 **Table 7 is comment 240**, tagged `NAMING`, and it is the one an examiner would
 notice first.
 
-## 15d - The two stability paragraphs tagged WATERMARK
+## 15d - The stability paragraph tagged WATERMARK
 
 Comments 279 and 283 tag `WATERMARK, ACADEMIC` on *"Two findings, and both matter
 more than the accuracy tables suggest"* and *"Every input is identical; only the
@@ -1087,48 +1204,29 @@ rhetorical flourish placed before a conclusion.
 > Two findings follow, and both bear on how the accuracy tables in this chapter
 > should be read.
 
-**And the second:**
-
-> Because every input other than the seed is held identical, a statement of which
-> gradient-boosting model is best in a given category reports the outcome of one
-> seed rather than a property of the models. §5.6 states the conclusion this
-> supports instead.
-
-⚠ **The second depends on F8's unresolved winner-flip table.** If that claim
-cannot be supported, this paragraph and §5.6 both change. Do not paste it until
-H11 is settled.
+**The second is handled in F8d.** It sits directly above the winner table and had
+to be rewritten with it, so both edits are in one place rather than split across
+two fixes.
 
 ---
 
-# Blocked
+# Nothing in this chapter is blocked
 
-**One item, and it is load-bearing.**
+An earlier draft of this pass blocked section 5.5.9's winner-flip claim, and with
+it the whole of §5.6, on the grounds that no artefact carried per-seed winners.
 
-## The winner-flip claim has no artefact
+**That block is withdrawn.** `stability.md` carries the winner table for all four
+categories, each verdict FLIPS, alongside the p90 column and a computed
+aggregate-versus-individual figure. §5.6 needs no rewrite - only the
+cross-reference fix in F1.
 
-Section 5.5.9's per-seed winner table, and the whole of §5.6, rest on the claim
-that the winning model changes with the seed in all four categories.
+Recorded as **withdrawn** rather than resolved in `post-hpc-validation.md`,
+because it was an error on my part rather than a gap that closed. F8d carries the
+lesson.
 
-`10_seed_stability.csv` does not contain per-seed winners, only per-model
-aggregates, and those aggregates say **LightGBM has the lower mean weighted error
-in all four categories**, by between 0.1 and 3.2 points.
-
-The flip may well be real. Five seeds with standard deviations of 0.4 to 1.9
-points, against between-model gaps of 0.1 to 3.2, would produce flips in at least
-the close categories. But the chapter cannot cite what is not on disk.
-
-**What would answer it:** the per-seed WMAPE values the stability run produced
-before aggregation, either retained by `srq1_stability.py` or re-derivable from
-its raw output.
-
-**If it does not hold**, §5.6's central claim has a weaker but still sound
-replacement: a between-seed standard deviation of 0.4 to 1.9 points against a
-between-model gap of 0.1 to 3.2 puts the difference inside noise for CSD,
-danskvand and energidrikke, and outside it only for RTD. That supports "choose on
-operational grounds for three of four categories" rather than "the two are
-indistinguishable everywhere".
-
-**Tracked as H11 in `post-hpc-validation.md`, marked as a gate.**
+**One item remains open, and it is not a gate.** H12: `profiling.csv` still
+reports 13 features, so §5.5.6's operational figures are a floor rather than a
+measurement of the shipped model. F9 says how to word that.
 
 ---
 
@@ -1183,9 +1281,9 @@ verdict is against the tagged passage.
 | 278 | 5.5.9 | **ADDRESSED** - F8 |
 | 279 | 5.5.9 | **ADDRESSED** - F15d |
 | 280 | 5.5.9 | **ADDRESSED** - F8. The p90 clause has no source in the current artefact |
-| 282 | 5.5.9 | **FLAGGED** - F8, blocked on H11 |
-| 283 | 5.5.9 | **ADDRESSED** - F15d, conditional on H11 |
-| 285 | 5.6 | **FLAGGED** - blocked on H11 |
+| 282 | 5.5.9 | **ADDRESSED** - F8 |
+| 283 | 5.5.9 | **ADDRESSED** - F8d |
+| 285 | 5.6 | **VERIFIED-OK** - the claim is sourced in `stability.md`. Only the cross-reference changes, per F1 |
 | 288 | 5.7 | **ADDRESSED** - see the note below |
 | 289 | Outstanding decisions | **ADDRESSED** - F15a, delete the section |
 
@@ -1275,5 +1373,8 @@ On the deferred structural list rather than decided here:
 
 On the post-run validation list:
 
-- **H11** - the per-seed winner data. **A gate** for §5.5.9 and §5.6
-- **H12** - re-profile the operational figures on 18 features
+- **H11** - **withdrawn.** The per-seed winner data was never missing; an
+  earlier draft of this pass looked in the appendix export rather than the source
+  artefact. Kept in the register rather than deleted, because the failure mode is
+  worth remembering
+- **H12** - re-profile the operational figures on 18 features. **Not a gate**
