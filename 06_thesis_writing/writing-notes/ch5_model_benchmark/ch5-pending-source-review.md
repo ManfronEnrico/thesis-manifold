@@ -71,6 +71,26 @@ less defensible of two available things without saying so.
 
 ---
 
+# A first pass has been read, and it found two more
+
+`notebookLM/03-Modelling_Review/fpp3-first-pass-findings.md` records a direct
+read of six of the forty section PDFs, with page-located quotations. It confirms
+problems 1, 3 and 4 above and adds two that are **defects rather than citation
+gaps**:
+
+| # | What | Section |
+|---|---|---|
+| **5** | Ridge forecasts are clipped post-hoc; the book handles bounding **through the transformation** and calls an artificial constraint "unrealistic" | 13.3 |
+| **6** | Back-transformed log forecasts are **medians, not means**, so brand forecasts do not aggregate additively to a category total | 5.6 |
+
+Finding 6 reaches beyond this chapter: the forecast tool serves per-brand
+forecasts and nothing currently warns a consumer against summing them.
+
+Finding 3 improves: the book states the Prophet design-regime point **in its own
+voice**, which is a better citation than Taylor and Letham, who do not make it.
+
+---
+
 # What this means for sequencing
 
 **Do not treat a Chapter 5 section as finished when its prose-pass block is

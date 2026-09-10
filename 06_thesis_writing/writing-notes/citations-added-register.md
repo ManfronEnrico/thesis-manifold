@@ -478,6 +478,26 @@ and `-01-HOW-TO-RUN.md`. This register does not replace them. It covers the case
 they do not: a citation that *was* added, where the risk is not a missing source
 but a real source cited for something it does not say.
 
-**Chapter 4 has an open `CV` item that belongs in a pack, not here**: the ARIMA
-24-period minimum, which has no source. The follow-up offers a reworded sentence
-that avoids needing one, so it may resolve without verification.
+**Chapter 4's open `CV` item is now answered, and the answer is that the claim
+must go.** The item was the ARIMA 24-period minimum, recorded as having no
+source.
+
+**It has no source because the standard reference rejects the whole class of
+claim.** Hyndman & Athanasopoulos, Section 13.7, read directly from the PDF on
+2026-09-10:
+
+> "Some textbooks provide rules-of-thumb giving minimum sample sizes for various
+> time series models. These are misleading and unsubstantiated in theory or
+> practice. Further, they ignore the underlying variability of the data and often
+> overlook the number of parameters to be estimated as well. There is, for
+> example, no justification for the magic number of 30 often given as a minimum
+> for ARIMA modelling."
+
+So a verification run would return `REFUTED`, and citing any source for a minimum
+length would be citing something this book calls unsubstantiated. **Remove the
+claim rather than sourcing it.** The defensible replacement is the book's own
+framing: the requirement depends on the number of parameters estimated and the
+noise in the data, not on a fixed count.
+
+Details and the surrounding quotations:
+`notebookLM/03-Modelling_Review/fpp3-first-pass-findings.md`, finding 4.
