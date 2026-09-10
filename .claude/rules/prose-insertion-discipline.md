@@ -5,7 +5,7 @@ category: workflow
 applies-to: [thesis prose, writing-notes, docx insertion, appendix references]
 triggers: [writing prose, converting bullets to prose, preparing paragraphs for Word, citing a table or figure in prose]
 created: 2026_09_07-15_00
-updated: 2026_09_10-16_50
+updated: 2026_09_10-17_50
 ---
 
 # Prose insertion discipline
@@ -164,6 +164,12 @@ python utility_scripts/scripts/thesis_snapshot.py --label "<slug>"
 ```
 
 ## Remote currency
+
+**All four currency checks are one command: `/re-snap`.** It runs the fetch,
+the snapshot, the diff against the previous snapshot and the Zotero pull, and
+carries the traps each has produced. Run it before writing any pass or
+follow-up.
+
 
 The snapshot rule covers the `.docx`. **The repository moves too**, and on this
 project it moves from three machines — the laptop, the VPS and the HPC — so

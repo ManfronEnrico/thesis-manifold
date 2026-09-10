@@ -1,5 +1,18 @@
 [
   {
+    "key": "3MTF7LGL",
+    "itemType": "computerProgram",
+    "title": "Nager.Date",
+    "copyright": "MIT",
+    "url": "https://github.com/nager/Nager.Date",
+    "abstract": "Easily access public holidays for 200+ countries via .NET, REST API, Docker, or NuGet for online and offline use.",
+    "urldate": "2026-09-10T12:22:00Z",
+    "month": "sep",
+    "year": "2026",
+    "libraryCatalog": "GitHub",
+    "extra": "original-date: 2014-08-15T08:35:19Z"
+  },
+  {
     "key": "2MVL956G",
     "itemType": "journalArticle",
     "title": "A Design Science Research Methodology for Information Systems Research",
