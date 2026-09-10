@@ -43,7 +43,7 @@ Three items, and only one is a fix.
 | # | Item | Why |
 |---|---|---|
 | [F1](#f1) | The holiday adoption sentence names no ablation | new - two ablations exist and they disagree |
-| [F2](#f2) | The redundancy decimals | decide: re-measure or drop |
+| [F2](#f2) | The redundancy decimals | **re-measured** - 29.3/32.1, paste the update |
 | [F3](#f3) | One figure in Table 2 | 0.937 vs measured 0.940 - your call |
 
 ---
@@ -112,24 +112,19 @@ conclusion.
 
 ---
 
-# F2 - The redundancy decimals: decide {#f2}
+# F2 - The redundancy decimals: now measured, keep them {#f2}
 
-Section 4.3 still reads *"raising mean test error from 26.4 to 28.8 per cent"*.
+**Resolved by measurement while this note was being written.** Commits `1b0de33`
+through `0206402` replaced the hardcoded WMAPE pair with a computed one:
+`feature_diagnostics.py` now has an `evaluate_reduction()` step that fits the
+full and reduced sets per category and model, writes
+`feature_reduction_eval.csv`, and the table 98 caption reads its means.
 
-**My earlier diagnosis of this was wrong, and the HPC session caught it.** I said
-re-running `srq1_feature_diagnostics.py` would refresh those figures because it
-imports the shared feature list. It does not: that script *proposes* a reduced
-set but never fits models on it. The pair came from a manual validation run on
-2026-09-06 and was written into the source as a literal, in three places
-(P0053 F8).
+**The figures on the current 18-feature set are 29.31 and 32.13**, over twelve
+category-by-model cells. The chapter's 26.4 and 28.8 came from a 2026-09-06 run
+on 16 features.
 
-**The current state is the awkward one.** Table 98 has been regenerated and its
-structure is correct for the 18-feature set - 18 and 17 features reducing to 9
-and 10, three clusters. It still prints 26.44 and 28.82, measured on 16
-features. A table that has visibly been refreshed invites more trust than one
-that has not.
-
-## F2a - The fallback, if you do not re-measure
+So the fallback is no longer needed. **Keep the decimals and update them.**
 
 ### Anchor
 
@@ -150,28 +145,32 @@ REWORD.
 
 **After:**
 
-> It performed worse across the four categories.
+> It performed worse, raising mean test error from 29.3 to 32.1 per cent across
+> the twelve category-and-model combinations tested.
 
-### Note - what you give up, and what you gain
+### Note - the direction held, and the gap widened
 
-You lose two decimals inside a **rejected** negative result. The contribution is
-the direction - a reduction rule adopted without validation would have degraded
-every reported number while appearing rigorous - and the direction is unaffected.
+The reduction cost 2.4 percentage points on 16 features and costs 2.8 on 18. The
+argument in the surrounding prose is unchanged and is now better supported: more
+correlated features means more genuine information lost when the groups are
+collapsed.
 
-You also sidestep the 0.95 grouping threshold, which table 98's own review note
-flags as *"a reporting parameter with no cited source"*. Naming an error figure
-invites the question of how the groups were formed; not naming it does not.
+The per-cell figures are worth knowing, because two are extreme. Water's
+LightGBM and Ridge both lose roughly eleven percentage points under reduction,
+while its XGBoost *gains* three. **Do not quote a per-cell number in Chapter 4** —
+the mean over twelve cells is the claim, and the spread belongs in Chapter 5 if
+anywhere.
 
-## F2b - If you would rather keep the numbers
+### Note - the 0.95 threshold is no longer uncited either
 
-It needs a bespoke fit: for each category, train LightGBM, XGBoost and Ridge on
-the full 18/17 set and on `feature_proposed_set.csv`'s reduced set, compare mean
-test WMAPE, then update three hardcoded strings. P0053 F8 estimates 10-15
-minutes of compute.
+The same round made the grouping threshold a computed value read from
+`feature_proposed_set.csv`'s new `rho` column rather than a literal in the
+caption. The chapter still does not name it, which remains the right call: it is
+a project parameter with no external source, and the argument does not need it.
 
-**I would not.** P0053 F8 independently recommends the same, and its reasoning is
-the one I would give: this is a rejected negative result, not a headline, and it
-is not worth a bespoke experiment this late.
+⚠ **One number in the chapter is now stale in the opposite direction.** If you
+paste the update above, check that no other sentence in §4.3 still says 26.4 or
+28.8.
 
 ---
 
@@ -242,8 +241,8 @@ complete pass and none has changed since.
 # After F1 and F2
 
 Chapter 4 is done. F3 is cosmetic and F2 is a decision rather than a
-measurement, so **F1 is the only outstanding piece of work** - one reworded
-sentence.
+measurement, so **F1 and F2 are each one reworded sentence**, and both have their
+final wording above.
 
 Two things remain tracked elsewhere and neither blocks the chapter:
 

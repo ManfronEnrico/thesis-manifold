@@ -222,3 +222,35 @@ That sentence and §5.5.8 above share one number, the six of nine, and nothing
 else. Chapter 4 says *what was decided*; Chapter 5 says *how the measurement was
 made and what it revealed about measuring*. One establishes, the other develops —
 which is the pattern the repetition pass is meant to enforce.
+
+---
+
+# Note - a second ablation now exists, and it is also Chapter 5 material
+
+The 2026-09-10 provenance round (P0053 F8, F10) turned the redundancy reduction
+into a real experiment rather than a cited constant.
+`feature_diagnostics.py::evaluate_reduction()` now fits the full and reduced
+feature sets per category and model and writes `feature_reduction_eval.csv`,
+twelve cells.
+
+**Chapter 4 takes the mean** (29.3 to 32.1 per cent, a 2.8pp cost) because the
+data chapter needs only the decision. **The per-cell spread is Chapter 5's**, and
+it is more interesting than the mean:
+
+| Cell | Delta under reduction |
+|---|---|
+| danskvand LightGBM | **+10.95pp** |
+| danskvand Ridge | **+10.68pp** |
+| danskvand XGBoost | **-3.15pp** |
+| CSD XGBoost | -0.87pp |
+| everything else | +0.5 to +4.7pp |
+
+**Water's three model families disagree in both direction and magnitude on the
+same feature set** — two lose eleven points, one gains three. That is the same
+lesson as the holiday inversion, in a different experiment: an aggregate over
+model families that respond differently hides the finding.
+
+If §5.5.8 is written as proposed above, a sibling paragraph on the redundancy
+reduction would sit naturally beside it, and the two together make the
+methodological point once rather than twice. **Not drafted here** — it needs the
+Chapter 5 pass to see what §5.3.5 already says about tuning.
