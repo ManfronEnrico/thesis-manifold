@@ -860,3 +860,130 @@ information does not.
 That difference is worth one sentence in the methodology, because it is a genuine
 architectural difference between a general LLM and a production data agent, and
 it favours neither on this task size.
+
+---
+
+## F40 — How Prometheus actually gives GPT-5.5 the warehouse, answered from the code (2026-09-10)
+
+Brian asked three mechanism questions. Answered by reading, not paraphrase.
+
+### Q1: the full frame stays in the kernel, and the model sees only 100 rows?
+
+**Yes, and the kernel is the E2B SANDBOX, not Prometheus's own server.** `run_sql`
+does not query the database in-process — it sends a *snippet* into the sandbox:
+
+```python
+snippet = (f"_df = _ru_query({query!r})\n"
+           f"_n = _ru_stash(_df)\n"
+           f"print('[stashed as df and df_%d]' % _n)\n"
+           f"_ru_show(_df)\n")
+return await _run_snippet(ctx, snippet)
+```
+
+So the chain is: **model writes SQL -> engine forwards it to the sandbox ->
+sandbox connects to Fabric, holds the DataFrame, prints a preview -> only the
+printed text returns to the model.**
+
+| Where | What lives there | Limit |
+|---|---|---|
+| Model context | printed preview | `max_rows=100`, then `_MAX_RESULT_CHARS = 8000`, truncated with "re-query with fewer columns/rows or aggregate" |
+| E2B sandbox kernel | the full DataFrame, as `df`, `df_1`, ... | whatever the query returned |
+| Engine process | neither — it is a courier | -- |
+
+The model therefore **never holds the data**. It holds a handle and writes code
+against it. Charts are rendered sandbox-side. The sandbox is ephemeral, so nothing
+persists per session -- answering Brian's storage question: no per-session storage
+cost, because nothing is saved.
+
+### Q2: who is `warehouse_guide.md` passed to?
+
+**The coder sub-agent's system prompt, not the conversational agent's:**
+
+```python
+coder_guardrails=warehouse_guide,          # prometheus.py:61
+conversational_guardrails=(persona + memory_guardrails + proactive_guidelines),
+```
+
+So it reaches GPT-5.5, but only in the coder role. It is ~5 KB of hard-won
+warehouse semantics: the star schema, the five traps, the product-hierarchy rules.
+**That is a substantial capability the general LLM in Scenario B does not have**,
+and it is part of what "the production system" means -- it is not incidental
+configuration.
+
+### Q3: is this a fair comparison?
+
+**Not on data access, no -- and it cannot be made fair by giving both the raw
+warehouse.** Three asymmetries exist, and they need different treatment:
+
+| Asymmetry | Fix |
+|---|---|
+| B gets a 39-row aggregate; the warehouse is 10.3M rows across a star schema | **Hold constant**: give D the same series |
+| Prometheus's coder carries `warehouse_guide.md`; B's LLM carries nothing equivalent | **Becomes moot** once D is not querying SQL -- the guide describes tools D will not have |
+| Prometheus has live Fabric access; B has prompt text | **Declare as a limitation** -- see DEC-D-SNAPSHOT (F36) |
+
+The middle row is the useful consequence of removing the SQL tools: it removes the
+prompt asymmetry at the same time, because the guide is only relevant to tools
+that are no longer registered.
+
+---
+
+## F41 — Both free tests PASS: the engine starts, and the tools are composable (2026-09-10)
+
+### The engine runs
+
+```
+ENGINE IMPORTS + GRAPH COMPILES OK
+  main_agent_model: gpt-5.5
+  coder_model     : gpt-5.5
+```
+
+Missing-integration warnings for Gemini, Logfire and Twilio only -- all optional.
+**P0040 task 4 ("get the engine running locally") is effectively discharged.**
+
+**Two env facts the port needs.** The engine has NO `.env` of its own, only
+`.env.example`, and its `Settings` model has exactly **two required fields**:
+
+| Variable | Source | Note |
+|---|---|---|
+| `OPENAI_API_KEY` | thesis `.env` under `thesis_manifold_openai_prompts` | name differs; must be mapped |
+| `AZURE_STORAGE_CONNECTION_STRING` | **not held** | only used by `utils/blob_storage.py` for chart artefacts; `UseDevelopmentStorage=true` satisfies the validator and the engine starts |
+
+Everything else defaults. `E2B_API_KEY` maps from `thesis_manifold_e2b_sandbox`,
+the same indirection `measure_e2b_cost.py` already uses.
+
+### The SQL tools are removable
+
+`tool_names` on `ProjectDeps` is a plain list, and the coder registers its tools
+explicitly:
+
+```python
+tools=[Tool(run_sql, ...), Tool(inspect_schema, ...), Tool(distinct_values, ...),
+       Tool(sample_rows, ...), Tool(execute_code, ...)]
+```
+
+So a D-variant registering **only `execute_code`** is a small, local change rather
+than a fork. That is exactly what DEC-D-SNAPSHOT requires, and it lands D on the
+same footing as B: code-as-action over a supplied series, no database.
+
+---
+
+## OPEN QUESTIONS — Brian, 2026-09-10 (not yet resolved)
+
+**Q-A: Does the brand sample still hold at three per category?** Brian recalls
+planning B-E across **three brands per category** -- max-viable, median and
+min-viable data quality -- so an assessor's generalisability question can be
+answered on sparse brands too. `_stratified_brands()` already returns exactly 3
+(highest / median / lowest volume), so the *mechanism* matches. **What is not
+confirmed** is whether D/E run the same 3 or a subset, and what that does to
+cost. Needs deciding before the funded set.
+
+**Q-B: How is the reduced dataset declared?** Brian's position, recorded verbatim
+in substance: the reduced dataset is *not* the scenario originally proposed
+("data access & code vs. model access for predictive quality"). In production
+Prometheus has live warehouse access; the experiment does not reproduce that.
+Basic statistical code can still be written from 39 real rows, so **the experiment
+holds** -- but it must be raised transparently in BOTH the experiment design and
+the limitations, not just one.
+
+**Q-C: Which raw shape, if not the aggregate?** The hierarchy traps (F38) argue
+for keeping the 39-row series. Not yet written up as a decision.

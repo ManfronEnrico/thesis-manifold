@@ -38,6 +38,22 @@ Two of those older descriptions were **wrong when checked**:
 
 Checking a stated blocker before acting on it is the main lesson of this plan.
 
+## Keeping this plan current (Brian, 2026-09-10)
+
+**This plan is updated every time an insight or an open question appears** — not
+at the end of a session. Three machines (laptop, VPS, HPC) read these files as the
+shared context, so an insight held in one conversation is an insight the other two
+do not have.
+
+| What | Goes to |
+|---|---|
+| A measured fact, or a corrected belief | `findings.md`, numbered |
+| A question that is not yet answered | `findings.md`, under **OPEN QUESTIONS**, dated and attributed |
+| A settled decision | the decisions table below, with its evidence |
+| What happened in a session | `progress.md` |
+
+An unanswered question left in a conversation is lost when that conversation ends.
+
 ## Phases
 
 ### Phase 1 — Horizon ✅ DONE (2026-09-07)
