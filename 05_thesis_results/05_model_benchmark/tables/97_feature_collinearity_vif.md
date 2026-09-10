@@ -31,4 +31,4 @@
 
 NO THRESHOLD IS ASSERTED IN THE CAPTION, deliberately. The conventional 5 and 10 cut-offs were attributed in an earlier draft to a source not held in the project library; the attribution was removed. See writing-notes/unverified-claims-to-check.md item 1 before putting any numeric threshold in prose.
 
-Measured consequence: dropping the exact dependency changed test WMAPE by less than 0.01pp in all eight cells tested. Report the collinearity; do not claim it explains accuracy.
+StandardScaler plus Ridge's L2 penalty absorbs the rank deficiency, so the exact dependency does not move the error materially -- but that is a mechanism argument, not a number measured here. Report the collinearity; do not claim it explains accuracy, and do not cite a pp figure for its removal unless a script computes one.

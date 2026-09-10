@@ -7,7 +7,7 @@
 | Energidrikke | 18                       | 10                             | 3                    |
 | RTD          | 17                       | 10                             | 3                    |
 
-*Note.* Features were grouped where pairwise absolute Spearman correlation was at least 0.95, keeping the member with the highest permutation importance on the validation split. The reduction was evaluated against the benchmark and REJECTED: it raised mean test WMAPE from 26.44 to 28.82.
+*Note.* Features were grouped where pairwise absolute Spearman correlation was at least 0.95, keeping the member with the highest permutation importance on the validation split. Across 12 category-by-model cells the reduction was fitted against the full set and rejected: it raised mean test WMAPE from 29.31 to 32.13.
 
 ---
 
