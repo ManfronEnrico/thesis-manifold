@@ -210,6 +210,34 @@ for cat, slug in CATS.items():
 
 df = pd.DataFrame(rows)
 df.to_csv(RES / "calibration.csv", index=False)
+
+
+def _cell(cat, nom, col):
+    r = df[(df.category == cat) & (df.nominal == nom)]
+    return None if r.empty else float(r.iloc[0][col])
+
+
+# Values interpolated into the prose below, so a re-run cannot leave a stale
+# figure in the caption (generated-artefact-provenance rule).
+_dv80 = _cell("Danskvand", 80, "empirical_coverage")
+_wide = {c: _cell(c, 90, "mean_rel_width") for c in ("Danskvand", "Energidrikke")
+         if (_cell(c, 90, "empirical_coverage") or 100) < 88
+         and _cell(c, 90, "mean_rel_width") is not None}
+_dv_line = (
+    f"The danskvand row ({_dv80:.1f}% against a nominal 80%) is what that gap "
+    "looks like in practice." if _dv80 is not None and _dv80 < 80 else
+    f"The danskvand row ({_dv80:.1f}% at a nominal 80%) shows the empirical "
+    "coverage staying close to nominal here." if _dv80 is not None else
+    "The danskvand row shows what that gap looks like in practice.")
+_width_line = (
+    f"{' and '.join(_wide)} reach acceptable coverage at 90% only with "
+    f"intervals spanning {min(_wide.values()):.0f}-{max(_wide.values()):.0f}x "
+    "the actual, which no planner can act on. Report "
+    f"{'those' if len(_wide) > 1 else 'that one'} as a limitation rather than "
+    "averaging into a well-calibrated claim."
+    if _wide else
+    "No category needs an unusably wide interval to reach 90% coverage.")
+
 lines = ["# SRQ1 prediction-interval calibration — split conformal (tuned XGBoost, brand×month)", "",
          "Half-width calibrated on validation residuals (log space); empirical coverage "
          "measured on test. Well-calibrated => empirical ≈ nominal.", "",
@@ -239,12 +267,7 @@ lines += ["", "Coverage near nominal indicates the conformal interval is a usabl
           "sum of total-variation distances rather than eliminating it. So the "
           "coverage numbers above are an **empirical measurement**, not a theoretical "
           "entitlement -- which is exactly why they are measured on a held-out test "
-          "period instead of assumed. The danskvand row (70.7% against a nominal 80%) "
-          "is what that violation looks like in practice.", "",
-          "**Width is the binding constraint here, not coverage.** danskvand and "
-          "energidrikke reach acceptable coverage at 90% only with intervals "
-          "spanning 9-17x the actual, which no planner can act on. Report those "
-          "two as a limitation rather than averaging them into a "
-          "well-calibrated claim."]
+          "period instead of assumed. " + _dv_line, "",
+          "**Width is the binding constraint here, not coverage.** " + _width_line]
 (RES / "calibration.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 print("Saved calibration.csv + calibration.md")
