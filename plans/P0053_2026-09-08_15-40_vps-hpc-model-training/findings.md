@@ -604,13 +604,36 @@ Audited every script that writes a `.md`/`.csv`/`.svg` thesis artefact
 ### Open — catalogued, not yet converted
 
 **`04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py`** — ~6 numbers
-in `review=` blocks (the "INTERNAL REVIEW — NOT FOR SUBMISSION" sections):
-`3.97pp`, `~0.3pp`, `417.3 s vs 2.93 s = 142x`, `2.11% of budget`, `~266x
-(0.1 vs 29.2 MB)`, `+0.414 pp/month` with `month 4: -3.74, month 7: +3.60`.
+in `review=` blocks — **DONE 2026-09-10** (`a381272`, `71fe47b`). Each was an
+editorial cross-reference to a finding (F21, F28, F31, P0044 F1-F2); replaced
+with the finding pointer and a "read it off the table" note, numbers removed.
 
-Every one is an editorial cross-reference to a finding (F21, F28, F44) that
-is *itself* the authoritative one-time-measurement record. They do not reach
-the submitted appendix. **Recommended fix:** replace each number with a
-"see F28" pointer rather than re-deriving the experiment — the finding is the
-source of truth, and a bare pointer cannot go stale. Lower priority than the
-submitted-output items above, which are all done.
+---
+
+## F11 — `export_appendix.py` is not in the orchestrator, so its tables go stale on every retrain (2026-09-10)
+
+`run_both_horizons.py`'s stage list runs `srq1_export_enrichment_appendix.py`
+(tables 94-99) but **not** `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py`,
+which owns appendix tables **04-15** — `04_feature_matrix`,
+`05_substrate_resource_profile`, `06_retraining_cost`, `08_parameter_drift`,
+`09_statistical_baselines`, `10_seed_stability`, plus the SRQ4 scenario tables.
+
+Consequence: after yesterday's 18-feature retrain, tables 94-99 refreshed (they
+were a stage) but **04-15 kept their pre-retrain numbers and lowercase category
+labels**. Caught 2026-09-10 when a manual `export_appendix.py` run produced a
+large diff — e.g. `10_seed_stability` CSD median CV `11.24 -> 18.16`,
+`09_statistical_baselines` Prophet energidrikke `972.4 -> 975.0`, all four
+categories relabelled `danskvand -> Danskvand`.
+
+Regenerated and committed (`fbc67a3`). But the structural gap remains:
+
+**Recommended fix (not done):** either add `export_appendix.py` to
+`run_both_horizons.py`'s tier-5 stage list (it is offline and reads only result
+CSVs for tables 04-10; the 11-15 scenario tables skip cleanly when SRQ4 run data
+is absent), or add a one-line reminder to `START_HERE.md` §5 that it must be run
+by hand after every training run. The first is better — the orchestrator is the
+place that knows a run happened.
+
+The SRQ4 scenario tables (11-15) genuinely need the scenario-experiment run data
+and cannot be produced from a training run alone — those staying separate is
+correct.
