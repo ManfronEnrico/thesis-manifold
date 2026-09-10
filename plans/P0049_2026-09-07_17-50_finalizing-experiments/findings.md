@@ -1055,3 +1055,51 @@ the submission repo rather than generated on the fly from
 `_03_engineered/*.parquet`, since those matrices are not shipped. That is a
 `submission-export` task, not an experiment task, but it has to be recorded before
 the export is built or the reproducible tier quietly stops being reproducible.
+
+---
+
+## F43 — Scenario inputs materialised: 12 series, shipped, leak-checked (2026-09-10)
+
+DEC-SHARE-CSV built. `scenario_setup/export_scenario_inputs.py` writes the series
+each scenario is given to
+`05_thesis_results/08_experimental_evaluation/scenario_inputs/`.
+
+**Why it had to exist:** the submission export runs
+`rm -rf 01_SRQ1_Model_Training/01_thesis_data/_03_engineered`, and
+`_brand_history()` builds its series from exactly those parquets. An assessor
+would have cloned the harness, the prompts and no data -- so A-C, the tier that
+exists to be reproducible, would not have run.
+
+**12 series, 3 per category** (max / median / min volume), matching the funded
+sample so an assessor can ask the generalisability question on sparse brands too:
+
+| Category | max | median | min | rows | scored |
+|---|---|---|---|---|---|
+| CSD | HARBOE | NIKOLINE | VOELKEL | 39 | 2026-03 |
+| Danskvand | HARBOE | PERRIER | THY | 35 | 2026-04 |
+| Energidrikke | RED BULL | STATE VITAMIN | MANA ENERGY | 36 | 2026-03 |
+| RTD | BREEZER | FUNKIN | AERIS | 35 | 2026-04 |
+
+The two scored months are correct, not a bug: Danskvand and RTD have a later
+training cutoff (2026-01 vs 2025-12), and **every one is exactly H=3 ahead of its
+own cutoff**.
+
+### The two checks that make this trustworthy
+
+1. **Byte-identical to the prompt.** Verified all 12 against
+   `fit.to_csv(index=False)` -- the exact string pasted into Scenario B. So the
+   shipped file is the input, not a regeneration of it.
+2. **No leakage.** 12 files, **0 containing their own scored month**. The
+   held-out actual lives only in `index.csv`, for verifying a run; no scenario
+   ever sees it.
+
+**The generator calls `_brand_history()` rather than rebuilding the series.** That
+is the design point: the harness function withholds the test window, asserts no
+leakage and pins the scored month to `HORIZON`. A reimplementation would be free
+to drift from all three, silently -- the failure mode of F21/F25/F31/F32.
+
+### Still to do
+
+`submission-export` must be told to keep `scenario_inputs/` when it strips the
+data tiers. Recorded here because the export is built later, and a rule written
+after the fact is a rule someone has to remember.

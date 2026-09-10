@@ -1,0 +1,13 @@
+category,brand,stratum,file,rows,history_span,scored_month,held_out_actual
+CSD,HARBOE,max_volume,CSD__HARBOE.csv,39,2022-10..2025-12,2026-03,6365899.7748
+CSD,NIKOLINE,median_volume,CSD__NIKOLINE.csv,39,2022-10..2025-12,2026-03,457.1
+CSD,VOELKEL,min_volume,CSD__VOELKEL.csv,39,2022-10..2025-12,2026-03,9.0
+Danskvand,HARBOE,max_volume,Danskvand__HARBOE.csv,35,2023-03..2026-01,2026-04,2286938.0276999995
+Danskvand,PERRIER,median_volume,Danskvand__PERRIER.csv,35,2023-03..2026-01,2026-04,4318.0
+Danskvand,THY,min_volume,Danskvand__THY.csv,35,2023-03..2026-01,2026-04,605.0
+Energidrikke,RED BULL,max_volume,Energidrikke__RED_BULL.csv,36,2023-01..2025-12,2026-03,3067224.2476
+Energidrikke,STATE VITAMIN,median_volume,Energidrikke__STATE_VITAMIN.csv,36,2023-01..2025-12,2026-03,37567.1383
+Energidrikke,MANA ENERGY,min_volume,Energidrikke__MANA_ENERGY.csv,36,2023-01..2025-12,2026-03,1.0
+RTD,BREEZER,max_volume,RTD__BREEZER.csv,35,2023-03..2026-01,2026-04,647781.8265000001
+RTD,FUNKIN,median_volume,RTD__FUNKIN.csv,35,2023-03..2026-01,2026-04,1982.0
+RTD,AERIS,min_volume,RTD__AERIS.csv,35,2023-03..2026-01,2026-04,5.0
