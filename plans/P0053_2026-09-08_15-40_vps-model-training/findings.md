@@ -10,10 +10,18 @@ updated: 2026_09_09-21_15
 
 ## Next-session checklist (read this first)
 
-- [ ] Fix the 5 scripts F3 names — `pooled_perbrand.py`, `ridge_pooled.py`,
-      `feature_diagnostics.py`, `holiday_ablation.py`, `holiday_ablation_tuned.py`
-- [ ] Re-run just those 5 stages once fixed (`--only pooled_perbrand,ridge_pooled,feature_diag,holiday_ablation,holiday_tuned`)
+- [x] ~~Fix the 5 scripts F3 names~~ — **patched 2026-09-09 in `4b38c53`**, see
+      F3's "RESOLVED in code" block. Four files changed; `ridge_pooled` and
+      `pooled_perbrand` needed no edit (they were downstream of an empty
+      `FEATURES` export in `srq1_pooled.py`)
+- [ ] **RUN those stages — the fix is unverified.** Include `pooled` and put it
+      FIRST, since the other two import from it:
+      `--only pooled,pooled_perbrand,ridge_pooled,feature_diag,holiday_ablation,holiday_tuned`
       — cheap, none needs the CV search redone
+- [ ] Then re-run `enrich_appendix`, which reads their tables
+- [ ] Check appendix table 97's VIF against the 18-feature set once
+      `feature_diagnostics` runs — `FEATURES` admits all three holiday columns,
+      but §0 of START_HERE recommends only two (see F3)
 - [ ] Work through the F4 thesis-prose checklist against the OneDrive `.docx`
 - [ ] Decide what to do with the UCloud job — user extended it +1h tonight
       (9-Sep) after the run had already finished; it may since have been
@@ -166,6 +174,50 @@ the exact study that motivated the original FEATURES fix ("the holiday
 ablation was reporting a benefit the production model could not obtain"),
 and it's now the one still producing nothing rather than a wrong number —
 loud failure instead of a silent one, at least.
+
+### RESOLVED in code 2026-09-09, NOT YET RE-RUN (laptop session, commit `4b38c53`)
+
+**Read this before touching the five scripts — four of them are already patched.**
+
+The inferred diagnosis above was correct, and it was **two distinct bugs**, not one:
+
+| Script | Actual cause | Fix |
+|---|---|---|
+| `srq1_ridge_pooled.py` | — | **none needed** |
+| `srq1_pooled_perbrand.py` | — | **none needed** |
+| `srq1_pooled.py` | `FEATURES` was set to `[]` at module level and filled inside `main()`. Both scripts above do `from srq1_pooled import FEATURES`, so importers got an **empty list** | resolved at import instead |
+| `srq1_holiday_ablation.py` | `list(FEATURES) + HOLIDAY_FEATURES` duplicates 3 columns now that FEATURES is 18 | arms derived by **subtraction** |
+| `srq1_holiday_ablation_tuned.py` | same, inside `_arm_features()` | same |
+| `srq1_feature_diagnostics.py` | same; duplicate column NAMES make `X[col]` return a DataFrame, which is the real source of "truth value of a Series is ambiguous" in `compute_vif()` | same |
+
+**The empty-list bug was mine**, introduced by the same commit that caused the
+duplicates — `srq1_pooled.py` needs the cross-category *intersection* (17,
+excluding `promo_intensity`), so I made it computed rather than literal, and made
+it computed too late. `ridge_pooled` and `pooled_perbrand` were never broken in
+themselves; they were downstream of that.
+
+**Verified:** `from srq1_pooled import FEATURES` now yields 17. All four patched
+files compile.
+
+**NOT verified: none of the five has been RUN since the fix.** The laptop session
+was stopped before that. Treat these as proposed, not proven — the next machine to
+pick this up should run all five before trusting any table they produce:
+
+```bash
+python run_both_horizons.py --horizon 3 --only pooled,pooled_perbrand,ridge_pooled,feature_diag,holiday_ablation,holiday_tuned
+```
+
+Note `pooled` is included and must run **first** — the other two import from it.
+
+**Then re-run `enrich_appendix`**, per the note below: it reads tables these
+scripts produce, so its output stays stale until they land.
+
+**Still open regardless of the fix:** §0 of `START_HERE.md` recommends admitting
+only two of the three holiday columns, because `non_holiday_days = days_in_month −
+n_holidays` exactly and appendix table 97 reports VIF as `inf`. The centralized
+`FEATURES` admits all three. `srq1_feature_diagnostics.py` is the script that
+would settle whether that harms the Ridge baseline, and it is one of the five —
+so check table 97 against the 18-feature set once it runs.
 
 A sixth stage, `enrich_appendix`, also failed tonight (`ModuleNotFoundError:
 tabulate`) — unrelated to the above, just a missing pin in

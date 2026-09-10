@@ -494,6 +494,30 @@ it is mentioned.
 
 ---
 
+### Regression: this fix broke five sibling scripts (P0053 F3)
+
+Recorded here because F31 caused it, and the three machines share these files.
+
+The centralization touched 11 scripts. **Five siblings were not on that list** and
+built their own "with holiday features" arm by appending the three holiday columns
+to `FEATURES` — correct when FEATURES was 13, a duplicate-column error now that it
+is 18. The HPC's full retrain surfaced all five.
+
+A second, separate cause was mine alone: I made `srq1_pooled.FEATURES` an empty
+list filled inside `main()`, and `srq1_ridge_pooled.py` / `srq1_pooled_perbrand.py`
+do `from srq1_pooled import FEATURES` — so importers received `[]`.
+
+Patched 2026-09-09 in `4b38c53`; **not yet run.** The authoritative record is
+P0053 F3, since the VPS/HPC side found it. Do not maintain two versions of this.
+
+**The generalisable lesson:** a "define it once" fix is only complete when every
+consumer is found. I searched for the literal `FEATURES = [`, which found the 11
+files that *declared* it and missed the 5 that *imported and extended* it. Grep
+for the identifier, not the assignment.
+
+
+---
+
 ## F32 — Casing sweep: the SRQ4 half was never fixed, and half the sample was gone (2026-09-09)
 
 The HPC fixed `CATS` casing across the SRQ1 scripts (`9745bf3`). The sweep found
