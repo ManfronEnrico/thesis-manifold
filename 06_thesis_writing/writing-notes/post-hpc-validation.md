@@ -378,7 +378,7 @@ Any pass that writes a claim resting on a pending run adds a row here **at the
 time it writes the claim**, not afterwards. A claim that depends on a future
 measurement and is not recorded is a claim nobody will re-check.
 
-## H11 - The per-seed winner data (GATE)
+## H11 - The per-seed winner data (GATE) -- RESOLVED 2026-09-10
 
 **Claim as the thesis states it (§5.5.9):** *"the winning model changes with the
 seed in every category"*, supported by a table listing a winner per seed per
@@ -401,6 +401,16 @@ supports choosing on operational grounds for three of four categories, rather
 than the stronger claim that the two models are indistinguishable everywhere.
 
 **Raised by:** the Chapter 5 pass, 2026-09-10.
+
+**RESOLVED 2026-09-10.** The stability table was regenerated at `fbc67a3` on the
+18-feature run, and the claim no longer needs the per-seed winner list. The
+published aggregates settle it directly: the between-model WMAPE gap is 0.26,
+1.21, 0.71 and 0.42 percentage points across the four categories, against
+largest-seed standard deviations of 0.83, 2.81, 1.08 and 1.04. **The difference
+is inside seed noise in all four**, which is what §5.6 claims.
+
+The per-seed winner table comes out of §5.5.9 and is replaced by the comparison
+above. See `ch5_model benchmark/ch5-prose-pass-followup-01.md`, F2.
 
 ---
 
