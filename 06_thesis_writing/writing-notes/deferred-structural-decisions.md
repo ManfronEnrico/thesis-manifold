@@ -386,24 +386,71 @@ stay one.
 
 ## S16 - Zotero metadata defects that will render wrong in the bibliography
 
-**Status:** `open`. **Widened 2026-09-10** after a per-source audit of every
-Chapter 5 citation against the unfiltered Zotero API - the earlier entry listed
-two defects and there are four.
+**Status:** `open`, one of four resolved. Raised by the Chapter 5 pass, widened
+2026-09-10 by a per-source audit against the unfiltered Zotero API, and
+partially closed the same day.
 
-### Two entries are malformed
+### RESOLVED - Hyndman & Athanasopoulos
 
-| Entry | Key | Defect | Renders as |
-|---|---|---|---|
-| Hyndman & Athanasopoulos | `5NFQRRXS` | title is a **section heading**, no year, **Athanasopoulos missing as author**, URL carries `utm_source=chatgpt.com` | "Hyndman, R. J. (n.d.). 5.2 Some simple forecasting methods..." |
-| Akiba et al. | - | date field reads **"July 25, 2019"** | a full date where a year belongs |
+Fixed in Zotero 2026-09-10 and confirmed against a fresh pull. `5NFQRRXS` now
+reads as a book: *Forecasting: principles and practice*, both authors, 3rd
+edition, OTexts, Melbourne, 2021, URL pointing at the book, tracking parameter
+removed.
 
-The Hyndman entry is worse than first recorded. It is the most-cited source in
-Chapter 5, appearing in three sections, and it is currently missing a co-author,
-a year, a correct title and a clean URL.
+**DEC-FPP-WHOLE-BOOK (2026-09-10): cite the whole book, never individual
+chapters.** The authors present it as one work with one canonical reference, and
+the bibliography carries one entry accordingly.
 
-**The fix:** title becomes *Forecasting: Principles and Practice*, add
-Athanasopoulos, year 2021, edition 3rd, publisher OTexts, strip the tracking
-parameter.
+In-text, add a section locator only where a passage is quoted directly:
+
+| Use | Form |
+|---|---|
+| default | (Hyndman & Athanasopoulos, 2021) |
+| quoting a passage | (Hyndman & Athanasopoulos, 2021, Section 5.2) |
+
+⚠ **Never a page number.** The online edition is revised continuously and its
+pagination does not match the print version, so any page number is wrong for one
+of the two. Section numbers are stable across both.
+
+Feeding individual chapters to NotebookLM is a verification-input decision and
+has no bearing on how the source is cited.
+
+### Still open - the BibTeX exporter mangles every author list
+
+**Found 2026-09-10 while checking the corrected Hyndman entry.** Not caused by
+that fix - it affects **all 87 entries**.
+
+`zotero_client.py` line 224 joins authors with a comma and writes each name as
+`Last First`:
+
+```
+author = {Hyndman Rob J., Athanasopoulos George}
+```
+
+BibTeX requires ` and ` as the separator and reads `Last, First` per name:
+
+```
+author = {Hyndman, Rob J. and Athanasopoulos, George}
+```
+
+**As exported, a BibTeX-driven bibliography will treat each entry as having one
+author with a very long name**, so "Hyndman & Athanasopoulos (2021)" cannot
+render and neither can any other multi-author citation.
+
+⚠ **Whether this matters depends on how the bibliography is actually built.** If
+Word's own citation manager is the source, the `.bib` file is a convenience
+export and nothing is broken. If the `.bib` drives the reference list, **every
+multi-author reference in the thesis is wrong** and this is a Trust-tier defect
+rather than a deferred one.
+
+**Establish which before submission.** The fix is two lines in
+`zotero_client.py`; the risk is not knowing the file is load-bearing.
+
+### Still open - Akiba et al.
+
+| Entry | Defect | Renders as |
+|---|---|---|
+| Akiba et al. | date field reads **"July 25, 2019"** | a full date where a year belongs |
 
 ### Two author pairs are ambiguous, and the risk is silent
 
@@ -436,6 +483,7 @@ scholarly item types, so a `computerProgram`, `dataset` or `blogPost` entry is
 silently dropped and reads as missing.
 
 **Raised by:** the Chapter 5 pass, 2026-09-10. **Widened** by the sequential
-Chapter 5 follow-up the same day.
+Chapter 5 follow-up, and **partially closed** by Brian's Zotero fix, the same
+day.
 
 ---

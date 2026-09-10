@@ -17,7 +17,13 @@ order, whether or not it needs changing. Each one carries what it is now, what
 the repository says, the prose to paste, and the comments it answers.
 
 Verified at `303f00f`, snapshot `2026-09-10_19-08_ch5-sequential-followup`,
-Zotero re-pulled the same minute: **87 items**.
+Zotero re-pulled: **87 items**.
+
+⚠ **A second review of this chapter is in flight**, against the forecasting
+textbook rather than against the repository. It raises four claims that may need
+changing and that this pass cannot catch, because they concern the literature
+rather than the code. **Read `ch5-pending-source-review.md` before marking any
+section finished** - five sections are affected.
 
 ## What this replaces, and why
 
@@ -1705,10 +1711,9 @@ On the deferred structural list:
 - **S14** - `fig4_ram_budget` is stale, and Section 5.5.8's reference to it is
   deleted above
 - **S15** - whether 5.2.2 to 5.2.6 become a comparison table
-- **S16** - Zotero metadata defects that will render wrong in the bibliography.
-  **Now four, not two** - the Hyndman & Athanasopoulos entry is worse than
-  previously recorded, and two duplicate-author pairs need their Word citation
-  fields verified. See the Citations section below
+- **S16** - Zotero metadata defects. The Hyndman & Athanasopoulos entry is
+  **fixed**; three remain, including two duplicate-author pairs whose Word
+  citation fields need verifying. See the Citations section below
 - **S9** - the cross-chapter repetition pass, open since Chapter 4
 
 On the post-run validation list:
@@ -1747,7 +1752,7 @@ Library re-pulled 2026-09-10: **87 items**.
 
 | Cited as | In library | Note |
 |---|---|---|
-| Hyndman & Athanasopoulos (2021) | yes, `5NFQRRXS` | ⚠ **metadata broken** - see below |
+| Hyndman & Athanasopoulos (2021) | yes, `5NFQRRXS` | **fixed 2026-09-10.** Both authors, 3rd ed., OTexts, 2021 |
 | Makridakis et al. (2018) | yes, `EXNY7D4X` | ⚠ **two M4 papers in the library** - see below |
 | Taylor & Letham (2018) | yes | complete |
 | Hastie et al. (2009) | yes | complete, stored as a book section |
@@ -1766,29 +1771,36 @@ Library re-pulled 2026-09-10: **87 items**.
 **Nothing needs adding to Zotero.** Two sources are new to this chapter and both
 were already in the library.
 
-## Four defects to fix in Zotero, not in Word
+## Three defects remain, and one is now fixed
 
 The bibliography is generated from the library, so it will carry whatever is
 there regardless of how the in-text citation is written.
 
-### 1. Hyndman & Athanasopoulos is stored as a chapter, with no year and no
-second author
+**The Hyndman entry has been corrected** since this pass was first written; it is
+kept below as a resolved item so the fix is traceable.
 
-| Field | Current value |
-|---|---|
-| Title | `5.2 Some simple forecasting methods \| Forecasting: Principles and Practice (3rd ed)` |
-| Authors | **Hyndman only** - Athanasopoulos is missing |
-| Date | **empty** |
-| URL | carries a `utm_source=chatgpt.com` parameter |
+### 1. Hyndman & Athanasopoulos - RESOLVED
 
-**It will render as "Hyndman, R. J. (n.d.). 5.2 Some simple forecasting
-methods..."** - a section heading, no year, one author, and a URL that says where
-the reference was found. This is the single most-cited source in the chapter,
-appearing in Sections 5.1, 5.2.1 and 5.5.2.
+Fixed in Zotero on 2026-09-10 and confirmed against a fresh pull. The entry now
+reads as a book: *Forecasting: principles and practice*, Hyndman and
+Athanasopoulos, 3rd edition, OTexts, Melbourne, 2021, with the tracking
+parameter gone and the URL pointing at the book rather than a section.
 
-**Fix in Zotero:** title becomes *Forecasting: Principles and Practice*, add
-Athanasopoulos as second author, set the year to 2021, edition to 3rd, publisher
-OTexts, and strip the tracking parameter from the URL.
+**Cite the whole book, not individual sections.** The authors present it as one
+work with a single canonical reference, and that is how it should appear in the
+bibliography. In-text citations name a section only where the reader needs to be
+sent to a specific passage:
+
+> (Hyndman & Athanasopoulos, 2021)
+
+is the default. Where a direct quotation is used - Section 5.1 and Section 5.5.2
+of this chapter both quote the benchmark passage - add the locator:
+
+> (Hyndman & Athanasopoulos, 2021, Section 5.2)
+
+⚠ **No page numbers.** The online edition is revised continuously and its
+pagination does not match the print version, so a page number would be wrong for
+at least one of the two. Section numbers are stable across both.
 
 ### 2. There are two M4 papers, and the chapter needs the 2018 one
 

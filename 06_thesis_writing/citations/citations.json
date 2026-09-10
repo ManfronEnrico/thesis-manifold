@@ -1,5 +1,19 @@
 [
   {
+    "key": "5NFQRRXS",
+    "itemType": "book",
+    "title": "Forecasting: principles and practice",
+    "url": "https://otexts.com/fpp3/",
+    "abstract": "3rd edition",
+    "urldate": "2026-08-22T15:29:35Z",
+    "publisher": "OTexts",
+    "author": "Hyndman Rob J., Athanasopoulos George",
+    "year": "2021",
+    "place": "Melbourne, Australia",
+    "libraryCatalog": "otexts.com",
+    "edition": "3rd"
+  },
+  {
     "key": "3MTF7LGL",
     "itemType": "computerProgram",
     "title": "Nager.Date",
@@ -402,17 +416,6 @@
       "Time series"
     ],
     "libraryCatalog": "Taylor and Francis+NEJM"
-  },
-  {
-    "key": "5NFQRRXS",
-    "itemType": "book",
-    "title": "5.2 Some simple forecasting methods | Forecasting: Principles and Practice (3rd ed)",
-    "shorttitle": "5.2 Some simple forecasting methods | Forecasting",
-    "url": "https://otexts.com/fpp3/simple-methods.html?utm_source=chatgpt.com",
-    "abstract": "3rd edition",
-    "urldate": "2026-08-22T15:29:35Z",
-    "author": "Hyndman Rob J.",
-    "libraryCatalog": "otexts.com"
   },
   {
     "key": "PMZXKCE7",

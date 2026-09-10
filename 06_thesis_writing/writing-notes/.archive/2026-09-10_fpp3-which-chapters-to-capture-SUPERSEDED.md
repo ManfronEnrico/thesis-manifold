@@ -9,6 +9,24 @@ updated: 2026_09_10-20_10
 status: ready
 ---
 
+> ⚠ **SUPERSEDED 2026-09-10, the same day it was written.**
+>
+> This note recommended capturing a single page and citing sections
+> individually. Both halves are now wrong.
+>
+> **Citation:** cite the **whole book**, per the authors' own presentation of it.
+> The Zotero entry has been rebuilt as one correct book record.
+>
+> **Capture scope:** Brian worked through the book chapter by chapter and
+> produced a far more thorough section-to-claim mapping, at
+> `notebookLM/03-Modelling_Review/forecasting-book-sections-for-citation-verification.md`.
+> That document is authoritative for what gets fed to NotebookLM.
+>
+> Kept because its tracing of the five in-text citations is still accurate, and
+> because the reasoning for dropping the two Chapter 4 citations still stands
+> on its own.
+
+
 # Forecasting: Principles and Practice - which chapters actually need capturing
 
 **Three chapters, not thirteen.** And of those three, **two are already

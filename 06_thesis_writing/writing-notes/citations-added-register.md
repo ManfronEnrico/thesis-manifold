@@ -197,11 +197,12 @@ it.
 
 | | |
 |---|---|
-| **Status** | `IN-ZOTERO` ⚠ **metadata incomplete** / `NLM-PENDING` |
+| **Status** | `IN-ZOTERO` **metadata fixed 2026-09-10** / `NLM-PENDING` |
 | **Zotero key** | `5NFQRRXS` |
-| **Title as stored** | "5.2 Some simple forecasting methods \| Forecasting: Principles and Practice (3rd ed)" |
-| **Type / year** | book, **no year recorded** |
-| **Used in** | §4.2.2 twice (F3b, F3c) |
+| **Full title** | Forecasting: principles and practice |
+| **Type / year** | book, 3rd edition, 2021, OTexts, Melbourne |
+| **Authors** | Hyndman, Rob J.; Athanasopoulos, George |
+| **Used in** | Ch4 §4.2.2 twice (F3b, F3c); Ch5 §5.1, §5.2.1, §5.5.2 |
 | **Added by** | ch4-prose-pass-followup-01 |
 
 **The claims it must support:**
@@ -214,21 +215,29 @@ it.
 **Both are textbook-standard**, so the verification risk is low. The problem is
 metadata, not substance.
 
-⚠ **Three defects in the library entry, all needing a fix in Zotero:**
+**RESOLVED 2026-09-10.** All three defects recorded here - the missing year, the
+section title standing in for the book, and the `utm_source` parameter - are
+fixed, and the entry now carries both authors. Confirmed against a fresh pull.
 
-- **No year.** The prose cites "2021", which is the third edition's date, but the
-  entry carries none — so an automated bibliography build produces "n.d.".
-- **The title is a single section**, "5.2 Some simple forecasting methods",
-  rather than the book. Chapter 5 cites §5.2 of this book for the simple
-  benchmarks, which is presumably why. But §4.2.2 cites it for log transforms and
-  differencing, which are **not in §5.2** — so as stored, the entry points at the
-  wrong part of the book.
-- **The URL carries a `?utm_source=chatgpt.com` parameter.** Harmless
-  functionally, but it should not appear in a submitted reference list.
+**The diagnosis in this row was the useful part and is worth keeping:** the entry
+was stored as section 5.2 because Chapter 5 cites that section, but Chapter 4
+cites the same entry for log transformation and differencing, which are in
+different chapters of the book entirely. One entry cannot point at three places.
 
-**Recommended fix:** add the book as its own entry with full metadata
-(Hyndman & Athanasopoulos, 2021, 3rd ed., OTexts, Melbourne), and cite sections
-by number in text. **Do this before the bibliography is exported.**
+**Settled as DEC-FPP-WHOLE-BOOK:** cite the whole book. One bibliography entry,
+per the authors' own presentation of the work. A section locator appears in text
+only where a passage is quoted directly, and **never a page number** - the online
+edition is revised continuously and does not share pagination with the print
+version.
+
+That resolves the three-places problem: Chapter 4's two citations need no
+locator at all, since neither quotes anything, and Chapter 5's carry
+"Section 5.2" where they quote.
+
+**Still `NLM-PENDING`.** The metadata is right; whether the source supports the
+two Chapter 4 claims is a separate question, and it is covered by the source
+review at
+`notebookLM/03-Modelling_Review/forecasting-book-sections-for-citation-verification.md`.
 
 ## C4-08 — Kim (2013)
 
