@@ -308,14 +308,13 @@ def table_reduction_rejected(seq: int) -> None:
     rho = p["rho"].iloc[0] if "rho" in p.columns else 0.95
     if e is not None and not e.empty:
         mf, mr = e["wmape_full"].mean(), e["wmape_reduced"].mean()
-        verdict = ("REJECTED: it raised mean test WMAPE from "
-                   f"{mf:.2f} to {mr:.2f}" if mr > mf else
-                   f"kept: mean test WMAPE {mf:.2f} -> {mr:.2f}")
-        outcome = (f" over {len(e)} category x model cells, the "
-                   f"reduction was evaluated against the benchmark and "
-                   f"{verdict}.")
+        verdict = (f"rejected: it raised mean test WMAPE from {mf:.2f} to "
+                   f"{mr:.2f}" if mr > mf else
+                   f"kept: mean test WMAPE moved {mf:.2f} to {mr:.2f}")
+        outcome = (f"Across {len(e)} category-by-model cells the reduction was "
+                   f"fitted against the full set and {verdict}.")
     else:
-        outcome = (" the reduction was evaluated against the benchmark and "
+        outcome = ("The reduction was evaluated against the benchmark and "
                    "performed worse; run srq1_feature_diagnostics.py to "
                    "regenerate feature_reduction_eval.csv for the figures.")
     _emit(seq, "feature_redundancy_reduction",
@@ -325,7 +324,7 @@ def table_reduction_rejected(seq: int) -> None:
           out,
           note=(f"Features were grouped where pairwise absolute Spearman "
                 f"correlation was at least {rho}, keeping the member with the "
-                "highest permutation importance on the validation split." +
+                "highest permutation importance on the validation split. " +
                 outcome),
           review=("The negative result is the contribution. Collinearity is a "
                   "linear-model pathology: ridge cannot apportion credit "
