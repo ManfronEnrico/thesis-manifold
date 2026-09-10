@@ -172,6 +172,7 @@ When they land, add them to `smoke_test.py` first and smoke them before spending
 | **DEC-HORIZON-BOTH** | H=1 and H=3 both run properly. H=3 primary, keeps the unsuffixed result paths; H=1 writes to `h1/` | **MADE** (Brian, 2026-09-07) |
 | **DEC-DETERMINISM** | Accuracy at `n_jobs=1`; resource profiling at `-1` | **MADE**, implemented, verified |
 | **DEC-GRAIN** | brand × month | Locked, earlier |
+| **DEC-D-SNAPSHOT** | Scenarios D/E read the same local snapshot Scenario B gets — NOT the live `Nielsen_clean` warehouse, even though Prometheus ships with access to it | **MADE 2026-09-10** (Brian). Matching B's data path is what keeps D→E comparable to B→C; a live query would also bypass every leakage guard, since none can see SQL issued inside a sandbox. See F36 |
 
 ## What this plan does NOT cover
 

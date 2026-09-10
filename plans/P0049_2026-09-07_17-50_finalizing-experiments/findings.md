@@ -690,3 +690,70 @@ it from the plan rather than checking the finding it pointed at.
 Same lesson as this plan's own opening: **a stated blocker is a claim with a
 timestamp.** P0049 was created specifically because two of four inherited
 blockers were stale on inspection; this is a third, and it was mine.
+
+---
+
+## F36 — Prometheus and the thesis read the SAME warehouse; D uses the snapshot (2026-09-10)
+
+Brian asked whether Prometheus has access to the same database. **It does**, and
+checking it settled a design question rather than merely confirming a detail.
+
+`graph-engine/data_agents/projects/prometheus/data/data_connection_configuration.md`:
+
+> Database: `Nielsen_clean` (Microsoft Fabric / SQL Server, T-SQL dialect).
+> **Preferred path: the query tools.** `run_sql`, `inspect_schema`,
+> `distinct_values`, `sample_rows` ...
+
+The thesis pipeline reads the same place — `nielsen_connector.py` opens
+`Nielsen_clean` on the same Fabric warehouse — and snapshotted it to JSONL on
+**2026-06-30** (`_00_raw/nielsen/data_jsonl/MANIFEST.json`). Manifold AI supplied
+both, so this is one data source with two access paths, not two sources.
+
+### DEC-D-SNAPSHOT (Brian, 2026-09-10): D and E read the local snapshot, not the live warehouse
+
+Confirmed explicitly. The reasoning is stronger than "hold a variable constant":
+
+1. **It would otherwise be a second variable.** Scenario B gets the firm's history
+   as a local CSV in a sandbox. If D queries the warehouse live, D->E and B->C
+   differ in *engine* AND *data path*, and the agreement between the two ladders
+   -- the design's strongest claim -- stops being attributable.
+2. **It is a LEAKAGE risk, not only a confound.** The snapshot is from 2026-06-30;
+   the warehouse is live. A live query could return months the snapshot does not
+   have, including the held-out target month. Every leakage guard in the harness
+   (`_assert_no_leakage`, the exact-horizon gap check) operates on the matrices,
+   and **none of them can see a query the engine issues inside a sandbox.** D
+   reading live data would bypass the whole guard layer silently.
+3. **It keeps D reproducible in the one sense that matters.** D and E are not
+   examiner-reproducible (Prometheus is proprietary), but they must at least be
+   re-runnable by us. A live warehouse makes a re-run a different experiment.
+
+**Implementation consequence:** the port must supply the same fitted history B
+gets, and must NOT hand the engine warehouse credentials. Prometheus's own docs
+say the query tools are the preferred path and `execute_code` is a fallback -- so
+the tooled project has to be registered WITHOUT the SQL tools, or D silently gets
+a capability B does not have.
+
+That is a real difference from the shipped configuration and belongs in the
+methodology: **D is Prometheus as it ships minus warehouse access**, because
+matching B's data path is what makes D->E comparable to B->C.
+
+---
+
+## F37 — Why the engine runs locally even though E2B exists (2026-09-10)
+
+Brian asked why step 1 is "launch the engine locally" when the project has E2B.
+They are not alternatives; they are caller and callee.
+
+| Component | Runs where | Does what |
+|---|---|---|
+| Graph engine (LangGraph) | **locally**, in `graph-engine/.venv` | orchestrates: decides actions, calls the LLM, registers tools |
+| E2B sandbox | remote, per code action | executes the Python the coder agent writes |
+
+The engine opens an E2B sandbox when it needs to run code; the `prometheus`
+template exists so that sandbox carries statsmodels/prophet (P0040 F42). Nothing
+runs the engine itself inside E2B.
+
+Cost therefore splits: launching the engine is free, E2B is ~$0.0001/run
+(F38), and the gpt-5.5 calls are the real spend. The open question is only
+whether the engine **starts** -- its venv is verified (F46, re-checked
+2026-09-10) but has never been run.
