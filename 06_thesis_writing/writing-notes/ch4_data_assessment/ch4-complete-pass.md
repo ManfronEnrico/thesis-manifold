@@ -19,7 +19,7 @@ applied and archived. Nothing was left unapplied from either.
 
 ## Are we done with Chapter 4?
 
-**Almost. Eight items, and one of them is a table that is wrong.**
+**Almost. Nine items, and one of them is a table that is wrong.**
 
 The prose is in good shape. Every fix from the two previous notes landed, the
 tables are renumbered, the risks section reads as prose, and the citations are
@@ -421,6 +421,64 @@ generally, the table stands on its own.
 
 ---
 
+## Fix 9 - The holiday adoption sentence needs to name its evidence
+
+**New, from the 2026-09-10 results round.** Section 4.3 says the holiday
+columns' contribution *"was measured by an ablation against an otherwise
+identical model before they were adopted"*. That is true, but two ablations now
+exist in the results folder and they disagree:
+
+| Table | Design | Verdict |
+|---|---|---|
+| `holiday_ablation_delta.csv` | untuned, fixed hyperparameters | **worse in 8 of 12** cells |
+| `94_holiday_ablation_tuned.md` | each arm tuned independently | **improved in 6 of 9** cells |
+
+The tuned comparison is the appendix-grade one and is the right basis: an
+untuned comparison penalises the arm with more features, because the fixed
+hyperparameters were tuned for the smaller set. **But a sentence that says "an
+ablation" without saying which invites an examiner to find the other one.**
+
+### Anchor
+
+**Section 4.3 Feature Engineering.** The paragraph directly below the caption
+**"Table 3 - Feature Engineering Overview"**.
+
+First five words: *"Two of the column groups..."*
+The sentence to change begins: *"Their contribution was measured by..."*
+
+### Action
+
+REWORD - one sentence inside the paragraph. The rest stands.
+
+**Before:**
+
+> Their contribution was measured by an ablation against an otherwise identical
+> model before they were adopted, rather than assumed.
+
+**After:**
+
+> Their contribution was measured rather than assumed: an ablation fitted each
+> model family with and without them, tuning both arms independently so that the
+> comparison did not penalise the larger feature set, and the calendar columns
+> improved accuracy in six of the nine category-and-model combinations tested.
+
+### Note - do not quote the mean delta
+
+Table 94's own review note is explicit: *"Do NOT quote the mean of this column.
+It averages over model families that respond differently, and that difference is
+itself the finding."* The six-of-nine count is the safe summary and is what the
+wording above uses.
+
+### Note - why the untuned table exists at all
+
+It is the first arm of the same experiment, run before hyperparameter tuning was
+added. It is not wrong, it answers a different question: *would adding these
+columns help a model tuned for the smaller set?* No, and that is unsurprising.
+Chapter 5 may want both, since the gap between them is a real methodological
+point about how ablations should be run. Chapter 4 needs only the conclusion.
+
+---
+
 # Verified correct - no action
 
 Recorded so a later pass does not re-check them.
@@ -453,48 +511,45 @@ and confirmed again by the HPC run.
 
 # Still open, and not fixable here
 
-## The holiday and promotional rows in Table 3
+## The Table 3 rows are now confirmed - no action
 
-Your two UPDATE comments hold, and the diagnosis is now precise.
+Your two UPDATE comments can be resolved. The HPC reporting round
+(`f5bad3e`) fixed the casing bug in `training_report.py`, and its feature table
+now reads `yes` for the holiday and intermittency rows in **all four
+categories**, agreeing with Chapter 4. The appendix contradiction is gone.
 
-**The chapter is right. The report is broken, and the training is fine.**
-`training_report.md` marks danskvand and energidrikke as having no feature
-matrix at all — not merely missing the holiday columns, but every feature
-dashed. The cause is the category-casing bug from `9745bf3` surviving in a tenth
-script: `training_report.py:66` keys its category dict on lowercase
-`"danskvand"` and `"energidrikke"` while the folders are `Danskvand` and
-`Energidrikke`. On Linux that resolves to nothing, and the missing-file guard
-renders it as "matrix missing" rather than raising.
+The promotional row's lag description is likewise confirmed: the report
+describes `promo_intensity` as *"promotion share at t-1 (lagged: contemporaneous
+would leak)"*, which is what Table 3 now says.
 
-**No retrain is needed.** `summary.md`, `stat_baselines.md` and
-`tuned_summary.md` all carry four categories, and the matrices resolve 18 and 17
-features. The fix is two capital letters and a re-run of one reporting script.
+**No retrain was needed and none happened.** The accuracy results have not moved
+since `0e95850`; all eight commits since were reporting fixes.
 
-Recorded as **F6** in `plans/P0053_2026-09-08_15-40_vps-hpc-model-training/`.
+## The redundancy figures - drop the decimals
 
-## The redundancy reduction figures
+**My earlier diagnosis was wrong, and the HPC session caught it.** I said
+re-running `srq1_feature_diagnostics.py` would refresh the 26.4 and 28.8
+figures because it imports the shared feature list. It does not: that script
+*proposes* a reduced set but never fits models on it. The WMAPE pair came from a
+manual validation run on 2026-09-06 and was written into the code as a literal,
+in three separate places (P0053 F8).
 
-Section 4.3 states the reduction "raised mean test error from 26.4 to 28.8 per
-cent". **This is not blocked on the downstream script fixes** — it is simply
-stale.
+Table 98 has now been regenerated and shows the new structure - 18 and 17
+features reducing to 9 and 10, three clusters - **while still printing the old
+26.44 and 28.82**. A fresh table with a stale outcome is worse than either half
+alone, because it looks current.
 
-The upstream input, `feature_redundancy_clusters.csv`, is dated **2026-09-06**,
-three days before the feature set became 18. Its contents confirm it: the
-clusters name lags and rolling windows only, with no holiday and no
-intermittency columns anywhere.
+**Recommendation: take the fallback.** In §4.3, change *"It performed worse,
+raising mean test error from 26.4 to 28.8 per cent"* to:
 
-**Re-running needs no code change.** `srq1_feature_diagnostics.py` imports
-`FEATURES` from the shared definition, so it picks up all eighteen
-automatically, and it is unaffected by the casing bug because it takes its
-category list from `srq1_benchmark.CATS`, which was already patched. Run it,
-then `srq1_export_enrichment_appendix.py` to rebuild tables 97 and 98.
+> It performed worse, and the correlated features are therefore retained.
 
-**If it is not re-run**, drop both decimals and keep the sentence: *"a reduced
-feature set was evaluated against the benchmark and performed worse"*. The
-direction should survive at 18 features; the decimals will not. Avoiding the
-numbers also avoids the uncited 0.95 grouping threshold.
+Keeping the decimals requires a bespoke fit whose only purpose is to support two
+numbers inside a rejected negative result. The direction is the contribution;
+the decimals are not. Dropping them also sidesteps the uncited 0.95 grouping
+threshold.
 
-Recorded as **F7** in the same plan, and as H5/H6 in `post-hpc-validation.md`.
+P0053 F8 reaches the same recommendation independently.
 
 ## Two structural items
 
@@ -507,7 +562,7 @@ Both are in `deferred-structural-decisions.md` with the reasoning.
 
 ---
 
-# After these eight fixes
+# After these nine fixes
 
 Chapter 4 is done. Every figure in it will have been measured against the
 current repository, every table will agree with the prose around it, and the

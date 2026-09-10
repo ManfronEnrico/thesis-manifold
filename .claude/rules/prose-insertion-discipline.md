@@ -5,7 +5,7 @@ category: workflow
 applies-to: [thesis prose, writing-notes, docx insertion, appendix references]
 triggers: [writing prose, converting bullets to prose, preparing paragraphs for Word, citing a table or figure in prose]
 created: 2026_09_07-15_00
-updated: 2026_09_09-21_15
+updated: 2026_09_10-15_30
 ---
 
 # Prose insertion discipline
@@ -22,6 +22,7 @@ the hard part — locating the seam — onto them.
 | Anchor carries its neighbours | The human cannot tell one paragraph from the next | [Anchor context](#anchor-context) |
 | Snapshot named in frontmatter | Anchors that no longer exist | [Snapshot currency](#snapshot-currency) |
 | `git fetch` before verifying any claim | A number verified against a commit that moved hours ago | [Remote currency](#remote-currency) |
+| A results file is dated, not just read | A regenerated table pairing fresh structure with a stale number | [Results currency](#results-currency) |
 | New snapshot before EVERY follow-up | Anchors quoting text the author already replaced | [Snapshot currency](#snapshot-currency) |
 | Zotero re-pulled before checking a citation | A source "verified" against a two-week-old export | [Library currency](#library-currency) |
 | Every added citation registered with its claim | A real source cited for something it does not say | [Citations](#citations) |
@@ -230,6 +231,47 @@ move on.
 snapshot for the prose. Both answer the same question — *is what I am about to
 verify against still what exists?* — and a pass that skips either produces
 confident, checkable, wrong output.
+
+## Results currency
+
+A results table is an artefact with a **date**, and on this project the code that
+writes it and the numbers inside it can be regenerated independently. Reading one
+is not enough; check when it was written and against what.
+
+**The failure has a shape, and it is not the obvious one.** Table 98 was
+regenerated on 2026-09-10 against the current 18-feature set. Its structure
+columns updated correctly — feature counts, cluster counts, reduced-set sizes.
+Its headline WMAPE pair did not, because those two numbers were never computed
+by the generator: they came from a manual validation run four days earlier and
+were written into the source as string literals, in three places.
+
+So the table now pairs a **fresh structure with a stale outcome**, which is worse
+than either half alone: a table that has visibly been regenerated invites more
+trust than one that has not.
+
+**What to check before citing a results number:**
+
+| Check | How |
+|---|---|
+| When was the file written | `ls -la`, and compare against the commit that last changed the code path |
+| Was the number *computed* or *transcribed* | `grep` the figure in the generator — a literal in the source is a transcription |
+| Do its inputs predate it | the upstream `.csv` a table reads from carries its own date |
+
+A generator's own header claiming every value is "computed at run time, not
+transcribed" is a claim to verify, not to accept — that exact sentence sat above
+a table with hardcoded figures.
+
+**Prefer the count to the mean.** Where a results table carries an internal
+review note, read it: one warned *"do NOT quote the mean of this column, it
+averages over model families that respond differently, and that difference is
+itself the finding."* Aggregates across heterogeneous cells are the easiest
+number to quote and the easiest to be wrong about.
+
+**Where two artefacts answer the same question differently, name which one the
+prose rests on.** A holiday-feature ablation existed twice — untuned (worse in 8
+of 12) and independently tuned (better in 6 of 9). Both are correct experiments;
+they answer different questions. Prose saying "an ablation measured this" without
+saying which invites a reader to find the other one.
 
 ## Library currency
 
