@@ -284,14 +284,18 @@ def table_vif(seq: int) -> None:
                   "attribution was removed. See "
                   "writing-notes/unverified-claims-to-check.md item 1 before "
                   "putting any numeric threshold in prose.\n\n"
-                  "Measured consequence: dropping the exact dependency changed "
-                  "test WMAPE by less than 0.01pp in all eight cells tested. "
-                  "Report the collinearity; do not claim it explains accuracy."))
+                  "StandardScaler plus Ridge's L2 penalty absorbs the rank "
+                  "deficiency, so the exact dependency does not move the error "
+                  "materially -- but that is a mechanism argument, not a number "
+                  "measured here. Report the collinearity; do not claim it "
+                  "explains accuracy, and do not cite a pp figure for its "
+                  "removal unless a script computes one."))
 
 
 def table_reduction_rejected(seq: int) -> None:
     c = _read("feature_redundancy_clusters.csv")
     p = _read("feature_proposed_set.csv")
+    e = _read("feature_reduction_eval.csv")
     if c is None or p is None:
         return
     out = pd.DataFrame({
@@ -301,16 +305,28 @@ def table_reduction_rejected(seq: int) -> None:
         "Clusters found (n)": [
             int((c["category"] == cat).sum()) for cat in p["category"]],
     })
+    rho = p["rho"].iloc[0] if "rho" in p.columns else 0.95
+    if e is not None and not e.empty:
+        mf, mr = e["wmape_full"].mean(), e["wmape_reduced"].mean()
+        verdict = ("REJECTED: it raised mean test WMAPE from "
+                   f"{mf:.2f} to {mr:.2f}" if mr > mf else
+                   f"kept: mean test WMAPE {mf:.2f} -> {mr:.2f}")
+        outcome = (f" over {len(e)} category x model cells, the "
+                   f"reduction was evaluated against the benchmark and "
+                   f"{verdict}.")
+    else:
+        outcome = (" the reduction was evaluated against the benchmark and "
+                   "performed worse; run srq1_feature_diagnostics.py to "
+                   "regenerate feature_reduction_eval.csv for the figures.")
     _emit(seq, "feature_redundancy_reduction",
           "Redundancy-based feature reduction, tested and rejected",
           "Correlated feature groups per category and the size of the reduced "
           "set they imply.",
           out,
-          note=("Features were grouped where pairwise absolute Spearman "
-                "correlation was at least 0.95, keeping the member with the "
-                "highest permutation importance on the validation split. The "
-                "reduction was evaluated against the benchmark and REJECTED: it "
-                "raised mean test WMAPE from 26.44 to 28.82."),
+          note=(f"Features were grouped where pairwise absolute Spearman "
+                f"correlation was at least {rho}, keeping the member with the "
+                "highest permutation importance on the validation split." +
+                outcome),
           review=("The negative result is the contribution. Collinearity is a "
                   "linear-model pathology: ridge cannot apportion credit "
                   "between correlated predictors, but a gradient-boosted tree "
