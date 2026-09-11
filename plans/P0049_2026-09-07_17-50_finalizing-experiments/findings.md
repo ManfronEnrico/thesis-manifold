@@ -1914,3 +1914,69 @@ RE-QUERIED the live costs endpoint and now reports $4.03 over a wider window. Th
 smoke billed **$3.62**; a note in the file says so. Per-run measurements are unchanged.
 This is the generated-artefact-provenance rule biting in an unexpected direction: a value
 that is correctly computed at run time is still misleading when the run is a relabelling.
+
+---
+
+## F57 - the per-run cost is an ESTIMATE and it UNDER-reports. Never fund from it.
+
+**Brian, 2026-09-11, before adding money to the OpenAI account:** *"we are certain that
+the cost is accurately tracked, meaning not guessed or estimated?"*
+
+**Answer: no. `cost_usd_est` is an estimate, and every paid run so far has billed MORE.**
+
+| run | estimated | billed | ratio |
+|---|---|---|---|
+| 5-arm, run 2 (2026-09-11) | $1.5203 | $1.83 | **1.20x** |
+| 7-arm smoke (2026-09-11) | $2.0475 | $3.62 | **1.77x** |
+
+The direction is consistent. The magnitude is not, which is worse for planning than a
+constant bias would be.
+
+### What the estimate gets RIGHT
+
+Token counts come from the API's own `usage` object, not from a tokeniser guess, and the
+rates were verified against billing on 2026-08-19 (output backs out at ~$30.4/1M against
+a published $30.00). **Input, output and cached-input token cost is sound.**
+
+### Three reasons it under-reports
+
+1. **WEB SEARCH IS NOT PRICED AT ALL.** `srq4_experiment.py` detects `web_search` output
+   items (line 605, 844) and records `tool: "web_search"` in the trace, but there is **no
+   `PRICE_WEB_SEARCH` constant** — the tool calls contribute $0.00 to every estimate. The
+   smoke's billing export shows a **$0.200** line item for them. Scenario A is the only
+   arm that searches, so its per-run figure is the one most wrong.
+2. **Container duration is unknowable from the API.** `PRICE_CONTAINER_SESSION = 0.03` is
+   a flat per-session guess. The Responses API returns a `container_id` and no duration,
+   and billing is per-minute with a 5-minute minimum. B and F each incur one.
+3. **The billing window is wider than the run.** `fetch_billed_cost` queries an org-wide
+   time range, so `verify_setup.py` calls and any concurrent session land inside it. This
+   inflates the BILLED side rather than deflating the estimate — it means **1.77x is an
+   upper bound on the true per-run gap, not a measurement of it.**
+
+### The honest statement for the thesis
+
+**Token cost is measured; total spend is reconciled against the billing endpoint and the
+billed figure is the one reported.** That is already what `summary.md` does, and it is
+defensible. What must NOT be claimed is that the per-run `cost_usd_est` column is a
+measured cost — it is an estimate with a known, unpriced omission.
+
+### For funding the funded set
+
+Default is 15 brands x 5 repeats x 7 arms = **525 runs**.
+
+| basis | total |
+|---|---|
+| harness estimate | $153.53 |
+| + web search priced at ~$0.10/run for A | $161.03 |
+| x1.2 (run-2 observed ratio) | $184.23 |
+| **x1.77 (smoke observed ratio)** | **$271.74** |
+
+**Fund against the top of that range, not the harness number.** The two cheapest levers
+if the number is too high: A and D together are **52%** of the cost ($40.73 + $38.93),
+and C is **$0.67** for the whole pass.
+
+### Fix before the funded run
+
+Add `PRICE_WEB_SEARCH_PER_CALL` and count `web_search` items in `_usage()`. It is the one
+gap that is both structural and cheap to close, and it makes Scenario A's per-run figure
+honest rather than merely conservative.

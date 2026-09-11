@@ -1046,3 +1046,59 @@ where `_` between two words is easy to lose, and was never re-checked against
 the filesystem. A one-line `ls` would have settled it. **A detail that would
 change what the user has to decide is worth one command before it is reported**,
 and this one made a rename look necessary when it was not.
+
+---
+
+## F36 - a generated table RELETTERED its own arms, and disagreed with the caption above it
+
+**Found 2026-09-11 while renaming the SRQ4 scenario arms at Brian's request.** Recorded
+here rather than only in P0049 because **this plan owns the final regeneration pass**, and
+this is exactly the class of defect that pass exists to catch. Full detail: P0049 F56.
+
+`srq4_experiment.py` carried a display map translating the CSV keys into report headers:
+
+```python
+hdr = {"C_model":  "A - dedicated model",     # C printed as A
+       "B_data":   "B - code-as-action",
+       "A_plain":  "C - no firm data"}        # A printed as C
+```
+
+It used the **old reversed lettering** that `repo-tier-structure.md` explicitly forbids.
+Three failures compounded in a single table:
+
+1. **The table contradicted its own caption.** The line printed directly above it reads
+   *"**A -> B** measures what data access buys"*, while the column headed "A" held the
+   DEDICATED MODEL -- the last rung of the ladder, not the first.
+2. **Arms D..G had no entry** and fell through `hdr.get(a, a)` to their raw keys, so one
+   header row carried two lettering systems running in OPPOSITE DIRECTIONS.
+3. **Nothing marked the disagreement.** `export_appendix.py` and
+   `score_interval_communication.py` had the lettering RIGHT.
+
+### Why this is the hardest version to catch, and what it means for the final pass
+
+**The artefacts disagreed with each other rather than being uniformly wrong.** A reader
+comparing "A - no firm data" in the appendix against "A - dedicated model" in the summary
+has no way to tell which is authoritative. Neither file is self-evidently broken; only
+holding them side by side reveals it, and nothing in either generator prompts you to.
+
+A uniformly wrong artefact gets caught the first time somebody reads it carefully. A
+**locally consistent, globally contradictory** set survives every single-file review.
+
+**Implication for this plan's regeneration pass** -- add to the checklist:
+
+| Check | Why |
+|---|---|
+| **Grep every generator for a display/label map** keyed on an identifier that also appears in the data | A map between the stored name and the printed name is a drift surface. The contents are not the defect; the existence of the layer is. |
+| **Read the header rows of ALL generated artefacts side by side**, not one file at a time | The only way this class surfaces. Same identifier, different gloss = a finding. |
+| **Check each caption against the table it captions** | The ladder sentence and the column order were written at different times by different passes and nothing tied them together. |
+| **Confirm no artefact silently drops arms** | `export_appendix.py:942` hardcoded three arms and appended the rest; had it not appended, D..G would have vanished with no error. |
+
+### The fix was deletion, not correction
+
+The map was removed outright and the header row now prints the arm key itself. **One name
+per arm cannot drift from itself.** Correcting the map's contents would have left the
+translation layer in place for the next rename to break again.
+
+This is the same shape as F3 in this file (dead path constants fail silently) and the
+`generated-artefact-provenance` rule: **the defect is a second source of truth**, whether
+it holds a path, a number, or a label.

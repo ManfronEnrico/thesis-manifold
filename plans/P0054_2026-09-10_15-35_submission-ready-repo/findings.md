@@ -183,3 +183,101 @@ Related open question for the README rewrite (Phase 3): the harness reads keys
 under their OpenAI *dashboard* labels first, falling back to the standard names.
 `.env.example` should show the standard name, since that is what an assessor
 will set.
+
+---
+
+## F-SUBMIT — what ships, what is stripped, and the reproducibility claim to make
+
+**Brian, 2026-09-11**, answering: *"We have to submit a repository with our thesis,
+Prometheus will stay confidential, and sharing the aggregated brand snippets is also
+technically confidential. Do you think it is okay to submit a cleaned up repo that is
+not re-runnable?"*
+
+### The answer: YES, and it is the normal outcome for licensed commercial data
+
+A repository that cannot be re-run is defensible. One whose limitation is **discovered
+by the assessor rather than declared by the authors** is not. The whole risk sits in
+that distinction, so the README carries the declaration prominently rather than in a
+footnote.
+
+### Three things are tangled in the question and have DIFFERENT answers
+
+| | What it is | Ships? |
+|---|---|---|
+| **Prometheus** | proprietary orchestrator, `Z:\_dev-ssd\prometheus\**` | **NEVER.** Was never vendorable. D, E and G are not reproducible by anyone outside Manifold, full stop. |
+| **Nielsen brand-level data** | licensed retail panel under an NDA | **NO.** Note this includes the monthly CSV **embedded in cached prompt text** — see below, this is the live exposure. |
+| **Aggregated results** | forecasts, APEs, latencies, token counts, costs, outcome classes | **YES.** Derived statistics, not the licensed data, and exactly what an assessor needs. |
+
+### The recommendation
+
+**Ship:** the code, the prompts (`prompts.py` in full — it is the experiment's method),
+the results tables, and the run metadata.
+
+**Strip:** the prompt and answer TEXT from cached responses in `raw_responses/`.
+
+**Keep inside those cached files** the trace fields that carry the audit evidence:
+
+- tool-call spans and `args_match_request`
+- code-block presence and count (`code_calls`, `wrote_code`)
+- `prompt_schema_id`
+- `deviates_from_model`, `model_forecast`, `payload_complete`
+- `sql_calls`, `usage_reported`, outcome class, token counts, latency
+
+**This preserves the auditability claim the thesis rests on without shipping the data.**
+The claim is that every forecast is traceable to a verified tool call — that is a property
+of the trace, not of the prompt text. An assessor can confirm Scenario C called the tool
+with the right arguments, that E made no warehouse query, and that F overrode the model,
+without reading one row of Nielsen data.
+
+### Scale of the exposure
+
+The 2026-09-11 seven-arm smoke directory alone is **9 MB**, and every raw response embeds
+the brand's monthly sales CSV because it is pasted into the prompt. **The results tables
+are not the disclosure risk; the cached prompts are.** A strip pass must therefore be
+keyed on the prompt/answer fields specifically, not on file size or directory.
+
+Earlier run directories under `04_SRQ4_Scenario_Experiment/runs/` very likely carry the
+same embedded CSVs. **Not audited** — Brian judged it unnecessary (below).
+
+### The reproducibility statement for the README
+
+State three tiers plainly rather than letting an assessor debug their way to them:
+
+1. **Fully reproducible with an OpenAI key:** nothing, strictly — A, B, C and F need the
+   Nielsen history, which is not shipped. The CODE PATH is inspectable and the prompts are
+   complete. Say this precisely; the earlier draft claim that "`OPENAI_API_KEY` alone runs
+   scenarios A, B and C" is **true only if the data is present**, and it will not be.
+2. **Not reproducible, data withheld:** A, B, C, F — licensed Nielsen panel.
+3. **Not reproducible, engine withheld:** D, E, G — proprietary Prometheus orchestrator.
+
+Then: *the artefacts are provided for inspection; the experiment is not re-runnable
+because it depends on licensed retail data and a proprietary orchestrator; the derived
+results are complete.*
+
+> **Correction to this plan's existing `.env` section.** It currently says
+> "`OPENAI_API_KEY` alone runs scenarios A, B and C. That is the reproducible tier, and it
+> is the claim the README should make." **That claim is wrong** and must not reach the
+> README — those scenarios also need the brand history, which is withheld. It also predates
+> scenarios F and G. Fix both when Phase 3 rewrites the README.
+
+### Git history — CLOSED, no action
+
+Flagged that the repo is public and history permanent, so anything already committed is
+already disclosed regardless of later cleanup. **Brian, 2026-09-11:**
+
+> "no its okay, we will turn the repo private anyways, and create a new repo that we will
+> share."
+
+That resolves it: the submission repo is a **fresh repository with no shared history**,
+not a cleaned branch of this one. Two consequences for this plan:
+
+- **No history rewrite is needed** (no `filter-repo`, no force-push). Simpler and safer.
+- **The export must be a clean copy**, not a clone. A clone brings `.git` and therefore
+  every past commit of the embedded CSVs.
+
+### Seven arms, not five
+
+This plan's SHIP/NO-SHIP reasoning predates scenarios F and G (added 2026-09-11) and the
+arm rename (same day). The current keys are `A_llm_plain`, `B_llm_data`, `C_llm_model`,
+`D_prometheus_data`, `E_prometheus_model`, `F_llm_data_model`, `G_prometheus_data_model`.
+**G joins D and E in the "needs Prometheus" tier.**
