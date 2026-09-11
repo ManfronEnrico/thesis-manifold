@@ -392,13 +392,24 @@ def main():
     (OUT / "pooled_params.json").write_text(
         json.dumps(params, indent=2), encoding="utf-8", newline="\n")
 
+    # Feature COUNT and the dropped-column list are computed from the resolved
+    # intersection, never typed. Both were hardcoded as "12" and
+    # "`promo_intensity`" until 2026-09-11: the 18-feature HPC retrain
+    # (0e95850) regenerated every number in this file while the header kept
+    # saying 12, so the table paired fresh results with a stale description and
+    # a prose pass repeated the 12 into the thesis. See
+    # .claude/rules/generated-artefact-provenance.md.
+    _dropped = [c for c in _FEATURES if c not in FEATURES]
+    _drop_txt = (", ".join(f"`{c}`" for c in _dropped) + " dropped"
+                 if _dropped else "no columns dropped")
     lines = ["# SRQ1 — pooled vs per-category (Optuna-tuned, TPE, seed=42)", "",
-             f"Trials per model: {trials}. Both arms use the SAME 12-feature",
-             "intersection (`promo_intensity` dropped — absent in danskvand and",
-             "RTD), the same tuning protocol, and are scored on the SAME",
+             f"Trials per model: {trials}. Both arms use the SAME "
+             f"{len(FEATURES)}-feature",
+             f"intersection ({_drop_txt} — absent in at least one",
+             "category), the same tuning protocol, and are scored on the SAME",
              "per-category test rows. One pooled model is trained across all",
              "categories and evaluated separately on each; the per-category arm is",
-             "re-trained here on 12 features rather than read from",
+             f"re-trained here on those {len(FEATURES)} features rather than read from",
              "`tuned_metrics.csv`, so the two arms differ only in which rows they",
              "were trained on.", "",
              "Series key is `(category, brand)`: brand names are not unique across",

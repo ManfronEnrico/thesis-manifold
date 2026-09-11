@@ -1,11 +1,11 @@
 # SRQ1 — pooled vs per-category (Optuna-tuned, TPE, seed=42)
 
-Trials per model: 30. Both arms use the SAME 12-feature
-intersection (`promo_intensity` dropped — absent in danskvand and
-RTD), the same tuning protocol, and are scored on the SAME
+Trials per model: 30. Both arms use the SAME 17-feature
+intersection (`promo_intensity` dropped — absent in at least one
+category), the same tuning protocol, and are scored on the SAME
 per-category test rows. One pooled model is trained across all
 categories and evaluated separately on each; the per-category arm is
-re-trained here on 12 features rather than read from
+re-trained here on those 17 features rather than read from
 `tuned_metrics.csv`, so the two arms differ only in which rows they
 were trained on.
 
