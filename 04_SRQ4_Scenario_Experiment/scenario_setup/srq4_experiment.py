@@ -199,19 +199,36 @@ PRICE_CACHED_IN_PER_M = 0.50
 # container_id -- so this is necessarily an estimate. Scenario B alone incurs it.
 PRICE_CONTAINER_SESSION = 0.03
 
+# Web search, USD per call. MEASURED 2026-09-11: the seven-arm smoke billed
+# $0.200 for web search across two Scenario A runs that made 1 call each,
+# backing out at $0.10/call and matching the published rate.
+#
+# Until then this was the one UNPRICED component -- the harness recorded every
+# query in `detail.web_queries` and charged $0.00 for all of them, so Scenario A
+# (the most expensive arm, and the only one that searches) carried the largest
+# estimate error. F57.
+PRICE_WEB_SEARCH_CALL = 0.10
 
-def _cost_usd(tok_in, tok_out, cached_in=0, containers=0):
+
+def _cost_usd(tok_in, tok_out, cached_in=0, containers=0, web_calls=0):
     """Per-run cost ESTIMATE in USD.
 
-    Token cost is exact; the container component is not, because the Responses
-    API exposes no duration or charge for code_interpreter. Reconcile against
-    fetch_billed_cost() before reporting any total."""
+    Token cost is exact. Two components are not:
+
+    * the CONTAINER, because the Responses API exposes no duration or charge for
+      code_interpreter -- only a container_id. Billing is per-minute with a
+      five-minute minimum, so a flat per-session rate is the best available.
+    * WEB SEARCH, priced per call at the published rate. The call count is
+      exact; what a call costs is not reported per response.
+
+    Always reconcile against fetch_billed_cost() before reporting any total."""
     billable_in = max((tok_in or 0) - (cached_in or 0), 0)
     return round(
         billable_in * PRICE_IN_PER_M / 1e6
         + (cached_in or 0) * PRICE_CACHED_IN_PER_M / 1e6
         + (tok_out or 0) * PRICE_OUT_PER_M / 1e6
-        + (containers or 0) * PRICE_CONTAINER_SESSION,
+        + (containers or 0) * PRICE_CONTAINER_SESSION
+        + (web_calls or 0) * PRICE_WEB_SEARCH_CALL,
         6,
     )
 
@@ -220,8 +237,20 @@ def fetch_billed_cost(start_time, end_time=None):
     """Actual billed USD from the org costs endpoint, grouped by line item.
 
     Requires an ADMIN-scoped key (OPENAI_ADMIN_KEY); the project key returns 403.
-    This is the ground truth that _cost_usd only estimates -- in particular it is
-    the only way to see the code_interpreter container charge."""
+    It is the only way to see the code_interpreter container charge.
+
+    *** THE ENDPOINT BUCKETS BY WHOLE DAY, NOT BY THE WINDOW REQUESTED. ***
+
+    start_time/end_time are sent and the API returns day-granularity buckets
+    anyway, so what comes back is EVERY request the ORGANISATION made that day --
+    other sessions, other machines, verify_setup calls, abandoned runs. It is
+    NOT the cost of the run that just finished.
+
+    Never divide a single run's estimate by this number and call the result an
+    estimate error: on 2026-09-11 that comparison suggested the harness
+    under-reported by 1.77x, when summing ALL of that day's runs showed the
+    estimate is CONSERVATIVE by ~17%. Both sides of a ratio must cover the same
+    events (F57)."""
     import urllib.request
     key = os.environ.get("OPENAI_ADMIN_KEY")
     if not key:
@@ -501,17 +530,25 @@ def _client():
 def _usage(r, containers=0):
     """Extract the token counts every scenario reports. `reasoning_tokens` is broken
     out because it is billed at the OUTPUT rate while being invisible in the
-    answer -- in testing it was the majority of output tokens."""
+    answer -- in testing it was the majority of output tokens.
+
+    Web-search calls are counted from the response's own output items rather
+    than passed in, so no caller can forget to report them -- which is exactly
+    how they went unpriced until 2026-09-11 (F57)."""
     u = r.usage
     cached = getattr(getattr(u, "input_tokens_details", None), "cached_tokens", 0) or 0
     reasoning = getattr(getattr(u, "output_tokens_details", None), "reasoning_tokens", 0) or 0
+    web = sum(1 for it in (getattr(r, "output", None) or [])
+              if str(getattr(it, "type", "")).startswith("web_search"))
     return {
         "tokens_in": u.input_tokens,
         "tokens_out": u.output_tokens,
         "tokens_cached_in": cached,
         "tokens_reasoning": reasoning,
         "containers": containers,
-        "cost_usd_est": _cost_usd(u.input_tokens, u.output_tokens, cached, containers),
+        "web_calls": web,
+        "cost_usd_est": _cost_usd(u.input_tokens, u.output_tokens, cached,
+                                  containers, web),
     }
 
 

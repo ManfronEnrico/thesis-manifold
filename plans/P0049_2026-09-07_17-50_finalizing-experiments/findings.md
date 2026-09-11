@@ -1917,7 +1917,11 @@ that is correctly computed at run time is still misleading when the run is a rel
 
 ---
 
-## F57 - the per-run cost is an ESTIMATE and it UNDER-reports. Never fund from it.
+## F57 - the per-run cost is an ESTIMATE. **CORRECTED 2026-09-11: it does NOT under-report; the comparison that said so was invalid.**
+
+> **READ THE CORRECTION AT THE BOTTOM OF THIS FINDING FIRST.** The tables below
+> compare one run's estimate against a WHOLE DAY of org-wide billing, which is
+> not a like-for-like comparison. The conclusion they support is wrong.
 
 **Brian, 2026-09-11, before adding money to the OpenAI account:** *"we are certain that
 the cost is accurately tracked, meaning not guessed or estimated?"*
@@ -2121,3 +2125,77 @@ effect size.
 **See F58** — the stratified "min" brand is VOELKEL at 9 units/month, where one unit is
 11% APE. A volume floor must be applied to the stratification pool before this design
 runs, or a third of the evidence comes from a cell no arm can influence.
+
+### CORRECTION, same day - the ratios above are an ARTEFACT of the billing window
+
+**The costs endpoint buckets by whole DAY, not by the run window.** Verified
+directly against `/v1/organization/costs`:
+
+```
+bucket 09-09 00:00 -> 09-10 00:00   $0.6278
+bucket 09-10 00:00 -> 09-11 00:00   $0.0016
+bucket 09-11 00:00 -> 09-12 00:00   $4.0288
+```
+
+`fetch_billed_cost` passes `start_time` and `end_time`, but the API returns
+day-granularity buckets regardless, so **every "billed" figure this project has
+reported is the whole day, org-wide** - including `verify_setup` calls, the
+failed first smoke, and the concurrent session on the other machine.
+
+Comparing one run's estimate against that is not a measurement of estimate
+error. It is a measurement of how much else ran that day.
+
+**The like-for-like comparison, all of 2026-09-11:**
+
+| | |
+|---|---|
+| 5-arm run 1, estimated | $1.1900 |
+| 5-arm run 2, estimated | $1.5203 |
+| 7-arm smoke, estimated (web search now priced) | $2.1475 |
+| **sum of estimated runs** | **$4.8578** |
+| **whole day, billed, org-wide** | **$4.0288** |
+
+**The estimate is CONSERVATIVE by roughly 17%**, and the day also contains
+traffic the estimates do not cover. The true margin is wider than that.
+
+Independent confirmation: the harness recorded `tokens_cached_in = 0` on every
+single run, yet the day's billing carries **$0.091 of cached input** (~181k
+tokens). The harness cannot have issued those requests. That line item alone
+proves the window contains foreign traffic.
+
+### What actually needed fixing, and was
+
+**Web search was genuinely unpriced.** That part of F57 stands. The harness
+detected `web_search` items and recorded every query, but no price constant
+existed, so Scenario A - the only arm that searches - contributed $0.00 for
+them. Now `PRICE_WEB_SEARCH_CALL = 0.10`, counted from the response's own output
+items inside `_usage()` so no caller can forget to report it. Verified against
+the smoke's $0.200 line item across two A-runs making one call each.
+
+Scenario A's per-run estimate moves $0.5432 -> $0.6432.
+
+### The corrected guidance for funding
+
+**Fund against the raw estimate plus a modest margin, not a 1.77x multiplier.**
+
+| basis | MVP total (63 runs) |
+|---|---|
+| raw estimate, web search priced | **$20.22** |
+| +25% margin | **$25.28** |
+
+The remaining unpriced component is the Code Interpreter container, a flat
+$0.03/session against per-minute billing with a five-minute minimum. It affects
+B and F only, at most a few dollars across the MVP.
+
+### The process lesson
+
+**I reported a 1.77x under-estimate to Brian while he was deciding how much money
+to load, and it was wrong by a factor of two in the wrong direction.** The
+comparison looked rigorous - two runs, consistent direction - but neither side of
+the ratio measured what I claimed it measured.
+
+The tell was visible and I walked past it: `tokens_cached_in = 0` on every run
+against a non-zero cached-input charge. A billed line item the harness has no
+matching activity for means **the window is wrong**, not that the estimate is.
+
+**Before quoting any ratio, check that both sides cover the same events.**
