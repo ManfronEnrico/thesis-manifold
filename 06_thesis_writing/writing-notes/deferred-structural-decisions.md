@@ -742,3 +742,48 @@ the assumption the ladder framing wins.
 
 **If "baseline" is kept, revert that one word** - Fix 8 of
 `ch6-prose-pass.md`. The decision should be taken once for both sites.
+
+---
+
+## S22 - `architecture.md` carries pre-measurement RAM estimates that leaked into the thesis
+
+**Status:** `recommended` - fix the doc, do not cite the numbers
+**Found:** 2026-09-11, tracing a 50 MB figure quoted in a Chapter 6 comment
+
+`user-docs/architecture/architecture.md` (11 July) carries a **RAM estimate per
+model** block written before any profiling run. Every figure in it is wrong by
+roughly an order of magnitude, in the same direction:
+
+| Model | Estimated there | **Measured** |
+|---|---|---|
+| Ridge | ~50 MB | **5.4** |
+| LightGBM | 200-500 MB | **38.1** |
+| XGBoost | 200-500 MB | **29.2** |
+| ARIMA (per series) | ~20 MB | **1.9** |
+
+That is what a pre-measurement estimate is for, and exactly why it must not
+reach the thesis. **It already has, twice:**
+
+- the 50 MB figure was quoted in a Chapter 6 comment as a deployment fact
+- `sections-drafts/decision-synthesis.md` carries *"Total synthesis step RAM:
+  <50MB"*, inherited from the same estimates
+
+⚠ **The same file also still states an eight-gigabyte budget**, in four places.
+That is the likely origin of the eight-gigabyte residue in Chapter 6 which
+`ch6-CONSOLIDATED-pass.md` Fix 13 removes. The settled budget is **four**.
+
+**Recommendation:** replace the estimate block in `architecture.md` with a
+pointer to `05_thesis_results/05_model_benchmark/tables/05_substrate_resource_profile`,
+and correct the budget to 4 GB in the same edit. The measured artefact separates
+fitting from serving, which the estimates never did:
+
+| | Peak fit RSS | Peak prediction RSS |
+|---|---|---|
+| Ridge | 5.4 MB | **0.02 MB** |
+| LightGBM | 38.1 MB | **0.1 MB** |
+| XGBoost | 29.2 MB | **0.62 MB** |
+
+**Serving costs under one megabyte**, three orders of magnitude below fitting.
+This is the number any deployment-footprint argument should use.
+
+⚠ **Do not cite 50 MB anywhere in the thesis.**
