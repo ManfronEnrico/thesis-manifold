@@ -176,7 +176,17 @@ def main() -> int:
     # --repeats 1 is what makes this a smoke test. --budget is a hard stop: if
     # a pricing change or a runaway loop pushes spend past the cap, the harness
     # halts rather than discovering it on the invoice.
-    cmd = [sys.executable, str(HERE / "srq4_experiment.py"),
+    # --full, NOT the --demo branch. The demo path prints to stdout and
+    # persists NOTHING: no runs.csv, no raw_responses, no summary.md. Measured
+    # 2026-09-11 -- a five-scenario paid run completed, every answer was
+    # correct, and seven of the nine checks below could not run because there
+    # was no file to read. The runs existed only in terminal scrollback.
+    #
+    # `--full` with one brand and --repeats 1 is the SAME work, through the code
+    # path that checkpoints after every brand and writes the cost
+    # reconciliation. The word "demo" made the wrong branch sound like the
+    # right one; the distinction that matters is persistence, not scale.
+    cmd = [sys.executable, str(HERE / "srq4_experiment.py"), "--full",
            "--scenarios", a.scenarios, "--categories", a.category,
            "--brands", brand, "--repeats", "1",
            "--budget", str(a.budget), "--out", str(out_dir)]
@@ -210,7 +220,16 @@ def main() -> int:
         # Arms scored on different months are incomparable, not merely different
         # -- and Scenario A, which has no data, would otherwise anchor on the
         # wall-clock date.
-        months = sorted({str(m) for m in runs.get("target_month", []) if str(m) != "nan"})
+        # target_month lives in the per-run TRACE, not as a runs.csv column.
+        # `runs.get("target_month", [])` therefore returned its DEFAULT [] on a
+        # run where all five arms agreed on 2026-03, and the check failed on its
+        # own lookup rather than on the data (2026-09-11). The empty case is now
+        # its own failure message, so a missing field can never again be
+        # reported as scenarios disagreeing.
+        months = sorted({str(t.get("target_month")) for t in traces
+                         if t.get("target_month")})
+        if not months:
+            return False, "no arm recorded a target_month in its trace"
         return len(months) == 1 and months[0] == target, \
             f"target_month across arms: {months} (expected [{target}])"
     c.run("all arms answer about ONE target month", one_month)
@@ -219,11 +238,23 @@ def main() -> int:
         cm = runs[runs.system.astype(str).str.startswith("C")]
         if not len(cm):
             return True, "Scenario C not in this run; skipped"
-        ahead = [t.get("months_ahead") for t in traces
-                 if str(t.get("scenario", "")).startswith("C")]
         payload = [t.get("payload_complete") for t in traces
                    if str(t.get("scenario", "")).startswith("C")]
-        return (all(x == E.HORIZON for x in ahead if x is not None)
+        # C records the horizon on its TOOL-CALL SPAN, not in the trace, so
+        # read it there. Taking it from the trace yielded [None], and
+        # `all(x == HORIZON for x in ahead if x is not None)` is vacuously
+        # TRUE over an all-None list -- so the check for the horizon defect
+        # passed on absence of evidence, which is the defect it exists to
+        # catch (2026-09-11). An empty list is now a FAILURE.
+        d = out_dir / "raw_responses"
+        ahead = []
+        for p in sorted(d.glob("C_model__*.json")) if d.is_dir() else []:
+            det = json.loads(p.read_text(encoding="utf-8")).get("detail") or {}
+            ahead += [k.get("months_ahead") for k in (det.get("tool_calls") or [])]
+        if not ahead:
+            return False, ("no months_ahead recorded on any Scenario C "
+                           "tool-call span -- the horizon is unverifiable")
+        return (all(x == E.HORIZON for x in ahead)
                 and all(bool(x) for x in payload)), \
             f"months_ahead={ahead} (expected {E.HORIZON}), payload_complete={payload}"
     c.run(f"Scenario C forecasts at H={E.HORIZON} with a complete payload", horizon_ok)

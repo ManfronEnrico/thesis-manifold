@@ -282,12 +282,28 @@ _SQL_TOOLS = ("run_sql", "inspect_schema", "distinct_values", "sample_rows")
 
 
 def classify_engine_run(calls: list[str], answer: str, err: str | None,
-                        require_code: bool) -> tuple[str, dict]:
+                        require_code: bool, expect_calls: bool = True) -> tuple[str, dict]:
     """Scenario-D/E outcome, from observed evidence only.
 
     Returns (verdict, evidence). `ok` is the ONLY passing verdict, and it
     requires positive evidence rather than the absence of a complaint --
     the discipline F21 exists to enforce.
+
+    `expect_calls` is False for Scenario E, where making NO tool call is the
+    correct behaviour. E's forecast is computed in the parent and handed to the
+    engine in its prompt, because the trained booster needs xgboost and the
+    vendor interpreter does not have it (F46). The engine's job is to report and
+    interpret that payload, so an empty tool list is compliance, not silence.
+
+    Measured 2026-09-11: E was classified `no_evidence` on a run where it had
+    reported the model's figures exactly -- forecast, interval, confidence tier
+    and WMAPE all correct, and identical to Scenario C's. The rule was right for
+    D and wrong for E, and applying one rule to both scenarios is what hid it.
+
+    What replaces the tool call as E's evidence is NOT weaker: the parent
+    already asserts `payload_complete` before dispatching, and already overrides
+    the result with the model's own number. So E is verified on the payload it
+    injected rather than on a call it was never supposed to make.
     """
     ev = {"sql_calls": [c for c in calls if c in _SQL_TOOLS],
           "code_calls": sum(1 for c in calls if c == "execute_code"),
@@ -298,10 +314,15 @@ def classify_engine_run(calls: list[str], answer: str, err: str | None,
     # it is not comparable to B and cannot be pooled with D. Excluded loudly.
     if ev["sql_calls"]:
         return "warehouse_access", ev
-    if not calls:
+    if not calls and expect_calls:
         # Either the coder was never invoked, or the vendor renamed the part
         # attribute this reads. Both mean the run is unverifiable, and an
         # unverifiable run is not a passing run.
+        #
+        # Guarded by `expect_calls` so this stays a real check for D while not
+        # failing E for behaving correctly. Note it still fires for E if the
+        # vendor renames the attribute AND E is later asked to call a tool --
+        # the guard narrows the rule, it does not remove it.
         return "no_evidence", ev
     if require_code and not ev["code_calls"]:
         return "no_code", ev

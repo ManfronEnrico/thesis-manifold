@@ -1400,3 +1400,188 @@ and leakage checks in F43 stand — they were measurements, and they are unaffec
 rationale written against an assumed future state reads as a verified fact three
 days later. The fix is the same as always — state what was measured, and name the
 assumption separately so it can be checked when it changes.
+
+---
+
+## F49 — the first paid five-scenario run: two harness defects, both silent
+
+**2026-09-11. CSD/HARBOE, target 2026-03, actual 6,365,900 units. $1.19 spent.**
+
+All five scenarios answered. Both defects returned LESS rather than failing —
+the F21 pattern for the fourth time.
+
+### F49a — the smoke test persisted nothing
+
+`smoke_test.py` built its command WITHOUT `--full`, so it fell into
+`srq4_experiment.main()`'s demo branch. That branch prints to stdout and writes
+no file: no `runs.csv`, no `raw_responses/`, no `summary.md`. It also ignores the
+`--out` argument it was given.
+
+Five paid runs completed correctly and existed only in terminal scrollback.
+**Seven of the smoke test's nine checks could not run**, because every one of
+them reads a file. The two that did run were the two that read stdout.
+
+The naming is what hid it. "Demo" sounded like the smoke-test branch, and the
+comment above it says *"This is the smoke test"*. The distinction that matters
+is not scale, it is persistence — `--full` with one brand and `--repeats 1` is
+the identical work through the checkpointing path.
+
+**Fixed:** `smoke_test.py` now passes `--full`.
+
+### F49b — Scenario E was classified `no_evidence` while behaving correctly
+
+`classify_engine_run()` failed any run with zero tool calls, on the reasoning
+that an unverifiable run is not a passing run. Correct for D. **Wrong for E by
+construction:** E's forecast is computed in the parent and injected into the
+prompt, because the booster needs xgboost and the vendor interpreter has none
+(F46). E is *supposed* to make no tool call.
+
+The run reported the model's figures exactly — forecast, interval, confidence
+tier and WMAPE, identical to Scenario C's number to the decimal — and was
+recorded as a failure.
+
+One rule applied to two scenarios that differ in precisely that rule's subject.
+
+**Fixed:** `expect_calls` parameter, False for E only. E's evidence is
+`payload_complete`, which the parent already asserts before dispatch — so the
+check is narrowed, not removed. Verified against 8 cases: D's four verdicts
+unchanged, and the warehouse guard still fires for both scenarios.
+
+### What the run DID establish
+
+| Claim | Evidence |
+|---|---|
+| DEC-D-SNAPSHOT held | `sql_calls: []` on both D and E |
+| D→E is a real increment | D ran code twice, E ran none |
+| E and C share an origin | both 4,969,049.5, identical |
+| Engine reports usage | `usage_reported: true` — the F47 gap did not materialise |
+| One target month | all five arms on 2026-03 |
+| Prompt registry | `v4-five-scenarios+e37111d3daaa` on every run |
+
+**Measured cost, replacing the estimates:** A $0.41, B $0.17, C $0.01,
+D $0.39, E $0.20. Total $1.19 against a $1.71 estimate. D is roughly half the
+estimate; E is close to it.
+
+---
+
+## F50 — the conformal interval is pooled across brands of wildly different size
+
+**Investigated 2026-09-11, prompted by Scenario C returning a 90% interval of
+[654,488 , 37,726,335] around a point forecast of 4,969,050 — a 57x width.**
+
+### The arithmetic is correct; the calibration set is the problem
+
+`train_and_persist.py` computes one `q90_log` per CATEGORY: the 90th percentile
+of absolute residuals in LOG space, over every validation row pooled. Serving
+applies it as `expm1(pred +/- q90)`, a MULTIPLICATIVE band. For CSD
+q90 = 2.027, so exp(q90) = 7.59 and every brand gets +/-7.6x.
+
+That is textbook split conformal, correctly implemented. The defect is what it
+is calibrated OVER.
+
+### The calibration set spans six orders of magnitude
+
+CSD's 665 validation rows cover 95 brands:
+
+| brand size (mean units/month) | rows | brands |
+|---|---|---|
+| under 100 | 168 | 24 |
+| 100 - 10k | 259 | 37 |
+| 10k - 1M | 210 | 30 |
+| over 1M | 28 | 4 |
+
+Smallest brand mean 0/month; largest (HARBOE) 6,071,905/month. A log-space
+residual quantile pooled over that mixture is dominated by the tiny, erratic
+brands — a brand selling 3 units one month and 40 the next produces a log
+residual near 2.6 with no bearing on how well HARBOE is predicted.
+
+### Measured: the same calibration restricted to comparable brands
+
+Refitting the calibration model exactly as `train_and_persist` does (train-only,
+residuals on val):
+
+| calibration population | n | q90_log | band |
+|---|---|---|---|
+| all 95 brands (SHIPPED) | 665 | 2.081 | +/-8.0x |
+| brands over 10k/month | 238 | 0.989 | +/-2.69x |
+| brands over 100k/month | 105 | 0.478 | +/-1.61x |
+| brands over 1M/month | 28 | 0.298 | **+/-1.35x** |
+
+HARBOE's interval if calibrated on its own size band:
+**[3,688,674 , 6,693,856]** vs shipped [654,488 , 37,726,335].
+The actual was **6,365,900** — inside both, but the size-banded interval is
+*informative* and the shipped one is not.
+
+### It affects all four categories
+
+| category | q90_log | band | width |
+|---|---|---|---|
+| CSD | 2.027 | +/-7.59x | 57.6x |
+| Danskvand | 2.040 | +/-7.69x | 59.1x |
+| Energidrikke | 2.691 | +/-14.75x | **217.7x** |
+| RTD | 1.890 | +/-6.62x | 43.8x |
+
+### Coverage is NOT the problem — and that is the point
+
+Empirical coverage of the shipped interval on CSD's 665 held-out test rows:
+
+| population | coverage | n |
+|---|---|---|
+| all | 91.7% | 665 |
+| 4 largest brands | **100.0%** | 28 |
+| everything else | 91.4% | 637 |
+
+**The interval is doing exactly what split conformal promises — marginal 90%
+coverage — and is nonetheless useless on the brands the thesis reports.** 100%
+coverage on the large brands is the signature of over-wide intervals, not of a
+good model. Median width is 7.5x the point forecast.
+
+This is a genuine methodological finding, not a bug: the conformal guarantee is
+MARGINAL over the calibration distribution, and a calibration distribution that
+mixes brands spanning six orders of magnitude produces a guarantee that is
+satisfied on average and vacuous per brand. Ch2 §2.5 already notes the guarantee
+is marginal and that exchangeability is violated by temporal data; this is the
+same caveat biting on the cross-sectional axis instead.
+
+### Options, in increasing order of cost
+
+1. **Report it as a limitation.** Honest, costs nothing, and the coverage
+   numbers above are the evidence. The interval is well-calibrated marginally
+   and uninformative conditionally.
+2. **Size-banded calibration.** One `q90_log` per (category, size band) instead
+   of per category. ~20 lines in `train_and_persist.py`, requires a retrain, and
+   the n=28 for the largest CSD band is thin for a 90th percentile.
+3. **Normalised conformal.** Scale residuals by a difficulty estimate before
+   taking the quantile (Lei et al., 2018 discuss exactly this). Principled, and
+   the largest change.
+
+**No option is chosen yet — this is Brian's call, and 2 and 3 both require
+HPC retraining.** Option 1 is available whatever else happens, and the numbers
+for it are already measured and in this finding.
+
+**Scenario C and E are UNAFFECTED in their point forecast.** Only the interval
+is at issue. Both scored 21.9% APE on this brand-month, and that number does
+not move.
+
+---
+
+## F51 — two smoke checks passed on absence of evidence
+
+Found while verifying the 2026-09-11 re-run. Both are the F21 pattern inside the
+checks that exist to catch F21.
+
+**The horizon check.** `all(x == HORIZON for x in ahead if x is not None)` is
+vacuously TRUE over an all-None list. C's trace does not carry `months_ahead`
+(it is on the tool-call SPAN), so the check printed
+`months_ahead=[None] (expected 3)` and PASSED. The horizon was genuinely 3 —
+verified on the span and in E's trace — but the check could not have told us
+otherwise. It is the check guarding the F23 horizon defect.
+
+**The one-month check.** Read `runs.get("target_month", [])`, a column that does
+not exist in runs.csv; the field lives in the trace. It returned the DEFAULT []
+and the check FAILED on a run where all five arms agreed on 2026-03 — the same
+bug in the opposite direction.
+
+**Both fixed**: each now reads the field where it is actually recorded, and each
+treats an empty result as a FAILURE with its own message rather than folding it
+into the comparison. A check that cannot find its evidence must say so.

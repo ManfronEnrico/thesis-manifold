@@ -903,7 +903,8 @@ def _engine_unavailable(scenario, why, t0, target):
 
 
 def _run_engine_scenario(scenario, category, brand, user_prompt, coder_context,
-                         require_code, target, extra_trace=None):
+                         require_code, target, extra_trace=None,
+                         expect_calls=True):
     """Shared body for D and E: dispatch, classify from evidence, build a result.
 
     One function for both, so the two scenarios cannot drift in how they are
@@ -922,7 +923,8 @@ def _run_engine_scenario(scenario, category, brand, user_prompt, coder_context,
     r = PB.call_engine(user_prompt, coder_context, MODEL)
     text = r.get("answer") or ""
     calls = r.get("calls") or []
-    verdict, ev = PB.classify_engine_run(calls, text, r.get("error"), require_code)
+    verdict, ev = PB.classify_engine_run(calls, text, r.get("error"), require_code,
+                                         expect_calls=expect_calls)
 
     # Token usage is reported only if the engine surfaced it. When it did not,
     # the cost estimate would be a fabricated zero -- so `usage_reported` is
@@ -1012,6 +1014,10 @@ def run_scenario_e(category, brand, question=None):
     res = _run_engine_scenario(
         "E_prometheus_model", category, brand, user, coder,
         require_code=False, target=target,
+        # E is HANDED its forecast, so it should make no tool call at all.
+        # Requiring one classified a correct run as `no_evidence` (2026-09-11).
+        # E's evidence is `payload_complete`, asserted in the parent below.
+        expect_calls=False,
         # Same check that guards Scenario C (F21): a payload served without its
         # track record is not Scenario E, and that must be visible in the
         # results table rather than found by reading logs.
