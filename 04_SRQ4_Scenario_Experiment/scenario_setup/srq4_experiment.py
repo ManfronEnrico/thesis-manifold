@@ -1448,23 +1448,27 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
         return df
 
     if dry_run:
-        # Per-run estimates from measured 2026-08-19 runs. Rough by design --
-        # the point is to catch "this costs 4x what I expected" before spending.
-        # Costed over what will ACTUALLY be sent, so the cache saving is visible.
-        # A/B/C are measured (2026-08-19). D and E are NOT yet measured -- no
-        # engine run has been costed. The placeholders are deliberately the
-        # nearest measured analogue (D~B, E~C) plus a margin for the engine's
-        # nested-agent loop, and they are flagged in the output rather than
-        # presented as measurements. Replace with measured values after the
-        # first smoke run; a made-up number that looks measured is the exact
-        # failure the provenance rule exists to stop.
-        est = {"A_llm_plain": 0.4243, "B_llm_data": 0.2664, "C_llm_model": 0.0068,
+        # Per-run estimates, ALL MEASURED on the 2026-09-11 seven-arm smoke
+        # (CSD/HARBOE). Rough by design -- the point is to catch "this costs 4x
+        # what I expected" before spending. Costed over what will ACTUALLY be
+        # sent, so the cache saving is visible.
+        #
+        # A/B/C were refreshed 2026-09-11. They had been left at their
+        # 2026-08-19 values while D/E/F/G were updated one by one as each was
+        # measured, so the table mixed August and September figures and
+        # predated the web-search pricing added the same day. A stale number
+        # presented as measured is the failure the provenance rule exists to
+        # stop, and a cost table is exactly where it does damage.
+        #
+        # A includes its web-search call ($0.10); it is the only arm that
+        # searches.
+        est = {"A_llm_plain": 0.6432, "B_llm_data": 0.2243, "C_llm_model": 0.0090,
                # D/E MEASURED 2026-09-11 on CSD/HARBOE (billed $1.83 for the
-               # five-arm run, reconciled against the org costs endpoint).
-               "D_prometheus_data": 0.55, "E_prometheus_model": 0.21,
+               # five-arm run; note fetch_billed_cost returns the WHOLE DAY).
+               "D_prometheus_data": 0.5190, "E_prometheus_model": 0.2021,
                # F/G MEASURED 2026-09-11 on the seven-arm smoke, same brand.
                # Both prior estimates were high (F 0.30->0.223, G 0.60->0.327).
-               "F_llm_data_model": 0.22, "G_prometheus_data_model": 0.33}
+               "F_llm_data_model": 0.2230, "G_prometheus_data_model": 0.3269}
         _unmeasured = set()
         by_scen = {}
         for _, _, sysname, _, _ in todo:
