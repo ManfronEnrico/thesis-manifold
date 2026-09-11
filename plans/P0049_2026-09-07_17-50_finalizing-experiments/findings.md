@@ -967,7 +967,12 @@ same footing as B: code-as-action over a supplied series, no database.
 
 ---
 
-## OPEN QUESTIONS — Brian, 2026-09-10 (not yet resolved)
+## ~~OPEN QUESTIONS~~ — ANSWERED 2026-09-11, see DEC-MVP-DESIGN below
+
+> **All three were resolved on 2026-09-11 and all three resolve to what the
+> harness already does.** Jump to **DEC-MVP-DESIGN** near the end of this file
+> for the answers. The reasoning below is kept because it is why the questions
+> were worth asking, not because they are still open.
 
 **Q-A: Does the brand sample still hold at three per category?** Brian recalls
 planning B-E across **three brands per category** -- max-viable, median and

@@ -267,3 +267,123 @@ Three of these were beliefs this plan held in writing, not oversights:
 3. **The funded set** — gated on 1 and 2
 4. **HPC-side (P0053)** — the 4 patched scripts are still unverified; re-run
    `enrich_appendix`; check appendix table 97's VIF against the 18-feature set
+
+---
+
+# Session 2026-09-11 — first paid runs, seven arms, ready to fund
+
+The longest session on this plan. **Every open item from the previous entry is
+closed or superseded.**
+
+## Delivered
+
+| | |
+|---|---|
+| **First paid executions** | three runs, ~$4.86 estimated across the day |
+| **Scenarios F and G** | the combined arm, on both orchestrators — five rungs became seven |
+| **Arm rename** | `<letter>_<orchestrator>_<inputs>`, 39 occurrences, 6 scripts |
+| **Volume floor** | `MIN_SCORED_UNITS = 1000` on the stratification pool |
+| **Web-search pricing** | the one genuinely unpriced component |
+| **Funded run** | specified, dry-run verified, waiting only on credit |
+
+## What the seven-arm smoke measured
+
+CSD/HARBOE, target 2026-03, actual 6,365,900. All 8 checks pass.
+
+**The headline: `deviates_from_model=True` on BOTH F and G.** Neither returned
+the model's 4,969,050, and both cited its low confidence tier and wide interval
+as the reason to weigh it rather than adopt it. DEC-COMBINED-INPUT measured
+integration rather than deference, which is what it was written to do. That is a
+result for SRQ2 independent of accuracy.
+
+`sql_calls: []` on D, E and G. `usage_reported: true` on all three engine arms.
+
+## Defects found and fixed
+
+Seven, of which **five would have silently corrupted the funded set**:
+
+1. **F49a** — smoke_test built its command without `--full`, so it took the demo
+   branch and persisted nothing. Five paid runs existed only in scrollback.
+2. **F49b** — Scenario E classified `no_evidence` while behaving correctly; it is
+   handed its forecast and is *supposed* to make no tool calls.
+3. **F51** — the one-month check read a non-existent column; the horizon check
+   passed vacuously over an all-`None` list. Both now fail on absent evidence.
+4. **F55** — two checks compared this run against an *accumulated* runs.csv.
+   Neither was a real defect, which is the problem: a check that cries wolf gets
+   explained away.
+5. **F56** — the summary generator **relettered the arms under the old reversed
+   scheme**, so the table contradicted its own caption and mixed two lettering
+   systems in one header row. The appendix had it right, so the artefacts
+   disagreed with *each other*.
+6. **F58** — stratifying CSD returned **VOELKEL at 9 units/month**, where one
+   unit of error is 11.1% APE.
+7. **F59** — `--brand-strategy stratified` silently selected **four** brands.
+
+## Tried and rejected
+
+- **Size-bucketed conformal calibration (F52).** I proposed a ±1.35x band from 28
+  rows covering 4 brands, then measured it properly: only 0–4 brands per category
+  exceed 1M units/month (RTD has **zero**), so every large bucket falls back to
+  pooled. No scheme won more than 2 of 4 categories. **F50 options 2 and 3
+  withdrawn.** Saved an HPC night.
+- **A 1.77x cost multiplier for funding.** See the correction below.
+
+## MY OWN ERROR, corrected same session
+
+**I told Brian the cost estimate under-reports by up to 1.77x while he was
+deciding how much money to load.** It does not. The costs endpoint buckets by
+whole **day**, so I was comparing one run against the whole organisation's daily
+spend. Summing every run on 2026-09-11 gives **$4.86 estimated vs $4.03 billed —
+the estimate is CONSERVATIVE by ~17%**.
+
+The tell was visible and I walked past it: `tokens_cached_in = 0` on every run
+against a non-zero cached-input charge. A billed line item with no matching
+activity means **the window is wrong, not the estimate**.
+
+`fetch_billed_cost` now documents the day-bucket behaviour and forbids that
+division. F57 carries the full correction.
+
+## Near-miss
+
+The dry run for the funded command selected **four** brands including CARIBIA and
+LØGISMOSE, because `--brands-per-cat` defaulted to `[4,4,4,3]` and the count came
+from a different flag than the strategy. Nothing errored. It would have cost ~33%
+more and measured a different sample than the writing notes justify. Caught one
+step before launch (F59), and fixed structurally rather than by remembering to
+pass two flags.
+
+## State at close
+
+- **On `main`**, working tree clean but for the smoke results (untracked,
+  deliberately — 9 MB with Nielsen history embedded in every cached prompt)
+- `verify_setup.py` **13/13**; seven scenarios; schema `v5-seven-scenarios+d22fe7cdc30e`
+- A–E prompt strings **byte-identical to v4**, so earlier paid runs stay poolable
+- **Prometheus reachable** as of 20:30
+- Spent today: **~$4.86 estimated**, org-wide day billed $4.03
+
+## Open, in order
+
+1. **The funded run.** Brian is loading **$50**; it estimates **$19.33** and takes
+   **80–100 minutes**. Deferred to tomorrow — the office window was 71 minutes.
+   Command and pre-launch checks: **`LAUNCH_THE_FUNDED_RUN.md`** in this folder.
+2. **Chapter 6 prose** — unblocked; the parallel session left
+   `ch6-CONSOLIDATED-pass.md` ready, with three small decisions pending in its
+   part 4.3.
+3. **HPC-side (P0053)** — 4 patched scripts still unverified; re-run
+   `enrich_appendix`; check appendix table 97's VIF against the 18-feature set.
+4. **`unverified-claims-to-check.md` is MISSING** — see the flag below.
+
+## ⚠ Found during the end-of-day sweep, NOT from this session
+
+`06_thesis_writing/writing-notes/unverified-claims-to-check.md` **does not exist
+on disk.** It was deleted in commit `202f75a` *"Messy Handover: All combined 2"*,
+while every verification brief it indexes is still present under
+`notebookLM/04-Claims_Verification/`.
+
+`START_HERE.md:174` still cites it as the register for CV-01…CV-05, and
+`prose-insertion-discipline.md` names it as **the single queue** for unverified
+claims — "a claim named in a writing note but absent from the register will not
+be verified".
+
+**Not restored**, because it predates this session and the right content is a
+judgement call. Recoverable with `git show 202f75a^:06_thesis_writing/writing-notes/unverified-claims-to-check.md`.
