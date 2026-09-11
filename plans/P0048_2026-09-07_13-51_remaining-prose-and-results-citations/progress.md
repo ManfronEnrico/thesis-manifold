@@ -264,3 +264,96 @@ chapter twice.
 
 Five candidates are open and **four are wording problems rather than measurement
 problems**. Only the missing seasonal ARIMA order is arguably worth a re-run.
+
+---
+
+# Session 2026-09-11 (evening) — Chapter 5 closed, Chapter 6 all but closed
+
+## Delivered
+
+| | |
+|---|---|
+| **Chapter 5** | every thread closed. Two re-runs landed and both moved numbers |
+| **Chapter 6** | 17 threads → 4; 2,176 → 2,553 words; everything applied but Section 6.7 |
+| **Section 6.7** | written, waiting to be applied |
+| **Assessor questions** | new cumulative note, 15 answered + 5 not yet answerable |
+| **Experiment insights** | routed to four chapters that had no note for them |
+
+## The two re-runs, and why they were needed
+
+**The calibration re-run** fitted XGBoost for all four categories while two serve
+LightGBM. Fixed to read the served model from metadata. Nine seconds, locally —
+the HPC was never needed, because it fits four models with no tuning loop.
+Coverage became strictly monotone with calibration set size, strengthening the
+chapter's central claim.
+
+**The profiling re-run** came from applying Brian's own rule: a cited number must
+come from an artefact regenerated *after* the last training. Last training was
+09-09 21:10; `profiling.csv` was 09-01 21:32. Eight days early, and the only
+Chapter 5 source that failed the check.
+
+⚠ **It moved a long way and not in the predicted direction.** Chapter 5 had
+inferred the 13-feature figures were a *lower bound* on the 18-feature model.
+They were not:
+
+| | before | after |
+|---|---|---|
+| LightGBM | 38.1 | **14.9** |
+| XGBoost | 29.2 | **31.9** |
+| Ridge | 5.4 | **1.6** |
+
+**Memory tracks the size of the tuned ensemble, not the width of the feature
+matrix.** That is a better claim than the hedge it replaces.
+
+⚠ **This will recur.** `srq1_profiling.py` is deliberately excluded from
+`run_both_horizons.py` because it runs at `n_jobs=-1` on purpose. **Re-run it by
+hand after every retraining.**
+
+## Chapter 6
+
+Consolidated three notes into one pass, then wrote Section 6.7 after the arm
+rename unblocked it. Both earlier notes and the 978-line sample-size rationale
+are archived; two sections of the latter were carried forward and re-verified,
+and its RTD "empty fact table" warning was confirmed superseded.
+
+**Two comments found defects in the artefact rather than the prose**, both
+verified in code rather than taken as read: there is no human approval gate
+anywhere, and temperature is not settable on the pinned model.
+
+## Two things I got wrong
+
+1. **I reported Fix 3b as applied. It was not.** "With human oversight" still
+   sits in Section 6.2, and it is now the only surviving claim of a control the
+   artefact lacks.
+2. **I repeated the cost under-reporting claim** (1.20x–1.77x) from P0049 F57.
+   The experiment session retracted it the same evening: the costs endpoint
+   buckets by whole day, org-wide, so every comparison was against a day of
+   unrelated traffic. **Like for like the estimate is conservative by ~17%.**
+
+⚠ **The lesson from the second is worth keeping.** The tell was in the data and
+was walked past by both of us: the harness recorded zero cached-input tokens
+while the day's billing carried a cached-input charge. A number that cannot have
+come from your own process is the strongest possible signal that a comparison is
+not like-for-like.
+
+## Found, not fixed
+
+- **Section 6.8 carries a duplicated clause** — "Memory is reported by RSS;
+  Memory is reported by resident set size". The only application error in the
+  pass.
+- **Semerikov et al. (2025) is cited twice and is not in Zotero.**
+- **Three more duplicate Zotero items** and two malformed dates (S16).
+- **Two finding IDs are used twice** across parallel sessions (S23).
+- **"Spanning the accuracy-efficiency frontier"** overstates the substrate.
+  Prophet records 105.7 and 975.0 on two categories — while *winning* Danskvand
+  at 19.4, which makes per-category selection the interesting reading.
+
+## Open, and whose it is
+
+| | |
+|---|---|
+| Apply `ch6-followup-02-section-6-7.md` | Brian |
+| Semerikov: add to Zotero or drop | Brian |
+| "baseline" vs "comparator", two sites | Brian |
+| Chapter 6 subtitle, three options offered | Brian |
+| The funded experiment run, 1–2 hours | Brian, tomorrow |
