@@ -2,7 +2,8 @@
 """
 SRQ1 prediction-interval calibration — split conformal (SRQ2 confidence signal).
 
-For each category, the tuned XGBoost point model is wrapped in a split-conformal
+For each category, the tuned point model THAT CATEGORY ACTUALLY SERVES is
+wrapped in a split-conformal
 interval: fit on train, calibrate the interval half-width on the validation
 residuals (in log space) at a nominal level, then measure EMPIRICAL coverage on
 test (fraction of actuals inside the interval). A well-calibrated interval has
@@ -17,6 +18,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
 
 # Repo root located by searching upward for PATHS.py rather than by a fixed
 # parents[N] index: the index silently breaks whenever a script moves a
@@ -172,6 +174,48 @@ def available_features(fm, wanted=None):
 
 NOMINAL = [0.80, 0.90]
 
+
+def served_model(cat: str) -> str:
+    """Which estimator THIS category actually serves.
+
+    The interval must be calibrated on the residuals of the model that is
+    served, not on a different one that happens to be the more common choice.
+    `train_and_persist.best_model_for()` selects on the CROSS-VALIDATION score
+    -- deliberately, because selecting on test is selection on the evaluation
+    set -- and on that basis Energidrikke and RTD serve LightGBM while CSD and
+    Danskvand serve XGBoost.
+
+    Until 2026-09-11 this script fitted XGBRegressor unconditionally, so half
+    the published calibration table described a model that is not served
+    (P0053 F12, raised by Enrico). Read the fact rather than assume it: the
+    persisted metadata records it, so a future change of selection propagates
+    here without a code change.
+
+    Falls back to XGBoost only when no metadata exists, which is the state
+    before `train_and_persist.py` has ever run.
+    """
+    meta_path = RES / "models" / cat / "metadata.json"
+    if not meta_path.is_file():
+        print(f"  [warn] {cat}: no served metadata; defaulting to XGBoost")
+        return "XGBoost"
+    name = str(json.loads(meta_path.read_text()).get("model", ""))
+    # The metadata string carries a suffix, e.g. "LightGBM(tuned)".
+    return "LightGBM" if "lightgbm" in name.lower() else "XGBoost"
+
+
+def make_estimator(cat: str, kind: str):
+    """A fresh, unfitted estimator of the served kind, with that kind's params.
+
+    n_jobs is pinned to 1 for BOTH families. The SRQ1 constraint exists because
+    an unpinned thread count makes the timing figures unreproducible, and it
+    would be no less true of LightGBM than of XGBoost.
+    """
+    tuned = params.get(f"brand/{cat}/{kind}", {})
+    if kind == "LightGBM":
+        return LGBMRegressor(random_state=SEED, n_jobs=1, verbose=-1, **tuned)
+    return XGBRegressor(random_state=SEED, verbosity=0, n_jobs=XGB_N_JOBS, **tuned)
+
+
 params = json.loads((RES / "tuned_params.json").read_text())
 rows = []
 for cat, slug in CATS.items():
@@ -181,7 +225,9 @@ for cat, slug in CATS.items():
     tr, va, te = (d[d.split == s] for s in ("train", "val", "test"))
     if len(tr) < 30 or len(va) == 0 or len(te) == 0:
         continue
-    m = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=XGB_N_JOBS, **params.get(f"brand/{cat}/XGBoost", {}))
+    kind = served_model(cat)
+    m = make_estimator(cat, kind)
+    print(f"  {cat}: calibrating the served model -- {kind}")
     m.fit(tr[available_features(fm)].fillna(0.0), tr["log_sales_units"].values)
     # calibration residuals on validation (log space)
     res = np.abs(va["log_sales_units"].values - m.predict(va[available_features(fm)].fillna(0.0)))
@@ -220,6 +266,13 @@ def _cell(cat, nom, col):
 # Values interpolated into the prose below, so a re-run cannot leave a stale
 # figure in the caption (generated-artefact-provenance rule).
 _dv80 = _cell("Danskvand", 80, "empirical_coverage")
+# Which models were fitted, computed from the served metadata rather than
+# asserted. The title said "tuned XGBoost" while two categories served
+# LightGBM (P0053 F12).
+_kinds = sorted({served_model(c) for c in CATS})
+_served_desc = (f"tuned {_kinds[0]}" if len(_kinds) == 1
+                else "tuned " + " / ".join(_kinds) + ", per served model")
+
 _wide = {c: _cell(c, 90, "mean_rel_width") for c in ("Danskvand", "Energidrikke")
          if (_cell(c, 90, "empirical_coverage") or 100) < 88
          and _cell(c, 90, "mean_rel_width") is not None}
@@ -238,15 +291,16 @@ _width_line = (
     if _wide else
     "No category needs an unusably wide interval to reach 90% coverage.")
 
-lines = ["# SRQ1 prediction-interval calibration — split conformal (tuned XGBoost, brand×month)", "",
+lines = [f"# SRQ1 prediction-interval calibration — split conformal "
+         f"({_served_desc}, brand×month)", "",
          "Half-width calibrated on validation residuals (log space); empirical coverage "
          "measured on test. Well-calibrated => empirical ≈ nominal.", "",
          "**Read coverage and width together.** Coverage alone is not a success "
          "criterion: an arbitrarily wide interval attains perfect coverage while "
-         "carrying no decision-relevant information. `Median rel. width` is the "
+         "carrying no decision-relevant information. `Mean rel. width` is the "
          "interval width as a multiple of the actual value, so 3.0 means the "
          "interval spans about three times the quantity being forecast.", "",
-         "| Category | Nominal | Empirical coverage | Median rel. width | n_test |",
+         "| Category | Nominal | Empirical coverage | Mean rel. width | n_test |",
          "|---|---|---|---|---|"]
 for _, x in df.iterrows():
     flag = "" if x['mean_rel_width'] < 5 else "  **<- too wide to act on**"

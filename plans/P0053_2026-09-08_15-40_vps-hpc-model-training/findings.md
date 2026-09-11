@@ -31,12 +31,12 @@ updated: 2026_09_10-15_00
       run (`feature_reduction_eval.csv`); table 98 reads it. See F8 + F10.
 - [ ] Work through the F4 thesis-prose checklist against the OneDrive `.docx`
       (laptop) — now has fully current, fully computed numbers.
-- [ ] **HPC-READY: the calibration re-run (F12).** `srq1_calibration.py`
-      hardcodes XGBoost, but Energidrikke and RTD serve LightGBM. Half the
-      calibration table describes a model that is not served. **Minutes of
-      compute, one file edited, no retraining** — the served models already
-      exist. Full spec in F12, written so it can be run without rediscovering
-      anything. **Highest-value re-run still open.**
+- [x] ~~**The calibration re-run (F12)**~~ — **DONE 2026-09-11, on the laptop,
+      in 9 seconds.** Did not need the HPC. `srq1_calibration.py` now reads the
+      served model per category from `models/<cat>/metadata.json` and calibrates
+      that one. Only Energidrikke and RTD moved materially, as predicted, and the
+      pre-specified check passed: Danskvand (an XGBoost category) held at 83.9%.
+      Chapter 5's central claim is now strictly monotone. See F12.
 - [x] ~~F5 — measure `--parallel` at 100 trials~~ — **not doing it.** Brian:
       won't be reported either way, it's only for our own efficiency. The code
       is on `main`, opt-in via `--parallel`, unused by default. Expected
@@ -347,11 +347,41 @@ Only then is the speed claim actually verified rather than inferred.
 
 ---
 
-## F12 — `srq1_calibration.py` calibrates the wrong model for half the categories (2026-09-11)
+## F12 — `srq1_calibration.py` calibrated the wrong model for half the categories — FIXED 2026-09-11
 
-**Raised by Enrico 2026-09-11, validated the same day. Tracked as S17 on the
-deferred structural list.** This is the highest-value re-run still open, and it
-is **not a retraining** — the served models already exist on disk.
+**Raised by Enrico 2026-09-11, validated, fixed and re-run the same day.**
+Tracked as S17 on the deferred structural list.
+
+> ✅ **RESOLVED — and it did not need the HPC.** The run takes **9 seconds on
+> the laptop**, because it fits four models with no tuning loop: the
+> hyperparameters are read from `tuned_params.json` and the served models are
+> never touched. Running it locally meant the results could be read and checked
+> in the same session, which is why no HPC job was raised. The specification
+> below is kept because it records the reasoning, and because the
+> "estimate the cost before reaching for the cluster" judgement generalises.
+
+### Outcome
+
+| Category | Now calibrated on | Coverage @90 before → after |
+|---|---|---|
+| CSD | XGBoost | 91.0 → 91.7 |
+| Danskvand | XGBoost | 83.9 → **83.9 (unchanged, as predicted)** |
+| Energidrikke | **LightGBM** | 86.0 → 86.7 |
+| RTD | **LightGBM** | 90.9 → 91.4 |
+
+**The pre-specified check passed.** F12 said Danskvand's figure should not move
+because it is an XGBoost category, and that if it did, the run should not be
+trusted. It did not move.
+
+**Chapter 5's central claim strengthened**: coverage now rises strictly with
+calibration set size across all four categories, where before the ordering held
+only loosely. Paste-ready edits in
+`writing-notes/ch5_model_benchmark/ch5-calibration-rerun-applied.md`.
+
+**Two further defects fixed in the same file**, both self-description rather
+than data: the output title was the literal string "tuned XGBoost", and the
+width column was labelled "Median" while carrying a mean. Both now computed or
+corrected.
 
 ### The defect
 

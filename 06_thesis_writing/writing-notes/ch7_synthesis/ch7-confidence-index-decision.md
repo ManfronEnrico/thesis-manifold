@@ -8,13 +8,64 @@ updated: 2026_09_11-16_30
 status: open
 ---
 
-# The confidence index, and what Chapter 7 should say about it
+# The confidence index, and the one sentence Chapter 7 gets wrong
 
 **Raised by Enrico 2026-09-11. Diagnosed and measured the same day.** This is an
 SRQ2 decision, which is why it sits in Chapter 7's folder rather than Chapter 5's
 - Chapter 5 never uses the index and is unaffected.
 
 Tracked as **S18** on the deferred structural list.
+
+> ⚠ **Read this first: Chapter 7 already covers the defect, and covers it well.**
+> Section 7.4 states that the index is constant within a category, that the
+> quantile exceeds unity in all four categories, that this zeroes the second term
+> by construction, that values run three to seven against a threshold of forty,
+> and that "the index distinguishes nothing". **That is the finding, already
+> written, and nothing below asks you to rewrite it.**
+>
+> **One sentence in it is wrong**, and it is the sentence immediately after. See
+> *The one correction Chapter 7 needs* below. Everything else in this note is
+> supporting evidence for text that already exists.
+
+---
+
+# The one correction Chapter 7 needs
+
+Section 7.4, the paragraph beginning *"That is a property of the weights and the
+cut-offs rather than of the forecasts"*:
+
+> "That is a property of the weights and the cut-offs rather than of the
+> forecasts, and **it could be repaired by recalibrating the bands against the
+> widths actually observed.**"
+
+⚠ **It could not.** Recalibrating the bands cannot repair it, and the reason is
+in the chapter's own preceding sentence: the index is *constant within a
+category*. Re-tiering a quantity that takes exactly four values - one per
+category - assigns every brand in a category the same band. **The band would
+simply be the category name**, which is not a confidence signal.
+
+The chapter is also slightly too generous in calling it "a property of the
+weights and the cut-offs". The weights are not the problem: **no choice of
+weights repairs it either**, because both terms are functions of the same
+per-category quantile. It is a property of the *construction*.
+
+### Paste - replace that sentence
+
+> That is a property of the construction rather than of the forecasts, and it is
+> not repairable by choosing different weights or different band boundaries:
+> both terms are functions of a quantile that is fixed within a category, so any
+> reweighting or re-thresholding of them yields one value per category and
+> assigns every brand in that category the same band. Reported as it stands,
+> however, it settles a question this chapter has been carrying: the claim about
+> how far a forecast may be relied upon is carried by the measured track record
+> travelling in the same payload, and not by the index.
+
+### Note - why this matters beyond accuracy
+
+The current wording offers a repair that does not exist. **An examiner who takes
+it at face value will ask why it was not done**, and the honest answer is that it
+would not have worked. Saying so converts an apparent oversight into a
+diagnosis, which is the stronger position and costs one sentence.
 
 ## What the field is
 
@@ -145,7 +196,11 @@ traceability** preserved. Check what the payload already carries:
 over the interval, and the interval does the job properly. Removing it loses no
 capability.
 
-## Draft wording for Chapter 7
+## Draft wording - ONLY if Section 7.4 is ever restructured
+
+⚠ **Do not paste this now.** Section 7.4 already says all of it, in its own
+voice, better integrated than a block dropped in from a note. This is kept only
+so the argument is not lost if that section is rewritten.
 
 > No scalar confidence score is presented as part of the forecast's reliability
 > evidence. An earlier design combined relative interval width with the conformal

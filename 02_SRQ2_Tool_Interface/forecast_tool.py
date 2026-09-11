@@ -32,13 +32,31 @@ WHAT SRQ2 ASKS, AND WHERE IT IS ANSWERED HERE
                   The interval and the track record answer different questions:
                   "how uncertain is THIS forecast" vs "how accurate is this MODEL".
 
-                  NOTE on `confidence`: it is a heuristic index combining relative
-                  interval width and the conformal quantile, with hand-chosen 0.5/0.5
-                  weights and 70/40 tier cutoffs. It is NOT a calibrated probability
-                  and has no literature definition. Because both its terms derive
-                  from the per-category q90, it varies little within a category.
-                  Report it as an ordinal hint; let `historical_*` carry the
-                  reliability claim.
+                  NOTE on `confidence`: DEGENERATE -- it does not vary within a
+                  category at all, and it is retained only because SRQ4 scores
+                  against it. Do NOT present it as a confidence signal.
+
+                  Two independent defects, both verified 2026-09-11:
+
+                  1. The forecast CANCELS out of the relative width. With a
+                     multiplicative interval, (hi-lo)/y reduces to 2*sinh(q90),
+                     so term 1 is a function of q90 alone -- and q90 is ONE
+                     number per category. Term 1 is therefore a per-category
+                     constant and cannot distinguish one brand from another.
+                  2. `1 - min(q90, 1)` treats q90 as if bounded near 1. It is a
+                     LOG-SPACE residual quantile: q90 = 1.0 already means a 90%
+                     band of x0.37 to x2.72. Measured q90 is 1.89 to 2.69, so
+                     term 2 is IDENTICALLY ZERO in every category.
+
+                  Net effect: exactly four attainable values across all 230
+                  brands -- CSD 5.9, Danskvand 5.8, Energidrikke 3.2, RTD 6.7 --
+                  all below the 40 cutoff, so every forecast tiers "Low".
+
+                  Recalibrating the cutoffs does NOT fix this: re-tiering four
+                  constants yields a category label wearing a number. See
+                  writing-notes/ch7_synthesis/ch7-confidence-index-decision.md.
+                  Let the interval carry uncertainty and `historical_*` carry
+                  reliability; both do so correctly.
   traceability -- every call is appended to forecast_log.jsonl with the model
                   file, its training cutoff, the calibration split, the feature
                   count and a UTC timestamp.
@@ -51,8 +69,10 @@ Usage:
 from __future__ import annotations
 
 import json
+import math
 import sys
 import time
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -327,6 +347,40 @@ def _track_record(category: str, model_name: str) -> dict:
     return out
 
 
+def _assert_confidence_is_known_degenerate(q90: float, rel: float,
+                                           conf: float, category: str) -> None:
+    """Warn loudly if the confidence index ever stops being degenerate.
+
+    This is the check whose absence caused the bug. Nobody ever printed q90
+    against the range the formula assumes, so `1 - min(q90, 1)` silently
+    returned zero for two years' worth of forecasts and the tier was constant.
+
+    It does not raise. The degenerate state is the CURRENT documented state and
+    is depended upon by published SRQ4 runs, so failing here would break a
+    working pipeline to report a known condition. It fires only if the numbers
+    move -- which would mean either the calibration changed materially or
+    someone edited the formula, and in both cases the thesis text describing the
+    index as non-discriminating has to be revisited.
+    """
+    second_term_live = q90 < 1.0
+    if second_term_live:
+        warnings.warn(
+            f"[confidence] {category}: q90={q90:.3f} < 1, so the second term is "
+            f"no longer identically zero. The index may now discriminate. "
+            f"Chapter 7 states that it does not -- re-check that text.",
+            stacklevel=2)
+    # Per-category constancy: rel must equal 2*sinh(q90) to within float noise,
+    # which is the algebraic identity that makes the index forecast-independent.
+    expected_rel = 2.0 * math.sinh(q90)
+    if abs(rel - expected_rel) > 1e-6 * max(1.0, expected_rel):
+        warnings.warn(
+            f"[confidence] {category}: relative width {rel:.4f} departs from "
+            f"2*sinh(q90)={expected_rel:.4f}. The interval is no longer purely "
+            f"multiplicative, so the index may vary per forecast. Re-check "
+            f"Chapter 7's claim that it is constant within a category.",
+            stacklevel=2)
+
+
 def _tier(score: float) -> str:
     return "High" if score >= 70 else ("Moderate" if score >= 40 else "Low")
 
@@ -470,7 +524,12 @@ def forecast_demand(category: str, brand: str, month: str | None = None) -> dict
     lo = float(np.expm1(np.log(max(yhat, 1e-9)) - q90))
     hi = float(np.expm1(np.log(max(yhat, 1e-9)) + q90))
     rel = (hi - lo) / max(yhat, 1e-9)
+    # Value deliberately UNCHANGED -- SRQ4's verify_setup.py requires the key and
+    # score_interval_communication.py scores published runs against it. See the
+    # module docstring: this index is degenerate, and the assertion below is what
+    # stops that being shipped silently a second time.
     conf = float(np.clip(100 * (0.5 * (1 / (1 + rel)) + 0.5 * (1 - min(q90, 1))), 0, 100))
+    _assert_confidence_is_known_degenerate(q90, rel, conf, category)
 
     out = {
         "status": "ok",
