@@ -31,6 +31,12 @@ updated: 2026_09_10-15_00
       run (`feature_reduction_eval.csv`); table 98 reads it. See F8 + F10.
 - [ ] Work through the F4 thesis-prose checklist against the OneDrive `.docx`
       (laptop) — now has fully current, fully computed numbers.
+- [ ] **HPC-READY: the calibration re-run (F12).** `srq1_calibration.py`
+      hardcodes XGBoost, but Energidrikke and RTD serve LightGBM. Half the
+      calibration table describes a model that is not served. **Minutes of
+      compute, one file edited, no retraining** — the served models already
+      exist. Full spec in F12, written so it can be run without rediscovering
+      anything. **Highest-value re-run still open.**
 - [x] ~~F5 — measure `--parallel` at 100 trials~~ — **not doing it.** Brian:
       won't be reported either way, it's only for our own efficiency. The code
       is on `main`, opt-in via `--parallel`, unused by default. Expected
@@ -338,6 +344,116 @@ second incident) and was abandoned rather than reported as a number.
 alone on a job with no other work happening, at the real 100-trial count,
 and compare wall-clock against a sequential run at the same trial count.
 Only then is the speed claim actually verified rather than inferred.
+
+---
+
+## F12 — `srq1_calibration.py` calibrates the wrong model for half the categories (2026-09-11)
+
+**Raised by Enrico 2026-09-11, validated the same day. Tracked as S17 on the
+deferred structural list.** This is the highest-value re-run still open, and it
+is **not a retraining** — the served models already exist on disk.
+
+### The defect
+
+`srq1_calibration.py:184` fits XGBoost unconditionally, for every category:
+
+```python
+m = XGBRegressor(random_state=SEED, verbosity=0, n_jobs=XGB_N_JOBS,
+                 **params.get(f"brand/{cat}/XGBoost", {}))
+```
+
+But `train_and_persist.best_model_for()` selects on the **cross-validation**
+score, and on that basis two categories serve LightGBM. The served metadata says
+so directly — `05_thesis_results/05_model_benchmark/models/index.json`:
+
+| Category | `model_file` | Served model | Calibration fits | q90_log |
+|---|---|---|---|---|
+| CSD | `model.json` | XGBoost | XGBoost ✓ | 2.027 |
+| Danskvand | `model.json` | XGBoost | XGBoost ✓ | 2.040 |
+| **Energidrikke** | **`model.joblib`** | **LightGBM** | ⚠ XGBoost | 2.691 |
+| **RTD** | **`model.joblib`** | **LightGBM** | ⚠ XGBoost | 1.890 |
+
+**`model.json` is XGBoost's native format; `model.joblib` is the LightGBM
+pickle.** The file extension is a reliable discriminator, and each category's
+`metadata.json` also carries an explicit `model` string.
+
+⚠ **Selecting on test WMAPE gives XGBoost in all four categories**, which is why
+this looks wrong at first glance. It is not. `best_model_for()` deliberately
+selects on CV because selecting on test is selection on the evaluation set and
+biases every downstream number; the code carries that reasoning in its own
+comments. **Do not "fix" this by switching the selection to test.**
+
+### What to change
+
+**One file, one function.** Read the served model per category instead of
+hardcoding the estimator:
+
+1. Load `models/index.json` (or each category's `metadata.json`).
+2. Branch on the served model: `XGBRegressor` with
+   `params["brand/{cat}/XGBoost"]`, or `LGBMRegressor` with
+   `params["brand/{cat}/LightGBM"]`.
+3. Everything downstream is unchanged — the split-conformal procedure, the
+   finite-sample quantile of Lei et al. Algorithm 2, and the coverage
+   measurement are all estimator-agnostic.
+
+⚠ **Keep the finite-sample quantile exactly as it is.** It is
+`ceil((n+1)(1-alpha))/n`, not the plain nominal quantile, and it is what buys
+the distribution-free guarantee at finite n. The script's own comments explain
+this; it is correct and must not be "simplified".
+
+⚠ **`XGB_N_JOBS=1` still applies**, per the standing SRQ1 constraint. Set the
+LightGBM equivalent (`n_jobs=1`) to match, or the two arms differ in a way that
+affects timing measurements.
+
+### Cost
+
+| | |
+|---|---|
+| compute | **minutes, not hours** — four single fits on TRAIN plus prediction, with no tuning loop (params are read from `tuned_params.json`). No isolated timing for this stage has been recorded; for scale, the tuning-heavy `pooled` stage took 320s and `holiday_ablation` 12.3s, and this one does strictly less work than either. **Time it on the run and record it here.** |
+| retraining | **none.** This re-fits the calibration model on TRAIN only, which is what the split-conformal procedure requires. The served models are untouched |
+| risk | low. Isolated script, no other stage reads its output |
+| money | zero. No API calls |
+
+### What moves when it runs
+
+| Artefact | Effect |
+|---|---|
+| `calibration.csv` / `calibration.md` | coverage and mean relative width change for **Energidrikke and RTD only**; CSD and Danskvand are already correct |
+| Chapter 5, Section 5.5.7 | its table, and possibly its narrative — see below |
+| Chapter 7 | the interval description |
+
+⚠ **Two claims in Chapter 5 could change identity**, so check them after the run
+rather than assuming the prose survives:
+
+- **danskvand currently misses the 85% coverage target at 83.9%.** Danskvand is
+  an XGBoost category, so this number should NOT move. If it does, something
+  else changed and the run needs investigating before its numbers are used.
+- **The "calibration quality tracks calibration set size" claim** is the
+  section's central finding. It rests on all four categories; if Energidrikke's
+  or RTD's coverage moves substantially, re-check that the monotone pattern
+  still holds.
+
+### The chapter is already written to survive either outcome
+
+**This does not block Chapter 5.** Section 5.5.7 carries a scope sentence added
+2026-09-11:
+
+> "These intervals are calibrated on gradient-boosted residuals under a single
+> implementation, and the conformal procedure is applied identically in every
+> category; the coverage reported here therefore describes the calibration
+> method on this panel rather than a property of whichever implementation is
+> finally served."
+
+That is true whether or not the re-run happens. **If it does happen, the sentence
+narrows** to say the calibration matches the served model in every category,
+which is a stronger claim.
+
+### Related
+
+- `06_thesis_writing/writing-notes/ch7_synthesis/ch7-confidence-index-decision.md`
+  — the sibling SRQ2 defect (the confidence index), which is a **wording**
+  decision rather than a re-run
+- `06_thesis_writing/writing-notes/deferred-structural-decisions.md` — S17
 
 ---
 
