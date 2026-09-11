@@ -1585,3 +1585,98 @@ bug in the opposite direction.
 **Both fixed**: each now reads the field where it is actually recorded, and each
 treats an empty result as a FAILURE with its own message rather than folding it
 into the comparison. A check that cannot find its evidence must say so.
+
+---
+
+## F52 — the size-bucketed interval fix DOES NOT WORK. F50 option 2 is withdrawn.
+
+**Measured 2026-09-11 on the test split of all four categories, before any
+retraining was commissioned. This corrects F50, which proposed size-bucketed
+calibration on the strength of a number that does not survive an honest test.**
+
+### First, a correction to how F50 framed the fix
+
+F50 called this "a retrain". **It is not.** `train_and_persist.py` already fits
+TWO models per category: a calibration model on train-only, whose validation
+residuals give `q90_log`, and a serving model on train+val. The interval is
+`expm1(pred +/- q90)`. Changing how residuals are summarised into a quantile
+touches neither model's weights. No hyperparameter search, no GPU, no HPC.
+
+That also means the fix could be, and was, evaluated locally in minutes.
+
+### The number in F50 was thin, and it collapsed under test
+
+F50 reported that calibrating on brands over 1M units/month gives HARBOE a
++/-1.35x band instead of +/-7.59x. That figure came from **28 validation rows
+covering 4 brands** — far too few for a 90th percentile.
+
+Calibration-window rows available in the ">1M units/month" bucket:
+
+| category | brands over 1M | val rows in bucket |
+|---|---|---|
+| CSD | 4 | 28 |
+| Danskvand | 1 | 6 |
+| Energidrikke | 3 | 18 |
+| RTD | **0** | **0** |
+
+With a `MIN_ROWS=30` guard every large bucket falls back to pooled, so the
+scheme reduces to the shipped one on exactly the brands it was meant to fix.
+
+### Four schemes, measured on test. Coverage target 90%.
+
+A scheme WINS only if coverage stays within 5pp of 90% **and** width falls.
+Undercovering to look narrow is not a win.
+
+| category | scheme | coverage | median width |
+|---|---|---|---|
+| CSD | pooled (SHIPPED) | 92.5% | 7.9x |
+| CSD | two-bucket (median split) | 91.6% | **3.2x** WIN |
+| CSD | volatility-scaled | 86.5% | 3.0x WIN |
+| Danskvand | pooled (SHIPPED) | 85.1% | 15.2x |
+| Danskvand | two-bucket | 79.9% | 3.7x — undercovers |
+| Danskvand | volatility-scaled | 88.5% | **5.9x** WIN |
+| Energidrikke | pooled (SHIPPED) | 88.6% | 18.2x |
+| Energidrikke | two-bucket | 79.9% | 6.4x — undercovers |
+| Energidrikke | volatility-scaled | 82.1% | 12.4x — undercovers |
+| RTD | pooled (SHIPPED) | 89.0% | 5.9x |
+| RTD | two-bucket | 88.2% | 7.1x — WIDER |
+| RTD | volatility-scaled | 87.6% | 7.4x — WIDER |
+
+**No scheme wins in more than two of four categories.** Two-bucket wins CSD and
+loses the other three. Volatility-scaling wins CSD and Danskvand, undercovers
+Energidrikke, and is *wider* on RTD.
+
+Per-brand normalised conformal (F50 option 3) was tested first and is worse
+still: coverage 68.8-80.2% across the four categories. The divisor is a brand's
+mean validation residual, itself estimated from ~6-7 rows, so it is far too
+noisy to divide by.
+
+`pooled @95th` was measured as a control and shows what buying coverage costs:
+Danskvand's median width goes to **2,660x**.
+
+### Why none of it works: the calibration windows are simply too small
+
+6-7 validation rows per brand, and 29-95 brands per category. Any scheme that
+conditions the quantile on a subgroup is estimating a 90th percentile from a
+handful of points. The pooled estimator is crude precisely because it is the
+only one with enough data behind it.
+
+This is not a coding defect and it is not fixable by retraining. It is a
+**sample-size limit of the reduced dataset**, and it belongs in the limitations
+with the coverage numbers as evidence.
+
+### Decision
+
+**F50 option 1 (report as a limitation) is now the recommendation, and options
+2 and 3 are withdrawn on evidence.** No HPC time should be spent on this.
+
+What the limitation says, with the measurements to support it: the split
+conformal interval achieves its marginal 90% guarantee (85.1-92.5% observed
+across four categories) and is nonetheless uninformative per brand (median
+width 5.9-18.2x the point forecast), because the calibration population mixes
+brands spanning six orders of magnitude and the per-brand windows are too short
+to condition on. Three alternative schemes were implemented and measured; none
+improved coverage and width together in more than two of four categories.
+
+**A negative result that was measured is a contribution.** It is also the
+honest answer to "why is the interval so wide", which a reader will ask.
