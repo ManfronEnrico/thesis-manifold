@@ -9,6 +9,13 @@ status: in_progress
 
 # P0049 — Finalizing experiments: START HERE
 
+> **STATUS 2026-09-11 - this file predates the seven-arm work.** The ladder now
+> has **seven** scenarios, not five, and every arm was renamed. All three open
+> questions are answered. Read the **STATUS 2026-09-11** section at the bottom of
+> `task_plan.md` first; it supersedes anything here about scenario count, arm
+> names, costs or open questions.
+
+
 **You have no conversation history. This file is the whole picture.** Read it before
 running anything.
 

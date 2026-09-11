@@ -1,9 +1,9 @@
 ---
 pid: P0049
 created: 2026-09-07 17:50:00
-updated: 2026-09-10 21:55:00
+updated: 2026-09-11 23:45:00
 status: in_progress
-focus_detail: "EXPERIMENT SIDE. **Scenarios D and E are WRITTEN and wired (a941927)** -- `SCENARIOS` now holds all five and `--scenarios D,E` selects them. NOT YET RUN: no engine run has been costed, so both cost estimates are placeholders that print (ESTIMATE NOT MEASURED). verify_setup is 13/13 with the engine and 11+2-skipped without it, so an assessor running A-C is never blocked. Three corrections landed while building: F45 Prometheus is a TWO-agent delegation and the SQL tools are hardcoded in the nested coder, so DEC-D-SNAPSHOT is MEASURED (a warehouse query is detected and excluded) rather than enforced; F46 the engine and thesis venvs are disjoint so D/E cross a process boundary, and E works because the PARENT evaluates the model and injects the payload; F44 adding D/E changed schema_id to v4, which is why this had to happen BEFORE the funded set, never after. NEXT: smoke D and E (~$0.90, replaces the estimates with measurements), then the funded set. THREE OPEN QUESTIONS still need Brian -- Q-A the brand sample for D/E and its cost, Q-B how the reduced dataset is declared in BOTH design and limitations, Q-C whether the 39-row aggregate is the right shared input."
+focus_detail: "EXPERIMENT SIDE, 2026-09-11. **SEVEN scenarios, all measured, all green.** The ladder is A_llm_plain / B_llm_data / C_llm_model / D_prometheus_data / E_prometheus_model / F_llm_data_model / G_prometheus_data_model -- F and G are the COMBINED arm (history + code + the model payload together) added this session, and every arm was renamed to <letter>_<orchestrator>_<inputs> so the two ladders pair column-wise. Schema v5-seven-scenarios+d22fe7cdc30e; A-E strings are byte-identical to v4 so earlier paid runs stay poolable. Seven-arm smoke ran 2026-09-11 on CSD/HARBOE, billed $3.62, all 8 checks pass. THE HEADLINE: F and G both carry deviates_from_model=True -- neither returned the model number, and both cited its low confidence tier and wide interval as the reason, so DEC-COMBINED-INPUT measured integration rather than deference. sql_calls empty on D, E AND G. THE THREE OPEN QUESTIONS ARE ANSWERED (DEC-MVP-DESIGN): same 3 brands across all arms, CSD only, 39-month shared input -- all three resolve to existing harness behaviour. NEXT: the funded MVP, 3 CSD brands x 3 repeats x 7 arms = 63 runs, ~$19 raw and ~$34 at the observed under-estimate ratio. TWO THINGS FIRST: price web search (F57 -- it is detected but contributes $0 to every estimate, and cost_usd_est has under-reported on BOTH billed runs, 1.20x and 1.77x), and note the volume floor is now IN (F58, MIN_SCORED_UNITS=1000) because stratifying CSD returned VOELKEL at 9 units/month where one unit is 11% APE. Floored sample is HARBOE / 7-UP / ØRBÆK."
 ---
 
 # P0049 — Finalizing experiments
@@ -210,3 +210,97 @@ found there costs $1; the same defect in the funded set costs $40.
 - `../.archive/P0046_2026-09-05_21-10_exogenous-enrichment-decision/LOCKED_STATE.md` — the numbers
 - `../.archive/P0046_2026-09-05_21-10_exogenous-enrichment-decision/findings.md` — F18–F22
 - `../P0048_2026-09-07_13-51_remaining-prose-and-results-citations/START_HERE.md` — horizon origin
+
+---
+
+# STATUS 2026-09-11 - read this before touching the experiment
+
+Appended by the session that ran the seven-arm smoke. Supersedes any earlier
+statement in this file about scenario count, arm names, costs or open questions.
+
+## The ladder is SEVEN arms, and they were all renamed
+
+| key | orchestrator | inputs |
+|---|---|---|
+| `A_llm_plain` | hosted LLM | none (web search only) |
+| `B_llm_data` | hosted LLM | history + code sandbox |
+| `C_llm_model` | hosted LLM | typed `forecast_demand` tool |
+| `D_prometheus_data` | Prometheus | history + code (B on production) |
+| `E_prometheus_model` | Prometheus | model payload (C on production) |
+| `F_llm_data_model` | hosted LLM | history + code + model payload |
+| `G_prometheus_data_model` | Prometheus | F on production |
+
+Every name is `<letter>_<orchestrator>_<inputs>`, so the two ladders pair
+column-wise: B/D, C/E, F/G. **The old names are gone from code, CSVs and cached
+response filenames** - migrated 2026-09-11, measured values untouched.
+
+`A -> B` data access, `B -> C` the dedicated model, `C -> F` code on top of the
+model, `D -> E -> G` the same three rungs on production.
+
+## What the smoke measured (CSD/HARBOE, 2026-03, actual 6,365,900, billed $3.62)
+
+| arm | forecast | APE | latency | est cost | code blocks |
+|---|---|---|---|---|---|
+| A_llm_plain | 4,900,000 | 23.0% | 119.5 s | $0.543 | - |
+| B_llm_data | 6,700,000 | 5.2% | 91.3 s | $0.224 | 15 |
+| C_llm_model | 4,969,050 | 21.9% | 6.7 s | $0.009 | - |
+| D_prometheus_data | 6,379,795 | 0.2% | 113.6 s | $0.519 | 4 |
+| E_prometheus_model | 4,969,050 | 21.9% | 41.7 s | $0.202 | 0 |
+| F_llm_data_model | 6,200,000 | 2.6% | 75.3 s | $0.223 | 12 |
+| G_prometheus_data_model | 5,604,800 | 12.0% | 80.9 s | $0.327 | 2 |
+
+**The result that matters: `deviates_from_model=True` on BOTH F and G.** Neither
+returned the model's 4,969,050, and both named its low confidence tier and wide
+interval as the reason to weigh it rather than adopt it. That is the typed
+payload carrying decision-relevant information - a result for SRQ2 independent
+of accuracy. `sql_calls: []` on D, E and G; `usage_reported: true` on all three.
+
+**Do NOT read the accuracy ordering as a finding.** A moved 38.7% -> 23.0% and B
+1.0% -> 5.2% between two runs on identical prompts. Within-arm spread is
+comparable to between-arm gaps at n=1.
+
+## The three open questions are ANSWERED - see DEC-MVP-DESIGN in findings.md
+
+| | question | answer |
+|---|---|---|
+| Q-A | brand pairing | **same 3 brands, all seven arms** |
+| Q-B | dataset scope | **CSD only**, declared in design AND limitations |
+| Q-C | shared input | **keep the 39-month aggregate** |
+
+All three resolve to what the harness already does. No code change was needed.
+
+## Next action: the funded MVP
+
+3 CSD brands x 3 repeats x 7 arms = **63 runs**.
+
+| basis | total |
+|---|---|
+| raw harness estimate | $19.32 |
+| x1.2 (observed) | $23.19 |
+| **x1.77 (observed)** | **$34.20** |
+
+Fund ~$40. `--repeats` is one value for all arms, so a mixed allocation needs
+two invocations; caching makes the second skip what the first completed.
+
+### Two things before spending
+
+1. **Price web search (F57).** It is detected and recorded but contributes $0.00
+   to every estimate; the smoke's billing export shows a $0.20 line item.
+   `cost_usd_est` has under-reported on **both** billed runs - 1.20x and 1.77x.
+   Add `PRICE_WEB_SEARCH_PER_CALL` and count the items in `_usage()`.
+2. **The volume floor is IN (F58).** `MIN_SCORED_UNITS = 1000`, applied by
+   `_above_volume_floor()`. Stratifying CSD without it returned **VOELKEL at 9
+   units/month**, where one unit of error is 11.1% APE. Floored pool is 45 of 76
+   CSD brands; the sample is **HARBOE (6,365,900) / 7-UP (13,042) / ØRBÆK
+   (2,850)** - still three orders of magnitude, worst-case rounding 0.035%.
+
+## Where the reasoning lives
+
+| topic | file |
+|---|---|
+| every finding F49-F58, DEC-MVP-DESIGN | `findings.md` (this folder) |
+| the conclusion the evidence can carry | `writing-notes/ch8_experiment/the-defensible-conclusion-shape.md` |
+| brand inclusion criteria + the floor | `writing-notes/ch8_experiment/brand-sampling-and-inclusion-criteria.md` |
+| Ch6 anchored fixes | `writing-notes/ch6_architecture/` |
+| final figure/table regeneration | P0050 (F36 = the relettering defect) |
+| submission repo scope | P0054 (F-SUBMIT) |

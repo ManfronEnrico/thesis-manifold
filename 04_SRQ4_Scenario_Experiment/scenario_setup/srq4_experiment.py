@@ -1238,6 +1238,41 @@ def _scorable_brands(cat):
     return [b for b in _eligible_brands(cat) if str(b).upper() in keep]
 
 
+# Minimum units in the SCORED month for a brand to enter the stratification
+# pool. APE divides by that actual, so on a 9-unit series one unit of error is
+# 11.1% and three units is 33.3% -- the score measures integer rounding, not
+# forecasting skill, and no scenario can influence it.
+#
+# `_scorable_brands` already guarantees the APE is DEFINED (no zero in the
+# denominator). This is the other half of that criterion: that it is also
+# MEANINGFUL. The two were conflated until 2026-09-11, when stratifying CSD
+# max/median/min returned VOELKEL at 9 units as the "min" stratum (F58).
+#
+# 1,000 keeps 45 of CSD's 76 scorable brands and still spans three orders of
+# magnitude, so the stratification remains a real volume range rather than a
+# narrow band. At this floor one unit of error is at most 0.1% APE.
+#
+# Stated as an inclusion criterion in the write-up, which is ordinary practice
+# and far easier to defend than hand-picking the sample.
+MIN_SCORED_UNITS = 1000
+
+
+def _above_volume_floor(cat, floor=MIN_SCORED_UNITS):
+    """Scorable brands whose SCORED-month actual clears `floor`.
+
+    Filters on the actual that enters the APE denominator, not on mean or total
+    volume: a brand can average well and still be scored on a thin month."""
+    out = []
+    for b in _scorable_brands(cat):
+        try:
+            _, actual, _ = _brand_history(cat, b)
+        except Exception:
+            continue
+        if actual is not None and actual >= floor:
+            out.append(b)
+    return out
+
+
 def _stratified_brands(cat, k=3):
     """Highest / median / lowest-volume brand among the SCORABLE ones.
 
@@ -1247,13 +1282,25 @@ def _stratified_brands(cat, k=3):
     but it cannot answer whether the advantage survives on a thin, volatile
     brand. Sampling across the volume range can.
 
-    Stratifying over `_scorable_brands` rather than raw volume rank keeps that
-    range coverage while guaranteeing every selected cell yields a defined APE."""
-    pool = _scorable_brands(cat)
+    Stratifying over the SCORABLE brands rather than raw volume rank keeps that
+    range coverage while guaranteeing every selected cell yields a defined APE.
+
+    The pool is additionally floored at `MIN_SCORED_UNITS`, because a defined
+    APE is not automatically a meaningful one -- see that constant."""
+    # The floored pool, NOT _scorable_brands -- see MIN_SCORED_UNITS. Falls
+    # back with a loud warning rather than silently stratifying over a
+    # population that includes cells no scenario can influence.
+    pool = _above_volume_floor(cat)
     if not pool:
-        raise SystemExit(
-            f"{cat}: no brand has a fully non-zero test window; cannot stratify. "
-            f"Inspect with --list-brands.")
+        unfloored = _scorable_brands(cat)
+        if not unfloored:
+            raise SystemExit(
+                f"{cat}: no brand has a fully non-zero test window; cannot "
+                f"stratify. Inspect with --list-brands.")
+        print(f"  WARNING {cat}: no brand clears the {MIN_SCORED_UNITS}-unit "
+              f"floor; falling back to all {len(unfloored)} scorable brands. "
+              f"APE on the smallest of these measures rounding, not skill.")
+        pool = unfloored
     if len(pool) <= k:
         return pool
     if k == 3:
