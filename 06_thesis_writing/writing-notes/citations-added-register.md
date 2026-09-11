@@ -501,3 +501,74 @@ noise in the data, not on a fixed count.
 
 Details and the surrounding quotations:
 `notebookLM/03-Modelling_Review/fpp3-first-pass-findings.md`, finding 4.
+
+---
+
+## Chapter 6 pass, 2026-09-11 — two citations proposed, both verified present
+
+Verified against the **unfiltered Zotero API** at the 2026-09-11 20:08 pull, 89
+items, checked by author and date rather than through the filtered export.
+
+### C6-01 — Ouyang, Zhang & Harman (2025)
+
+| | |
+|---|---|
+| Zotero key | `AMB2F6T2` |
+| Title | An Empirical Study of the Non-Determinism of ChatGPT in Code Generation |
+| Date in library | January 22, 2025 |
+| Lands in | **Section 6.4**, the JSON function-calling paragraph |
+| Status | `IN-ZOTERO` ✅ · `NLM-CONFIRMED` ⬜ |
+
+**The sentence it is being used to support, verbatim:**
+
+> "Non-determinism in language-model code generation is measurable and
+> substantial (Ouyang et al., 2025), which is why the property is designed for
+> rather than assumed."
+
+**What the citation must establish:** that the same prompt, issued repeatedly to
+a language model, yields materially different generated code. It is cited for the
+**existence and scale of the problem**, not for any claim that function-calling
+is the remedy — that argument is ours and rests on the artefact.
+
+⚠ **Verify the direction before submission.** A paper reporting that
+non-determinism is *small* would refute this sentence rather than support it. The
+title asserts an empirical study; its magnitude is what must be read.
+
+### C6-02 — Goodwin, Önkal & Thomson (2010)
+
+| | |
+|---|---|
+| Zotero key | `IJ8UMZ3X` |
+| Title | Do forecasts expressed as prediction intervals improve production planning decisions? |
+| Date in library | 2010-08-16 |
+| Lands in | **Section 6.4**, the Uncertainty paragraph |
+| Status | `IN-ZOTERO` ✅ · `NLM-CONFIRMED` ⬜ · **offered as optional** |
+
+**The sentence it is being used to support, verbatim:**
+
+> "**Uncertainty**, by attaching interval information to every forecast, which is
+> what allows a planner to act on the forecast's reliability rather than on its
+> point value alone (Goodwin et al., 2010)."
+
+**What the citation must establish:** that presenting a forecast as an interval
+changes, and preferably improves, a production planning decision relative to a
+point forecast.
+
+⚠ **This one carries real risk and must not be pasted unverified.** The title is
+a *question*, and papers in this literature sometimes answer it negatively. If
+the finding is that intervals did **not** improve decisions, the citation still
+belongs in the thesis — but in the limitations, supporting a different sentence.
+**Read the finding before the citation goes in.**
+
+### Not added — Dong, Lu & Zhu (2024), AgentOps
+
+| | |
+|---|---|
+| Zotero key | `DAN2UBT6` |
+| Date in library | 2024-11-30 |
+| Would land in | Section 6.6, the observability capability |
+
+Verified present and on topic. **Deliberately not added**: Section 6.6 carries no
+open comment, and adding citations to sections nobody has questioned is scope
+that was not asked for. It would strengthen the thinnest section in the chapter
+if wanted.

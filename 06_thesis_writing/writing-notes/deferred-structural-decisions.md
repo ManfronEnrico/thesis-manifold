@@ -805,3 +805,26 @@ fitting from serving, which the estimates never did:
 This is the number any deployment-footprint argument should use.
 
 ⚠ **Do not cite 50 MB anywhere in the thesis.**
+
+
+---
+
+## S23 - Two finding IDs are used twice, from parallel sessions
+
+**Status:** open - rename before this file is used as a checklist
+**Found:** 2026-09-11
+
+Two sessions appended to this file concurrently and reused IDs:
+
+| ID | Used for | and for |
+|---|---|---|
+| **S20** | Chapter 7 rewritten against SRQ2's three properties | the "baseline" vs "comparator" framing addendum |
+| **S21** | "Code-as-action baseline" names a two-way comparison | the SRQ4 display labels (now closed) |
+
+⚠ **A reference to "S20" or "S21" is currently ambiguous**, which defeats the
+point of an ID. Nothing has been lost - both entries under each number are
+intact - but the next pass that cites one should say which.
+
+**Recommendation:** renumber the later of each pair to S24 and S25, and leave a
+one-line pointer at the old position. Do it in one edit rather than
+opportunistically, so no half-renamed state exists.
