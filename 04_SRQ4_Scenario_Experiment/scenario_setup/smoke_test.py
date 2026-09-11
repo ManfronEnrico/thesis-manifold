@@ -79,11 +79,15 @@ sys.path.insert(0, str(HERE))
 # Rough per-run cost from the delivered A/B/C ladder (2026-08-19, $4.92 total):
 # A ~$0.49, B ~$0.28, C ~$0.007. An order of magnitude above these is a surprise
 # worth stopping for, because it multiplies by 111 in the funded set.
-# A/B/C measured 2026-08-19. D/E are ESTIMATES -- no engine run has been costed
-# (see the module docstring). Replace with measured values after the first smoke.
-_EXPECTED_USD = {"A_plain": 0.50, "B_data": 0.30, "C_model": 0.01,
-                 "D_prometheus": 0.70, "E_prometheus_model": 0.20}
-_UNMEASURED_USD = {"D_prometheus", "E_prometheus_model"}
+# A/B/C first measured 2026-08-19 and refreshed 2026-09-11; D/E measured
+# 2026-09-11 on the first paid five-arm run. F/G are the only estimates left.
+_EXPECTED_USD = {"A_plain": 0.52, "B_data": 0.23, "C_model": 0.01,
+                 "D_prometheus": 0.55, "E_prometheus_model": 0.21,
+                 "F_data_model": 0.30, "G_prometheus_data_model": 0.60}
+# D and E were measured 2026-09-11 and are no longer estimates. F and G have
+# never run: F is projected from B (same sandbox, longer prompt) and G from D
+# (same engine, longer coder brief). The first smoke replaces both.
+_UNMEASURED_USD = {"F_data_model", "G_prometheus_data_model"}
 _COST_ALARM = 10.0
 
 

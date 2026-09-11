@@ -310,7 +310,7 @@ FORECAST_TOOL_SCHEMA = {
 #                   row came from a harness that had no D or E. See P0049 F44 --
 #                   add D/E BEFORE the funded set, never after, or every paid
 #                   row stops matching and is re-sent.
-SCHEMA_VERSION = "v4-five-scenarios"
+SCHEMA_VERSION = "v5-seven-scenarios"
 
 
 def schema_id() -> str:
@@ -325,6 +325,7 @@ def schema_id() -> str:
              SENTINEL_INSTRUCTION, SCENARIO_A_NOTE, SCENARIO_B_NOTE,
              SCENARIO_C_NOTE, SCENARIO_D_NOTE, SCENARIO_D_CODER,
              SCENARIO_E_NOTE, SCENARIO_E_CODER,
+             SCENARIO_F_NOTE, SCENARIO_G_NOTE, SCENARIO_G_CODER,
              _json.dumps(FORECAST_TOOL_SCHEMA, sort_keys=True)]
     h = hashlib.sha256("\x00".join(parts).encode("utf-8")).hexdigest()[:12]
     return f"{SCHEMA_VERSION}+{h}"
@@ -354,6 +355,64 @@ def scenario_c_prompt(brand: str, category: str, target: str,
             + OUTPUT_EXEMPLAR + SENTINEL_INSTRUCTION.format(sentinel=sentinel))
 
 
+# ---------------------------------------------------------------------------
+# Scenarios F and G -- the combined arm
+# ---------------------------------------------------------------------------
+# F and G hold the history, a code sandbox AND the trained model's forecast at
+# the same time. This is what a production deployment would actually do: the
+# dedicated model is available, and so is everything else.
+#
+# WHY THEY ARE A SIXTH AND SEVENTH RUNG, NOT A REDEFINITION OF C AND E
+# C and E stay exactly as they are -- the trained model alone, which is the
+# artefact as Chapter 6 specifies it. F and G sit ABOVE them, so the ladder
+# still attributes cleanly:
+#
+#     A -> B   what data access buys
+#     B -> C   what the trained model adds          (the thesis contribution)
+#     C -> F   what adding code back ON TOP of the model does
+#     D -> E -> G  the same three rungs on the production orchestrator
+#
+# THE FRAMING DECISION (DEC-COMBINED-INPUT, Brian, 2026-09-11)
+# The model's forecast is presented as ONE INPUT AMONG SEVERAL, not as a
+# starting point to revise. The alternative -- "here is the model's number,
+# override it if you disagree" -- answers a different and much weaker question,
+# because an agent handed a number and told it may keep it will almost always
+# keep it. That measures deference, not integration.
+#
+# The note therefore names the model's output as evidence alongside the history
+# and does NOT instruct the agent which to prefer. Whether it defers to the
+# model, overrides it, or blends the two IS THE MEASUREMENT.
+SCENARIO_F_NOTE = """
+
+Here is the brand's monthly sales history as CSV:
+
+{csv}
+
+A forecast from a dedicated model trained on the company's internal sales history is also available, with its prediction interval, confidence tier and track record:
+
+{payload}
+
+You have both of these and a Python environment. pandas, numpy, scipy, scikit-learn and statsmodels are available. Weigh the evidence as you see fit and give your own answer. End your reply with the answer, not with code."""
+
+SCENARIO_G_NOTE = """
+
+Use the analysis engine to answer this. The brand's monthly sales history has already been retrieved and is available to the engine, together with a forecast from a dedicated model trained on the company's internal sales history; it does not need to query the data warehouse. End your reply with the answer, not with code."""
+
+SCENARIO_G_CODER = """This is a forecasting task on data that has ALREADY been retrieved. Do not query the data warehouse: the material below is the authoritative input, and a warehouse query would answer a different question from the one being asked.
+
+Monthly sales history for {brand} ({category}), as CSV:
+
+{csv}
+
+A dedicated forecasting model trained on the company's internal sales history has also produced a forecast for this request:
+
+{payload}
+
+`forecast_units` is its point forecast, `interval_90` its 90% prediction interval, `confidence_tier` its own confidence, and `historical_wmape` its measured error on held-out data for this series.
+
+You have both the history and the model's forecast, and you can run code with execute_code. Weigh the evidence as you see fit and produce a forecast for {target}. If you write code, paste the CSV text into it and load it with pandas via io.StringIO. Report the point forecast, a 90% interval and how confident you are."""
+
+
 def scenario_d_prompt(brand: str, category: str, target: str,
                       sentinel: str = SENTINEL) -> str:
     """The user-facing half of D. The CSV goes to the coder, not here."""
@@ -377,6 +436,32 @@ def scenario_e_coder(brand: str, category: str, target: str, payload: str) -> st
     """The coder-side brief for E, carrying the trained model's payload."""
     return SCENARIO_E_CODER.format(brand=brand, category=category,
                                    target=target, payload=payload)
+
+
+def scenario_f_prompt(brand: str, category: str, target: str, csv: str,
+                      payload: str, sentinel: str = SENTINEL) -> str:
+    """F -- history AND the model's forecast AND a sandbox, one LLM.
+
+    Everything is in the single user message, as Scenario B's CSV already is:
+    F has no nested coder to brief.
+    """
+    return (user_question(brand, category, target)
+            + SCENARIO_F_NOTE.format(csv=csv, payload=payload)
+            + OUTPUT_EXEMPLAR + SENTINEL_INSTRUCTION.format(sentinel=sentinel))
+
+
+def scenario_g_prompt(brand: str, category: str, target: str,
+                      sentinel: str = SENTINEL) -> str:
+    """The user-facing half of G. The CSV and payload go to the coder."""
+    return (user_question(brand, category, target) + SCENARIO_G_NOTE
+            + OUTPUT_EXEMPLAR + SENTINEL_INSTRUCTION.format(sentinel=sentinel))
+
+
+def scenario_g_coder(brand: str, category: str, target: str, csv: str,
+                     payload: str) -> str:
+    """The coder-side brief for G: the same series D gets, plus E's payload."""
+    return SCENARIO_G_CODER.format(brand=brand, category=category,
+                                   target=target, csv=csv, payload=payload)
 
 
 def _demo():

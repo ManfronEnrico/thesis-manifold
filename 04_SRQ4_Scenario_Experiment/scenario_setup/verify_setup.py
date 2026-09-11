@@ -239,11 +239,31 @@ def main():
         sys.path.insert(0, str(HERE))
         import prompts as P
         _, _, t = m._brand_history(a.category, a.brand)
-        pa = P.scenario_c_prompt(a.brand, a.category, t)
-        pc = P.scenario_a_prompt(a.brand, a.category, t)
-        # Every scenario must name the month; "next month" is what broke Scenario A before.
-        ok = t in pa and t in pc and "next month" not in pc.lower()
-        return ok, f"target {t} named in every scenario prompt"
+        pa = P.scenario_a_prompt(a.brand, a.category, t)
+        pc = P.scenario_c_prompt(a.brand, a.category, t)
+        # EVERY scenario must name the month; "next month" is what broke
+        # Scenario A before. Checked across all seven rather than A and C
+        # only -- the earlier version could not have seen D, E, F or G lose
+        # the month, and the month is what makes the arms comparable at all.
+        csv, payload = "period_year,period_month,sales_units\n2025,12,1\n", "{}"
+        built = {
+            "A": pa,
+            "B": P.scenario_b_prompt(a.brand, a.category, t, csv),
+            "C": pc,
+            "D": P.scenario_d_prompt(a.brand, a.category, t),
+            "D-coder": P.scenario_d_coder(a.brand, a.category, t, csv),
+            "E": P.scenario_e_prompt(a.brand, a.category, t),
+            "E-coder": P.scenario_e_coder(a.brand, a.category, t, payload),
+            "F": P.scenario_f_prompt(a.brand, a.category, t, csv, payload),
+            "G": P.scenario_g_prompt(a.brand, a.category, t),
+            "G-coder": P.scenario_g_coder(a.brand, a.category, t, csv, payload),
+        }
+        missing = sorted(k for k, v in built.items() if t not in v)
+        vague = sorted(k for k, v in built.items() if "next month" in v.lower())
+        if missing or vague:
+            return False, (f"target {t} missing from {missing}; "
+                           f"'next month' in {vague}")
+        return True, f"target {t} named in all {len(built)} prompt(s)"
     c.run("prompts name the target month", prompts_module)
 
     # -- scenarios D and E -------------------------------------------------

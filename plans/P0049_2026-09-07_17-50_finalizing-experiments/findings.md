@@ -1680,3 +1680,83 @@ improved coverage and width together in more than two of four categories.
 
 **A negative result that was measured is a contribution.** It is also the
 honest answer to "why is the interval so wide", which a reader will ask.
+
+---
+
+## F53 — the 20pp gap is NOT "code beats models". Four competing explanations, all testable.
+
+**Brian, 2026-09-11, on reading what Scenario B actually wrote.** Recorded
+because the obvious reading of the pilot is the wrong one, and the wrong one is
+the headline an examiner would reach for.
+
+### What Scenario B actually did
+
+Read from its cached code blocks (10 of them). Not a language model guessing:
+
+- **Exponential smoothing**, 4 configurations (add/mul seasonal x trend/no-trend,
+  damped and undamped)
+- **SARIMA over a 72-model grid** — `itertools.product(range(0,3), range(0,2),
+  range(0,3))` crossed with a seasonal grid — ranked by AIC
+- **OLS and Ridge** with month dummies, a linear time trend and promotion
+  intensity, fitted in BOTH linear and log space with a smearing correction
+- **A backtest at two earlier cutoffs** (2023-12, 2024-12), scoring every model
+  against months it had not seen
+- **Final answer: the median across all fitted models**
+
+Scenario D did the same shape of thing in 4 blocks on the Prometheus coder.
+
+### THE RESTATEMENT THAT MATTERS
+
+> **A model fitted to ONE SERIES beat a model fitted to A CATEGORY.**
+
+That is not the same claim as "an LLM writing code beats a dedicated
+forecasting model", and the difference is the whole finding. Scenario C is a
+single gradient-boosted model whose hyperparameters were tuned once for the
+whole category and which serves all 95 CSD brands from that one configuration.
+Scenario B fitted ~80 models to HARBOE's own 39 months and kept the consensus.
+
+**The comparison may be measuring per-series adaptation, not code-versus-model.**
+
+### Four explanations, separable by measurement
+
+| # | explanation | how to test |
+|---|---|---|
+| 1 | **per-series beats per-category** | compare C's error on large vs small brands across the funded set. HARBOE is the LARGEST brand in CSD, so a category-tuned model is pulled toward brands nothing like it. If C's error is systematically worse on the extremes of the size distribution, this is it. |
+| 2 | **ensembling beats a single model** | B averaged ~80 models; C is one. Ensembling reliably beats single models and this is a GENUINE advantage of the code-as-action approach, not an artefact. Testable by checking whether B's own per-model spread brackets C's answer. |
+| 3 | **luck** | one brand, one month. B's own backtest showed material error at other cutoffs. The funded set's repeats answer this directly. |
+| 4 | **horizon interaction** | C forecasts H=3 from a fixed Dec-2025 cutoff; B re-derives its own seasonal structure each run. A per-series method may degrade more slowly with horizon. Only testable if H=1 is also run. |
+
+**1 and 2 are not competing — they are additive, and both are real advantages of
+the code-as-action arm.** 3 is the null. 4 is out of scope unless H=1 is rerun.
+
+### Why this does NOT undermine the artefact
+
+Ch6 §6.4 justifies the structured tool interface on **reliability,
+reproducibility and auditability** — never on accuracy. The pilot is consistent
+with that justification:
+
+| | Scenario C | Scenario B |
+|---|---|---|
+| latency | 8 s | 98 s |
+| cost | $0.01 | $0.23 |
+| auditability | one tool-call span, args verified | 10 opaque code blocks |
+| reproducibility | same input -> same number | re-derives its models each run |
+
+**A defensible thesis conclusion, and a more interesting one than a clean win:**
+
+> *Dedicated models trade accuracy for auditability and cost at this data scale.*
+
+That sentence survives the pilot result rather than being threatened by it, and
+it is a genuine contribution: it names the operating regime in which the
+architecture is the right choice, instead of claiming the architecture wins
+everywhere. **It must NOT be written into prose until the funded set has run** —
+one brand-month is not evidence — but it is the shape to be ready for.
+
+### The trap to avoid
+
+Do not let "B won" become the headline without the restatement. As written, it
+invites the reader to conclude the thesis artefact is unnecessary. The measured
+claim is narrower, more defensible, and more useful: **at 39 months and 95
+brands, a per-series ensemble outperforms a category-tuned booster on accuracy,
+while costing 23x more, taking 12x longer, and producing no auditable tool
+call.**

@@ -1043,6 +1043,115 @@ def run_scenario_e(category, brand, question=None):
     return res
 
 
+def run_scenario_f(category, brand, question=None, sentinel="FORECAST"):
+    """F -- the history AND the trained model's forecast AND a code sandbox.
+
+    What a production deployment would actually have: the dedicated model is
+    available, and so is everything else. C -> F therefore measures what adding
+    code back ON TOP of the model does, which is the question C alone cannot
+    answer.
+
+    DEC-COMBINED-INPUT (Brian, 2026-09-11): the payload is presented as ONE
+    INPUT AMONG SEVERAL, never as a starting point to revise. An agent handed a
+    number and told it may keep it will almost always keep it, which would
+    measure deference rather than integration. Whether F defers to the model,
+    overrides it, or blends the two IS the measurement.
+
+    UNLIKE C AND E, F's forecast is NOT overridden with the model's number. C
+    and E are scored on the model's output because reporting it faithfully is
+    their whole task; F is scored on what it actually says, because disagreeing
+    with the model is a legitimate outcome here. `model_forecast` is traced
+    alongside, so the two can be compared afterwards.
+    """
+    c = _client()
+    fit, _, target = _brand_history(category, brand)
+    csv = fit.to_csv(index=False)
+    out = _eval_forecast(category, brand, target)
+    complete = _payload_complete(out)
+    prompt = (question if question else P.scenario_f_prompt(
+        brand, category, target, csv,
+        json.dumps(out, indent=2, default=str), sentinel))
+    t0 = time.perf_counter()
+    err = None
+    text = ""
+    ncalls = 0
+    detail = {}
+    u = dict(_EMPTY_USAGE)
+    try:
+        r = c.responses.create(model=MODEL,
+                               reasoning={"effort": REASONING_EFFORT,
+                                          "summary": "auto"},
+                               tools=[{"type": "code_interpreter",
+                                       "container": {"type": "auto"}}],
+                               input=prompt)
+        ncalls = sum(1 for it in r.output if it.type == "code_interpreter_call")
+        u = _usage(r, containers=1)
+        text = r.output_text
+        detail = _response_detail(r)
+    except Exception as e:
+        err = str(e)[:300]
+
+    forecast, via_sentinel = _parse_sentinel(text, sentinel)
+    mfc = out.get("forecast_units")
+    res = _result("F_data_model", text, err, t0, u, forecast,
+                  containers=0 if err else 1,
+                  trace_extra={"tool": "code_interpreter+forecast_demand",
+                               "wrote_code": bool(ncalls),
+                               "target_month": target,
+                               "history_months": len(fit),
+                               "history_ends": (f"{int(fit.period_year.iloc[-1])}-"
+                                                f"{int(fit.period_month.iloc[-1]):02d}"
+                                                if len(fit) else None),
+                               "code_calls": ncalls,
+                               "payload_complete": complete,
+                               "months_ahead": out.get("months_ahead"),
+                               # What the model said, so deference vs override
+                               # is measurable rather than inferred from prose.
+                               "model_forecast": mfc,
+                               "deviates_from_model": (
+                                   None if (forecast is None or mfc in (None, 0))
+                                   else abs(forecast - mfc) / abs(mfc) > 0.01),
+                               "via_sentinel": via_sentinel})
+    res["detail"] = detail
+    res["detail"]["tool_outputs"] = [out]
+    res["prompt"] = prompt
+    return res
+
+
+def run_scenario_g(category, brand, question=None):
+    """G -- F's capability envelope, on the Prometheus orchestrator.
+
+    D -> E -> G repeats B -> C -> F on production, so the two ladders can be
+    compared rung for rung. As in F, the answer is NOT overridden with the
+    model's number.
+    """
+    fit, _, target = _brand_history(category, brand)
+    csv = fit.to_csv(index=False)
+    out = _eval_forecast(category, brand, target)
+    complete = _payload_complete(out)
+    payload = json.dumps(out, indent=2, default=str)
+    user = question or P.scenario_g_prompt(brand, category, target)
+    coder = P.scenario_g_coder(brand, category, target, csv, payload)
+    mfc = out.get("forecast_units")
+    res = _run_engine_scenario(
+        "G_prometheus_data_model", category, brand, user, coder,
+        # Code is AVAILABLE but not required: G may legitimately decide the
+        # model's forecast needs no further analysis, and failing it for that
+        # would presuppose the answer. `code_calls` is traced either way.
+        require_code=False, target=target,
+        extra_trace={"tool": "prometheus+forecast_demand",
+                     "payload_complete": complete,
+                     "months_ahead": out.get("months_ahead"),
+                     "history_months": len(fit),
+                     "model_forecast": mfc})
+    fc = res.get("forecast")
+    res["trace"]["deviates_from_model"] = (
+        None if (fc is None or mfc in (None, 0))
+        else abs(fc - mfc) / abs(mfc) > 0.01)
+    res["detail"]["tool_outputs"] = [out]
+    return res
+
+
 # Ordered as the information ladder, weakest first:
 #   A -> B  adds the firm's data and code execution
 #   B -> C  adds the trained forecasting model
@@ -1055,7 +1164,9 @@ SCENARIOS = (("A_plain", run_scenario_a),
              ("B_data", run_scenario_b),
              ("C_model", run_scenario_c),
              ("D_prometheus", run_scenario_d),
-             ("E_prometheus_model", run_scenario_e))
+             ("E_prometheus_model", run_scenario_e),
+             ("F_data_model", run_scenario_f),
+             ("G_prometheus_data_model", run_scenario_g))
 
 
 def _extract_number(text):
@@ -1264,8 +1375,13 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
         # first smoke run; a made-up number that looks measured is the exact
         # failure the provenance rule exists to stop.
         est = {"A_plain": 0.4243, "B_data": 0.2664, "C_model": 0.0068,
-               "D_prometheus": 0.60, "E_prometheus_model": 0.15}
-        _unmeasured = {"D_prometheus", "E_prometheus_model"}
+               # D/E MEASURED 2026-09-11 on CSD/HARBOE (billed $1.83 for the
+               # five-arm run, reconciled against the org costs endpoint).
+               "D_prometheus": 0.55, "E_prometheus_model": 0.21,
+               # F/G are ESTIMATES: F from B (same sandbox, a longer prompt),
+               # G from D (same engine, a longer coder brief). Neither has run.
+               "F_data_model": 0.30, "G_prometheus_data_model": 0.60}
+        _unmeasured = {"F_data_model", "G_prometheus_data_model"}
         by_scen = {}
         for _, _, sysname, _, _ in todo:
             by_scen[sysname] = by_scen.get(sysname, 0) + 1
