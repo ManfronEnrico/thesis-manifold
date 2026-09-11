@@ -2199,3 +2199,41 @@ against a non-zero cached-input charge. A billed line item the harness has no
 matching activity for means **the window is wrong**, not that the estimate is.
 
 **Before quoting any ratio, check that both sides cover the same events.**
+
+---
+
+## F59 - `--brand-strategy stratified` silently selected FOUR brands, not three
+
+**Caught 2026-09-11 in the dry run, one step before launch.** `--brands-per-cat`
+defaulted to the literal `[4, 4, 4, 3]`, and `_select_brands` applies that count to
+whichever strategy is chosen. So:
+
+```
+--brand-strategy stratified          -> 4 brands: HARBOE, CARIBIA, LØGISMOSE, ØRBÆK
+--brand-strategy stratified --brands-per-cat 3  -> 3 brands: HARBOE, 7-UP, ØRBÆK
+```
+
+**Nothing errored.** The run would have cost ~33% more than planned and measured a
+different sample than the one written into the writing notes - four brands spread across
+the volume range rather than the max/median/min design that the thesis text justifies.
+
+`_stratified_brands` has an explicit `k == 3` branch for max/median/min and falls through
+to even spacing otherwise, so at k=4 it returns two interior points. Both behaviours are
+correct in isolation; the defect is that the COUNT came from a different flag than the
+STRATEGY, with no relationship between them.
+
+### Fix
+
+`--brands-per-cat` now defaults to `None` and resolves per strategy after parsing:
+stratified takes 3, volume keeps `(4, 4, 4, 3)`. The resolution is PRINTED
+(`[brands-per-cat not given] --brand-strategy stratified -> (3,)`) rather than assumed,
+and an explicit non-3 count with stratified prints a note saying what it will do instead.
+Verified: all three paths behave correctly, and the volume default is unchanged.
+
+### The pattern, again
+
+This is the dominant failure mode on this project (F21/F25/F31/F32/F45/F49/F51/F55):
+**something returns MORE or LESS than asked rather than failing.** Here a default from one
+option silently overrode the semantics of another. The instruction to "remember to pass
+both flags" was a workaround for a missing feature - a rule a human has to hold in their
+head, to stop a script doing the wrong thing, is the script's bug.

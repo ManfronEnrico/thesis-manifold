@@ -9,6 +9,10 @@ status: in_progress
 
 # P0049 — Finalizing experiments: START HERE
 
+> ## LAUNCH: read `LAUNCH_THE_FUNDED_RUN.md` in this folder FIRST.
+> The funded run is ready and waiting only on credit. That file has the
+> command, the cost, the pre-launch checks and what to verify afterwards.
+>
 > **STATUS 2026-09-11 - this file predates the seven-arm work.** The ladder now
 > has **seven** scenarios, not five, and every arm was renamed. All three open
 > questions are answered. Read the **STATUS 2026-09-11** section at the bottom of

@@ -1816,8 +1816,14 @@ def main():
                     help="one brand through all three scenarios, no repeats -- the smoke test")
     ap.add_argument("--full", action="store_true", help="the full experiment")
     ap.add_argument("--repeats", type=int, default=5)
-    ap.add_argument("--brands-per-cat", type=int, nargs="+", default=[4, 4, 4, 3],
-                    help="top-N brands per category, in --categories order")
+    # Default is None, NOT [4,4,4,3] -- the literal default silently overrode
+    # --brand-strategy stratified, turning max/median/min into "four brands
+    # spread across the range" with no warning and a third more spend. The
+    # per-strategy default is resolved below, where the strategy is known.
+    ap.add_argument("--brands-per-cat", type=int, nargs="+", default=None,
+                    help="top-N brands per category, in --categories order. "
+                         "Default depends on --brand-strategy: 3 for "
+                         "stratified (max/median/min), 4/4/4/3 for volume.")
     ap.add_argument("--brands", nargs="+", default=None,
                     help="run EXACTLY these brands (case-insensitive). Overrides "
                          "--brands-per-cat. Use this for partial re-runs: "
@@ -1888,7 +1894,21 @@ def main():
                          "expected some of A,B,C,D,E")
 
     if a.full:
-        run_full(a.repeats, tuple(a.brands_per_cat), scenarios, a.out, a.budget,
+        # Resolve the per-strategy default now that both flags are parsed.
+        # stratified means max/median/min, which is THREE, and asking it for
+        # four yields two interior points instead -- a different design.
+        if a.brands_per_cat is None:
+            per_cat = ((3,) * len(a.categories or CAT_FILE)
+                       if a.brand_strategy == "stratified" else (4, 4, 4, 3))
+            print(f"  [brands-per-cat not given] --brand-strategy "
+                  f"{a.brand_strategy} -> {per_cat}")
+        else:
+            per_cat = tuple(a.brands_per_cat)
+            if a.brand_strategy == "stratified" and any(n != 3 for n in per_cat):
+                print(f"  NOTE: stratified with per-cat {per_cat}. Only n=3 is "
+                      f"max/median/min; other values space evenly across the "
+                      f"volume range.")
+        run_full(a.repeats, per_cat, scenarios, a.out, a.budget,
                  categories=a.categories, brands=a.brands,
                  rep_offset=a.rep_offset, dry_run=a.dry_run,
                  strategy=a.brand_strategy,
