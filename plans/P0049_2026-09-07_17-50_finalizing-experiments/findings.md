@@ -1980,3 +1980,144 @@ and C is **$0.67** for the whole pass.
 Add `PRICE_WEB_SEARCH_PER_CALL` and count `web_search` items in `_usage()`. It is the one
 gap that is both structural and cheap to close, and it makes Scenario A's per-run figure
 honest rather than merely conservative.
+
+---
+
+## F58 - the stratified "min" brand is 9 units/month. APE there measures ROUNDING, not skill.
+
+**Found 2026-09-11 while costing the 3-brand MVP.** Brian's design is max/median/min by
+volume, which `_stratified_brands()` already implements. Run on CSD it returns:
+
+| stratum | brand | rank | median monthly | **actual at 2026-03** |
+|---|---|---|---|---|
+| max | HARBOE | 1 / 76 | 4,749,526 | 6,365,900 |
+| median | NIKOLINE | 39 / 76 | 577 | **457** |
+| min | VOELKEL | 76 / 76 | 9 | **9** |
+
+**Six orders of magnitude between the endpoints**, and the bottom is unusable:
+
+| error on VOELKEL | APE |
+|---|---|
+| 1 unit | **11.1%** |
+| 2 units | 22.2% |
+| 3 units | 33.3% |
+
+No arm can score well on a 9-unit series. Every reported APE there is dominated by
+integer rounding, and **a one-unit difference outweighs the entire B-vs-C gap measured on
+HARBOE**. Including it does not test robustness on thin series; it injects a number that
+no forecasting method can influence.
+
+### The low end of CSD is a CLIFF, not a gradient
+
+```
+rank 50  ØRBÆK                2,850      usable
+rank 70  LE TRIBUTE              64      rounding noise
+rank 71  BORNHOLMS MOSTERI       24      rounding noise
+rank 76  VOELKEL                  9      rounding noise
+```
+
+**14 of 76 scorable brands are below 100 units.** `_scorable_brands()` guarantees a
+non-zero test window, which is necessary for a DEFINED APE but not sufficient for a
+MEANINGFUL one. The guard was built to stop division by zero; it does not stop division
+by nine.
+
+**The median stratum is also thinner than it looks** - NIKOLINE at 457 units means one
+unit is 0.2% APE. Defensible, but it is not a mid-volume brand in any commercial sense.
+
+### Recommendation: stratify over the MEANINGFUL range, not the full range
+
+Replace the min stratum with a brand around rank 50 where APE still measures forecasting:
+
+| stratum | brand | actual | 1-unit APE |
+|---|---|---|---|
+| max | HARBOE | 6,365,900 | 0.00002% |
+| median | NIKOLINE | 457 | 0.22% |
+| min | **ØRBÆK** (or KINLEY 3,144 / EBELTOFT 3,287) | 2,850 | 0.04% |
+
+Three defensible options, in order of preference:
+
+1. **Restrict the stratification pool to brands above a volume floor** (say 1,000 units,
+   which keeps 45 of 76) and re-run `_stratified_brands` over that pool. Principled,
+   one parameter, and the floor is reportable.
+2. **Name the three brands explicitly** via `--brands`. Simplest, but the selection is
+   then a judgement call to defend rather than a rule.
+3. **Keep VOELKEL and report it separately** as a documented floor case, excluded from
+   the headline comparison. Honest, but spends ~1/3 of the budget on a cell that cannot
+   discriminate between arms.
+
+**Option 1 is the recommendation.** The floor is a stated inclusion criterion, which is
+ordinary practice and far easier to defend than a hand-picked sample.
+
+### Why this matters more at n=3 than it would at n=15
+
+With 15 brands a single degenerate series is diluted. **With 3, it is a third of the
+evidence**, and it lands in the stratum specifically intended to test whether the
+dedicated model's advantage survives on thin data. That question is real and worth
+asking - VOELKEL just cannot answer it.
+
+Connects to **F50** (the conformal interval is pooled across brands spanning six orders
+of magnitude). Same root cause: the category's volume distribution is far wider than any
+single pooled treatment can serve.
+
+---
+
+## DEC-MVP-DESIGN — the funded set, decided 2026-09-11
+
+Brian, answering the three open questions. **All three resolve to what the harness
+already does**, so no code change is needed for any of them.
+
+| | question | decision |
+|---|---|---|
+| **Q-A** | brand pairing across scenarios | **Same three brands, all seven arms.** Differences are attributable to the arm, not to which brand it drew. At n=3 an independent sample per arm would make the comparison uninterpretable. |
+| **Q-B** | dataset scope and how it is declared | **3 brands, CSD only**, stratified by volume. Declared as a single-category study in BOTH the design section and limitations — not only in limitations. |
+| **Q-C** | the shared input | **Keep the 39-month aggregate.** Every arm sees the identical history the model was trained on. Giving the code arms a richer panel would break the shared-input property the ladder depends on. |
+
+### Trial allocation
+
+| arm | reps/brand | runs | rationale |
+|---|---|---|---|
+| A_llm_plain | 1 or 3 | 3 or 9 | baseline; most expensive per run |
+| B_llm_data | 3 | 9 | consistency across repeats |
+| C_llm_model | 3 | 9 | cheapest; paired with B |
+| D_prometheus_data | 3 | 9 | B on Prometheus |
+| E_prometheus_model | 3 | 9 | C on Prometheus |
+| F_llm_data_model | 3 | 9 | combined arm |
+| G_prometheus_data_model | 3 | 9 | combined arm on Prometheus |
+
+### Cost
+
+Web search priced at ~$0.10/run for A (currently unpriced in the harness, F57).
+
+| A reps | runs | raw estimate | x1.2 | **x1.77** |
+|---|---|---|---|---|
+| 1 | 57 | $15.46 | $18.56 | **$27.37** |
+| 3 | 63 | $19.32 | $23.19 | **$34.20** |
+
+**Recommendation: A at 3.** The difference is ~$7 at the pessimistic ratio, and it buys
+a consistency measure for the one arm whose variance is known to be largest — A moved
+38.7% -> 23.0% between two identical-prompt runs. Without repeats there is no way to say
+whether the baseline is unstable or merely wrong.
+
+**Fund ~$40** to clear the pessimistic case with headroom.
+
+### Implementation note
+
+`--repeats` is a single value applied to all scenarios, so A-at-1 with the rest at 3
+requires two invocations. Caching makes this safe: the second run skips cells the first
+already completed. A-at-3 needs only one invocation.
+
+### The limitation to write
+
+> Three brands from one category, with three repeats per cell, was the largest design the
+> project budget allowed. A larger brand sample and more repeats per cell would narrow the
+> confidence intervals on every comparison reported here, and is the first thing further
+> work should extend.
+
+State it as a **budget constraint with a named consequence**, not as an apology. The
+consequence is specific and checkable: **the within-arm spread measured in the pilot is
+comparable to the between-arm gaps**, so the funded set establishes direction rather than
+effect size.
+
+**See F58** — the stratified "min" brand is VOELKEL at 9 units/month, where one unit is
+11% APE. A volume floor must be applied to the stratification pool before this design
+runs, or a third of the evidence comes from a cell no arm can influence.
