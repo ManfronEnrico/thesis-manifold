@@ -549,6 +549,35 @@ of the two. Section numbers are stable across both.
 Feeding individual chapters to NotebookLM is a verification-input decision and
 has no bearing on how the source is cited.
 
+### Still open - a cited source is ABSENT, and three items are duplicated
+
+**Found 2026-09-11** during the Chapter 6 pass, against the 17:24 pull (89
+items), searched by author across every item type rather than the filtered
+export.
+
+⚠ **Semerikov et al. (2025) is not in the library at all**, and Chapter 6 cites
+it **twice** - in Section 6.5 and in the Table 18 row for the remote-API choice.
+Under the standing rule, it is not a source. `ch6-prose-pass.md` Fix 9b removes
+both citations and rests the claim on arithmetic instead; **if the source is
+real and gets added, revert that fix and keep the citations.**
+
+**Three items are duplicated**, each pair being one work entered twice:
+
+| Work | Keys | Note |
+|---|---|---|
+| Wang et al., Executable Code Actions | `U24G3Z36`, `wang_executable_2024` | one copy's date reads `July` instead of a year |
+| Paranjape et al., ART | `VA9UT3F9`, `paranjape_art:_2023` | |
+| Ahrens et al., Model Averaging | `I86QMNYE`, `ahrens_model_2025` | cited in Chapter 6 Section 6.3 |
+
+⚠ **A duplicate with two different dates can render as two different in-text
+citations for one source**, and a reader checking the reference list finds the
+same paper twice. The Wang pair is the live risk, because it is cited in
+Chapter 6 twice and one copy has no usable year.
+
+**Two further malformed dates:** Sapkota, *AI Agents vs. Agentic AI*, stored as
+`02/2`; Chen, *ACGraph*, stored as `Dece`. Both will render wrong. Sapkota is
+cited in Chapter 6 Section 6.2.
+
 ### Still open - the BibTeX exporter mangles every author list
 
 **Found 2026-09-10 while checking the corrected Hyndman entry.** Not caused by
@@ -662,3 +691,54 @@ it is the framing and the enumeration that have been outrun.
 **One factual correction to apply whenever it is rewritten:** §6.7 cites **E2B**
 as the sandbox ("for example, E2B as it is used in our testing scenarios").
 The harness uses **OpenAI's Code Interpreter**; E2B appears nowhere in it.
+
+---
+
+## S21 - The SRQ4 scenario display labels are inverted and cover three of seven
+
+**Status:** open - **fix before the funded run, not after**
+**Found:** 2026-09-11, verifying scenario names for the Chapter 6 prose pass
+
+`srq4_experiment.py` writes its summary table through a display-label map that
+covers **three** of the seven registered scenarios, and **inverts the lettering**
+for all three:
+
+| internal name | prints as |
+|---|---|
+| `C_model` | **"A - dedicated model"** |
+| `B_data` | "B - code-as-action" |
+| `A_plain` | **"C - no firm data"** |
+
+`D_prometheus`, `E_prometheus_model`, `F_data_model` and
+`G_prometheus_data_model` are not in the map, so they fall through to their raw
+internal names. **One header row can therefore mix inverted display letters with
+raw internal names.**
+
+**Why it must be fixed before the funded run:** published tables carry the
+labels. A table whose first column reads "A" for the dedicated-model arm, while
+the chapter's own ladder calls that arm C, is the kind of defect that makes a
+reader distrust every number beside it.
+
+**Why the inversion exists:** the display order runs best-to-worst for a reader,
+while the internal order runs as an information ladder from least to most
+capability. Both orderings are defensible; **carrying both at once is not.**
+
+**Recommendation:** delete the display map and print the ladder letters, which
+are the ones the thesis uses. If a best-first presentation is wanted, sort the
+columns and leave the names alone.
+
+⚠ Blocks the Section 6.7 rewrite (Fix 14 of `ch6-prose-pass.md`) alongside the
+F/G run, because that section is where the scenarios get named.
+
+---
+
+## S20 addendum - "baseline" has two sites, not one
+
+**Added 2026-09-11** to the existing S20 entry above.
+
+Section 6.4 also uses "baseline", in *"it is instead the baseline against which
+the artefact is compared"*. The Chapter 6 pass changes it to **"comparator"** on
+the assumption the ladder framing wins.
+
+**If "baseline" is kept, revert that one word** - Fix 8 of
+`ch6-prose-pass.md`. The decision should be taken once for both sites.
