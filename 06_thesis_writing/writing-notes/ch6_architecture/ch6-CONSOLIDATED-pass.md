@@ -1,12 +1,12 @@
 ---
 name: ch6-CONSOLIDATED-pass
 description: NOTE - The single Chapter 6 document. Every verified fact from the prose pass, its follow-up and the sample-size rationale, in one place. Work top to bottom with the .docx open. Supersedes all three.
-snapshot: 2026-09-11_17-24_ch6-prose-pass
+snapshot: 2026-09-11_18-35_ch6-post-rename
 category: workflow
 applies-to: [ch6-architecture]
 triggers: [applying chapter 6 edits, writing chapter 6 prose]
 created: 2026_09_11-18_10
-updated: 2026_09_11-18_10
+updated: 2026_09_11-18_50
 status: ready
 ---
 
@@ -16,9 +16,14 @@ status: ready
 `ch6-prose-pass-followup-01.md` and `sample-size-and-tool-interface-rationale.md`
 are all folded in and archived. Nothing else in the chapter folder is live.
 
-**Verified at `fe0e895`**, fetch clean. Snapshot `2026-09-11_17-24_ch6-prose-pass`.
-Zotero re-pulled 17:24: **89 items**. Chapter 6 is **2,176 words**, unchanged
-since the previous snapshot, with **17 open comment threads**.
+**Verified at `6e7bada`**, fetch clean. Snapshot
+`2026-09-11_18-35_ch6-post-rename`. Zotero re-pulled 17:24: **89 items**.
+Chapter 6 is **2,176 words** and **byte-identical** to the 17:24 snapshot, with
+all **17 comment threads still open** - so every anchor below still holds.
+
+⚠ **Three things landed after the first version of this pass and are folded in:**
+the scenario rename (Part 4.2, which unblocks Fix 14), the profiling re-run
+(Fix 4's note), and a cost-measurement finding (Fix 13's note).
 
 ## How to use this document
 
@@ -275,11 +280,16 @@ Cutting the numbers rather than correcting them is deliberate. The architecture
 chapter needs the **conclusion**, not a second copy of the measurements. Stating
 them once is also what stops them diverging again.
 
-⚠ **The artefact is itself stale**, separately. `profiling.csv` was written on
-1 September against a **13-feature** matrix; the current set is 18. Chapter 5
-discloses this in Section 5.5.6 and argues the conclusion is unaffected. After
-this fix Chapter 6 quotes no figures, so it needs no equivalent disclosure.
-Tracked as S19.
+⚠ **The artefact was itself stale, and has been re-run.** `profiling.csv` was
+written on 1 September, eight days **before** the last training on 9 September at
+21:10 - the only Chapter 5 source that failed that test. Re-run 2026-09-11 in
+twelve seconds, now at 18 features. **The numbers moved a long way**: LightGBM
+38.1 → **14.9**, Ridge 5.4 → **1.6**, XGBoost 29.2 → **31.9**.
+
+**This changes Chapter 5, not Chapter 6.** After this fix Chapter 6 quotes no
+figures at all, which is precisely why cutting them rather than correcting them
+was the right call - the fix survived the numbers changing underneath it. The
+Chapter 5 edit is in `ch5_model_benchmark/ch5-profiling-rerun.md`. S19 closed.
 
 ---
 
@@ -747,6 +757,29 @@ percentage would leave a second error behind. "Under six per cent" rather than
 
 The final sentence answers thread **286**.
 
+### Note - one more word, because per-run cost is an ESTIMATE
+
+The sentence above this paragraph says *"cost (API tokens) and latency
+(wall-clock, including tool round-trips) are tracked as the secondary SRQ4
+dimensions"*.
+
+**"Tracked" is defensible for tokens and misleading for spend**, and a finding
+recorded today (P0049 F57) makes the distinction load-bearing. Token counts come
+from the provider's own usage object and are measured. **Total spend is not**:
+web search is detected but never priced, and sandbox duration is not exposed by
+the API at all. Both billed runs so far cost more than estimated, by 1.20x and
+1.77x.
+
+**Optional REWORD**, if you want the chapter airtight:
+
+> Memory is reported by resident set size; token usage and wall-clock latency are
+> measured per run, and total spend is reconciled against the provider's billing
+> record rather than inferred from token counts.
+
+⚠ **This is the honest formulation** and it is already what the harness does -
+`summary.md` reports the billed figure. What must never be claimed is that the
+per-run cost column is a measured cost.
+
 ---
 
 ## Fix 14 - Section 6.7 is BLOCKED
@@ -757,7 +790,11 @@ become** - but not yet.
 
 ### Action
 
-**BLOCKED** on Part 4.2, the display-label defect.
+**UNBLOCKED as of `6c76fc6`** - see Part 4.2. This is the one remaining piece of
+Chapter 6 prose and it is ready to write. It was not written in this pass
+because the rename landed after the pass was assembled, and because Section 6.7
+is a rewrite rather than an edit: it needs your decision on the "baseline"
+framing (Part 4.3) before its opening sentence can be settled.
 
 ### Note - the seven scenarios, verified
 
@@ -773,11 +810,8 @@ The harness registers **seven** as of `3c37ffd`:
 | F | data, code **and** the model together | what code adds on top of the model |
 | G | F's task on the production orchestrator | the combined arm, on production |
 
-**F and G completed at 17:31**, both clean on the first attempt, so the earlier
-block - that the arms were unexercised - is gone. What remains is that the
-display labels in the harness contradict these names. Section 6.7's job is
-precisely to fix the naming, and writing it against output that contradicts it
-would bake the contradiction into the chapter.
+**F and G completed at 17:31**, both clean on the first attempt, and the naming
+was fixed at 18:10. Both blocks are gone.
 
 ⚠ **Two things the rewrite will need:**
 
@@ -1040,10 +1074,13 @@ the measured artefact, and it separates fitting from serving:
 
 | Model | Peak fit RSS | **Peak prediction RSS** |
 |---|---|---|
-| Ridge | 5.4 MB | **0.02 MB** |
-| LightGBM | 38.1 MB | **0.1 MB** |
-| XGBoost | 29.2 MB | **0.62 MB** |
-| ARIMA (per series) | 1.9 MB | **0.09 MB** |
+| Ridge | 1.6 MB | **0.03 MB** |
+| LightGBM | 14.9 MB | **0.14 MB** |
+| XGBoost | 31.9 MB | **0.47 MB** |
+| ARIMA (per series) | 2.0 MB | **0.17 MB** |
+
+*(Re-measured 2026-09-11 at 18 features. The conclusion is unchanged and the
+margin is wider.)*
 
 **Serving costs under one megabyte**, three orders of magnitude below fitting,
 because a served model answers from parameters already in memory rather than
@@ -1061,32 +1098,36 @@ Chapter 5 stays the single site for the numbers.
 ⚠ **Do not cite 50 MB anywhere.** It is a superseded estimate, and the measured
 value it estimated is off by a factor of nine.
 
-## 4.2 BLOCKING Section 6.7 - the scenario display labels are inverted
+## 4.2 RESOLVED - the scenario names are fixed, and Section 6.7 is unblocked
 
-`srq4_experiment.py` writes its summary table through a display map covering
-**three of seven** scenarios, and **inverting the lettering**:
+**Fixed in `6c76fc6`, 18:10.** The display map is deleted, and the arms are
+renamed `<letter>_<orchestrator>_<inputs>` so the two ladders line up
+column-wise:
 
-| internal name | prints as |
-|---|---|
-| `C_model` | **"A — dedicated model"** |
-| `B_data` | "B — code-as-action" |
-| `A_plain` | **"C — no firm data"** |
+| | language model directly | on Prometheus |
+|---|---|---|
+| plain | `A_llm_plain` | - |
+| + data and code | `B_llm_data` | `D_prometheus_data` |
+| + the model behind a tool | `C_llm_model` | `E_prometheus_model` |
+| + both together | `F_llm_data_model` | `G_prometheus_data_model` |
 
-D, E, F and G are not in the map and fall through to raw internal names, so one
-header row can mix inverted display letters with raw internal names.
+**This is better than what I recommended.** I proposed deleting the map and
+printing the ladder letters; the rename also makes each name state its own
+orchestrator and inputs, so a reader of a results table needs no legend, and the
+two orchestrator ladders can be read across.
 
-**Why the inversion exists:** the display order runs best-to-worst for a reader,
-while the internal order runs as an information ladder from least to most
-capability. Both are defensible; **carrying both at once is not.**
+Verified: `SCENARIOS` carries the seven new names, the display map is gone, and
+both `runs.csv` files migrated cleanly. Measured values and the prompt schema
+hash were not touched.
 
-**Recommendation:** delete the display map and print the ladder letters the
-thesis uses. If a best-first presentation is wanted, sort the columns and leave
-the names alone.
+⚠ **Section 6.7 is therefore unblocked**, and Fix 14 can now be written. It is
+the one remaining piece of Chapter 6 prose. **The naming above is what it should
+enumerate** - it answers thread 294 directly, since each name already maps the
+scenario to its set-up.
 
-**This is a short code fix and I can do it on your word.** I have not done it
-unprompted because choosing the display order is a presentation decision about
-published tables, not a defect fix. **It should land before the funded run**, or
-published tables carry it. Tracked as S21.
+⚠ **Do not carry the internal names into the prose verbatim.** They are code
+identifiers. The chapter should name the arms by letter and describe them in
+words, using the table above as the mapping.
 
 ## 4.3 NEEDS-BRIAN - three decisions
 

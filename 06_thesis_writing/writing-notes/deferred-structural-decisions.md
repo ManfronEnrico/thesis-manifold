@@ -479,6 +479,21 @@ description wherever it appears.
 
 ## S19 - Operational figures predate the 18-feature retraining
 
+> ✅ **CLOSED 2026-09-11.** `srq1_profiling.py` re-run in twelve seconds; the
+> artefact now reads 18 features. It had been written 1 September, **eight days
+> before** the 9 September training - the only Chapter 5 source that failed a
+> regenerated-after-training check. The numbers moved materially and the old
+> "lower bound" disclaimer is falsified in the opposite direction: LightGBM fell
+> 38.1 → 14.9 and Ridge 5.4 → 1.6, while XGBoost rose 29.2 → 31.9, because
+> memory tracks tuned ensemble size rather than feature count. Paste-ready edit
+> in `ch5_model_benchmark/ch5-profiling-rerun.md`. The dependent appendix table
+> `05_substrate_resource_profile` was regenerated from it.
+>
+> ⚠ `srq1_profiling.py` stays **out** of `run_both_horizons.py` deliberately: it
+> runs at `n_jobs=-1`, and folding it into the deterministic suite would destroy
+> what it measures. **So it will go stale again after the next retraining.**
+> Re-run it by hand whenever the models are retrained.
+
 **Status:** `open`. Raised by Enrico 2026-09-11; already tracked as **H12** in
 `post-hpc-validation.md`. Recorded here too because it is a prose decision as
 well as a re-run.
@@ -696,7 +711,10 @@ The harness uses **OpenAI's Code Interpreter**; E2B appears nowhere in it.
 
 ## S21 - The SRQ4 scenario display labels are inverted and cover three of seven
 
-**Status:** open - **fix before the funded run, not after**
+**Status:** ✅ **CLOSED 2026-09-11 in `6c76fc6`** - the display map was deleted
+and the arms renamed `<letter>_<orchestrator>_<inputs>`, so each name states its
+own set-up and the two orchestrator ladders line up column-wise. Better than the
+recommendation below, which only removed the relettering. Section 6.7 unblocked.
 **Found:** 2026-09-11, verifying scenario names for the Chapter 6 prose pass
 
 `srq4_experiment.py` writes its summary table through a display-label map that
