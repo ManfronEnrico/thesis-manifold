@@ -384,6 +384,140 @@ stay one.
 
 ---
 
+## S17 - The calibration table describes a model two categories do not serve
+
+**Status:** `open`. **Raised by Enrico 2026-09-11, validated the same day.**
+
+`srq1_calibration.py` line 184 fits `XGBRegressor` unconditionally for every
+category. But `train_and_persist.best_model_for()` selects on the
+**cross-validation** score, not test error, and on that basis:
+
+| Category | CV picks | CV score | Calibration fits |
+|---|---|---|---|
+| CSD | XGBoost | 18.8 | XGBoost ✓ |
+| Danskvand | XGBoost | 25.7 | XGBoost ✓ |
+| **Energidrikke** | **LightGBM** | 11.5 | ⚠ XGBoost |
+| **RTD** | **LightGBM** | 34.2 | ⚠ XGBoost |
+
+**Half the calibration table describes a model that is not served.** Enrico named
+exactly these two categories.
+
+⚠ **Selecting on test WMAPE gives XGBoost everywhere**, which is why this looks
+wrong at first glance. It is not: `best_model_for()` deliberately selects on CV,
+because selecting on test is selection on the evaluation set and biases every
+downstream number. The code carries that reasoning in its own comments. **Do not
+"fix" this by switching the selection to test.**
+
+**Fix:** `srq1_calibration.py` reads the selected model per category rather than
+hardcoding XGBoost, then re-runs. Section 5.5.7's table and every coverage figure
+in it move.
+
+**Chapter impact:** Section 5.5.7 and the SRQ2 confidence payload.
+
+---
+
+## S18 - The confidence index is mathematically dead
+
+**Status:** `open`, and this is the most consequential of the four.
+**Raised by Enrico 2026-09-11, verified by evaluating the formula.**
+
+`forecast_tool.py:473`:
+
+```python
+conf = 100 * (0.5 * (1 / (1 + rel)) + 0.5 * (1 - min(q90, 1)))
+```
+
+**Two independent defects, and Enrico found both.**
+
+**The relative width carries no per-forecast information.** With
+`lo = expm1(log(y) - q90)` and `hi = expm1(log(y) + q90)`, the width ratio is
+`(hi - lo)/y ≈ 2·sinh(q90)` — the forecast value cancels. Since `q90` is one
+number per category, **`rel` is constant within a category** and the first term
+cannot distinguish one brand's forecast from another's.
+
+**The second term is identically zero.** `1 - min(q90, 1)` is 0 whenever
+`q90 ≥ 1`. Implied q90 from the current calibration:
+
+| Category | mean rel. width | implied q90 | second term |
+|---|---|---|---|
+| CSD | 8.62 | 2.17 | **0** |
+| Danskvand | 11.89 | 2.48 | **0** |
+| Energidrikke | 33.64 | 3.52 | **0** |
+| RTD | 8.62 | 2.17 | **0** |
+
+So half the index is dead everywhere, and the surviving half is a per-category
+constant. **Every forecast scores between 2 and 6 out of 100 and tiers as
+"Low"** — matching Enrico's observed 3 to 7.
+
+### The decision, and it is not only cosmetic
+
+| Option | Cost | What it means |
+|---|---|---|
+| **Drop the field** | small; SRQ2 prose changes | honest. The index measures nothing |
+| **Recalibrate the cut-offs** | ⚠ **does not fix it** | re-tiering a per-category constant still yields four values, one per category — a category label wearing a number |
+| **Rebuild on something per-forecast** | real work | the only route to an index that varies per forecast |
+
+⚠ **Recalibrating cut-offs is the tempting option and the wrong one.** The
+problem is not where the thresholds sit; it is that the quantity being
+thresholded does not vary within a category.
+
+**This reaches SRQ2 directly.** The research question asks how a forecast reaches
+an agent with *reliability, uncertainty and traceability* preserved. The interval
+carries uncertainty and the track record carries reliability. **The confidence
+index carries neither**, and its docstring already calls it "a heuristic index"
+and warns against reading it as a probability.
+
+**Recommendation: drop the field.** The payload already carries a calibrated
+interval and a measured track record, both of which do what this index was
+supposed to do. Removing a broken signal is a stronger SRQ2 result than shipping
+one, and it can be reported as a finding rather than hidden as an omission.
+
+**Chapter impact:** Chapter 7 (the tool interface) and the SRQ2 payload
+description wherever it appears.
+
+---
+
+## S19 - Operational figures predate the 18-feature retraining
+
+**Status:** `open`. Raised by Enrico 2026-09-11; already tracked as **H12** in
+`post-hpc-validation.md`. Recorded here too because it is a prose decision as
+well as a re-run.
+
+`profiling.csv` is dated **2026-09-01** and reports `n_features: 13`. The model
+uses 18 (17 for danskvand and RTD). `06_retraining_cost.csv` has the same
+problem.
+
+**Chapter 5's prose already handles this** without a re-run: the
+sequential follow-up reports the figures as a **floor** and says why. The margin
+against the memory budget is roughly a hundredfold, so a proportional increase in
+feature count does not approach it.
+
+**Re-running is cheap and would remove the caveat.** Not a blocker either way.
+
+---
+
+## S20 - Chapter 7 rewritten against SRQ2's three properties
+
+**Status:** `done`, recorded for traceability. **Enrico, 2026-09-11.**
+
+Retitled *The Structured Tool Interface* from SRQ2's own wording, and restructured
+around reliability, uncertainty and traceability. The judge section and the
+five-model synthesis framing are **dropped** — neither matched the repository.
+
+Confirmed present in the 2026-09-11 snapshot as
+`chapters/chapter-7-the-structured-tool-interface.md`.
+
+⚠ **The snapshot exporter does not recognise the new title**, warning that the
+chapter is "not in CHAPTER_SUBJECTS" and naming the file from its heading instead.
+Harmless for now, but it means Chapter 7 will not pair with its draft in the drift
+table. **That is P0052's concern** — the exporter keys chapter identity off
+number and title.
+
+**Still open on Enrico's side:** Section 7.6, waiting on the S17 re-run, and the
+SRQ4 runs.
+
+---
+
 ## S16 - Zotero metadata defects that will render wrong in the bibliography
 
 **Status:** `open`, one of four resolved. Raised by the Chapter 5 pass, widened

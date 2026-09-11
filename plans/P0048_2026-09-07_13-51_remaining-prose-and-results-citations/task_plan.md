@@ -1,9 +1,9 @@
 ---
 pid: P0048
 created: 2026-09-07 13:51:00
-updated: 2026-09-10 21:40:00
+updated: 2026-09-11 13:30:00
 status: in_progress
-focus_detail: "NEXT SESSION (2026-09-11): Chapter 5, section by section, to finished prose. Three inputs, all on disk: ch5-prose-pass-followup-01.md (the sequential pass, every section verified against the repo), the 40 FPP3 section PDFs in the Google Drive modelling-papers folder, and fpp3-first-pass-findings.md. Chapter 5 is the LAST chapter that could still justify a re-run, so the session also produces a retraining decision: what would change, what it costs, and which claims can be narrowed instead. Default is narrow, not re-run. Two open items block nothing but need Brian: 5.1 and 5.5.6 state different RAM budgets (4 vs 8 GB), and comment 225 tags the validation scheme OUTDATED with no discernible defect. Ch4 is prose and applied. Registers live at the writing-notes root."
+focus_detail: "IN SESSION 2026-09-11: Chapter 5 prose, resume at 5.2.2 — 5.0/5.1/5.2.1 are applied and 3 comments closed (49->46 threads). THE 4 GB QUESTION IS SETTLED: 5.1 now says 4 GB, so 5.5.6 is the section to change, not 5.1. Book PDFs are local at C:\Users\brian\Downloads\Hyndman Book (2021), 42 sections. Per section: verify Word+comments against the repo, then find book support, then argue AROUND what is trained (no re-invention), then note separately what a re-run would buy. Enrico's handover validated as S17-S20: calibration fits XGBoost where energidrikke and RTD serve LightGBM (selection is on CV, not test — do not switch it); profiling.csv is 2026-09-01 and says 13 features; the confidence index is dead two ways (rel width cancels the forecast value, and the second term is identically zero) so every forecast tiers Low — recalibrating cut-offs does NOT fix it, recommend dropping the field; Ch7 rewritten and present. Live state: writing-notes/ch5_model_benchmark/ch5-session-state.md."
 ---
 
 # P0048 — Remaining prose & working in-text citations of results
