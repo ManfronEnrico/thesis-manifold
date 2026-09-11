@@ -1378,10 +1378,10 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
                # D/E MEASURED 2026-09-11 on CSD/HARBOE (billed $1.83 for the
                # five-arm run, reconciled against the org costs endpoint).
                "D_prometheus": 0.55, "E_prometheus_model": 0.21,
-               # F/G are ESTIMATES: F from B (same sandbox, a longer prompt),
-               # G from D (same engine, a longer coder brief). Neither has run.
-               "F_data_model": 0.30, "G_prometheus_data_model": 0.60}
-        _unmeasured = {"F_data_model", "G_prometheus_data_model"}
+               # F/G MEASURED 2026-09-11 on the seven-arm smoke, same brand.
+               # Both prior estimates were high (F 0.30->0.223, G 0.60->0.327).
+               "F_data_model": 0.22, "G_prometheus_data_model": 0.33}
+        _unmeasured = set()
         by_scen = {}
         for _, _, sysname, _, _ in todo:
             by_scen[sysname] = by_scen.get(sysname, 0) + 1

@@ -80,14 +80,16 @@ sys.path.insert(0, str(HERE))
 # A ~$0.49, B ~$0.28, C ~$0.007. An order of magnitude above these is a surprise
 # worth stopping for, because it multiplies by 111 in the funded set.
 # A/B/C first measured 2026-08-19 and refreshed 2026-09-11; D/E measured
-# 2026-09-11 on the first paid five-arm run. F/G are the only estimates left.
+# 2026-09-11 on the first paid five-arm run; F/G on the seven-arm smoke the
+# same day. EVERY ARM IS NOW MEASURED -- no estimates remain.
 _EXPECTED_USD = {"A_plain": 0.52, "B_data": 0.23, "C_model": 0.01,
                  "D_prometheus": 0.55, "E_prometheus_model": 0.21,
-                 "F_data_model": 0.30, "G_prometheus_data_model": 0.60}
-# D and E were measured 2026-09-11 and are no longer estimates. F and G have
-# never run: F is projected from B (same sandbox, longer prompt) and G from D
-# (same engine, longer coder brief). The first smoke replaces both.
-_UNMEASURED_USD = {"F_data_model", "G_prometheus_data_model"}
+                 "F_data_model": 0.22, "G_prometheus_data_model": 0.33}
+# Both pre-run estimates were HIGH: F was projected at 0.30 and came in at
+# 0.223; G at 0.60 and came in at 0.327. G's brief is longer than D's, but it
+# does not have to discover its own approach, so it writes far less code
+# (2 blocks vs D's 4) -- the payload shortens the work rather than adding to it.
+_UNMEASURED_USD = set()
 _COST_ALARM = 10.0
 
 
@@ -209,6 +211,25 @@ def main() -> int:
 
     import pandas as pd
     runs = pd.read_csv(runs_f)
+
+    # runs.csv is CUMULATIVE -- the harness APPENDS, so yesterday's rows are
+    # still here. Two checks read "every run" and both misfired on the
+    # seven-arm smoke (2026-09-11): the schema check saw v4 alongside v5, and
+    # the cache check compared 7 raw responses against 12 accumulated rows.
+    # Neither was a real defect, which is exactly the failure mode to avoid --
+    # a check that cries wolf gets explained away, and then it is worth
+    # nothing on the day it fires for a real reason.
+    #
+    # Scope to THIS run by the current prompt schema. A row from an earlier
+    # schema cannot belong to this invocation, and one from the same schema
+    # was produced by prompts byte-identical to the ones just sent.
+    _all = len(runs)
+    if "schema" in runs.columns:
+        runs = runs[runs["schema"] == P.schema_id()].reset_index(drop=True)
+    if _all != len(runs):
+        print(f"
+  runs.csv holds {_all} row(s); checking the {len(runs)} at "
+              f"schema {P.schema_id()} (earlier schemas are prior runs)")
     traces = [json.loads(t) if isinstance(t, str) else {} for t in runs.get("trace", [])]
 
     print(f"\n{'=' * 74}\n  CHECKS ({dt:,.0f}s elapsed)\n{'=' * 74}")

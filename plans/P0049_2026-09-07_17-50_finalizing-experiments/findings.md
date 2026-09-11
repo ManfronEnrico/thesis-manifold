@@ -1760,3 +1760,93 @@ claim is narrower, more defensible, and more useful: **at 39 months and 95
 brands, a per-series ensemble outperforms a category-tuned booster on accuracy,
 while costing 23x more, taking 12x longer, and producing no auditable tool
 call.**
+
+---
+
+## F54 — the seven-arm smoke: F and G OVERRODE the model. DEC-COMBINED-INPUT measured what it was written to measure.
+
+**2026-09-11, CSD/HARBOE, target 2026-03, actual 6,365,900. Billed $3.62** (estimated $3.57 from
+token counts; the gap is the Code Interpreter container charge, which only the billing endpoint sees).
+
+### Every arm answered, at one target month
+
+| arm | forecast | APE | latency | cost | code blocks |
+|---|---|---|---|---|---|
+| A_plain | 4,900,000 | 23.0% | 119.5 s | $0.543 | — |
+| B_data | 6,700,000 | 5.2% | 91.3 s | $0.224 | 15 |
+| C_model | 4,969,050 | 21.9% | 6.7 s | $0.009 | — |
+| D_prometheus | 6,379,795 | **0.2%** | 113.6 s | $0.519 | 4 |
+| E_prometheus_model | 4,969,050 | 21.9% | 41.7 s | $0.202 | 0 |
+| **F_data_model** | 6,200,000 | **2.6%** | 75.3 s | $0.223 | 12 |
+| **G_prometheus_data_model** | 5,604,800 | 12.0% | 80.9 s | $0.327 | 2 |
+
+`sql_calls: []` on D, E AND G — DEC-D-SNAPSHOT held on all three. `usage_reported: true`
+on all three engine arms. All seven carried Forecast, Range, Confidence, Recommendation
+and the `FORECAST=` sentinel; every range ordered and containing its own point forecast.
+
+### THE RESULT THAT MATTERS: `deviates_from_model: True` on BOTH F and G
+
+Neither combined arm returned the model's number. C and E both relayed 4,969,050 exactly;
+F answered 6,200,000 and G answered 5,604,800. **The framing decision worked.** Had the
+payload been presented as a starting point to revise, the near-certain outcome was both
+arms returning 4,969,050 and the arm measuring deference instead of integration.
+
+Both arms said WHY in their own words, unprompted, naming the model's own reported
+uncertainty as the reason to weigh it rather than adopt it:
+
+> **F:** "the history is short, 2025 was volatile, and the dedicated model's own confidence
+> is low with a very wide interval"
+
+> **G:** "the dedicated model is low-confidence with a wide interval; March history supports
+> the midpoint"
+
+This is the typed payload being USED as evidence — the confidence tier and interval that
+SRQ2 exists to carry are doing work in the agent's reasoning, not being ignored. That is a
+result for SRQ2 independent of whether F or G wins on accuracy, and it is the strongest
+available evidence that the interface carries decision-relevant information rather than
+merely a number.
+
+### C -> F is a bigger step than B -> C
+
+APE 21.9% -> 2.6%, at $0.223 against C's $0.009. The pilot's shape so far: **the model's
+forecast does not help an agent that can already fit its own models, but the agent does
+not simply discard it either.** One brand-month. Not evidence yet.
+
+### G wrote 2 code blocks where D wrote 4 — and cost 40% less than estimated
+
+G was estimated at $0.60 from D ($0.55) on the reasoning that a longer coder brief costs
+more. It came in at **$0.327**. The payload SHORTENS the work rather than adding to it:
+G does not have to discover its own approach. F likewise came in at $0.223 against an
+estimate of $0.30. **Every arm is now measured; no cost estimates remain in the harness.**
+
+### G is the weakest combined arm and it is not yet clear why
+
+12.0% APE against F's 2.6%, on the same inputs. Two candidates, not separable at n=1:
+G wrote 2 code blocks to F's 12, so it may simply have done less analysis; or the
+Prometheus coder handoff loses something across the subprocess boundary. **The funded
+set answers this**, and until then no claim about D vs G belongs in prose.
+
+---
+
+## F55 — two smoke checks failed on ACCUMULATED rows, not on a defect. Fixed.
+
+`runs.csv` is cumulative: the harness APPENDS. After the seven-arm smoke it held 12 rows —
+yesterday's 5 at schema `v4-five-scenarios+e37111d3daaa` plus today's 7 at
+`v5-seven-scenarios+d22fe7cdc30e`. Two checks read "every run":
+
+- **prompt registry recorded** — saw two schemas where it expects one.
+- **execution trace cached per run** — compared 7 raw responses (this run) against 12 rows
+  (all runs).
+
+Neither was a real defect, and that is the whole problem. **A check that cries wolf gets
+explained away**, and is then worth nothing on the day it fires for a real reason — which
+is precisely what these two checks exist for. Both would have failed on every funded run.
+
+**Fix:** the loader now filters `runs.csv` to rows at the current `P.schema_id()` before
+any check reads it, and prints what it dropped. A row at an earlier schema cannot belong
+to this invocation; a row at the same schema was produced by byte-identical prompts.
+Verified against the data already on disk: 12 rows -> 7, both checks pass, no re-spend.
+
+**This is the fourth instance of F21/F25/F31/F32/F45/F49/F51** — the check that passes or
+fails on the wrong evidence rather than failing loudly. Third one found in the smoke
+harness specifically.
