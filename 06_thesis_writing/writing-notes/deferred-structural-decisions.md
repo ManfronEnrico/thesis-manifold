@@ -621,3 +621,44 @@ Chapter 5 follow-up, and **partially closed** by Brian's Zotero fix, the same
 day.
 
 ---
+
+---
+
+## S21 - "Code-as-action baseline" names a two-way comparison the design no longer is
+
+**Status:** open. **Raised by:** the first paid five-scenario run, 2026-09-11.
+**Blocks:** the Chapter 6 §6.7 rewrite, which is marked BLOCKED in
+`ch6_architecture/2026-09-11_experiment-state-for-ch6-prose.md` for this reason.
+
+Chapter 6 §6.7 is titled **"The Code-as-Action Baseline (SRQ4)"** and describes
+one comparator: the artefact versus an LLM writing its own code. Chapter 3 and
+Chapter 8 describe a **five-rung information ladder** in which every rung is the
+comparator for the rung below:
+
+| | scenario | what it adds |
+|---|---|---|
+| A | plain LLM, web search | -- |
+| B | + history and a code sandbox | what data access buys |
+| C | + the trained model behind the tool | what the artefact adds |
+| D | B's task on the production orchestrator | orchestrator effect on B |
+| E | C's task on the production orchestrator | orchestrator effect on C |
+
+"Baseline" implies a single fixed reference point. The ladder has no single
+baseline: A is the baseline for B, B is the baseline for C, and D->E repeats
+B->C on a second orchestrator so the two increments can be compared to each
+other.
+
+**Why it is deferred rather than fixed now:** a sixth and seventh rung -- an arm
+holding data, code AND the trained model at once, on both orchestrators -- is
+under active consideration (costed at roughly $9 on top of the funded set, since
+it reuses the existing prompt and dispatch machinery). If those land, §6.7
+enumerates seven things, not five, and rewriting it twice is waste.
+
+**Recommendation when it is taken up:** retitle §6.7 to name the ladder rather
+than the baseline, and let §6.4's existing reliability/reproducibility argument
+carry the design justification. The section's *content* is largely correct --
+it is the framing and the enumeration that have been outrun.
+
+**One factual correction to apply whenever it is rewritten:** §6.7 cites **E2B**
+as the sandbox ("for example, E2B as it is used in our testing scenarios").
+The harness uses **OpenAI's Code Interpreter**; E2B appears nowhere in it.

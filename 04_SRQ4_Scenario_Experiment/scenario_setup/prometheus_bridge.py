@@ -255,6 +255,37 @@ def _tool_calls(state) -> list[str]:
     return names
 
 
+def _code_written(state) -> list[str]:
+    """The SOURCE the nested coder executed, in order.
+
+    Scenario B's code blocks are cached in full, so B's method is auditable.
+    D's were not: the run recorded `['execute_code'] * 4` and discarded what was
+    in them (2026-09-11). On the one comparison where both arms write code, only
+    one could be read.
+
+    Same defensive posture as `_tool_calls`: arguments vary in shape by
+    pydantic-ai version, so every access degrades to "nothing captured" rather
+    than raising. An empty list here is NOT used to fail a run -- `_tool_calls`
+    already carries that duty, and duplicating it would fail D for a vendor
+    rename in a field that is documentary rather than evidential.
+    """
+    out: list[str] = []
+    for m in (state or {}).get("nested_agent_messages") or []:
+        for part in (getattr(m, "parts", None) or []):
+            if getattr(part, "tool_name", None) != "execute_code":
+                continue
+            a = getattr(part, "args", None)
+            if isinstance(a, str):
+                out.append(a)
+                continue
+            if isinstance(a, dict):
+                for k in ("code", "source", "python", "script"):
+                    if isinstance(a.get(k), str):
+                        out.append(a[k])
+                        break
+    return out
+
+
 def _usage_from(state) -> dict:
     """Token usage, if the engine surfaced it.
 
@@ -595,6 +626,7 @@ def _worker() -> int:
                           "sandbox_killed": r.get("sandbox_killed"),
                           "calls": calls, "usage": usage,
                           "usage_reported": seen,
+                          "code_written": _code_written(state),
                           "fingerprint": engine_fingerprint()}, default=str))
         return 0
 

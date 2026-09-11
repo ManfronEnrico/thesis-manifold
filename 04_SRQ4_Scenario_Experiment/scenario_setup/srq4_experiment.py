@@ -966,7 +966,15 @@ def _run_engine_scenario(scenario, category, brand, user_prompt, coder_context,
 
     res = _result(scenario, text, err, t0, u, forecast, containers=0,
                   trace_extra=trace)
-    res["detail"] = {"code_blocks": [], "reasoning": [], "web_queries": [],
+    # `code_blocks` carries the SAME shape Scenario B writes, so a reader can
+    # audit D's method the way B's can be audited without knowing which
+    # orchestrator produced it. Until 2026-09-11 this was hardcoded [] and D's
+    # source was discarded, leaving `item_types` (four copies of the string
+    # "execute_code") as the only record of what D actually did.
+    res["detail"] = {"code_blocks": [{"code": c, "container_id": None,
+                                      "status": "completed"}
+                                     for c in (r.get("code_written") or [])],
+                     "reasoning": [], "web_queries": [],
                      "item_types": list(ev.get("all_calls") or []),
                      "engine_stdout": r.get("stdout_log"),
                      "engine_evidence": ev}
