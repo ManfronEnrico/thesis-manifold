@@ -128,10 +128,33 @@ a chapter referring to itself by number is almost always this bug.
 
 ---
 
-# What I did NOT change
+# Fix 4 is still blocked, but the decision has moved
 
-The experiment-state note's **Fix 4 is blocked** pending the sixth and seventh
-scenario decision, and that is right. Do not enumerate the ladder in Section 6.7
-until the arm count is settled - the note's reasoning that rewriting now risks
-rewriting twice is correct, and the combined-arm scenarios under consideration
-would change the enumeration again.
+The experiment-state note blocks Section 6.7 pending "a sixth and seventh rung
+under active consideration". **Those were committed at 17:16 today** as
+`3c37ffd`, *"scenarios F and G - data, code and the trained model together"*.
+
+The harness now registers **seven scenarios**:
+
+| | scenario | adds |
+|---|---|---|
+| A | plain LLM | - |
+| B | + history and a code sandbox | what data access buys |
+| C | + the trained model behind the tool | what the artefact adds |
+| D | B's task on Prometheus | the production orchestrator |
+| E | C's task on Prometheus | both, on production |
+| **F** | **data, code and the model together** | what adding code back on top of the model does |
+| **G** | **F's task on Prometheus** | the combined arm, on production |
+
+**Stay blocked anyway.** The arms exist in code but have **no paid run behind
+them**, and Section 6.7 should describe a design that has been exercised. The
+commit message also records a design decision the section will need to state -
+**DEC-COMBINED-INPUT**, that the model's forecast is given as one input among
+several rather than as a starting point to revise, because an agent handed a
+number and told it may keep it will mostly keep it, which would measure
+deference rather than integration.
+
+⚠ **What changes when it unblocks:** "baseline" is no longer the right frame for
+Section 6.7. With seven rungs every arm is a comparator for the one below, which
+is the deferred question the experiment-state note already raised. That decision
+should be taken once, for the whole ladder, rather than per rung.
