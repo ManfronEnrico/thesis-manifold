@@ -110,8 +110,8 @@ from PATHS import THESIS_RESULTS_SRQ4_DIR  # noqa: E402
 
 TOL = 0.05  # a stated bound within 5% of the payload counts as faithful
 
-SCENARIO = {"C_model": "C - dedicated model", "B_data": "B - code execution",
-            "A_plain": "A - no firm data"}
+SCENARIO = {"C_llm_model": "C - dedicated model", "B_llm_data": "B - code execution",
+            "A_llm_plain": "A - no firm data"}
 
 # Hedging alone is not communication of uncertainty; these are the words that
 # introduce an actual range or an explicit confidence statement.

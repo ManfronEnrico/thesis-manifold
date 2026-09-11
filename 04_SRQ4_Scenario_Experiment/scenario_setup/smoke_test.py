@@ -82,9 +82,9 @@ sys.path.insert(0, str(HERE))
 # A/B/C first measured 2026-08-19 and refreshed 2026-09-11; D/E measured
 # 2026-09-11 on the first paid five-arm run; F/G on the seven-arm smoke the
 # same day. EVERY ARM IS NOW MEASURED -- no estimates remain.
-_EXPECTED_USD = {"A_plain": 0.52, "B_data": 0.23, "C_model": 0.01,
-                 "D_prometheus": 0.55, "E_prometheus_model": 0.21,
-                 "F_data_model": 0.22, "G_prometheus_data_model": 0.33}
+_EXPECTED_USD = {"A_llm_plain": 0.52, "B_llm_data": 0.23, "C_llm_model": 0.01,
+                 "D_prometheus_data": 0.55, "E_prometheus_model": 0.21,
+                 "F_llm_data_model": 0.22, "G_prometheus_data_model": 0.33}
 # Both pre-run estimates were HIGH: F was projected at 0.30 and came in at
 # 0.223; G at 0.60 and came in at 0.327. G's brief is longer than D's, but it
 # does not have to discover its own approach, so it writes far less code
@@ -227,9 +227,9 @@ def main() -> int:
     if "schema" in runs.columns:
         runs = runs[runs["schema"] == P.schema_id()].reset_index(drop=True)
     if _all != len(runs):
-        print(f"
-  runs.csv holds {_all} row(s); checking the {len(runs)} at "
-              f"schema {P.schema_id()} (earlier schemas are prior runs)")
+        print(f"\n  runs.csv holds {_all} row(s); checking the "
+              f"{len(runs)} at schema {P.schema_id()} "
+              f"(earlier schemas are prior runs)")
     traces = [json.loads(t) if isinstance(t, str) else {} for t in runs.get("trace", [])]
 
     print(f"\n{'=' * 74}\n  CHECKS ({dt:,.0f}s elapsed)\n{'=' * 74}")

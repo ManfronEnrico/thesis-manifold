@@ -1850,3 +1850,67 @@ Verified against the data already on disk: 12 rows -> 7, both checks pass, no re
 **This is the fourth instance of F21/F25/F31/F32/F45/F49/F51** — the check that passes or
 fails on the wrong evidence rather than failing loudly. Third one found in the smoke
 harness specifically.
+
+---
+
+## F56 - the report RELETTERED the arms under the old reversed scheme. Found via the rename.
+
+**Brian asked for consistent arm names across code and reports, 2026-09-11.** The rename
+was expected to be cosmetic. It was not: `srq4_experiment.py` carried a display map that
+translated the CSV keys into the OLD REVERSED LETTERING the repo rules explicitly forbid.
+
+```python
+hdr = {"C_model":  "A - dedicated model",     # C printed as A
+       "B_data":   "B - code-as-action",
+       "A_plain":  "C - no firm data"}        # A printed as C
+```
+
+Three failures compounded in one table:
+
+1. **The table contradicted its own caption.** The line printed directly above it reads
+   *"**A -> B** measures what data access buys"*, but the column headed "A" was the
+   DEDICATED MODEL -- the last rung, not the first.
+2. **D..G had no entry** and fell through `hdr.get(a, a)` to their raw keys, so a single
+   header row mixed two lettering systems running in OPPOSITE DIRECTIONS.
+3. **Nothing marked which was which.** A reader comparing "A - no firm data" in the
+   appendix (correct, from `export_appendix.py`) against "A - dedicated model" in the
+   summary (reversed) has no way to know the two disagree.
+
+`export_appendix.py` and `score_interval_communication.py` had the lettering RIGHT. Only
+the summary generator was inverted, which is the hardest case to catch: the artefacts
+disagree with each other rather than being uniformly wrong.
+
+### The fix is the deletion, not the correction
+
+The display map was removed outright rather than corrected. A translation layer between
+the name in `runs.csv` and the name in the report is the defect; its contents are just how
+the defect manifested this time. **One name per arm cannot drift from itself.**
+
+### The names
+
+| was | now | why |
+|---|---|---|
+| `A_plain` | `A_llm_plain` | names the orchestrator (hosted LLM) explicitly |
+| `B_data` | `B_llm_data` | " |
+| `C_model` | `C_llm_model` | " |
+| `D_prometheus` | `D_prometheus_data` | names the INPUT, matching B; D is B on Prometheus |
+| `E_prometheus_model` | unchanged | already consistent |
+| `F_data_model` | `F_llm_data_model` | names the orchestrator, matching A-C |
+| `G_prometheus_data_model` | unchanged | already consistent |
+
+Every name now reads `<letter>_<orchestrator>_<inputs>`, so the two ladders line up
+column-wise: `B_llm_data` / `D_prometheus_data`, `C_llm_model` / `E_prometheus_model`,
+`F_llm_data_model` / `G_prometheus_data_model`.
+
+39 occurrences across 6 scripts. Historical `runs.csv` rows and `raw_responses` filenames
+were migrated in the same pass -- **the `system` column only**. Every measured value and
+the prompt `schema` hash are untouched, so a migrated row still reports what was measured
+and still says which prompt schema produced it.
+
+### Caveat on the regenerated summary
+
+`summary.md` was regenerated to pick up the new labels. Its billing-reconciliation block
+RE-QUERIED the live costs endpoint and now reports $4.03 over a wider window. The seven-arm
+smoke billed **$3.62**; a note in the file says so. Per-run measurements are unchanged.
+This is the generated-artefact-provenance rule biting in an unexpected direction: a value
+that is correctly computed at run time is still misleading when the run is a relabelling.

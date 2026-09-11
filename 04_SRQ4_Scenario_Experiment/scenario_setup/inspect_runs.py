@@ -168,7 +168,7 @@ def show_leakage(runs):
     any_ = False
     for name, d in runs:
         tr = d.get("trace") or {}
-        if tr.get("scenario") != "A_plain":
+        if tr.get("scenario") != "A_llm_plain":
             continue
         any_ = True
         susp = tr.get("retrieval_suspected")

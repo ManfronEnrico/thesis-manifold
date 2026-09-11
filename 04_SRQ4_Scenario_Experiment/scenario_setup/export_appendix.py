@@ -895,8 +895,15 @@ def _tar(vals, tol=0.01):
     return best / len(vals)
 
 
-HDR = {"C_model": "C - dedicated model", "B_data": "B - code execution",
-       "A_plain": "A - no firm data"}
+# Retired 2026-09-11 with the arm rename. The key IS the label now, so a
+# reader of the appendix and a reader of runs.csv see the same seven strings.
+# Kept as a comment because the descriptive glosses are still the right words
+# for PROSE -- they just must not be a second naming system in generated output.
+#   A_llm_plain  no firm data          D_prometheus_data        B on Prometheus
+#   B_llm_data   code execution        E_prometheus_model       C on Prometheus
+#   C_llm_model  dedicated model       G_prometheus_data_model  F on Prometheus
+#   F_llm_data_model  data + model + code
+HDR = {}
 CLASSES = ("ok", "code_error", "no_forecast", "timeout", "implausible")
 CLASS_LABEL = {"ok": "Usable answer", "code_error": "Execution error",
                "no_forecast": "No forecast returned", "timeout": "Timed out",
@@ -939,7 +946,7 @@ def _coverage(df: pd.DataFrame) -> str:
 
 def table_scenarios(df: pd.DataFrame) -> None:
     """Pivoted: metrics as rows, scenarios as columns."""
-    present = [s for s in ("A_plain", "B_data", "C_model") if s in set(df.system)]
+    present = [s for s in ("A_llm_plain", "B_llm_data", "C_llm_model") if s in set(df.system)]
     present += [s for s in df.system.unique() if s not in present]
 
     stats = {}

@@ -20,10 +20,10 @@ WHAT D AND E ARE
 ----------------
 The ladder's second half, on a DIFFERENT orchestrator:
 
-    D_prometheus        = B_data, run through Prometheus instead of the hosted
+    D_prometheus_data        = B_llm_data, run through Prometheus instead of the hosted
                           Code Interpreter. The agent writes and runs its own
                           code against the same series.
-    E_prometheus_model  = C_model, run through Prometheus. The agent is told the
+    E_prometheus_model  = C_llm_model, run through Prometheus. The agent is told the
                           dedicated model's forecast is authoritative.
 
 D -> E is therefore the SAME intervention as B -> C, on a production agent rather

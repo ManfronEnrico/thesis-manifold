@@ -6,11 +6,11 @@ SRQ4 experiment harness — does model availability improve an LLM's forecasts?
 Three scenarios forming an INFORMATION LADDER (B-DEC-5, 2026-08-19). Each adds one
 thing to the scenario below it, so the two increments can be attributed separately:
 
-  A_plain   no firm data; web search only. Not a null condition -- it finds
+  A_llm_plain   no firm data; web search only. Not a null condition -- it finds
             annual reports and market commentary and answers confidently.
-  B_data    the brand history in a hosted Code Interpreter sandbox; the LLM
+  B_llm_data    the brand history in a hosted Code Interpreter sandbox; the LLM
             writes and runs its own forecasting code.
-  C_model   the same data behind a `forecast_demand` tool backed by the
+  C_llm_model   the same data behind a `forecast_demand` tool backed by the
             pre-trained XGBoost. The LLM writes no code.
 
   A -> B  measures what DATA ACCESS buys.
@@ -718,7 +718,7 @@ def run_scenario_c(category, brand, question=None):
         err = str(e)[:300]
 
     forecast = tool_forecast if tool_forecast is not None else _extract_number(text)
-    res = _result("C_model", text, err, t0, tot, forecast,
+    res = _result("C_llm_model", text, err, t0, tot, forecast,
                    containers=0, hit_limit=hit_limit,
                    trace_extra={"tool": "forecast_demand", "wrote_code": False,
                                 "target_month": target,
@@ -788,7 +788,7 @@ def run_scenario_b(category, brand, question=None, sentinel="FORECAST"):
 
     forecast, via_sentinel = _parse_sentinel(text, sentinel)
     containers = 0 if err else 1
-    res = _result("B_data", text, err, t0, u, forecast,
+    res = _result("B_llm_data", text, err, t0, u, forecast,
                    containers=containers,
                    trace_extra={"tool": "code_interpreter", "wrote_code": True,
                                 "target_month": target, "history_months": len(fit),
@@ -852,7 +852,7 @@ def run_scenario_a(category, brand, question=None):
     # figure rather than estimated it. Flagged, not dropped -- the decision to
     # exclude a run belongs in analysis, on inspected evidence.
     retrieval_suspected = bool(target and target in (text or ""))
-    res = _result("A_plain", text, err, t0, u, forecast, containers=0,
+    res = _result("A_llm_plain", text, err, t0, u, forecast, containers=0,
                    trace_extra={"tool": "web_search", "wrote_code": False,
                                 "used_web": used_web, "via_sentinel": via_sentinel,
                                 "target_month": target,
@@ -994,7 +994,7 @@ def run_scenario_d(category, brand, question=None):
     user = question or P.scenario_d_prompt(brand, category, target)
     coder = P.scenario_d_coder(brand, category, target, csv)
     return _run_engine_scenario(
-        "D_prometheus", category, brand, user, coder,
+        "D_prometheus_data", category, brand, user, coder,
         require_code=True, target=target,
         extra_trace={"history_months": len(fit),
                      "history_ends": (f"{int(fit.period_year.iloc[-1])}-"
@@ -1093,7 +1093,7 @@ def run_scenario_f(category, brand, question=None, sentinel="FORECAST"):
 
     forecast, via_sentinel = _parse_sentinel(text, sentinel)
     mfc = out.get("forecast_units")
-    res = _result("F_data_model", text, err, t0, u, forecast,
+    res = _result("F_llm_data_model", text, err, t0, u, forecast,
                   containers=0 if err else 1,
                   trace_extra={"tool": "code_interpreter+forecast_demand",
                                "wrote_code": bool(ncalls),
@@ -1160,12 +1160,12 @@ def run_scenario_g(category, brand, question=None):
 # D and E are listed here so --scenarios selects them by letter like the rest.
 # They no-op cleanly (outcome `engine_unavailable`) on a machine without the
 # engine, so an assessor running A-C is unaffected by their presence.
-SCENARIOS = (("A_plain", run_scenario_a),
-             ("B_data", run_scenario_b),
-             ("C_model", run_scenario_c),
-             ("D_prometheus", run_scenario_d),
+SCENARIOS = (("A_llm_plain", run_scenario_a),
+             ("B_llm_data", run_scenario_b),
+             ("C_llm_model", run_scenario_c),
+             ("D_prometheus_data", run_scenario_d),
              ("E_prometheus_model", run_scenario_e),
-             ("F_data_model", run_scenario_f),
+             ("F_llm_data_model", run_scenario_f),
              ("G_prometheus_data_model", run_scenario_g))
 
 
@@ -1374,13 +1374,13 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
         # presented as measurements. Replace with measured values after the
         # first smoke run; a made-up number that looks measured is the exact
         # failure the provenance rule exists to stop.
-        est = {"A_plain": 0.4243, "B_data": 0.2664, "C_model": 0.0068,
+        est = {"A_llm_plain": 0.4243, "B_llm_data": 0.2664, "C_llm_model": 0.0068,
                # D/E MEASURED 2026-09-11 on CSD/HARBOE (billed $1.83 for the
                # five-arm run, reconciled against the org costs endpoint).
-               "D_prometheus": 0.55, "E_prometheus_model": 0.21,
+               "D_prometheus_data": 0.55, "E_prometheus_model": 0.21,
                # F/G MEASURED 2026-09-11 on the seven-arm smoke, same brand.
                # Both prior estimates were high (F 0.30->0.223, G 0.60->0.327).
-               "F_data_model": 0.22, "G_prometheus_data_model": 0.33}
+               "F_llm_data_model": 0.22, "G_prometheus_data_model": 0.33}
         _unmeasured = set()
         by_scen = {}
         for _, _, sysname, _, _ in todo:
@@ -1650,18 +1650,30 @@ def _write_summary(df, OUT, repeats, brands, t_start):
                          else fmt.format(v) + pct)
         return f"| {label} | " + " | ".join(cells) + " |"
 
-    hdr = {"C_model": "A — dedicated model",
-           "B_data": "B — code-as-action",
-           "A_plain": "C — no firm data"}
+    # NO DISPLAY MAP. The arm's key IS its label, everywhere.
+    #
+    # There used to be one here, and it relettered the arms under the OLD
+    # REVERSED SCHEME the repo rules forbid: C_model printed as "A - dedicated
+    # model" and A_plain as "C - no firm data". Three things went wrong at once:
+    # the table contradicted the "A -> B measures what data access buys"
+    # sentence printed directly above it; D..G had no entry and fell through to
+    # raw keys, so one row mixed two lettering systems running in OPPOSITE
+    # directions; and a reader had no way to tell which was which.
+    #
+    # A translation layer between the name in the CSV and the name in the report
+    # is the defect, not the mapping's contents. One name per arm cannot drift.
     lines = [
         "# SRQ4 — does model availability improve an LLM's forecasts?", "",
         f"{len(brands)} brands x {repeats} repeats x {len(arm_names)} scenarios. "
         f"Model `{MODEL}`, reasoning effort `{REASONING_EFFORT}`. "
         f"Decoding: {DECODING_NOTE}. "
         "Forecasting the held-out test month from train+val.", "",
-        "The scenarios are an information ladder: **A -> B** measures what data access buys, "
-        "**B -> C** measures what model integration adds on top.", "",
-        "| Metric | " + " | ".join(hdr.get(a, a) for a in arm_names) + " |",
+        "The scenarios are an information ladder, weakest first. On the hosted "
+        "model: **A -> B** measures what data access buys, **B -> C** what the "
+        "dedicated model adds, **C -> F** what returning code on top of the "
+        "model does. **D -> E -> G** repeats those three rungs on the "
+        "Prometheus orchestrator, so the two ladders compare rung for rung.", "",
+        "| Metric | " + " | ".join(arm_names) + " |",
         "|---|" + "---|" * len(arm_names),
         row("Runs", "n", "{:.0f}"),
         row("Usable answers", "n_ok", "{:.0f}"),
@@ -1681,7 +1693,7 @@ def _write_summary(df, OUT, repeats, brands, t_start):
         "Failures are reported as classes, not averaged away. An scenario that answers "
         "60% of the time is not comparable to one that always answers, and a single "
         "implausible value destroys a mean.", "",
-        "| Outcome | " + " | ".join(hdr.get(a, a) for a in arm_names) + " |",
+        "| Outcome | " + " | ".join(arm_names) + " |",
         "|---|" + "---|" * len(arm_names),
     ]
     for c in FAILURE_CLASSES:
@@ -1715,7 +1727,7 @@ def _write_summary(df, OUT, repeats, brands, t_start):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="SRQ4 experiment: three-scenario information ladder")
+    ap = argparse.ArgumentParser(description="SRQ4 experiment: seven-scenario information ladder")
     ap.add_argument("--demo", action="store_true",
                     help="one brand through all three scenarios, no repeats -- the smoke test")
     ap.add_argument("--full", action="store_true", help="the full experiment")
