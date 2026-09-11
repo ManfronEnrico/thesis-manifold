@@ -1,0 +1,117 @@
+{
+  "category": "CSD",
+  "brand": "HARBOE",
+  "rep": 0,
+  "system": "G_prometheus_data_model",
+  "actual": 6365899.7748,
+  "target_month": "2026-03",
+  "forecast": 5604800.0,
+  "outcome": "ok",
+  "ape": 11.9558868616324,
+  "latency_s": 80.88,
+  "answer": "Forecast: 5,604,800 units\nRange: 3,900,000 to 7,300,000 units (90% interval)\nConfidence: low-to-medium -- HARBOE is a competitor brand, and the dedicated model is low-confidence with a wide interval; March history supports the midpoint, but recent sales are volatile and likely promotion-sensitive.\nRecommendation: for Royal Unibrew category planning, plan defensively around the midpoint while monitoring Jan-Feb 2026 sell-out and promotion intensity; protect key March CSD promotional windows, shelf visibility and price-pack execution, but avoid overcommitting against the upper bound unless early 2026 tracking confirms HARBOE is running hot.\nFORECAST=5604800",
+  "prompt": "How many units of HARBOE will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The brand's monthly sales history has already been retrieved and is available to the engine, together with a forecast from a dedicated model trained on the company's internal sales history; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "G_prometheus_data_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v5-seven-scenarios+d22fe7cdc30e",
+    "run_at": "2026-09-11T17:31:43",
+    "tool": "prometheus+forecast_demand",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 2,
+    "tool_calls": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "ikg4ijtldjhrmmik9ic2x",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "months_ahead": 3,
+    "history_months": 39,
+    "model_forecast": 4969049.5,
+    "deviates_from_model": true
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np, io\\ncsv = '''period_year,period_month,sales_units,promo_intensity\\n2022,10,4472796.2612,\\n2022,11,4933395.443899999,\\n2022,12,4266595.364800001,\\n2023,1,3429983.0671999995,0.2940726327756125\\n2023,2,4061321.6739999996,0.4586776012447845\\n2023,3,4978711.561199999,0.25937136849907827\\n2023,4,3931271.1353999996,0.20200804678188183\\n2023,5,4539718.9166,0.3102694719226518\\n2023,6,6210563.9879,0.23337648791607207\\n2023,7,3969125.3971999995,0.2604780587070367\\n2023,8,4434312.4201,0.24896536696736327\\n2023,9,5425359.332,0.22795968455655757\\n2023,10,3581981.6607999993,0.2856266540230134\\n2023,11,3464200.8451000005,0.2909229198764727\\n2023,12,5513499.3346,0.2899954008060161\\n2024,1,3530564.0953,0.24392321835753386\\n2024,2,4341338.5165,0.11727420217988906\\n2024,3,5284878.3075,0.3795580112193527\\n2024,4,4356722.185500001,0.2531519102824996\\n2024,5,5418809.913,0.3358693206388206\\n2024,6,6225440.905,0.38219639538975325\\n2024,7,4835852.1622,0.26810781042857473\\n2024,8,4068687.7823,0.38914767926091676\\n2024,9,5591355.5198,0.2645061671820656\\n2024,10,4452118.169600001,0.354400004573407\\n2024,11,3367262.4252999993,0.19002794435677628\\n2024,12,4749525.990300001,0.22575464155875227\\n2025,1,3069643.2191000003,0.28657357244285125\\n2025,2,4436153.820900001,0.06884881961029378\\n2025,3,5958928.370599999,0.32194353058028363\\n2025,4,4144874.3630999997,0.0778724284348867\\n2025,5,7245572.1735000005,0.3653018372954498\\n2025,6,6056285.034900001,0.33534630341575866\\n2025,7,7697653.468300001,0.14575698780605584\\n2025,8,6156190.3078000005,0.482341696447667\\n2025,9,6550245.0221,0.1751155652332192\\n2025,10,5684361.6618,0.5922724657812978\\n2025,11,5392954.3957,0.4890371695276395\\n2025,12,4965644.6208,0.19679837921341203\\n'''\\ndf = pd.read_csv(io.StringIO(csv))\\ndf['date']=pd.to_datetime(dict(year=df.period_year, month=df.period_month, day=1))\\ndf['t']=np.arange(len(df))\\nprint('n', len(df), df.date.min(), df.date.max())\\n# March histories\\nprint('March history')\\nprint(df[df.period_month==3][['period_year','sales_units','promo_intensity']].to_string(index=False))\\n# annual avg, latest 12\\nprint('annual totals/avg')\\nprint(df.groupby('period_year').sales_units.agg(['sum','mean','count']).to_string())\\n# recent q4/q1 etc\\nprint('2025 mean', df[df.period_year==2025].sales_units.mean())\\n# Baselines\\nmar = df[df.period_month==3].set_index('period_year').sales_units\\nprint('mar yoy', mar.pct_change().to_string())\\n# seasonal trend linear on monthly dummies no promo via sklearn\\ntry:\\n from sklearn.linear_model import Ridge, LinearRegression, HuberRegressor\\n from sklearn.preprocessing import OneHotEncoder\\n from sklearn.compose import ColumnTransformer\\n from sklearn.pipeline import make_pipeline\\n from sklearn.metrics import mean_absolute_percentage_error\\n X = df[['t','period_month']]\\n y = df.sales_units.values\\n # onehot month with t linear Ridge LOOCV? Fit all predict t for 2026-03 = 41? index 2022-10 t=0 so 2026-03 is 41\\n target = pd.DataFrame({'t':[41], 'period_month':[3]})\\n for alpha in [0,1,10,100]:\\n  if alpha==0: model=make_pipeline(ColumnTransformer([('m',OneHotEncoder(drop='first'),['period_month'])], remainder='passthrough'), LinearRegression())\\n  else: model=make_pipeline(ColumnTransformer([('m',OneHotEncoder(drop='first'),['period_month'])], remainder='passthrough'), Ridge(alpha=alpha))\\n  model.fit(X,y)\\n  pred=model.predict(target)[0]\\n  fitted=model.predict(X)\\n  mape=np.mean(np.abs((y-fitted)/y))*100\\n  print('dummy trend alpha',alpha,'pred',pred,'insample mape',mape)\\nexcept Exception as e: print('sklearn err', e)\\n# ETS? Holt winters maybe statsmodels\\ntry:\\n import statsmodels.api as sm\\n from statsmodels.tsa.holtwinters import ExponentialSmoothing\\n s=df.set_index('date').sales_units.asfreq('MS')\\n for trend in ['add', None]:\\n  for seasonal in ['add','mul']:\\n   try:\\n    fit=ExponentialSmoothing(s, trend=trend, seasonal=seasonal, seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n    fc=fit.forecast(3).iloc[-1]\\n    print('HW',trend,seasonal,'pred',fc,'aic',fit.aic)\\n   except Exception as e: print('HW err',trend,seasonal,e)\\nexcept Exception as e: print('stats err',e)\\n# Simple ensemble candidates\\nmodel_fc=4969049.5\\nseasonal_naive=mar.loc[2025]\\n# YoY trend avg: 2025 mar * avg yoy 23-25? assume +9.45%\\nyoy_avg=np.mean([mar.loc[2024]/mar.loc[2023]-1, mar.loc[2025]/mar.loc[2024]-1])\\nprint('yoy_avg pred',seasonal_naive*(1+yoy_avg), 'yoy_avg',yoy_avg)\\nprint('blend 60 model 40 seasonal', .6*model_fc+.4*seasonal_naive)\\nprint('blend 50 model 25 seasonal 25 trend', .5*model_fc+.25*seasonal_naive+.25*seasonal_naive*(1+yoy_avg))\\n# Historical residual-based interval around selected maybe use WMAPE 18.4 => +/-? 90 approx 1.64*MAPE? But conformal too wide unusable.\\nsel=.5*model_fc+.25*seasonal_naive+.25*seasonal_naive*(1+yoy_avg)\\nprint('selected',sel, 'mape18 +/-', sel*0.184, '90 approx +/-', sel*0.184*1.64)\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 2,
+      "all_calls": [
+        "execute_code",
+        "execute_code"
+      ]
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "HARBOE",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 4969049.5,
+        "interval_90": [
+          654487.5,
+          37726335.0
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.0163,
+        "served_at_utc": "2026-09-11T15:30:22+00:00"
+      }
+    ]
+  },
+  "tokens_in": 39681,
+  "tokens_out": 4283,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.326895,
+  "error": null
+}
