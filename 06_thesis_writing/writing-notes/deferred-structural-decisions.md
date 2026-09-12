@@ -828,3 +828,59 @@ intact - but the next pass that cites one should say which.
 **Recommendation:** renumber the later of each pair to S24 and S25, and leave a
 one-line pointer at the old position. Do it in one edit rather than
 opportunistically, so no half-renamed state exists.
+
+---
+
+## S26 - Chapter 7's table numbers collide with Chapter 6's
+
+**Status:** recommended - act before any further table is added anywhere
+**Found:** 2026-09-12, Chapter 7 verification pass
+
+Chapter 6 and Chapter 7 both number their tables **17, 18 and 19**; Chapter 8
+resumes at 20.
+
+| Chapter | Table numbers |
+|---|---|
+| Ch5 | 5-16 |
+| Ch6 | **17, 18, 19** |
+| Ch7 | **17, 18, 19** (collision) |
+| Ch8 | 20, 21, 22 |
+| Ch9 | 23 |
+
+Chapter 7's three tables are absent from the global sequence, so **every table
+number from Chapter 8 onward is understated by three**.
+
+**Cause:** Chapters 5, 6 and 8 carry their numbers as Word field references,
+which renumber automatically. Chapter 7's are typed as plain text, so they did
+not move when Chapter 6 gained its seventh-arm table.
+
+**Recommendation:** convert Chapter 7's three captions and their in-text callouts
+to field references, after which Word renumbers the later chapters itself. Each
+new table added before this is done widens the offset.
+
+⚠ Chapter 7 also contradicts itself independently of the collision: 7.2.2 says
+"summarised in Table 18" above a caption reading **Table 17**.
+
+---
+
+## S27 - Two abandoned confidence-index extensions belong in future work
+
+**Status:** recommended
+**Found:** 2026-09-12, Chapter 7 verification pass
+
+Chapter 7 ends with an "Outstanding decisions" section that is authors' notes
+inside submission prose and should be deleted (Fix 10 of that pass). Two of its
+four items are real and should survive as future work rather than be discarded:
+
+- **A human-review flag for low-confidence recommendations.**
+- **A fourth confidence component tracking accuracy drift over time.**
+
+⚠ **Both are blocked by the same thing**, and the dependency must be stated
+wherever they appear: the confidence index is degenerate, every forecast in every
+category tiers **Low**, so a flag keyed to it would flag everything and a fourth
+component would be added to an index that already discriminates nothing.
+
+**Recommendation:** state them in the limitations or future-work chapter as
+*conditional on a discriminating index*, never as standalone improvements. The
+other two items are already answered - the logging question by Section 7.5, the
+cost ceiling by the measured figures now in 7.6.

@@ -131,7 +131,7 @@ measured rather than narrowed to look useful. A consumer of the payload can act
 on a wide interval — and in the pilot, two agents did exactly that, weighing the
 model's forecast rather than adopting it and citing the width as their reason.
 
-See `ch7_synthesis/the-payload-changed-behaviour.md`. **A wide interval that is
+See `ch7_synthesis/ch7-verification-pass.md (Part 3)`. **A wide interval that is
 honestly reported and correctly consumed is a better outcome than a narrow one
 that undercovers.**
 
@@ -139,9 +139,9 @@ that undercovers.**
 
 # Related
 
-- `ch7_synthesis/ch7-confidence-index-decision.md` — the sibling defect in the
+- `ch7_synthesis/ch7-verification-pass.md (Part 2)` — the sibling defect in the
   confidence tier, which is not recoverable the way this is explainable
-- `ch7_synthesis/the-payload-changed-behaviour.md` — the width being consumed
+- `ch7_synthesis/ch7-verification-pass.md (Part 3)` — the width being consumed
 - `anticipated-assessor-questions.md` — Q2.3
 - P0049 `findings.md` F50 and F52, and
   `2026-09-11_eval_calibration_schemes.py` in the same folder — the script that

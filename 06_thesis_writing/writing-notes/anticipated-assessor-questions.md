@@ -162,7 +162,7 @@ quantile alone, and the second term is identically zero because it assumes a
 quantile bounded near one when the measured values are 1.89 to 2.69. Four
 attainable values exist across all brands, all tiering "Low".
 
-**Evidence.** `ch7_synthesis/ch7-confidence-index-decision.md`;
+**Evidence.** `ch7_synthesis/ch7-verification-pass.md (Part 2)`;
 `forecast_tool.py` now carries an assertion that fires if the degeneracy ever
 lifts.
 
