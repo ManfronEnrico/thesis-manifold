@@ -4,7 +4,7 @@ description: NOTE - Running list of thesis claims that must be re-verified or up
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 8, results]
 created: 2026_09_09-21_00
-updated: 2026_09_10-16_10
+updated: 2026_09_12-19_50
 status: partly-verified
 ---
 
@@ -429,5 +429,40 @@ More features cost more rather than less, so the current figures are a floor and
 the direction is safe.
 
 **Raised by:** the Chapter 5 pass, 2026-09-10.
+
+---
+
+## H13 - Regenerate calibration.csv / .md so the width column carries its real name
+
+**Claim as the thesis states it (Ch7 Table 18; Ch5 Table 13):** the interval-width
+column is labelled "Median rel. width".
+
+**What answers it:** `tables/calibration.csv`. Its header must read
+`median_rel_width`. The producer was renamed on 2026-09-12: the value has always
+been `np.median(...)`, but the column was named `mean_rel_width` and the rendered
+header said "Mean rel. width", so the artefact told every reader it measured
+something it does not. The thesis tables are correct as written - the artefact is
+the half that is behind.
+
+**A gate on WHERE it is regenerated, not on the claim.** A re-run on a venv behind
+`requirements.txt` (xgboost 3.2.0 against a pinned 3.4.1) did **not** reproduce the
+committed figures:
+
+| Category | Served | Committed | On the unpinned venv |
+|---|---|---|---|
+| CSD 80% | XGBoost | 80.5% / 3.40 | 82.7% / 3.82 |
+| CSD 90% | XGBoost | 91.7% / 8.99 | 90.8% / 8.78 |
+| Danskvand 80% | XGBoost | 73.6% / 3.03 | 73.0% / 3.02 |
+| Danskvand 90% | XGBoost | 83.9% / 11.77 | 83.9% / 11.01 |
+| Energidrikke, RTD | LightGBM | - | **identical** |
+
+Regenerate only where the pins hold. A run on an unpinned environment would
+silently replace the figures Chapter 7 is pinned to.
+
+**If the regenerated figures differ from the committed ones**, Chapter 7's Fix 5
+(the eight table rows) and Fix 6 (the "above ten" and "six points" clauses) must
+both be re-derived from the new artefact before they are applied.
+
+**Raised by:** the Chapter 7 pass, 2026-09-12.
 
 ---

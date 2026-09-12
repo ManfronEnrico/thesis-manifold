@@ -12,6 +12,22 @@ empirical coverage ≈ nominal. Provides the raw confidence signal Ch6/SRQ2 need
 Self-contained, reproducible (seed=42). No Prometheus/Nika dependency.
 Usage: .venv/bin/python scripts/srq1_calibration.py
 Output: 04_thesis_results/srq1/{calibration.csv, calibration.md}
+
+THE WIDTH COLUMN IS A MEDIAN, AND IS NOW NAMED LIKE ONE (renamed 2026-09-12).
+The value has always been `np.median(...)` -- deliberately, because the mean
+explodes on low-volume rows -- but the column was called `mean_rel_width` and
+the rendered header read "Mean rel. width". The artefact therefore told every
+reader that it measured something it does not, and a thesis table citing it
+inherited the error. Renamed at the source rather than in the thesis, because
+the thesis reads the artefact and not the other way round.
+
+    The committed calibration.csv / .md still carry the OLD column name. They
+    must be regenerated, and ONLY on the pinned dependency set: a 2026-09-12
+    re-run on a venv behind requirements.txt (xgboost 3.2.0 against a pinned
+    3.4.1) did NOT reproduce the committed figures. The two XGBoost categories
+    moved on both coverage and width; the two LightGBM categories came back
+    identical. "Reproducible (seed=42)" above holds WITHIN a dependency set,
+    not across one.
 """
 import json, sys, warnings
 from pathlib import Path
@@ -250,7 +266,7 @@ for cat, slug in CATS.items():
         # median relative interval width (robust; mean explodes on low-volume rows)
         width = float(np.median((hi - lo) / np.maximum(ytrue, 1e-9)))
         rows.append(dict(category=cat, nominal=int(nom * 100), empirical_coverage=round(cov, 1),
-                         mean_rel_width=round(width, 2), n_test=len(te),
+                         median_rel_width=round(width, 2), n_test=len(te),
                          n_calib=n_cal, quantile_level=round(level, 4)))
         print(f"  {cat:13s} nominal={int(nom*100)}%  empirical={cov:5.1f}%  rel_width={width:.2f}")
 
@@ -273,9 +289,9 @@ _kinds = sorted({served_model(c) for c in CATS})
 _served_desc = (f"tuned {_kinds[0]}" if len(_kinds) == 1
                 else "tuned " + " / ".join(_kinds) + ", per served model")
 
-_wide = {c: _cell(c, 90, "mean_rel_width") for c in ("Danskvand", "Energidrikke")
+_wide = {c: _cell(c, 90, "median_rel_width") for c in ("Danskvand", "Energidrikke")
          if (_cell(c, 90, "empirical_coverage") or 100) < 88
-         and _cell(c, 90, "mean_rel_width") is not None}
+         and _cell(c, 90, "median_rel_width") is not None}
 _dv_line = (
     f"The danskvand row ({_dv80:.1f}% against a nominal 80%) is what that gap "
     "looks like in practice." if _dv80 is not None and _dv80 < 80 else
@@ -297,15 +313,15 @@ lines = [f"# SRQ1 prediction-interval calibration — split conformal "
          "measured on test. Well-calibrated => empirical ≈ nominal.", "",
          "**Read coverage and width together.** Coverage alone is not a success "
          "criterion: an arbitrarily wide interval attains perfect coverage while "
-         "carrying no decision-relevant information. `Mean rel. width` is the "
+         "carrying no decision-relevant information. `Median rel. width` is the "
          "interval width as a multiple of the actual value, so 3.0 means the "
          "interval spans about three times the quantity being forecast.", "",
-         "| Category | Nominal | Empirical coverage | Mean rel. width | n_test |",
+         "| Category | Nominal | Empirical coverage | Median rel. width | n_test |",
          "|---|---|---|---|---|"]
 for _, x in df.iterrows():
-    flag = "" if x['mean_rel_width'] < 5 else "  **<- too wide to act on**"
+    flag = "" if x['median_rel_width'] < 5 else "  **<- too wide to act on**"
     lines.append(f"| {x['category']} | {x['nominal']}% | {x['empirical_coverage']}% | "
-                 f"{x['mean_rel_width']}{flag} | {int(x['n_test'])} |")
+                 f"{x['median_rel_width']}{flag} | {int(x['n_test'])} |")
 lines += ["", "Coverage near nominal indicates the conformal interval is a usable confidence "
           "signal for the agentic layer (SRQ2); systematic over/under-coverage flags residual "
           "heteroskedasticity (interval width is global, not per-series).", "",
