@@ -397,6 +397,27 @@ Per DEC-P0046-RUNS-WITH-EXPERIMENT these live beside the harness that produced
 them, not in the results tier, which holds only the aggregation across runs.
 """
 
+SRQ4_AGENT_INPUTS_DIR: Path = SRQ4_DIR / "agent_inputs"
+"""
+The warehouse-shaped payloads handed to the data-access scenarios.
+
+WHY THIS TIER EXISTS AND WHY IT IS NOT _01_converted OR _03_engineered
+
+A production Prometheus reaches a live star schema and must join and aggregate
+it itself. The scenarios cannot be handed a live warehouse, so they are handed
+the RESULT of that join and aggregation and nothing further: post-join,
+post-market-filter, post-brand-month-aggregation, and PRE any cleaning,
+imputation, outlier handling or feature engineering.
+
+That state existed nowhere on disk. `_01_converted` holds the un-joined views;
+`_03_engineered` holds a frame that has already had the human modelling choices
+applied. Handing the scenarios the engineered frame would give away the EDA and
+feature-engineering work that SRQ4 exists to measure, and handing them the raw
+views would ask them to do a join no production agent performs in-prompt.
+
+Written by `build_agent_inputs.py`, consumed by `srq4_experiment.py`.
+"""
+
 # ============================================================================
 # 1.1 MODELLING SUBDIRECTORY
 # ============================================================================

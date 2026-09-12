@@ -1,0 +1,117 @@
+{
+  "category": "CSD",
+  "brand": "7-UP",
+  "rep": 2,
+  "system": "G_prometheus_data_model",
+  "actual": 13041.5455,
+  "target_month": "2026-03",
+  "forecast": 18000.0,
+  "outcome": "ok",
+  "ape": 38.02045164049,
+  "latency_s": 80.58,
+  "answer": "Forecast: 18,000 units  \nRange: 5,000 to 45,000 units (90% interval)  \nConfidence: low-to-medium -- recent 7-UP unit sales are materially below the 2024 run-rate, and the model uncertainty is wide due to volatility and likely structural weakening in 2025.  \nRecommendation: plan against the 18,000-unit midpoint, but keep supply flexibility toward the upper bound if January-February sales, listings, or promo/distribution support come in stronger than the recent run-rate.  \nFORECAST=18000",
+  "prompt": "How many units of 7-UP will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "G_prometheus_data_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T20:47:24",
+    "tool": "prometheus+forecast_demand",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 2,
+    "tool_calls": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "i4nabz38lhw10lbfafo2h",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "months_ahead": 3,
+    "history_months": 39,
+    "model_forecast": 14951.7,
+    "deviates_from_model": true
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\n# sales_units from provided table\\nrows = [\\n('2022-10',27368.4083),('2022-11',22966.3763),('2022-12',39345.9985),\\n('2023-01',24128.3668),('2023-02',22550.713),('2023-03',24265.0664),('2023-04',29210.1147),('2023-05',53275.7138),('2023-06',63057.7534),('2023-07',48820.8702),('2023-08',59151.3041),('2023-09',54803.3101),('2023-10',33190.3187),('2023-11',34668.603),('2023-12',57912.4628),\\n('2024-01',27086.1707),('2024-02',34535.3897),('2024-03',33891.6723),('2024-04',27899.7019),('2024-05',44287.4669),('2024-06',62335.3014),('2024-07',56704.3612),('2024-08',55964.6737),('2024-09',58711.3237),('2024-10',36321.3622),('2024-11',37857.9167),('2024-12',45971.5749),\\n('2025-01',24234.5682),('2025-02',18992.3164),('2025-03',30152.1302),('2025-04',23450.5387),('2025-05',27756.3958),('2025-06',31315.5),('2025-07',26237.4547),('2025-08',25933.7304),('2025-09',25719.6504),('2025-10',20615.6108),('2025-11',21205.4019),('2025-12',29807.38)\\n]\\nts = pd.Series({pd.Period(p, freq='M').to_timestamp(): v for p,v in rows}).asfreq('MS')\\nprint('n', len(ts), 'start', ts.index.min(), 'end', ts.index.max())\\nprint('annual totals/averages')\\nprint(ts.groupby(ts.index.year).agg(['sum','mean']).to_string())\\nprint('March history:', ts[ts.index.month==3].to_string())\\n# simple benchmarks\\nq4_2025 = ts['2025-10':'2025-12'].mean()\\nq4_ratios=[]\\nfor year in [2024,2025]:\\n    prevq4 = ts[f'{year-1}-10':f'{year-1}-12'].mean()\\n    q4_ratios.append(ts[f'{year}-03-01']/prevq4)\\nprint('Q4->Mar ratios', q4_ratios, 'avg', np.mean(q4_ratios), 'apply', np.mean(q4_ratios)*q4_2025)\\n# trailing year-over-year changes by month for 2025 vs 2024\\nprint('2025/2024 by month ratios')\\nprint((ts['2025-01':'2025-12'].values / ts['2024-01':'2024-12'].values).round(3))\\nprint('avg ratio Jan-Dec', np.mean(ts['2025-01':'2025-12'].values / ts['2024-01':'2024-12'].values))\\n# Holt-Winters fits\\nfor trend in ['add', None]:\\n  for damped in ([True, False] if trend else [False]):\\n    try:\\n      fit = ExponentialSmoothing(ts, trend=trend, damped_trend=damped, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n      fc=fit.forecast(3).iloc[-1]\\n      print('HW', trend, damped, 'AIC', fit.aic, 'Mar26', fc, 'Jan-Feb-Mar', fit.forecast(3).values)\\n    except Exception as e: print('HW error', trend,damped,e)\\n# simple SARIMAX candidates\\nfor order,seas in [((0,1,1),(0,1,1,12)), ((1,0,0),(0,1,1,12)), ((1,1,0),(0,1,1,12)), ((0,1,0),(0,1,0,12))]:\\n    try:\\n        res=SARIMAX(ts, order=order, seasonal_order=seas, enforce_stationarity=False, enforce_invertibility=False).fit(disp=False)\\n        pred=res.get_forecast(3)\\n        print('SAR', order,seas,'aic',res.aic,'Mar26',pred.predicted_mean.iloc[-1], 'ci',pred.conf_int(alpha=.10).iloc[-1].values)\\n    except Exception as e: print('sar err',e)\\n# cross-validated one-step/3-step? leave last 12 fit up to t predict t+3 maybe approximate errors for intervals using methods\\n# forecast candidates\\ncandidates = {\\n    'model_xgb':14951.7,\\n    'q4_seasonal_ratio':np.mean(q4_ratios)*q4_2025,\\n    'seasonal_naive':ts['2025-03-01'],\\n    'march_avg_2023_2025':ts[ts.index.month==3].mean(),\\n    'same_yoy_decay_2025vs2024':ts['2025-03-01']*(ts['2025-12-01']/ts['2024-12-01']),\\n}\\nprint('candidates')\\nfor k,v in candidates.items(): print(k, v)\\nprint('median candidates', np.median(list(candidates.values())), 'mean excl naive?', np.mean([candidates['model_xgb'], candidates['q4_seasonal_ratio'], candidates['same_yoy_decay_2025vs2024']]))\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 2,
+      "all_calls": [
+        "execute_code",
+        "execute_code"
+      ]
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "7-UP",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 14951.7,
+        "interval_90": [
+          1968.3,
+          113516.5
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.0162,
+        "served_at_utc": "2026-09-12T18:46:03+00:00"
+      }
+    ]
+  },
+  "tokens_in": 62224,
+  "tokens_out": 5733,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.48311,
+  "error": null
+}

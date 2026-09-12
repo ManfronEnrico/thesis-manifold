@@ -75,7 +75,7 @@ def _find_repo_root() -> Path:
 
 
 sys.path.insert(0, str(_find_repo_root()))
-from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir, SRQ2_DIR
+from PATHS import THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR, get_category_engineered_bymonth_dir, SRQ2_DIR, SRQ4_AGENT_INPUTS_DIR
 
 warnings.filterwarnings("ignore")
 
@@ -409,11 +409,91 @@ def _brand_history(category, brand):
     actual = float(scored["sales_units"]) if scored is not None else None
     target = (f"{int(scored['period_year'])}-{int(scored['period_month']):02d}"
               if scored is not None else None)
-    cols = ["period_year", "period_month", "sales_units"] + [
-        c for c in ("promo_intensity", "weighted_distribution") if c in g.columns]
-    fit = g[g.split.isin(["train", "val"])].dropna(subset=["sales_units"])[cols]
+    # THE HISTORY HANDED TO AN AGENT COMES FROM THE WAREHOUSE EXTRACT, NOT FROM
+    # THIS MATRIX (changed 2026-09-12).
+    #
+    # The scored `actual` and `target` above still come from the engineered
+    # matrix, because the split labels and the horizon contract live there. But
+    # the frame a scenario READS must be the pre-cleaning, pre-engineering
+    # brand-month extract that `build_agent_inputs.py` writes, for two reasons:
+    #
+    #   * This matrix has already had the pipeline's cleaning and feature
+    #     engineering applied. Handing it over gives away the work SRQ4 exists
+    #     to measure -- `promo_intensity`, which the old four-column slice sent,
+    #     is an engineered shifted ratio, not a warehouse column.
+    #   * It carried 4 columns where the warehouse holds 32. A production agent
+    #     joins the star schema and sees all of them, so withholding them made
+    #     "the agent found no signal" unfalsifiable.
+    #
+    # The extract is already truncated at the end of validation AT WRITE TIME,
+    # so it cannot leak. `_assert_no_leakage` still runs on it -- a second,
+    # independent check of the same boundary, which is the point.
+    fit = _agent_history(category, brand)
     _assert_no_leakage(fit, test, category, brand)
     return fit, actual, target
+
+
+_SCHEMA_CACHE = {}
+
+
+def _schema_dictionary(category):
+    """The warehouse's own column documentation, as the agent receives it.
+
+    A production Prometheus can read its warehouse's column docs. Withholding
+    them would hand the agent 32 unexplained columns and make a poor result
+    unattributable between "could not model it" and "could not read it".
+
+    Hard failure if absent, never an empty string: an arm silently running
+    without the dictionary would differ from its pair in exactly the way v6
+    exists to prevent.
+    """
+    if category not in _SCHEMA_CACHE:
+        p = SRQ4_AGENT_INPUTS_DIR / category / "schema_dictionary.csv"
+        if not p.is_file():
+            raise FileNotFoundError(
+                f"No schema dictionary for {category}.\n"
+                f"  Expected: {p}\n"
+                f"  Build it: python build_agent_inputs.py --category {category}")
+        _SCHEMA_CACHE[category] = p.read_text(encoding="utf-8")
+    return _SCHEMA_CACHE[category]
+
+
+def _slug_ascii(name):
+    """ASCII slug via the generator's rule, so one naming rule exists."""
+    from build_agent_inputs import _slug
+    return _slug(name)
+
+
+def _brand_slug(brand):
+    """Filesystem slug for a brand, from the generator that WROTE the file.
+
+    Imported rather than reimplemented. A second copy of this rule would drift
+    -- and the first version of it turned OERBAEK into "RB-K", because Danish
+    O-slash and AE have no combining-mark decomposition to strip.
+    """
+    from build_agent_inputs import _slug
+    return _slug(brand)
+
+
+def _agent_history(category, brand):
+    """The warehouse-shaped brand-month series handed to a data-access scenario.
+
+    Built by `build_agent_inputs.py`. Missing file is a hard failure, never a
+    fallback to the engineered matrix: a silent fallback would send the
+    engineered frame under the name of the raw one, and nothing downstream
+    could tell which had been used.
+    """
+    p = SRQ4_AGENT_INPUTS_DIR / category / f"{_brand_slug(brand)}_brand_month.csv"
+    if not p.is_file():
+        raise FileNotFoundError(
+            f"No agent input for {category}/{brand}.\n"
+            f"  Expected: {p}\n"
+            f"  Build it: python build_agent_inputs.py --category {category} "
+            f"--brands {brand}")
+    df = pd.read_csv(p)
+    # `brand` is constant within the file and is a label, not a measurement.
+    # Dropping it keeps the payload to the series itself.
+    return df.drop(columns=[c for c in ("brand",) if c in df.columns])
 
 
 def _assert_no_leakage(fit, test, category, brand):
@@ -619,7 +699,13 @@ def _cache_response(scenario, category, brand, rep, payload, out_dir=None):
     base = Path(out_dir) if out_dir else THESIS_RESULTS_SRQ4_DIR
     d = base / "raw_responses"
     d.mkdir(parents=True, exist_ok=True)
-    safe = re.sub(r"[^A-Za-z0-9_-]+", "_", f"{category}_{brand}")
+    # Transliterate before stripping. A bare character-class strip deletes
+    # Danish letters outright rather than folding them, so the v6 smoke wrote
+    # OERBAEK's trace as "CSD__RB_K" -- the O-slash and AE simply vanished,
+    # leaving a doubled separator and a filename that names no brand. The
+    # generator's slug already solves this; reuse it rather than keeping a
+    # second, lossier rule here.
+    safe = f"{_slug_ascii(category)}_{_slug_ascii(brand)}"
     f = d / f"{scenario}__{safe}__rep{rep}.json"
     f.write_text(json.dumps(payload, indent=2, default=str),
                  encoding="utf-8", newline="\n")
@@ -802,7 +888,8 @@ def run_scenario_b(category, brand, question=None, sentinel="FORECAST"):
     # Name the target month rather than saying "next month": scenarios A, B and C must
     # all be scored on the SAME month, and only the data tells us which one it is.
     prompt = (question if question
-              else P.scenario_b_prompt(brand, category, target, csv, sentinel))
+              else P.scenario_b_prompt(brand, category, target, csv,
+                                       _schema_dictionary(category), sentinel))
     t0 = time.perf_counter()
     err = None
     text = ""
@@ -1029,7 +1116,8 @@ def run_scenario_d(category, brand, question=None):
     fit, _, target = _brand_history(category, brand)
     csv = fit.to_csv(index=False)
     user = question or P.scenario_d_prompt(brand, category, target)
-    coder = P.scenario_d_coder(brand, category, target, csv)
+    coder = P.scenario_d_coder(brand, category, target, csv,
+                               _schema_dictionary(category))
     return _run_engine_scenario(
         "D_prometheus_data", category, brand, user, coder,
         require_code=True, target=target,
@@ -1107,7 +1195,8 @@ def run_scenario_f(category, brand, question=None, sentinel="FORECAST"):
     complete = _payload_complete(out)
     prompt = (question if question else P.scenario_f_prompt(
         brand, category, target, csv,
-        json.dumps(out, indent=2, default=str), sentinel))
+        json.dumps(out, indent=2, default=str),
+        _schema_dictionary(category), sentinel))
     t0 = time.perf_counter()
     err = None
     text = ""
@@ -1168,7 +1257,8 @@ def run_scenario_g(category, brand, question=None):
     complete = _payload_complete(out)
     payload = json.dumps(out, indent=2, default=str)
     user = question or P.scenario_g_prompt(brand, category, target)
-    coder = P.scenario_g_coder(brand, category, target, csv, payload)
+    coder = P.scenario_g_coder(brand, category, target, csv, payload,
+                               _schema_dictionary(category))
     mfc = out.get("forecast_units")
     res = _run_engine_scenario(
         "G_prometheus_data_model", category, brand, user, coder,
@@ -1448,27 +1538,22 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
         return df
 
     if dry_run:
-        # Per-run estimates, ALL MEASURED on the 2026-09-11 seven-arm smoke
-        # (CSD/HARBOE). Rough by design -- the point is to catch "this costs 4x
-        # what I expected" before spending. Costed over what will ACTUALLY be
-        # sent, so the cache saving is visible.
+        # Per-run estimates, ALL MEASURED on the 2026-09-12 v6 smoke
+        # (CSD, 3 brands x 1 repeat x 7 arms, 21 runs). Rough by design -- the
+        # point is to catch "this costs 4x what I expected" before spending.
         #
-        # A/B/C were refreshed 2026-09-11. They had been left at their
-        # 2026-08-19 values while D/E/F/G were updated one by one as each was
-        # measured, so the table mixed August and September figures and
-        # predated the web-search pricing added the same day. A stale number
-        # presented as measured is the failure the provenance rule exists to
-        # stop, and a cost table is exactly where it does damage.
+        # REFRESHED 2026-09-12 for the v6 payload. The v5 figures were measured
+        # against a FOUR-COLUMN history; the arms now receive 32 columns plus
+        # the warehouse schema dictionary, so every data arm moved. D was the
+        # largest miss at 1.85x its v5 estimate -- 103k input and 14.7k output
+        # tokens on a single run, the nested coder iterating over the wider
+        # frame. Output bills at 6x input, so an arm that reasons longer costs
+        # more than the payload size alone suggests.
         #
-        # A includes its web-search call ($0.10); it is the only arm that
-        # searches.
-        est = {"A_llm_plain": 0.6432, "B_llm_data": 0.2243, "C_llm_model": 0.0090,
-               # D/E MEASURED 2026-09-11 on CSD/HARBOE (billed $1.83 for the
-               # five-arm run; note fetch_billed_cost returns the WHOLE DAY).
-               "D_prometheus_data": 0.5190, "E_prometheus_model": 0.2021,
-               # F/G MEASURED 2026-09-11 on the seven-arm smoke, same brand.
-               # Both prior estimates were high (F 0.30->0.223, G 0.60->0.327).
-               "F_llm_data_model": 0.2230, "G_prometheus_data_model": 0.3269}
+        # A is the only arm that searches the web ($0.10/call, included).
+        est = {"A_llm_plain": 0.3267, "B_llm_data": 0.4577, "C_llm_model": 0.0089,
+               "D_prometheus_data": 0.6864, "E_prometheus_model": 0.2075,
+               "F_llm_data_model": 0.4953, "G_prometheus_data_model": 0.5008}
         _unmeasured = set()
         by_scen = {}
         for _, _, sysname, _, _ in todo:
@@ -1579,10 +1664,26 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
         if len(rows) % 5 == 0:
             _merge_runs(rows, OUT)
 
-    # Summarise everything on disk, not just this block: the appendix and the
-    # summary must describe the whole experiment, not the most recent slice.
+    # Summarise everything on disk AT THIS SCHEMA, not just this block: the
+    # summary must describe the whole experiment rather than the most recent
+    # slice -- but "the whole experiment" is the set of runs that were asked
+    # the SAME question.
+    #
+    # SCOPED 2026-09-12. It was not, and the v6 smoke's summary silently
+    # included six rows from an August v2 schema: it reported $11.13 estimated
+    # for a 21-run block that cost $8.05, and pooled accuracy across two
+    # different prompts and two different payloads. Nothing errored. The
+    # resume logic has always keyed on schema (see _cached_cells); the summary
+    # was the one place that did not, which is exactly how the inconsistency
+    # stayed invisible.
     df = _merge_runs(rows, OUT)
-    _write_summary(df, OUT, repeats, pairs, t_start)
+    schema = P.schema_id()
+    scoped = df[df.schema == schema] if "schema" in df.columns else df
+    if len(scoped) != len(df):
+        print(f"  summary scoped to schema {schema}: "
+              f"{len(scoped)} of {len(df)} row(s) on disk "
+              f"({len(df) - len(scoped)} at other schemas, not pooled)")
+    _write_summary(scoped, OUT, repeats, pairs, t_start)
     return df
 
 

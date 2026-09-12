@@ -584,3 +584,30 @@ a distinctive cell value, never the pipe syntax.
 
 The general form of the error: *the writing note is generated from a
 representation the reader does not have.*
+
+---
+
+## F-V6 — Three Ch7 numbers and two Ch9 claims are stale after the v6 experiment (2026-09-12)
+
+Flagged by the experiment session. **Independent of whether P0055 proceeds.**
+
+**Chapter 7** pins its latency, token and cost figures to
+`smoke/runs.csv` dated 2026-09-11. That file is superseded by the 63-run v6 set
+at `05_thesis_results/08_experimental_evaluation/runs.csv`
+(schema `v6-shared-composition+af04a42a478b`). The chapter's *argument* is
+unaffected; three numbers are not. `ch7-verification-pass.md` names them in its
+artefact-recency table.
+
+**Chapter 9 §9.1.4 is now false as written.** It states the code-as-action
+baseline "was *not* executed: it requires a secure execution sandbox (E2B) that
+is not configured." It executed 63 times. E2B was removed from the design (see
+the Ch6 followup); the arms run through the Responses API and the Prometheus
+engine.
+
+**Chapter 8 §8.2.4** quotes pre-v6 per-category WMAPE as the SRQ4 result. Those
+are the SRQ1 benchmark numbers, not the experiment's.
+
+**Also worth knowing:** Ch8 is a 1,384-word skeleton carrying `[N] SKUs x 28
+retailers x [T] weeks` placeholders and a **weekly** grain that contradicts the
+monthly panel. It is not a chapter awaiting corrections; it is a chapter
+awaiting writing.

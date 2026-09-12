@@ -1,0 +1,100 @@
+{
+  "category": "CSD",
+  "brand": "HARBOE",
+  "rep": 1,
+  "system": "E_prometheus_model",
+  "actual": 6365899.7748,
+  "target_month": "2026-03",
+  "forecast": 4969049.5,
+  "outcome": "ok",
+  "ape": 21.94269976303366,
+  "latency_s": 28.57,
+  "answer": "Forecast: 4,969,050 units  \nRange: 654,488 to 37,726,335 units (90% interval)  \nConfidence: low -- the forecast interval is very wide, with historical WMAPE around 18.4% and median MAPE around 41.4%, so this should be treated as a scenario input rather than a firm demand signal.  \nRecommendation: use the midpoint as the competitor-volume planning assumption for HARBOE, but for Royal Unibrew category planning, monitor early-2026 actuals closely and keep Royal Unibrew availability and promotional flexibility robust in case HARBOE materially over- or under-delivers.  \nFORECAST=4969050",
+  "prompt": "How many units of HARBOE will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "E_prometheus_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T20:21:52",
+    "tool": "forecast_demand+prometheus",
+    "wrote_code": false,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 0,
+    "tool_calls": [],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": null,
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "tool_returned_forecast": true,
+    "months_ahead": 3
+  },
+  "detail": {
+    "code_blocks": [],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 0,
+      "all_calls": []
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "HARBOE",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 4969049.5,
+        "interval_90": [
+          654487.5,
+          37726335.0
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.018,
+        "served_at_utc": "2026-09-12T18:21:23+00:00"
+      }
+    ]
+  },
+  "tokens_in": 28938,
+  "tokens_out": 1705,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.19584,
+  "error": null
+}

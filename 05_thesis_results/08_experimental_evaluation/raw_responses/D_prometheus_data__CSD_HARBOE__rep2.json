@@ -1,0 +1,116 @@
+{
+  "category": "CSD",
+  "brand": "HARBOE",
+  "rep": 2,
+  "system": "D_prometheus_data",
+  "actual": 6365899.7748,
+  "target_month": "2026-03",
+  "forecast": 6367620.0,
+  "outcome": "ok",
+  "ape": 0.02702249895309205,
+  "latency_s": 137.47,
+  "answer": "Forecast: 6,367,620 units  \nRange: 5,481,000 to 7,254,000 units (90% interval)  \nConfidence: medium -- based on the supplied CSD monthly unit history for Danish retail, HARBOE is a competitor brand with a clear March seasonal pattern, but recent volatility means the interval remains fairly wide.  \nRecommendation: plan Royal Unibrew CSD availability defensively against the midpoint, and stress-test March plans up to the upper bound so RU brands are not under-supplied if HARBOE volume pressure is high.  \nFORECAST=6367620",
+  "prompt": "How many units of HARBOE will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "D_prometheus_data",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T20:21:23",
+    "tool": "prometheus",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 10,
+    "tool_calls": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "iqpodca6f7aaxbcs2wwdt",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "history_months": 39,
+    "history_ends": "2025-12"
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom io import StringIO\\ncsv = '''period_year,period_month,sales_units\\n2022,10,4472796.2612\\n2022,11,4933395.4439\\n2022,12,4266595.364800001\\n2023,1,3429983.0672000004\\n2023,2,4061321.674\\n2023,3,4978711.5612\\n2023,4,3931271.1354\\n2023,5,4539718.9166\\n2023,6,6210563.9879\\n2023,7,3969125.3972\\n2023,8,4434312.4201\\n2023,9,5425359.332\\n2023,10,3581981.6607999997\\n2023,11,3464200.8451\\n2023,12,5513499.3346\\n2024,1,3530564.0953\\n2024,2,4341338.5165\\n2024,3,5284878.3075\\n2024,4,4356722.185500001\\n2024,5,5418809.913000001\\n2024,6,6225440.905\\n2024,7,4835852.1622\\n2024,8,4068687.7823\\n2024,9,5591355.519799999\\n2024,10,4452118.169600001\\n2024,11,3367262.4253\\n2024,12,4749525.990300001\\n2025,1,3069643.2191\\n2025,2,4436153.8209\\n2025,3,5958928.3706\\n2025,4,4144874.3631\\n2025,5,7245572.1735\\n2025,6,6056285.0349\\n2025,7,7697653.4683\\n2025,8,6156190.3078\\n2025,9,6550245.0221\\n2025,10,5684361.6618\\n2025,11,5392954.3957\\n2025,12,4965644.6208\\n'''\\ndf = pd.read_csv(StringIO(csv))\\ndf['date'] = pd.to_datetime(dict(year=df.period_year, month=df.period_month, day=1)) + pd.offsets.MonthEnd(0)\\ny = df.set_index('date')['sales_units'].asfreq('M')\\nprint(y)\\nprint('n', len(y), 'last', y.index[-1], 'target h=3')\\nprint('YoY March:', y[y.index.month==3].to_string())\\n\", \"images_in_system_message\": false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import pandas as pd, numpy as np, warnings\\nfrom io import StringIO\\nfrom sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\n\\ncsv = '''period_year,period_month,sales_units\\n2022,10,4472796.2612\\n2022,11,4933395.4439\\n2022,12,4266595.364800001\\n2023,1,3429983.0672000004\\n2023,2,4061321.674\\n2023,3,4978711.5612\\n2023,4,3931271.1354\\n2023,5,4539718.9166\\n2023,6,6210563.9879\\n2023,7,3969125.3972\\n2023,8,4434312.4201\\n2023,9,5425359.332\\n2023,10,3581981.6607999997\\n2023,11,3464200.8451\\n2023,12,5513499.3346\\n2024,1,3530564.0953\\n2024,2,4341338.5165\\n2024,3,5284878.3075\\n2024,4,4356722.185500001\\n2024,5,5418809.913000001\\n2024,6,6225440.905\\n2024,7,4835852.1622\\n2024,8,4068687.7823\\n2024,9,5591355.519799999\\n2024,10,4452118.169600001\\n2024,11,3367262.4253\\n2024,12,4749525.990300001\\n2025,1,3069643.2191\\n2025,2,4436153.8209\\n2025,3,5958928.3706\\n2025,4,4144874.3631\\n2025,5,7245572.1735\\n2025,6,6056285.0349\\n2025,7,7697653.4683\\n2025,8,6156190.3078\\n2025,9,6550245.0221\\n2025,10,5684361.6618\\n2025,11,5392954.3957\\n2025,12,4965644.6208\\n'''\\ndf = pd.read_csv(StringIO(csv))\\ndf['date'] = pd.to_datetime(dict(year=df.period_year, month=df.period_month, day=1)) + pd.offsets.MonthEnd(0)\\ny = df.set_index('date')['sales_units'].asfreq('ME')\\nlogy=np.log(y)\\n\\ndef f_snaive(train, steps):\\n    idx = pd.date_range(train.index[-1]+pd.offsets.MonthEnd(1), periods=steps, freq='ME')\\n    vals=[]\\n    for d in idx:\\n        lastyear = d - pd.DateOffset(years=1)\\n        vals.append(train.get(lastyear, np.nan))\\n    return pd.Series(vals, index=idx)\\n\\ndef f_snaive_growth(train, steps):\\n    # year-on-year multiplier based on most recent 3 months that have LY comparisons, capped reasonably\\n    ratios=[]\\n    for d in train.index[-6:]:\\n        ly=d-pd.DateOffset(years=1)\\n        if ly in train.index and train[ly]>0:\\n            ratios.append(train[d]/train[ly])\\n    mult=np.median(ratios) if ratios else 1.0\\n    mult=float(np.clip(mult,0.85,1.25))\\n    return f_snaive(train, steps)*mult\\n\\ndef f_hw(train, steps):\\n    # multiplicative seasonality on original; if fails use log additive\\n    with warnings.catch_warnings():\\n        warnings.simplefilter('ignore')\\n        try:\\n            fit=ExponentialSmoothing(train, trend='add', damped_trend=True, seasonal='mul', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n            return fit.forecast(steps)\\n        except Exception:\\n            fit=ExponentialSmoothing(np.log(train), trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n            return np.exp(fit.forecast(steps))\\n\\ndef f_sarimax(train, steps):\\n    with warnings.catch_warnings():\\n        warnings.simplefilter('ignore')\\n        # chosen simple seasonal model with limited data\\n        fit=SARIMAX(np.log(train), order=(0,1,1), seasonal_order=(0,1,1,12), trend='n', enforce_stationarity=False, enforce_invertibility=False).fit(disp=False, maxiter=200)\\n        pred=fit.get_forecast(steps)\\n        return np.exp(pred.predicted_mean), np.exp(pred.conf_int(alpha=.10))\\n\\n# Backtests: origins to forecast next 3 months where available, focus h=3; and 2025 full-year from 2024-12\\nrecords=[]\\nmodels={'seasonal_naive': f_snaive, 'seasonal_naive_growth': f_snaive_growth, 'holt_winters': f_hw}\\norigins=[pd.Timestamp('2024-06-30'), pd.Timestamp('2024-09-30'), pd.Timestamp('2024-12-31'), pd.Timestamp('2025-03-31'), pd.Timestamp('2025-06-30'), pd.Timestamp('2025-09-30')]\\nfor origin in origins:\\n    train=y[:origin]\\n    steps=3\\n    actual=y[origin+pd.offsets.MonthEnd(1):origin+pd.offsets.MonthEnd(steps)]\\n    if len(train)<24 or len(actual)<3: continue\\n    for name,fun in models.items():\\n        try:\\n            pred=fun(train,steps)\\n            err=pred.iloc[-1]-actual.iloc[-1]\\n            records.append({'origin':origin.date(),'model':name,'h':3,'actual':actual.iloc[-1],'pred':pred.iloc[-1],'err':err,'ape':abs(err)/actual.iloc[-1]})\\n        except Exception as e:\\n            records.append({'origin':origin.date(),'model':name,'h':3,'actual':actual.iloc[-1],'pred':np.nan,'err':np.nan,'ape':np.nan})\\n    try:\\n        pred, ci = f_sarimax(train, steps)\\n        err=pred.iloc[-1]-actual.iloc[-1]\\n        records.append({'origin':origin.date(),'model':'sarimax_log','h':3,'actual':actual.iloc[-1],'pred':pred.iloc[-1],'err':err,'ape':abs(err)/actual.iloc[-1]})\\n    except Exception as e:\\n        records.append({'origin':origin.date(),'model':'sarimax_log','h':3,'actual':actual.iloc[-1],'pred':np.nan,'err':np.nan,'ape':np.nan})\\n\\nbt=pd.DataFrame(records)\\nprint('3-month-ahead backtests')\\nprint(bt.to_string(index=False, float_format=lambda x: f'{x:,.0f}' if abs(x)>100 else f'{x:.3f}'))\\nprint('\\\\nSummary')\\nprint(bt.groupby('model').agg(n=('ape','count'), MAE=('err',lambda s: np.mean(np.abs(s))), MAPE=('ape','mean'), Bias=('err','mean')).to_string(float_format=lambda x: f'{x:,.0f}' if abs(x)>100 else f'{x:.3f}'))\\n\\n# Fit on all, forecast Mar 2026 (3 steps)\\nfc=[]\\nfor name,fun in models.items():\\n    pred=fun(y,3)\\n    fc.append((name,pred.iloc[-1]))\\ntry:\\n    pred_sar, ci_sar=f_sarimax(y,3)\\n    fc.append(('sarimax_log', pred_sar.iloc[-1]))\\n    print('\\\\nSARIMAX 90 CI March:', ci_sar.iloc[-1].to_dict())\\nexcept Exception as e:\\n    print('sarimax fail', e)\\nfcdf=pd.DataFrame(fc, columns=['model','mar2026_forecast'])\\nprint('\\\\nForecasts')\\nprint(fcdf.to_string(index=False, float_format=lambda x: f'{x:,.0f}'))\\n\\n# Weighted ensemble: inverse MAPE for viable models, but exclude SARIMAX if bad? Let's inspect. Weights inverse MAPE among models.\\nsumm=bt.groupby('model').agg(MAPE=('ape','mean')).reset_index()\\nmerged=fcdf.merge(summ,on='model')\\nmerged['inv']=1/merged['MAPE']\\nmerged['w']=merged['inv']/merged['inv'].sum()\\nens=(merged['mar2026_forecast']*merged['w']).sum()\\nprint('\\\\nWeights')\\nprint(merged.to_string(index=False, float_format=lambda x: f'{x:,.3f}' if x<10 else f'{x:,.0f}'))\\nprint('ensemble', ens)\\n\\n# Alternative March-specific regression using Mar YoY linear trend\\nmarch=y[y.index.month==3]\\nprint('\\\\nMarch-only trend slope per yr', np.polyfit(np.arange(len(march)), march.values, 1))\\nprint('March linear 2026', np.polyval(np.polyfit(np.arange(len(march)), march.values,1), 3))\\n\\n# empirical interval: use model uncertainty + backtest residuals h=3. Get ensemble forecast errors at each backtest using same weights? compute equal or inverse fixed.\\n# calculate ensemble backtest predictions using model weights from summary\\nw=merged.set_index('model')['w'].to_dict()\\nens_recs=[]\\nfor origin, g in bt.dropna().groupby('origin'):\\n    # renormalize available\\n    ww=np.array([w.get(m,0) for m in g.model])\\n    if ww.sum()==0: continue\\n    ww=ww/ww.sum()\\n    p=(g.pred.values*ww).sum(); actual=g.actual.iloc[0]\\n    ens_recs.append({'origin':origin,'pred':p,'actual':actual,'err':p-actual,'ape':abs(p-actual)/actual})\\nensbt=pd.DataFrame(ens_recs)\\nprint('\\\\nEnsemble h=3 backtest')\\nprint(ensbt.to_string(index=False, float_format=lambda x: f'{x:,.0f}' if abs(x)>100 else f'{x:.3f}'))\\nprint('ens MAE', np.mean(np.abs(ensbt.err)), 'MAPE', ensbt.ape.mean(), 'bias', ensbt.err.mean())\\n# Quantile residuals; small n. Use normal approx with RMSE and residual quantile blend. For 90: z=1.645*RMSE\\nrmse=np.sqrt(np.mean(ensbt.err**2))\\nmae=np.mean(np.abs(ensbt.err))\\nprint('rmse', rmse, 'z90 half', 1.645*rmse)\\n# Wider due small n: combine with SARIMAX interval and empirical h3 errors; output rounded\\nlow=ens - 1.645*rmse\\nhigh=ens + 1.645*rmse\\nprint('normal empirical interval', low, high)\\n# conformal small sample 90 quantile abs err using ceil((n+1)*.9) conservative\\nabs_sorted=np.sort(np.abs(ensbt.err))\\nq=abs_sorted[min(len(abs_sorted)-1, int(np.ceil((len(abs_sorted)+1)*0.9))-1)]\\nprint('conformal q', q, 'interval', ens-q, ens+q)\\n\",\"images_in_system_message\":false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"# Explore SARIMAX grids on log, AIC and target forecast\\nimport pandas as pd, numpy as np, warnings\\nfrom io import StringIO\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\ncsv = '''period_year,period_month,sales_units\\n2022,10,4472796.2612\\n2022,11,4933395.4439\\n2022,12,4266595.364800001\\n2023,1,3429983.0672000004\\n2023,2,4061321.674\\n2023,3,4978711.5612\\n2023,4,3931271.1354\\n2023,5,4539718.9166\\n2023,6,6210563.9879\\n2023,7,3969125.3972\\n2023,8,4434312.4201\\n2023,9,5425359.332\\n2023,10,3581981.6607999997\\n2023,11,3464200.8451\\n2023,12,5513499.3346\\n2024,1,3530564.0953\\n2024,2,4341338.5165\\n2024,3,5284878.3075\\n2024,4,4356722.185500001\\n2024,5,5418809.913000001\\n2024,6,6225440.905\\n2024,7,4835852.1622\\n2024,8,4068687.7823\\n2024,9,5591355.519799999\\n2024,10,4452118.169600001\\n2024,11,3367262.4253\\n2024,12,4749525.990300001\\n2025,1,3069643.2191\\n2025,2,4436153.8209\\n2025,3,5958928.3706\\n2025,4,4144874.3631\\n2025,5,7245572.1735\\n2025,6,6056285.0349\\n2025,7,7697653.4683\\n2025,8,6156190.3078\\n2025,9,6550245.0221\\n2025,10,5684361.6618\\n2025,11,5392954.3957\\n2025,12,4965644.6208\\n'''\\ndf=pd.read_csv(StringIO(csv)); df['date']=pd.to_datetime(dict(year=df.period_year,month=df.period_month,day=1))+pd.offsets.MonthEnd(0); y=df.set_index('date').sales_units.asfreq('ME'); ly=np.log(y)\\nresults=[]\\nfor order in [(p,d,q) for p in range(3) for d in [0,1] for q in range(3)]:\\n  for seas in [(P,D,Q,12) for P in range(2) for D in [0,1] for Q in range(2)]:\\n    if order==(0,0,0) and seas==(0,0,0,12): continue\\n    try:\\n      with warnings.catch_warnings():\\n        warnings.simplefilter('ignore')\\n        fit=SARIMAX(ly,order=order,seasonal_order=seas,trend='c' if order[1]==0 and seas[1]==0 else 'n',enforce_stationarity=False,enforce_invertibility=False).fit(disp=False,maxiter=200)\\n      pred=np.exp(fit.get_forecast(3).predicted_mean.iloc[-1])\\n      ci=np.exp(fit.get_forecast(3).conf_int(alpha=.1).iloc[-1].values)\\n      results.append((fit.aic, order, seas, pred, ci[0], ci[1]))\\n    except Exception as e: pass\\nres=pd.DataFrame(results,columns=['aic','order','seasonal','pred','low','high']).sort_values('aic')\\nprint(res.head(20).to_string(index=False, float_format=lambda x: f'{x:,.2f}'))\\nprint('median top10 pred', res.head(10).pred.median(), 'top20', res.head(20).pred.median())\\n\",\"images_in_system_message\":false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"# Monthly dummy linear/trend regression on log units and validation\\nimport pandas as pd, numpy as np\\nfrom io import StringIO\\nimport statsmodels.api as sm\\ncsv='''period_year,period_month,sales_units\\n2022,10,4472796.2612\\n2022,11,4933395.4439\\n2022,12,4266595.364800001\\n2023,1,3429983.0672000004\\n2023,2,4061321.674\\n2023,3,4978711.5612\\n2023,4,3931271.1354\\n2023,5,4539718.9166\\n2023,6,6210563.9879\\n2023,7,3969125.3972\\n2023,8,4434312.4201\\n2023,9,5425359.332\\n2023,10,3581981.6607999997\\n2023,11,3464200.8451\\n2023,12,5513499.3346\\n2024,1,3530564.0953\\n2024,2,4341338.5165\\n2024,3,5284878.3075\\n2024,4,4356722.185500001\\n2024,5,5418809.913000001\\n2024,6,6225440.905\\n2024,7,4835852.1622\\n2024,8,4068687.7823\\n2024,9,5591355.519799999\\n2024,10,4452118.169600001\\n2024,11,3367262.4253\\n2024,12,4749525.990300001\\n2025,1,3069643.2191\\n2025,2,4436153.8209\\n2025,3,5958928.3706\\n2025,4,4144874.3631\\n2025,5,7245572.1735\\n2025,6,6056285.0349\\n2025,7,7697653.4683\\n2025,8,6156190.3078\\n2025,9,6550245.0221\\n2025,10,5684361.6618\\n2025,11,5392954.3957\\n2025,12,4965644.6208\\n'''\\ndf=pd.read_csv(StringIO(csv)); df['date']=pd.to_datetime(dict(year=df.period_year,month=df.period_month,day=1))+pd.offsets.MonthEnd(0); df=df.sort_values('date').reset_index(drop=True); df['t']=np.arange(len(df));\\n\\ndef make_X(d):\\n    X=pd.get_dummies(d['period_month'].astype(int).astype(str), prefix='m', drop_first=True).astype(float)\\n    # ensure columns 2..12\\n    for m in map(str, range(2,13)):\\n        col='m_'+m\\n        if col not in X: X[col]=0.0\\n    X=X[['m_'+str(m) for m in range(2,13)]]\\n    X.insert(0,'t',d['t'].values.astype(float))\\n    return sm.add_constant(X, has_constant='add')\\n\\ndef forecast_reg(train_df, fut_df, robust=False, last12_weight=False):\\n    X=make_X(train_df); yy=np.log(train_df.sales_units)\\n    if last12_weight:\\n        w=np.ones(len(train_df)); w[-12:]=1.5\\n        model=sm.WLS(yy,X,weights=w).fit()\\n    else:\\n        model=(sm.RLM(yy,X, M=sm.robust.norms.HuberT()).fit() if robust else sm.OLS(yy,X).fit())\\n    Xf=make_X(fut_df)\\n    # Align columns\\n    Xf=Xf.reindex(columns=X.columns, fill_value=0)\\n    pred_log=model.predict(Xf)\\n    # bias correction exp sigma^2/2 for OLS residual variance\\n    sig=np.std(model.resid, ddof=int(model.df_model)+1 if hasattr(model,'df_model') else 1)\\n    return np.exp(pred_log + 0.5*sig**2), model\\n\\n# all forecast Jan-Mar 2026\\nfut=pd.DataFrame({'period_year':[2026,2026,2026],'period_month':[1,2,3]})\\nfut['date']=pd.to_datetime(dict(year=fut.period_year, month=fut.period_month, day=1))+pd.offsets.MonthEnd(0)\\nfut['t']=np.arange(len(df),len(df)+3)\\nfor opts in [(False,False),(True,False),(False,True)]:\\n    pred,model=forecast_reg(df,fut,robust=opts[0],last12_weight=opts[1])\\n    print(opts, pred.values[-1], 'sigma', np.std(model.resid))\\n    if not opts[0]: print(model.params[['const','t']])\\n# validation h3 origins\\norigins=[pd.Timestamp('2024-09-30'),pd.Timestamp('2024-12-31'),pd.Timestamp('2025-03-31'),pd.Timestamp('2025-06-30'),pd.Timestamp('2025-09-30')]\\nfor opts in [(False,False),(True,False),(False,True)]:\\n    rows=[]\\n    for origin in origins:\\n        tr=df[df.date<=origin].copy(); actual=df[(df.date>origin)&(df.date<=origin+pd.offsets.MonthEnd(3))]\\n        if len(actual)<3 or len(tr)<24: continue\\n        futx=actual[['period_year','period_month','date','t']]\\n        try:\\n            pred,_=forecast_reg(tr,futx,robust=opts[0],last12_weight=opts[1])\\n            rows.append((origin.date(), pred.iloc[-1], actual.sales_units.iloc[-1], pred.iloc[-1]-actual.sales_units.iloc[-1], abs(pred.iloc[-1]-actual.sales_units.iloc[-1])/actual.sales_units.iloc[-1]))\\n        except Exception as e: print('err',opts,origin,e)\\n    b=pd.DataFrame(rows,columns=['origin','pred','actual','err','ape'])\\n    print('\\\\n',opts); print(b.to_string(index=False, float_format=lambda x: f'{x:,.0f}' if abs(x)>100 else f'{x:.3f}'))\\n    print('MAE',np.mean(abs(b.err)),'MAPE',b.ape.mean(), 'bias',b.err.mean())\\n\",\"images_in_system_message\":false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"# Compute robust regression h3 interval from backtest RMSE and prediction log param uncertainty maybe\\nimport numpy as np, pandas as pd\\n# manually from previous robust backtest errors\\nerrs=np.array([466943,-558347,417830,-779485,373499],dtype=float)\\nrmse=np.sqrt(np.mean(errs**2)); mae=np.mean(np.abs(errs)); bias=errs.mean()\\npoint=6367620.1339064855\\nprint('rmse',rmse,'mae',mae,'bias',bias,'normal90 half',1.645*rmse,'interval',point-1.645*rmse,point+1.645*rmse)\\n# conservative conformal q (small sample) q90 abs = max due n=5\\nq=np.sort(np.abs(errs))[int(np.ceil((len(errs)+1)*.9))-1 if int(np.ceil((len(errs)+1)*.9))-1 < len(errs) else -1]\\nprint('q conformal',q, point-q, point+q)\\n# use student t pred? too wide maybe t0.95,4 =2.132 rmse\\nprint('t small sample half',2.132*rmse, point-2.132*rmse, point+2.132*rmse)\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 10,
+      "all_calls": [
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code"
+      ]
+    }
+  },
+  "tokens_in": 174942,
+  "tokens_out": 9376,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 1.15599,
+  "error": null
+}

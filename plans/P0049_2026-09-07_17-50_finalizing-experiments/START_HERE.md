@@ -7,9 +7,38 @@ updated: 2026_09_07-18_15
 status: in_progress
 ---
 
+# ⚠ READ FIRST — `BRANCH_A_STATE.md` (added 2026-09-13)
+
+**`BRANCH_A_STATE.md` in this folder is the measured, current state of the
+Branch A experiment** — setup, data payload, prompt schema, results, reconciled
+cost, known defects, and the uncommitted file list. Every figure in it was
+measured on 2026-09-13, not transcribed.
+
+**Read it before drafting any Ch8 prose.** Four things in it contradict figures
+that appear elsewhere in this plan and in `summary.md`:
+
+| Claim found elsewhere | Measured truth |
+|---|---|
+| "63 runs in `runs.csv`" | **69 rows** — 6 stale `v2` rows remain; filter on schema |
+| "billed $18.46" | **$19.60 actual** (balance delta, two movements); $18.46 is ONE window |
+| "~$9 MB of raw responses" | **65 MB**, 65 JSON files |
+| estimator ≈ actual | estimator **overshoots 29%** ($25.20 est vs $19.60 actual) |
+
+**Actual cost basis for any ramp-up: ~$0.31/run.**
+
+**C_llm_model and E_prometheus_model are identical on every metric.** This is
+correct — both read the same trained model deterministically — but `summary.md`
+does not say so, and a reader will assume a copy-paste error.
+
+
 # P0049 — Finalizing experiments: START HERE
 
-> ## LAUNCH: read `LAUNCH_THE_FUNDED_RUN.md` in this folder FIRST.
+> ## 2026-09-12: read `STATE_2026-09-12_v6-redesign.md` FIRST.
+> The scenario inputs and the prompt schema were both rebuilt that day.
+> `LAUNCH_THE_FUNDED_RUN.md` still has the right command and the right
+> three brands, but its **cost table and schema id are v5 and wrong**.
+>
+> ## THEN: `LAUNCH_THE_FUNDED_RUN.md` for the command and pre-launch checks.
 > The funded run is ready and waiting only on credit. That file has the
 > command, the cost, the pre-launch checks and what to verify afterwards.
 >

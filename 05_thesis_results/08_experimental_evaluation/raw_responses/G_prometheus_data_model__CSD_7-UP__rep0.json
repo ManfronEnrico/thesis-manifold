@@ -1,0 +1,128 @@
+{
+  "category": "CSD",
+  "brand": "7-UP",
+  "rep": 0,
+  "system": "G_prometheus_data_model",
+  "actual": 13041.5455,
+  "target_month": "2026-03",
+  "forecast": 19500.0,
+  "outcome": "ok",
+  "ape": 49.52215594386416,
+  "latency_s": 101.31,
+  "answer": "Forecast: 19,500 units  \nRange: 9,000 to 42,000 units (90% interval)  \nConfidence: low-to-medium -- 7-UP\u2019s recent unit history is volatile, and weighted distribution was much lower in 2025 than in 2024, making the March 2026 estimate uncertain.  \nRecommendation: plan against the midpoint, but only hold cover toward the upper bound if March 2026 distribution or promo support is confirmed; otherwise avoid planning around the stronger March 2024-2025 levels.  \nFORECAST=19500",
+  "prompt": "How many units of 7-UP will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "G_prometheus_data_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T19:35:44",
+    "tool": "prometheus+forecast_demand",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 4,
+    "tool_calls": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "irntmiwaeqxlbp22byodt",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "months_ahead": 3,
+    "history_months": 39,
+    "model_forecast": 14951.7,
+    "deviates_from_model": true
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom io import StringIO\\ncsv='''ym,units,liters,value,promo_units,baseline_units,wd,wd_reach,n_skus\\n2022-10,27368.4083,40813.3003,379111.4283,17870.1497,15891.2608,0.178772,0.224572,7\\n2022-11,22966.3763,34732.2245,322668.487,14681.3057,16172.7439,0.13286075,0.1667025,5\\n2022-12,39345.9985,59296.4078,450059.5993,32587.3375,19097.6796,0.12604425,0.15580975,5\\n2023-01,24128.3668,36179.0448,350712.2576,14093.5836,17904.6827,0.14310575,0.18679425,6\\n2023-02,22550.713,33754.3695,315238.4352,13625.0515,16904.6782,0.179897,0.2316676667,4\\n2023-03,24265.0664,36561.8298,333115.3796,16559.7373,15845.487,0.0889942,0.1153592,5\\n2023-04,29210.1147,42016.8322,400665.3424,19925.7678,13695.459,0.0842277143,0.1378375714,7\\n2023-05,53275.7138,68865.9608,778721.8574,36967.7454,27226.3335,0.186821,0.233437,7\\n2023-06,63057.7534,77087.2741,1057483.9784,35027.195,42838.3601,0.1791771429,0.2157392857,7\\n2023-07,48820.8702,56550.0896,785378.5236,22815.2483,37035.736,0.1753391429,0.2138094286,7\\n2023-08,59151.3041,67162.3186,855699.6909,38876.7248,27616.8794,0.1972922857,0.2335825714,7\\n2023-09,54803.3101,61897.1312,834680.8383,30653.0133,34571.2178,0.203265,0.2524183333,7\\n2023-10,33190.3187,40509.5017,518635.2649,16284.7343,23103.6456,0.1910461667,0.2384988333,6\\n2023-11,34668.603,43969.6747,511693.8475,15157.9417,26378.8572,0.2202016,0.278225,6\\n2023-12,57912.4628,79623.6431,737973.8549,39440.2401,31830.7684,0.1807381667,0.2371108333,7\\n2024-01,27086.1707,35264.5813,456344.9151,11931.2956,20299.2031,0.2077502,0.2853178,6\\n2024-02,34535.3897,46343.3768,565622.9465,18545.145,25204.0705,0.2219368,0.2841906,5\\n2024-03,33891.6723,44199.4487,550832.7467,15180.9166,27577.9494,0.197224,0.2624038,6\\n2024-04,27899.7019,35550.7128,444907.812,14768.1468,17979.2318,0.1952148,0.2519874,5\\n2024-05,44287.4669,59159.4797,699611.1333,24959.6607,28627.9327,0.2349376,0.2869788,5\\n2024-06,62335.3014,82996.0604,1021004.9119,34997.2625,40712.4994,0.2396218,0.2960006,6\\n2024-07,56704.3612,74578.6638,916904.2776,32353.3746,37767.4897,0.2602346,0.3050424,5\\n2024-08,55964.6737,73631.3817,862805.7263,32672.8313,37995.6837,0.2745812,0.3252456,5\\n2024-09,58711.3237,77656.8139,914365.4111,32783.7028,39706.4839,0.246794,0.3094178,5\\n2024-10,36321.3622,48319.0439,547395.4447,22538.1977,25502.3189,0.2215116,0.2775048,5\\n2024-11,37857.9167,51068.4776,593181.718,16766.0287,28702.2067,0.2398648,0.2934294,5\\n2024-12,45971.5749,62519.8704,608226.8674,30807.9371,24654.1406,0.168526,0.2232355,6\\n2025-01,24234.5682,31391.1376,395146.7349,11083.9684,15538.2379,0.10444475,0.145407375,8\\n2025-02,18992.3164,17835.0902,291881.2873,7233.5616,19886.7217,0.083642625,0.1246105,8\\n2025-03,30152.1302,34950.674,475003.567,13002.6494,27286.4827,0.1240774286,0.1656374286,8\\n2025-04,23450.5387,28977.8155,379375.4967,11547.4815,17946.7788,0.10531725,0.13511775,8\\n2025-05,27756.3958,35245.2642,423127.9573,14982.9199,17545.4639,0.11926025,0.148448625,8\\n2025-06,31315.5,38838.9099,531019.7687,13336.6393,24123.5237,0.112154125,0.14352775,8\\n2025-07,26237.4547,31904.9927,474044.158,8291.2051,22403.9462,0.0973896667,0.1211127778,9\\n2025-08,25933.7304,32255.4231,430378.5362,12148.7468,18821.7572,0.1378297143,0.1826194286,9\\n2025-09,25719.6504,33098.4865,417398.4684,10614.92,18148.0811,0.096519625,0.128750375,9\\n2025-10,20615.6108,26664.7772,327479.9322,10810.7692,14749.3897,0.093480125,0.121049375,8\\n2025-11,21205.4019,27586.3687,327544.5942,10783.7866,14253.7398,0.10279925,0.13415325,8\\n2025-12,29807.38,41178.3355,364205.4575,23676.402,14126.9853,0.0876827143,0.1317605714,8\\n'''\\ndf=pd.read_csv(StringIO(csv), parse_dates=['ym'])\\ndf['year']=df.ym.dt.year; df['month']=df.ym.dt.month\\nprint(df.groupby('year')['units'].agg(['sum','mean','std','min','max']).to_string())\\nprint('\\\\nMarch units', df[df.month==3][['year','units','wd','promo_units','baseline_units']].to_string(index=False))\\nprint('\\\\nQ1', df[df.month<=3].groupby('year')['units'].sum().to_string())\\nprint('\\\\nLast 12', df.tail(12)['units'].sum(), 'vs prior 12', df.iloc[-24:-12]['units'].sum())\\nprint('2025/2024 monthly yoy mean', (df[df.year==2025].set_index('month').units / df[df.year==2024].set_index('month').units -1).mean())\\nprint((df[df.year==2025].set_index('month').units / df[df.year==2024].set_index('month').units -1).to_string())\\n# Models: seasonal naive 2025 Mar, average March? Holt Winters? SARIMAX maybe not enough. Regression with month dummies, wd? future wd unknown.\\n# fit simple ETS seasonal additive damped? statsmodels ExponentialSmoothing\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\ns=df.set_index('ym').units.asfreq('MS')\\nfor trend in [None,'add']:\\n  for seasonal in ['add','mul']:\\n    try:\\n      model=ExponentialSmoothing(s, trend=trend, damped_trend=(trend=='add'), seasonal=seasonal, seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n      fc=model.forecast(3)\\n      print('ETS',trend,seasonal,'AIC',model.aic,'forecast Mar',fc.iloc[-1], 'Jan-Feb-Mar', fc.values)\\n    except Exception as e: print('fail', trend,seasonal,e)\\n# seasonal ratios: March / annual average or Q1 relation\\nfor y in [2023,2024,2025]:\\n    data=df[df.year==y]\\n    print(y, 'Mar/annual monthly avg', data.loc[data.month==3,'units'].iloc[0] / data.units.mean(), 'Mar/Q1', data.loc[data.month==3,'units'].iloc[0] / data[data.month<=3].units.sum())\\n# Naive adjusted: use 2025 dec? seasonal naive 30152; recent level: last 6 24920, Q1 2025 24460.\\nprint('last3 avg', df.tail(3).units.mean(), 'last6 avg', df.tail(6).units.mean(), 'last12 avg', df.tail(12).units.mean())\\n# Seasonal index from 2023-2025 and trend level 2025 year avg\\nmonthly_avg=df[df.year>=2023].groupby('month').units.mean()\\nannual_avg=df[df.year>=2023].groupby('year').units.mean()\\n# multiplicative month index per year average\\nidx=[]\\nfor y in [2023,2024,2025]:\\n    data=df[df.year==y]\\n    avg=data.units.mean()\\n    for _,r in data.iterrows(): idx.append((r.month, r.units/avg))\\nidx=pd.DataFrame(idx, columns=['month','idx']).groupby('month').idx.mean()\\nprint('seasonal idx mar', idx.loc[3])\\nprint('2025 avg * idx mar', annual_avg.loc[2025]*idx.loc[3])\\n# trend over annual average 2023 42068, 2024 43547, 2025 26289; assume 2026 Q1 level maybe from model? decline stabilizes. \\nprint('annual avgs', annual_avg.to_string())\\n# fit SARIMAX log maybe\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\nfor order in [(0,1,1),(1,0,0),(1,1,0),(0,0,0)]:\\n  try:\\n    mod=SARIMAX(np.log(s), order=order, seasonal_order=(0,1,0,12), enforce_stationarity=False, enforce_invertibility=False).fit(disp=False)\\n    fc=np.exp(mod.get_forecast(3).predicted_mean.iloc[-1])\\n    print('SARIMA log', order, mod.aic, fc)\\n  except Exception as e: print('sarima fail', order, e)\\n# correlations WD-units\\nprint('\\\\nCorr units wd', df[['units','wd','wd_reach','promo_units']].corr().to_string())\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"# compute summary table values from df existing\\nimport pandas as pd, numpy as np\\nannual=df.groupby('year').agg(units=('units','sum'), avg_month=('units','mean'), avg_wd=('wd','mean'), avg_promo_share=('promo_units', lambda x: np.nan))\\n# Need promo share based sum promo/sum units per year\\nannual2=df.groupby('year').apply(lambda g: pd.Series({'units':g.units.sum(),'avg_month_units':g.units.mean(),'avg_weighted_distribution_pct':g.wd.mean()*100,'promo_unit_share_pct':g.promo_units.sum()/g.units.sum()*100,'avg_skus':g.n_skus.mean()}))\\nprint(annual2.to_string(float_format=lambda x:f'{x:,.1f}'))\\nmarch=df[df.month==3].copy(); march['promo_share']=march.promo_units/march.units*100\\nprint('\\\\nMarch')\\nprint(march[['year','units','wd','wd_reach','promo_share','n_skus']].to_string(index=False, formatters={'units':'{:,.1f}'.format,'wd':'{:.1%}'.format,'wd_reach':'{:.1%}'.format,'promo_share':'{:.1f}%'.format}))\\n# 2025 avg of WD H2 and Q4\\nfor name, mask in [('2025 full', df.year==2025),('2025 H2',(df.year==2025)&(df.month>=7)),('2025 Q4',(df.year==2025)&(df.month>=10))]:\\n    g=df[mask]\\n    print(name, 'units avg', g.units.mean(), 'wd avg', g.wd.mean()*100, 'promo share', g.promo_units.sum()/g.units.sum()*100)\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 4,
+      "all_calls": [
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code"
+      ]
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "7-UP",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 14951.7,
+        "interval_90": [
+          1968.3,
+          113516.5
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.0156,
+        "served_at_utc": "2026-09-12T17:34:03+00:00"
+      }
+    ]
+  },
+  "tokens_in": 88603,
+  "tokens_out": 8064,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.684935,
+  "error": null
+}

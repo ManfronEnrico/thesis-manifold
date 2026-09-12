@@ -1,0 +1,72 @@
+{
+  "category": "CSD",
+  "brand": "HARBOE",
+  "rep": 1,
+  "system": "D_prometheus_data",
+  "actual": 6365899.7748,
+  "target_month": "2026-03",
+  "forecast": 6412572.0,
+  "outcome": "ok",
+  "ape": 0.7331599122052866,
+  "latency_s": 89.43,
+  "answer": "Forecast: 6,412,572 units  \nRange: 4,981,554 to 8,254,669 units (90% interval)  \nConfidence: medium-low -- HARBOE is a competitor to Royal Unibrew, and the forecast is supported by March seasonality and recent growth, but uncertainty is wide because there are only three prior March observations, 2025 was volatile, and recent unit sales stepped up versus 2024. The analysis engine completed its forecast checks and found the interval appropriately wide for the volatility.  \nRecommendation: plan Royal Unibrew CSD availability and promotional resilience against the midpoint, but monitor competitor pressure up to the upper bound; I would not recommend actions that help HARBOE improve performance.  \nFORECAST=6412572",
+  "prompt": "How many units of HARBOE will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "D_prometheus_data",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T20:19:06",
+    "tool": "prometheus",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 2,
+    "tool_calls": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "iu6cwnm7lfv497qz2tpw2",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "history_months": 39,
+    "history_ends": "2025-12"
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom io import StringIO\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\nimport statsmodels.api as sm\\nfrom sklearn.metrics import mean_absolute_percentage_error\\n\\ncsv = '''period_year,period_month,sales_units\\n2022,10,4472796.2612\\n2022,11,4933395.4439\\n2022,12,4266595.364800001\\n2023,1,3429983.0672000004\\n2023,2,4061321.674\\n2023,3,4978711.5612\\n2023,4,3931271.1354\\n2023,5,4539718.9166\\n2023,6,6210563.9879\\n2023,7,3969125.3972\\n2023,8,4434312.4201\\n2023,9,5425359.332\\n2023,10,3581981.6607999997\\n2023,11,3464200.8451\\n2023,12,5513499.3346\\n2024,1,3530564.0953\\n2024,2,4341338.5165\\n2024,3,5284878.3075\\n2024,4,4356722.185500001\\n2024,5,5418809.913000001\\n2024,6,6225440.905\\n2024,7,4835852.1622\\n2024,8,4068687.7823\\n2024,9,5591355.519799999\\n2024,10,4452118.169600001\\n2024,11,3367262.4253\\n2024,12,4749525.990300001\\n2025,1,3069643.2191\\n2025,2,4436153.8209\\n2025,3,5958928.3706\\n2025,4,4144874.3631\\n2025,5,7245572.1735\\n2025,6,6056285.0349\\n2025,7,7697653.4683\\n2025,8,6156190.3078\\n2025,9,6550245.0221\\n2025,10,5684361.6618\\n2025,11,5392954.3957\\n2025,12,4965644.6208\\n'''\\ndf = pd.read_csv(StringIO(csv))\\ndf['date'] = pd.to_datetime(dict(year=df.period_year, month=df.period_month, day=1))\\ny = df.set_index('date')['sales_units'].asfreq('MS')\\nprint(y.tail())\\n\\n# Fit candidate models and generate forecasts to Mar 2026 (3 steps)\\nsteps = 3\\nres = []\\n# ETS additive seasonality damped trend\\nfor trend in ['add', None]:\\n    for damped in ([True, False] if trend else [False]):\\n        try:\\n            fit = ExponentialSmoothing(y, trend=trend, damped_trend=damped, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True, use_brute=True)\\n            fc = fit.forecast(steps)\\n            resid = fit.resid.dropna()\\n            res.append(('ETS_'+str(trend)+'_d'+str(damped), fc.loc['2026-03-01'], np.sqrt(np.mean(resid**2)), fit.aic))\\n        except Exception as e:\\n            print('ETS fail', trend, damped, e)\\n# SARIMAX log models\\nly = np.log(y)\\norders = [((1,0,0),(0,1,1,12)), ((0,1,1),(0,1,1,12)), ((1,1,0),(0,1,1,12)), ((0,1,1),(1,0,0,12)), ((1,0,0),(1,0,0,12))]\\nfor order, seas in orders:\\n    try:\\n        m = SARIMAX(ly, order=order, seasonal_order=seas, trend='c', enforce_stationarity=False, enforce_invertibility=False)\\n        fit = m.fit(disp=False, maxiter=500)\\n        pred = fit.get_forecast(steps=steps)\\n        meanlog = pred.predicted_mean.loc['2026-03-01']\\n        fc = np.exp(meanlog)\\n        resid = (np.exp(fit.fittedvalues) - y).dropna()\\n        res.append((f'SARIMAX{order}{seas}', fc, np.sqrt(np.mean(resid**2)), fit.aic))\\n    except Exception as e:\\n        print('sarimax fail', order,seas,e)\\n# OLS log monthly dummies + trend, predict Mar 2026\\nXdf = df.copy()\\nXdf['t'] = np.arange(len(Xdf))\\nX = pd.get_dummies(Xdf['period_month'].astype(str), prefix='m', drop_first=True, dtype=float)\\nX = pd.concat([pd.Series(Xdf['t'], name='t'), X], axis=1)\\nX = sm.add_constant(X)\\nols = sm.OLS(np.log(df.sales_units), X).fit()\\nfuture = pd.DataFrame({'period_month':[1,2,3], 't':np.arange(len(df), len(df)+3)})\\nXf = pd.get_dummies(future['period_month'].astype(str), prefix='m', drop_first=True, dtype=float)\\n# align\\nXf = pd.concat([pd.Series(future['t'], name='t'), Xf], axis=1)\\nXf = sm.add_constant(Xf, has_constant='add')\\nXf = Xf.reindex(columns=X.columns, fill_value=0)\\npred = ols.get_prediction(Xf).summary_frame(alpha=0.10)\\nfc = np.exp(pred['mean'].iloc[2] + 0.5*ols.mse_resid) # bias corrected\\nlo = np.exp(pred['obs_ci_lower'].iloc[2])\\nhi = np.exp(pred['obs_ci_upper'].iloc[2])\\nresid = np.exp(ols.fittedvalues) - df.sales_units\\nres.append(('OLS_log_trend_month', fc, np.sqrt(np.mean(resid**2)), ols.aic))\\nprint('\\\\nCandidates:')\\nfor r in res:\\n    print(r)\\nprint('OLS PI', lo, hi, 'ols params trend', ols.params['t'], 'mse', ols.mse_resid)\\n\\n# Simple month-specific YoY trend: March values linear regression by year\\nmar = df[df.period_month==3].copy()\\ncoef = np.polyfit(mar.period_year, mar.sales_units, 1)\\nlin_2026 = np.polyval(coef, 2026)\\nprint('March history', mar[['period_year','sales_units']].to_string(index=False), 'linear March 2026', lin_2026)\\n# Seasonal naive adjusted by avg recent YoY growth\\n# compute yoy growth by month when available\\npivot = df.pivot(index='period_month', columns='period_year', values='sales_units')\\nprint('pivot months yoy')\\nprint(pivot)\\nrecent_yoy_25_24 = ((pivot[2025]-pivot[2024])/pivot[2024]).dropna()\\nprint('2025 vs 2024 yoy avg Jan-Dec', recent_yoy_25_24.mean(), 'median', recent_yoy_25_24.median(), 'Mar growth', recent_yoy_25_24.loc[3])\\n# 2025 sep-dec levels growth avg\\nprint('Sep-Dec 2025 vs 2024 growth', recent_yoy_25_24.loc[9:12].to_string())\\n\\n# Backtesting one-step-ish holdout: fit models through 2024-12 forecast 2025 months? include check for March maybe.\\ntrain = y[:'2024-12-01']; test = y['2025-01-01':]\\n# ETS forecast 12 months, OLS train forecast 12\\nback = []\\ntry:\\n    fit=ExponentialSmoothing(train, trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n    f=fit.forecast(len(test))\\n    back.append(('ETS_damped', mean_absolute_percentage_error(test, f), f.loc['2025-03-01'], test.loc['2025-03-01']))\\nexcept Exception as e: print('back ets fail',e)\\ntry:\\n    trdf=df[df.date<=pd.Timestamp('2024-12-01')].copy(); trdf['t']=np.arange(len(trdf))\\n    X=pd.get_dummies(trdf.period_month.astype(str), prefix='m', drop_first=True, dtype=float); X=pd.concat([pd.Series(trdf.t, name='t'), X], axis=1); X=sm.add_constant(X)\\n    m=sm.OLS(np.log(trdf.sales_units), X).fit()\\n    fudf=df[df.date>=pd.Timestamp('2025-01-01')].copy(); fudf['t']=np.arange(len(trdf), len(trdf)+len(fudf))\\n    Xfu=pd.get_dummies(fudf.period_month.astype(str), prefix='m', drop_first=True, dtype=float); Xfu=pd.concat([pd.Series(fudf.t.values, name='t'), Xfu.reset_index(drop=True)], axis=1); Xfu=sm.add_constant(Xfu, has_constant='add'); Xfu=Xfu.reindex(columns=X.columns, fill_value=0)\\n    f=np.exp(m.predict(Xfu)+0.5*m.mse_resid); f.index=test.index\\n    back.append(('OLS_log', mean_absolute_percentage_error(test, f), f.loc['2025-03-01'], test.loc['2025-03-01']))\\nexcept Exception as e: print('back ols fail',e)\\ntry:\\n    m=SARIMAX(np.log(train), order=(0,1,1), seasonal_order=(0,1,1,12), trend='c', enforce_stationarity=False, enforce_invertibility=False).fit(disp=False)\\n    f=np.exp(m.get_forecast(len(test)).predicted_mean); back.append(('SARIMAX', mean_absolute_percentage_error(test, f), f.loc['2025-03-01'], test.loc['2025-03-01']))\\nexcept Exception as e: print('back sarimax fail', e)\\nprint('Backtests vs 2025 holdout:')\\nfor b in back: print(b)\\n\\n# Model ensemble: select sensible: ETS damped, OLS, Mar trend, maybe seasonal naive with March avg yoy.\\n# Calculate residual sd from OLS log and holdout MAPE to form interval. Use OLS prediction interval perhaps.\\n# Let's also bootstrap OLS residual + parameter? use OLS obs_ci may suffice.\\n\\n# More robust ensemble forecast values:\\nets_fit = ExponentialSmoothing(y, trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\nets_fc=ets_fit.forecast(3).loc['2026-03-01']\\nols_fc=fc\\nmar_fc=lin_2026\\n# final mean weighted leaning OLS/Mar trend over unstable ETS? Let's inspect ETS maybe.\\nprint('chosen comps', ets_fc, ols_fc, mar_fc)\\nensemble=np.mean([ets_fc, ols_fc, mar_fc])\\nprint('ensemble', ensemble)\\n\\n# Construct 90% interval: combine OLS obs interval, empirical absolute residuals and model spread. \\n# Calculate log residual standard deviation from OLS, model spread in log, use z=1.645.\\nvals=np.array([ets_fc, ols_fc, mar_fc])\\nmodel_sd_log=np.std(np.log(vals), ddof=1)\\nresid_sd_log=np.sqrt(ols.mse_resid)\\ntotal_sd_log=np.sqrt(resid_sd_log**2 + model_sd_log**2)\\nlo2=ensemble*np.exp(-1.645*total_sd_log); hi2=ensemble*np.exp(1.645*total_sd_log)\\nprint('interval calc', resid_sd_log, model_sd_log, total_sd_log, lo2, hi2)\\n\\n# historical context stats\\nprint('2025 total units', df[df.period_year==2025].sales_units.sum(), '2024 total', df[df.period_year==2024].sales_units.sum(), 'growth', df[df.period_year==2025].sales_units.sum()/df[df.period_year==2024].sales_units.sum()-1)\\nprint('last 3 months avg units', y[-3:].mean(), 'last 6 avg', y[-6:].mean())\\nprint('March values and YoY', mar.sales_units.values, mar.sales_units.pct_change().values)\\n\", \"images_in_system_message\": false}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 2,
+      "all_calls": [
+        "execute_code",
+        "execute_code"
+      ]
+    }
+  },
+  "tokens_in": 65319,
+  "tokens_out": 5237,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.483705,
+  "error": null
+}

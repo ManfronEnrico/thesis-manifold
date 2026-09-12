@@ -1,0 +1,72 @@
+{
+  "category": "CSD",
+  "brand": "7-UP",
+  "rep": 0,
+  "system": "D_prometheus_data",
+  "actual": 13041.5455,
+  "target_month": "2026-03",
+  "forecast": 19000.0,
+  "outcome": "ok",
+  "ape": 45.688254509406114,
+  "latency_s": 80.13,
+  "answer": "Forecast: 19,000 units  \nRange: 12,000 to 31,000 units (90% interval)  \nConfidence: low-to-medium -- March has some historical reference points, but 7-UP\u2019s 2025 run-rate fell sharply versus 2024 and recent months appear volatile, making the 2026 estimate uncertain.  \nRecommendation: plan March 2026 against the midpoint of about 19,000 units, but keep replenishment flexibility up to the upper range if promotion or distribution support is stronger than recent levels. 7-UP is treated as Royal Unibrew in the corporation grouping. Verification checks included comparison to prior March actuals, recent run-rate, and volatility.  \nFORECAST=19000",
+  "prompt": "How many units of 7-UP will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "D_prometheus_data",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T19:31:10",
+    "tool": "prometheus",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 2,
+    "tool_calls": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "ia1saa6pz1jvob8alr36g",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "history_months": 39,
+    "history_ends": "2025-12"
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom io import StringIO\\ncsv='''period_year,period_month,sales_units\\n2022,10,27368.4083\\n2022,11,22966.3763\\n2022,12,39345.9985\\n2023,1,24128.3668\\n2023,2,22550.713\\n2023,3,24265.0664\\n2023,4,29210.1147\\n2023,5,53275.7138\\n2023,6,63057.7534\\n2023,7,48820.8702\\n2023,8,59151.3041\\n2023,9,54803.3101\\n2023,10,33190.3187\\n2023,11,34668.603\\n2023,12,57912.4628\\n2024,1,27086.1707\\n2024,2,34535.3897\\n2024,3,33891.6723\\n2024,4,27899.7019\\n2024,5,44287.4669\\n2024,6,62335.3014\\n2024,7,56704.3612\\n2024,8,55964.6737\\n2024,9,58711.3237\\n2024,10,36321.3622\\n2024,11,37857.9167\\n2024,12,45971.5749\\n2025,1,24234.5682\\n2025,2,18992.3164\\n2025,3,30152.1302\\n2025,4,23450.5387\\n2025,5,27756.3958\\n2025,6,31315.5\\n2025,7,26237.4547\\n2025,8,25933.7304\\n2025,9,25719.6504\\n2025,10,20615.6108\\n2025,11,21205.4019\\n2025,12,29807.38\\n'''\\ndf=pd.read_csv(StringIO(csv))\\ndf['date']=pd.to_datetime(dict(year=df.period_year,month=df.period_month,day=1))\\nts=df.set_index('date')['sales_units'].asfreq('MS')\\nprint(ts.tail())\\nprint('n',len(ts),'mean2023',ts['2023'].mean(),'mean2024',ts['2024'].mean(),'mean2025',ts['2025'].mean())\\nprint('March:', ts[ts.index.month==3])\\nprint('recent 3m avg',ts.tail(3).mean(),'2025 vs 2024 total growth',ts['2025'].sum()/ts['2024'].sum()-1)\\n\\n# Try forecast models: ETS, SARIMAX, seasonal OLS with trend and shrink, boot intervals/backtest\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\nfrom sklearn.linear_model import Ridge, LinearRegression\\nfrom sklearn.metrics import mean_absolute_error, mean_squared_error\\nimport warnings\\nwarnings.filterwarnings('ignore')\\n\\n# holdout 2025 forecast from data through 2024 for model sanity\\ntrain=ts[:'2024-12-01']; test=ts['2025-01-01':]\\n\\ndef hw_forecast(train, steps):\\n    # additive seasonality no trend/damped or with trend? use Box-Cox? try several and pick by AIC maybe\\n    best=None\\n    for trend in [None,'add']:\\n      for damped in ([False, True] if trend else [False]):\\n       for seasonal in ['add','mul']:\\n        try:\\n         fit=ExponentialSmoothing(train, trend=trend, damped_trend=damped, seasonal=seasonal, seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n         fc=fit.forecast(steps)\\n         cand=(fit.aic, trend,damped,seasonal,fit,fc)\\n         if best is None or cand[0]<best[0]: best=cand\\n        except Exception as e: pass\\n    return best\\nbest=hw_forecast(train,12)\\nprint('best ETS holdout',best[:4], 'fc2025', best[5].round(0).values)\\nprint('ETS holdout MAE', mean_absolute_error(test,best[5]), 'MAPE', np.mean(np.abs((test-best[5])/test)))\\n\\n# SARIMAX log simple seasonal ARIMA, choose small orders by AIC on train\\ndef fit_sarimax(train):\\n best=None\\n y=np.log(train)\\n for order in [(0,1,1),(1,1,0),(1,1,1),(0,0,1),(1,0,0),(1,0,1)]:\\n  for seas in [(0,1,1,12),(1,0,0,12),(0,0,1,12),(0,1,0,12),(1,1,0,12)]:\\n   try:\\n    mod=SARIMAX(y,order=order,seasonal_order=seas,trend='c',enforce_stationarity=False,enforce_invertibility=False).fit(disp=False)\\n    if best is None or mod.aic<best[0]: best=(mod.aic,order,seas,mod)\\n   except Exception: pass\\n return best\\nbest_s=fit_sarimax(train)\\nprint('sar best',best_s[:3])\\npred=best_s[3].get_forecast(12)\\nfc=np.exp(pred.predicted_mean) # median not mean\\nprint('SAR holdout fc',fc.round(0).values)\\nprint('SAR holdout MAE',mean_absolute_error(test,fc),'MAPE',np.mean(np.abs((test-fc)/test)))\\n\\n# Seasonal naive same month last year and 2-year weighted\\nsnaive=pd.Series([train[train.index==d-pd.DateOffset(years=1)].iloc[0] for d in test.index],index=test.index)\\nprint('SNaive MAE',mean_absolute_error(test,snaive),'MAPE',np.mean(np.abs((test-snaive)/test)))\\nprint('SNaive fc',snaive.round(0).values)\\n\\n# OLS/Ridge on log sales with trend and months; rolling fit, backtest\\nalldf=pd.DataFrame({'y':ts.values},index=ts.index)\\nalldf['t']=np.arange(len(alldf))\\nfor m in range(1,13): alldf[f'm{m}']=(alldf.index.month==m).astype(int)\\n# omit one month, Ridge\\ndef ridge_forecast(train_ts, future_dates, alpha=10, recent_weight=False):\\n d=pd.DataFrame({'y':train_ts.values},index=train_ts.index); d['t']=np.arange(len(d))\\n for m in range(1,13): d[f'm{m}']=(d.index.month==m).astype(int)\\n X=d[['t']+[f'm{m}' for m in range(2,13)]].values\\n y=np.log(d.y.values)\\n if recent_weight:\\n  w=np.linspace(0.5,1.5,len(d))\\n else: w=None\\n model=Ridge(alpha=alpha).fit(X,y,sample_weight=w)\\n start_t=len(d)\\n fut=pd.DataFrame(index=future_dates); fut['t']=np.arange(start_t,start_t+len(fut))\\n for m in range(1,13): fut[f'm{m}']=(fut.index.month==m).astype(int)\\n Xf=fut[['t']+[f'm{m}' for m in range(2,13)]].values\\n logfc=model.predict(Xf)\\n resid=y-model.predict(X)\\n return pd.Series(np.exp(logfc),index=future_dates),resid,model\\nfor alpha in [0.1,1,10,100]:\\n for rw in [False,True]:\\n  fc,resid,mod=ridge_forecast(train,test.index,alpha,rw)\\n  print('ridge',alpha,rw,'MAE',mean_absolute_error(test,fc),'MAPE',np.mean(np.abs((test-fc)/test)),'Mar25fc',fc['2025-03-01'])\\n\\n# Fit full data and forecast 2026 Jan-Mar via chosen approaches\\nfuture=pd.date_range('2026-01-01','2026-03-01',freq='MS')\\n# ETS full\\nbest_full=hw_forecast(ts,15) # 15 steps to Mar? if starts Jan26 after Dec25, steps=15 yields through Mar27 no; need 3\\nbest_full3=hw_forecast(ts,3)\\nprint('ETS full',best_full3[:4],best_full3[5].round(1).to_dict())\\n# SAR full\\nbest_sf=fit_sarimax(ts)\\npredf=best_sf[3].get_forecast(3)\\nfc_sar=np.exp(predf.predicted_mean)\\nci_log=predf.conf_int(alpha=0.10)\\nci_sar=np.exp(ci_log)\\nprint('SAR full',best_sf[:3],fc_sar.round(1).to_dict(),ci_sar.round(1))\\n# Ridge full\\nfor alpha in [1,10,100]:\\n for rw in [False, True]:\\n  fc,resid,mod=ridge_forecast(ts,future,alpha,rw)\\n  sigma=np.std(resid,ddof=1)\\n  z=1.64485\\n  # lognormal prediction interval approx residual sigma maybe plus model uncertainty ignored\\n  print('ridge full',alpha,rw,fc.round(1).to_dict(),'sigma',sigma,'pi mar',np.exp(np.log(fc['2026-03-01'])+np.array([-1,1])*z*sigma))\\n\\n# Alternative structural: use 2025 as new level with seasonal indices from all years? Recent decline.\\n# compute yoy 2025/2024 monthly ratios; q4 ratio etc.\\ncomp=pd.DataFrame({'2023':ts['2023'].values,'2024':ts['2024'].values,'2025':ts['2025'].values},index=range(1,13))\\ncomp['25/24']=comp['2025']/comp['2024']; comp['24/23']=comp['2024']/comp['2023']\\nprint(comp.round(3))\\nprint('ratios avg',comp['25/24'].mean(), comp.loc[[10,11,12],'25/24'].mean(), comp.loc[[1,2,3],'25/24'].mean())\\n\\n# Candidate for Mar26: Mar25 adjusted by recent trend? Recent q4 2025 vs q4 2024 = ratio, but Jan-Feb-March may use ratio ~ 0.73? \\n# Use local-level with seasonal via UnobservedComponents maybe\\nfrom statsmodels.tsa.statespace.structural import UnobservedComponents\\nfor spec in [('local level','freq_seasonal'),('local linear trend','freq_seasonal')]:\\n try:\\n  mod=UnobservedComponents(np.log(ts), level=spec[0], freq_seasonal=[{'period':12,'harmonics':6}])\\n  fit=mod.fit(disp=False)\\n  pr=fit.get_forecast(3)\\n  print('UC',spec,fit.aic,np.exp(pr.predicted_mean).round(1).to_dict(),np.exp(pr.conf_int(alpha=.1)).round(1))\\n except Exception as e: print('UC err',spec,e)\\n\", \"images_in_system_message\": false}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 2,
+      "all_calls": [
+        "execute_code",
+        "execute_code"
+      ]
+    }
+  },
+  "tokens_in": 62911,
+  "tokens_out": 4991,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.464285,
+  "error": null
+}

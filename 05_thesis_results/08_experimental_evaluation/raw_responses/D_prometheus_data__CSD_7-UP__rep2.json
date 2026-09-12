@@ -1,0 +1,105 @@
+{
+  "category": "CSD",
+  "brand": "7-UP",
+  "rep": 2,
+  "system": "D_prometheus_data",
+  "actual": 13041.5455,
+  "target_month": "2026-03",
+  "forecast": 20430.0,
+  "outcome": "ok",
+  "ape": 56.65321261195615,
+  "latency_s": 109.95,
+  "answer": "Forecast: 20,430 units\nRange: 5,315 to 35,546 units (90% interval)\nConfidence: low-to-medium -- 7-UP is mapped to Royal Unibrew in the CSD grouping, but the history is short and 2025 shows a clear step-down versus 2023-2024, making the March 2026 estimate directionally useful but uncertain.\nRecommendation: plan March 2026 around the midpoint of about 20k units, but keep contingency cover toward the upper bound if Jan-Feb 2026 sell-out or distribution improves; do not plan from the stronger 2024 March level unless there is evidence that the 2025 decline has reversed.\nFORECAST=20430",
+  "prompt": "How many units of 7-UP will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "D_prometheus_data",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T20:41:06",
+    "tool": "prometheus",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 8,
+    "tool_calls": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "i8oja35yc6979b9g8625q",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "history_months": 39,
+    "history_ends": "2025-12"
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom io import StringIO\\ncsv = '''period_year,period_month,n_skus_observed,sales_units\\n2022,10,7,27368.4083\\n2022,11,5,22966.3763\\n2022,12,5,39345.9985\\n2023,1,6,24128.3668\\n2023,2,4,22550.713\\n2023,3,5,24265.0664\\n2023,4,7,29210.1147\\n2023,5,7,53275.713800000005\\n2023,6,7,63057.7534\\n2023,7,7,48820.8702\\n2023,8,7,59151.3041\\n2023,9,7,54803.3101\\n2023,10,6,33190.3187\\n2023,11,6,34668.603\\n2023,12,7,57912.46280000001\\n2024,1,6,27086.1707\\n2024,2,5,34535.3897\\n2024,3,6,33891.6723\\n2024,4,5,27899.7019\\n2024,5,5,44287.46689999999\\n2024,6,6,62335.3014\\n2024,7,5,56704.3612\\n2024,8,5,55964.6737\\n2024,9,5,58711.32370000001\\n2024,10,5,36321.3622\\n2024,11,5,37857.9167\\n2024,12,6,45971.57489999999\\n2025,1,8,24234.5682\\n2025,2,8,18992.3164\\n2025,3,8,30152.1302\\n2025,4,8,23450.538700000005\\n2025,5,8,27756.3958\\n2025,6,8,31315.5\\n2025,7,9,26237.4547\\n2025,8,9,25933.7304\\n2025,9,9,25719.6504\\n2025,10,8,20615.6108\\n2025,11,8,21205.4019\\n2025,12,8,29807.38\\n'''\\ndf = pd.read_csv(StringIO(csv))\\ndf['date'] = pd.to_datetime(dict(year=df.period_year, month=df.period_month, day=1))\\ndf = df.set_index('date').asfreq('MS')\\nprint(df[['period_year','period_month','sales_units']].tail(15).to_string())\\nprint('n', len(df), 'start', df.index.min(), 'end', df.index.max())\\nprint('March YoY:', df[df.period_month.eq(3)][['period_year','sales_units']].to_string(index=False))\", \"images_in_system_message\": false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import pandas as pd, numpy as np, warnings\\nfrom io import StringIO\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\nfrom sklearn.metrics import mean_absolute_error, mean_squared_error\\nwarnings.filterwarnings('ignore')\\n# reconstruct full data in df from previous kernel? assume available; if not rebuild minimal\\ntry:\\n    y = df['sales_units'].astype(float)\\nexcept Exception as e:\\n    print('no df')\\n\\ny = df['sales_units'].astype(float)\\n\\n# helper forecasts h steps, return array h\\ndef seasonal_naive(train,h):\\n    idx = pd.date_range(train.index[-1]+pd.offsets.MonthBegin(1), periods=h, freq='MS')\\n    vals=[]\\n    for d in idx:\\n        prev=d-pd.DateOffset(years=1)\\n        vals.append(train.loc[prev] if prev in train.index else train.iloc[-1])\\n    return np.array(vals)\\n\\ndef last_obs(train,h): return np.repeat(train.iloc[-1], h)\\n\\ndef ma3(train,h): return np.repeat(train.tail(3).mean(), h)\\n\\ndef snaive_yoy_adj(train,h):\\n    # last-year same month multiplied by avg YoY ratio over last 3 months where prior year exists\\n    idx = pd.date_range(train.index[-1]+pd.offsets.MonthBegin(1), periods=h, freq='MS')\\n    ratios=[]\\n    for d in train.tail(6).index:\\n        py=d-pd.DateOffset(years=1)\\n        if py in train.index and train.loc[py]>0:\\n            ratios.append(train.loc[d]/train.loc[py])\\n    ratio=np.median(ratios[-3:]) if ratios else 1.0\\n    vals=[]\\n    for d in idx:\\n        prev=d-pd.DateOffset(years=1)\\n        base=train.loc[prev] if prev in train.index else train.iloc[-1]\\n        vals.append(base*ratio)\\n    return np.array(vals)\\n\\ndef ets_forecast(train,h):\\n    # robust choices depending length\\n    model = ExponentialSmoothing(train, trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated')\\n    fit = model.fit(optimized=True, use_brute=True)\\n    return fit.forecast(h).values\\n\\ndef ets_mul_log_forecast(train,h):\\n    logt=np.log(train)\\n    model=ExponentialSmoothing(logt, trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated')\\n    fit=model.fit(optimized=True, use_brute=True)\\n    return np.exp(fit.forecast(h).values)\\n\\ndef sarimax_log_forecast(train,h):\\n    logt=np.log(train)\\n    # simple seasonal ARIMA; more stable than free auto on 39 obs\\n    best=None\\n    specs=[]\\n    for order in [(0,1,1),(1,1,0),(1,0,0),(0,1,0),(1,1,1)]:\\n        for seas in [(0,1,1,12),(1,0,0,12),(0,0,0,12)]:\\n            try:\\n                fit=SARIMAX(logt, order=order, seasonal_order=seas, trend='c' if order[1]==0 and seas[1]==0 else 'n', enforce_stationarity=False, enforce_invertibility=False).fit(disp=False, maxiter=200)\\n                specs.append((fit.aic, order, seas, fit))\\n            except Exception as e: pass\\n    specs=sorted(specs, key=lambda x:x[0])\\n    fit=specs[0][3]\\n    fc=fit.get_forecast(h).predicted_mean\\n    return np.exp(fc.values)\\n\\nmodels = {\\n    'seasonal_naive': seasonal_naive,\\n    'last_obs': last_obs,\\n    'ma3': ma3,\\n    'seasonal_yoy_adj_median3': snaive_yoy_adj,\\n    'ETS_add': ets_forecast,\\n    'ETS_log_add': ets_mul_log_forecast,\\n    'SARIMAX_log': sarimax_log_forecast,\\n}\\n\\n# Rolling-origin h=3 validation: target each month from train ending 3 months before. Start train >= 24 months.\\nrecords=[]\\nfor target in y.index[y.index>=pd.Timestamp('2024-01-01')]:\\n    origin = target - pd.DateOffset(months=3)\\n    if origin not in y.index: continue\\n    train = y.loc[:origin]\\n    if len(train)<18: continue\\n    actual=y.loc[target]\\n    for name,func in models.items():\\n        try:\\n            pred=func(train,3)[-1]\\n            records.append({'target':target,'model':name,'actual':actual,'pred':pred,'err':actual-pred,'ape':abs(actual-pred)/actual})\\n        except Exception as e:\\n            records.append({'target':target,'model':name,'actual':actual,'pred':np.nan,'err':np.nan,'ape':np.nan})\\nval=pd.DataFrame(records).dropna()\\nsummary=val.groupby('model').agg(n=('err','size'), MAE=('err', lambda s: np.mean(np.abs(s))), RMSE=('err', lambda s: np.sqrt(np.mean(s**2))), MAPE=('ape','mean'), bias=('err','mean')).sort_values('MAE')\\nprint('3-month-ahead rolling validation (targets Jan 2024-Dec 2025 where possible):')\\nprint(summary.to_string(float_format=lambda x: f'{x:,.3f}'))\\nprint('\\\\nForecasts for Mar 2026 (h=3 from Dec 2025):')\\nfc_rows=[]\\nfor name,func in models.items():\\n    try:\\n        arr=func(y,3)\\n        fc_rows.append((name, arr[-1], arr))\\n    except Exception as e:\\n        fc_rows.append((name, np.nan, str(e)))\\nprint(pd.DataFrame(fc_rows, columns=['model','mar2026_pred','all_h']).to_string(index=False))\\n\\n# Recent/same-month comparisons\\ncomp=pd.DataFrame({\\n    'period':['2025-10','2025-11','2025-12','2025-03','2024-03','2023-03'],\\n    'units':[y.loc[pd.Timestamp(s+'-01')] for s in ['2025-10','2025-11','2025-12','2025-03','2024-03','2023-03']]\\n})\\nprint('\\\\nComparisons')\\nprint(comp.to_string(index=False, float_format=lambda x:f'{x:,.0f}'))\",\"images_in_system_message\":false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import numpy as np, pandas as pd, warnings\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\nwarnings.filterwarnings('ignore')\\ny=df['sales_units'].astype(float)\\nlogy=np.log(y)\\n# Fit selected SARIMAX by same AIC search\\nspecs=[]\\nfor order in [(0,1,1),(1,1,0),(1,0,0),(0,1,0),(1,1,1)]:\\n    for seas in [(0,1,1,12),(1,0,0,12),(0,0,0,12)]:\\n        try:\\n            fit=SARIMAX(logy, order=order, seasonal_order=seas, trend='c' if order[1]==0 and seas[1]==0 else 'n', enforce_stationarity=False, enforce_invertibility=False).fit(disp=False, maxiter=200)\\n            specs.append((fit.aic, order, seas, fit))\\n        except: pass\\nspecs=sorted(specs, key=lambda x:x[0])\\nprint('Best specs:')\\nfor aic,order,seas,fit in specs[:5]: print(aic,order,seas)\\nbest=specs[0][3]\\nfc=best.get_forecast(3)\\nsummary=fc.summary_frame(alpha=0.10) # log scale\\nprint('\\\\nNative 90% log interval transformed:')\\nout=pd.DataFrame({\\n    'period': pd.date_range('2026-01-01', periods=3, freq='MS').strftime('%Y-%m'),\\n    'mean_units': np.exp(summary['mean'].values),\\n    'lower90': np.exp(summary['mean_ci_lower'].values),\\n    'upper90': np.exp(summary['mean_ci_upper'].values)\\n})\\nprint(out.to_string(index=False, float_format=lambda x:f'{x:,.0f}'))\\n\\n# Recreate val from previous run? If exists use; else no\\nsar=val[val.model=='SARIMAX_log'].copy()\\nprint('\\\\nSARIMAX h=3 residuals validation:')\\nprint(sar[['target','actual','pred','err','ape']].to_string(index=False, float_format=lambda x:f'{x:,.3f}'))\\nabs_err=np.abs(sar.err)\\nprint('MAE', abs_err.mean(), 'RMSE', np.sqrt(np.mean(sar.err**2)), '80/90 quantile abs_err', np.quantile(abs_err, [0.8,0.9]), 'max', abs_err.max())\\n# conformal-ish finite sample 90% quantile = ceil((n+1)*.9)/n order statistic, with n=19 => ceil18 = 18th smallest\\nn=len(abs_err); q=np.sort(abs_err)[min(int(np.ceil((n+1)*0.9))-1,n-1)]\\npoint=float(out.loc[out.period=='2026-03','mean_units'].iloc[0])\\nprint('conformal q90:', q, 'interval:', max(0,point-q), point+q)\\n\\n# Maybe use native interval lower/upper for Mar and empirical min/max union\\nmar=out.iloc[2]\\nprint('MAR native', mar.to_dict())\\n\",\"images_in_system_message\":false}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"y=df['sales_units'].astype(float)\\npoint=20430.126613174798\\nlo=point-15115.45066091\\nhi=point+15115.45066091\\n# metrics\\nmar2025=y.loc['2025-03-01']; mar2024=y.loc['2024-03-01']; mar2023=y.loc['2023-03-01']\\nrecent=y.loc['2025-10-01':'2025-12-01']\\nprint('point rounded', round(point), 'interval', round(max(0,lo)), round(hi))\\nprint('vs Mar2025', (point/mar2025-1)*100)\\nprint('Mar2025 vs Mar2024', (mar2025/mar2024-1)*100)\\nprint('vs recent avg Oct-Dec', point/recent.mean()-1, recent.mean())\\nprint('vs Dec2025', point/y.loc['2025-12-01']-1)\\nprint('annual totals')\\nfor yr in [2023,2024,2025]:\\n    vals=y[y.index.year==yr]\\n    print(yr, vals.sum(), vals.mean())\\nprint('2025 vs 2024 annual total', y[y.index.year==2025].sum()/y[y.index.year==2024].sum()-1)\\n# Half year averages\\nfor label, start, end in [('H1 2025','2025-01','2025-06'),('H2 2025','2025-07','2025-12'),('Q4 2025','2025-10','2025-12')]:\\n    vals=y.loc[start:end]\\n    print(label, vals.mean(), vals.sum())\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 8,
+      "all_calls": [
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code"
+      ]
+    }
+  },
+  "tokens_in": 129355,
+  "tokens_out": 7030,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.857675,
+  "error": null
+}

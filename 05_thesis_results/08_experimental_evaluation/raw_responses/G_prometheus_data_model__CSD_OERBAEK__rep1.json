@@ -1,0 +1,128 @@
+{
+  "category": "CSD",
+  "brand": "\u00d8RB\u00c6K",
+  "rep": 1,
+  "system": "G_prometheus_data_model",
+  "actual": 2850.1309,
+  "target_month": "2026-03",
+  "forecast": 2800.0,
+  "outcome": "ok",
+  "ape": 1.7588981614844463,
+  "latency_s": 76.69,
+  "answer": "\u00d8RB\u00c6K is forecast to sell 2,800 units in Danish retail CSD in March 2026, with a 90% planning range of 1,700 to 4,100 units.\n\nForecast: 2,800 units  \nRange: 1,700 to 4,100 units (90% interval)  \nConfidence: low-to-medium -- \u00d8RB\u00c6K is a low-volume competitor brand, with only a few comparable March observations and relatively high historical forecast error, although the seasonal March history and model forecast both point to roughly 2.7k-2.9k units.  \nRecommendation: use 2,800 units as the Royal Unibrew category-planning baseline for competitor monitoring; only escalate if March sell-out tracks materially above the upper range, as that would suggest unusual competitor momentum worth checking against RU\u2019s own CSD assortment, pricing, and promotion context.  \nFORECAST=2800",
+  "prompt": "How many units of \u00d8RB\u00c6K will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "G_prometheus_data_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T21:05:26",
+    "tool": "prometheus+forecast_demand",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 4,
+    "tool_calls": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "itkaay6y6ne1bilzu35kv",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "months_ahead": 3,
+    "history_months": 39,
+    "model_forecast": 2769.1,
+    "deviates_from_model": true
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np, math\\nrows = [\\n(2022,10,1911.9312),(2022,11,1894.1875),(2022,12,4021.2778),\\n(2023,1,1766.8344),(2023,2,2266.0893),(2023,3,2989.4453),(2023,4,2706.6736),(2023,5,2567.5834),(2023,6,4572.8155),(2023,7,3974.2641),(2023,8,3361.711),(2023,9,3070.3256),(2023,10,2283.5187),(2023,11,2140.3679),(2023,12,4203.8856),\\n(2024,1,1748.145),(2024,2,2088.2839),(2024,3,2627.9516),(2024,4,2073.9186),(2024,5,2432.3292),(2024,6,3366.869),(2024,7,3126.5237),(2024,8,3058.2544),(2024,9,3286.9559),(2024,10,2350.4981),(2024,11,2116.1017),(2024,12,3774.7624),\\n(2025,1,2192.2203),(2025,2,2090.9151),(2025,3,2922.0015),(2025,4,2995.1604),(2025,5,3172.1845),(2025,6,3306.7611),(2025,7,3250.0173),(2025,8,3519.7501),(2025,9,3178.5277),(2025,10,2508.683),(2025,11,2057.4307),(2025,12,3314.4216)\\n]\\ndf = pd.DataFrame(rows, columns=['year','month','units'])\\ndf['date'] = pd.to_datetime(df.year.astype(str)+'-'+df.month.astype(str)+'-01')\\nprint('annual totals')\\nprint(df.groupby('year').units.sum())\\nprint('monthly means')\\nprint(df.groupby('month').units.agg(['count','mean','std','min','max']).round(1).to_string())\\nprint('March values', df[df.month==3].to_string(index=False))\\n# YoY March, Jan-Mar totals\\nprint('Q1 totals')\\nprint(df[df.month.isin([1,2,3])].groupby('year').units.sum())\\n# ratio March/Q1\\nq1 = df[df.month.isin([1,2,3])].groupby('year').units.sum()\\nmar = df[df.month==3].set_index('year').units\\nprint('Mar/Q1 ratio')\\nprint((mar/q1).dropna())\\n# seasonal naive, 3yr avg, weighted avg latest more weight\\nmars = df[df.month==3].sort_values('year').units.values\\nprint('mar avg', mars.mean(), 'median', np.median(mars), 'wavg', np.average(mars, weights=[1,2,3]))\\n# fit simple STL? SARIMAX maybe too few. OLS trend + month dummies estimate 2026-03.\\nimport statsmodels.formula.api as smf\\ndf['t'] = np.arange(len(df))\\n# use 2023 onward only? complete years\\nfor data,name in [(df,'all'),(df[df.year>=2023].copy(),'2023+')]:\\n    data=data.copy(); data['t']=np.arange(len(data))\\n    model=smf.ols('units ~ t + C(month)', data=data).fit()\\n    pred=pd.DataFrame({'t':[len(data)+2 if name=='2023+' else len(data)+2], 'month':[3]}) # wait all data ends Dec25; Jan t=len, Feb len+1, Mar len+2\\n    print(name, model.predict(pred)[0], 'resid sd', model.resid.std(), 'aic', model.aic)\\n# exponential smoothing additive seasonal 12 with damped trend? Need complete cycles from 2023-01\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\ns = df[df.year>=2023].set_index('date').units.asfreq('MS')\\nfor trend in [None,'add']:\\n    for damped in ([False] if trend is None else [False, True]):\\n        try:\\n            fit=ExponentialSmoothing(s, trend=trend, damped_trend=damped, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n            fc=fit.forecast(3).iloc[-1]\\n            print('ETS', trend, damped, fc, 'sse', fit.sse)\\n        except Exception as e: print(e)\\n# rolling validation one-step/march? Maybe simple baselines errors.\\n# compute yoy seasonal naive errors for months 2024-2025\\nvalid=df[df.year>=2024].copy(); prev=dict(((r.year+1,r.month),r.units) for _,r in df.iterrows())\\nvalid['snaive']=valid.apply(lambda r: prev.get((r.year,r.month), np.nan), axis=1)\\nvalid=valid.dropna()\\nvalid['ape']=abs(valid.units-valid.snaive)/valid.units\\nprint('SNaive 2024-25 WMAPE', abs(valid.units-valid.snaive).sum()/valid.units.sum()*100, 'median APE', valid.ape.median()*100)\\nprint('SNaive march errors', valid[valid.month==3][['year','units','snaive','ape']])\\n# recent annual trend factor 2025/2024 by months? complete total\\nann=df[df.year.isin([2024,2025])].groupby('year').units.sum()\\nprint('2025/2024 total factor', ann.loc[2025]/ann.loc[2024])\\nprint('Q4 factors', df[df.month.isin([10,11,12])].groupby('year').units.sum())\\nprint('H2 factors', df[df.month>=7].groupby('year').units.sum())\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import pandas as pd, numpy as np\\nrows = [(2023,1,1766.8344),(2023,2,2266.0893),(2023,3,2989.4453),(2023,4,2706.6736),(2023,5,2567.5834),(2023,6,4572.8155),(2023,7,3974.2641),(2023,8,3361.711),(2023,9,3070.3256),(2023,10,2283.5187),(2023,11,2140.3679),(2023,12,4203.8856),(2024,1,1748.145),(2024,2,2088.2839),(2024,3,2627.9516),(2024,4,2073.9186),(2024,5,2432.3292),(2024,6,3366.869),(2024,7,3126.5237),(2024,8,3058.2544),(2024,9,3286.9559),(2024,10,2350.4981),(2024,11,2116.1017),(2024,12,3774.7624),(2025,1,2192.2203),(2025,2,2090.9151),(2025,3,2922.0015),(2025,4,2995.1604),(2025,5,3172.1845),(2025,6,3306.7611),(2025,7,3250.0173),(2025,8,3519.7501),(2025,9,3178.5277),(2025,10,2508.683),(2025,11,2057.4307),(2025,12,3314.4216)]\\ndf=pd.DataFrame(rows, columns=['year','month','units'])\\n# cross-validation: for origins after 24 months? forecasts for next 3rd month? Use ETS may fail before 24 m.\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\ns=pd.Series(df.units.values, index=pd.date_range('2023-01-01', periods=len(df), freq='MS'))\\nerrors=[]\\npreds=[]\\n# evaluate 3-step forecasts for origins 2024-12 to 2025-09? actual origin+3 exists, use min 24 points\\nfor origin_idx in range(24, len(s)-3+1):\\n    train=s.iloc[:origin_idx]\\n    actual=s.iloc[origin_idx+2]\\n    # seasonal naive 12\\n    snaive = train.iloc[-10] # target month is 3 months ahead same month last year? if origin_idx is end after period origin_idx-1, target index origin_idx+2, last year target index origin_idx+2-12=origin_idx-10\\n    try:\\n        fit=ExponentialSmoothing(train, trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n        pred=fit.forecast(3).iloc[-1]\\n    except Exception as e: pred=np.nan\\n    ens=np.nanmean([snaive,pred])\\n    errors.append(actual-ens); preds.append((s.index[origin_idx+2], actual, snaive, pred, ens, actual-ens))\\nprint(pd.DataFrame(preds, columns='target actual snaive ets ens err'.split()).to_string(index=False))\\nerrs=np.array(errors)\\nprint('n', len(errs), 'MAE', np.mean(abs(errs)), 'q90abs', np.quantile(abs(errs), .9), 'maxabs', np.max(abs(errs)), 'errs', errs)\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 4,
+      "all_calls": [
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code"
+      ]
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "\u00d8RB\u00c6K",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 2769.1,
+        "interval_90": [
+          363.7,
+          21022.9
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.0183,
+        "served_at_utc": "2026-09-12T19:04:09+00:00"
+      }
+    ]
+  },
+  "tokens_in": 81587,
+  "tokens_out": 5690,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.578635,
+  "error": null
+}

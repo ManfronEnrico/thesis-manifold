@@ -3,10 +3,17 @@ pid: P0051
 created: 2026-09-08 00:00:00
 updated: 2026-09-08 00:00:00
 status: pending
-focus_detail: "NOT STARTED. Two EDA diagnostics (per-feature skewness, per-brand ADF) are computed and reported but never consumed by the pipeline. The modelling is defensible; the Ch4 prose implies an evidentiary link that does not exist. Read findings.md F1-F2 first, then the Ch4 anchors in F5."
+focus_detail: "READ THIS BEFORE P0055 — it is the evidentiary base that plan builds on, not a subset of it (an earlier 2026-09-12 edit wrongly marked it folded; that is retracted). F2 is the strongest fact in the area: 27 of 79 brands test as ALREADY STATIONARY in raw form, so the blanket d=1 OVER-DIFFERENCES them. F7 re-verified live 2026-09-12 at step_2_eda_descriptive.py:543-553 — p_diff is computed and never used in the decision rule. NOT STARTED. Two EDA diagnostics (per-feature skewness, per-brand ADF) are computed and reported but never consumed by the pipeline. The modelling is defensible; the Ch4 prose implies an evidentiary link that does not exist. Read findings.md F1-F2 first, then the Ch4 anchors in F5."
 ---
 
 # P0051 — EDA diagnostics: computed, reported, never consumed
+
+> **NOT superseded. Read this BEFORE P0055.** An edit earlier on 2026-09-12 marked
+> this plan as folded into P0055; **that is retracted.** A closer reading found this
+> plan is the better-evidenced statement of the defect — seven findings with line
+> numbers, verified by exhaustive grep across three pipeline generations. P0055
+> inherits these findings as its evidentiary base and adds the forecasting-literature
+> layer on top. Work the repairs from P0055 Phase 2.A; the evidence is here.
 
 > Split out of the P0050 figures/tables session on 2026-09-08 at Brian's request,
 > so it can be worked with its own context. **Nothing here has been executed.**

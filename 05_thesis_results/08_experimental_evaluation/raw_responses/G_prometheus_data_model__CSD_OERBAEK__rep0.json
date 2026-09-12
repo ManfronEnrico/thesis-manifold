@@ -1,0 +1,139 @@
+{
+  "category": "CSD",
+  "brand": "\u00d8RB\u00c6K",
+  "rep": 0,
+  "system": "G_prometheus_data_model",
+  "actual": 2850.1309,
+  "target_month": "2026-03",
+  "forecast": 2822.0,
+  "outcome": "ok",
+  "ape": 0.98700378989611,
+  "latency_s": 109.82,
+  "answer": "Forecast: 2,822 units  \nRange: 1,400 to 5,100 units (90% interval)  \nConfidence: low-to-medium -- \u00d8RB\u00c6K is a small CSD brand, the supplied model confidence was low, but recent March history was relatively stable around 2,600-3,000 units.  \nRecommendation: for Royal Unibrew category planning, treat \u00d8RB\u00c6K as a small competitor/niche benchmark; plan around the midpoint, avoid major space or supply decisions from this point forecast alone, and re-check once January-February 2026 actuals and distribution are available.  \nFORECAST=2822",
+  "prompt": "How many units of \u00d8RB\u00c6K will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "G_prometheus_data_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T21:04:09",
+    "tool": "prometheus+forecast_demand",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 6,
+    "tool_calls": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "iv9xh0bbdwywgrggraeye",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "months_ahead": 3,
+    "history_months": 39,
+    "model_forecast": 2769.1,
+    "deviates_from_model": true
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nunits = [\\n('2022-10',1911.9312),('2022-11',1894.1875),('2022-12',4021.2778),\\n('2023-01',1766.8344),('2023-02',2266.0893),('2023-03',2989.4453),('2023-04',2706.6736),('2023-05',2567.5834),('2023-06',4572.8155),('2023-07',3974.2641),('2023-08',3361.711),('2023-09',3070.3256),('2023-10',2283.5187),('2023-11',2140.3679),('2023-12',4203.8856),\\n('2024-01',1748.145),('2024-02',2088.2839),('2024-03',2627.9516),('2024-04',2073.9186),('2024-05',2432.3292),('2024-06',3366.869),('2024-07',3126.5237),('2024-08',3058.2544),('2024-09',3286.9559),('2024-10',2350.4981),('2024-11',2116.1017),('2024-12',3774.7624),\\n('2025-01',2192.2203),('2025-02',2090.9151),('2025-03',2922.0015),('2025-04',2995.1604),('2025-05',3172.1845),('2025-06',3306.7611),('2025-07',3250.0173),('2025-08',3519.7501),('2025-09',3178.5277),('2025-10',2508.683),('2025-11',2057.4307),('2025-12',3314.4216)]\\ndf = pd.DataFrame(units, columns=['date','units'])\\ndf['date']=pd.to_datetime(df['date'])\\ndf['year']=df.date.dt.year; df['month']=df.date.dt.month\\nprint(df.tail(15).to_string(index=False))\\nprint('\\\\nYear totals/averages')\\nprint(df.groupby('year').units.agg(['count','sum','mean','std']).to_string())\\nprint('\\\\nMonth means')\\nprint(df.groupby('month').units.agg(['count','mean','median','min','max']).to_string())\\nprint('\\\\nMar history', df[df.month==3][['year','units']].to_string(index=False))\\n# rolling stats and yoy\\nfor y in [2024,2025]:\\n    prev = df[(df.year==y-1)&(df.month==3)].units.values\\n    cur = df[(df.year==y)&(df.month==3)].units.values\\n    if len(prev)&len(cur): print(y, cur[0]/prev[0]-1)\\nprint('2025 vs 2024 total like-for-like', df[df.year==2025].units.sum()/df[df.year==2024].units.sum()-1)\\nprint('2025 H2 vs 2024 H2', df[(df.year==2025)&(df.month>=7)].units.sum()/df[(df.year==2024)&(df.month>=7)].units.sum()-1)\\nprint('2025 Q4 vs 2024 Q4', df[(df.year==2025)&(df.month>=10)].units.sum()/df[(df.year==2024)&(df.month>=10)].units.sum()-1)\\nprint('Jan-Feb-Mar ratios to annual avg by year')\\nfor y in [2023,2024,2025]:\\n    sub=df[df.year==y]\\n    print(y, sub[sub.month==3].units.iloc[0]/sub.units.mean())\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import pandas as pd, numpy as np, warnings\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing, SimpleExpSmoothing, Holt\\nunits = [\\n('2022-10',1911.9312),('2022-11',1894.1875),('2022-12',4021.2778),\\n('2023-01',1766.8344),('2023-02',2266.0893),('2023-03',2989.4453),('2023-04',2706.6736),('2023-05',2567.5834),('2023-06',4572.8155),('2023-07',3974.2641),('2023-08',3361.711),('2023-09',3070.3256),('2023-10',2283.5187),('2023-11',2140.3679),('2023-12',4203.8856),\\n('2024-01',1748.145),('2024-02',2088.2839),('2024-03',2627.9516),('2024-04',2073.9186),('2024-05',2432.3292),('2024-06',3366.869),('2024-07',3126.5237),('2024-08',3058.2544),('2024-09',3286.9559),('2024-10',2350.4981),('2024-11',2116.1017),('2024-12',3774.7624),\\n('2025-01',2192.2203),('2025-02',2090.9151),('2025-03',2922.0015),('2025-04',2995.1604),('2025-05',3172.1845),('2025-06',3306.7611),('2025-07',3250.0173),('2025-08',3519.7501),('2025-09',3178.5277),('2025-10',2508.683),('2025-11',2057.4307),('2025-12',3314.4216)]\\ns=pd.Series([u for d,u in units], index=pd.period_range('2022-10', periods=len(units), freq='M')).astype(float)\\n# model forecasts 3 months ahead and extract Mar2026\\nforecasts={}\\nwith warnings.catch_warnings():\\n    warnings.simplefilter('ignore')\\n    # seasonal naive\\n    forecasts['Seasonal naive (Mar25)']=s[pd.Period('2025-03','M')]\\n    # 3 year March avg, weighted recent\\n    forecasts['March mean 2023-25']=s[s.index.month==3].mean()\\n    forecasts['March recent weighted avg']=np.average(s[s.index.month==3].values, weights=[0.2,0.3,0.5])\\n    # annual avg 2025 adjusted by avg March/annual factor\\n    month_factor = np.mean([s[pd.Period(f'{y}-03','M')]/s[str(y)].mean() for y in [2023,2024,2025]])\\n    forecasts['2025 avg x March factor']=s['2025'].mean()*month_factor\\n    # ETS additive seasonality no trend\\n    try:\\n        fit=ExponentialSmoothing(s.to_timestamp(), trend=None, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n        forecasts['ETS additive seasonal']=fit.forecast(3).iloc[-1]\\n    except Exception as e: forecasts['ETS additive seasonal err']=str(e)\\n    try:\\n        fit=ExponentialSmoothing(s.to_timestamp(), trend='add', damped_trend=True, seasonal='add', seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n        forecasts['ETS damped trend add seas']=fit.forecast(3).iloc[-1]\\n    except Exception as e: forecasts['ETS damped err']=str(e)\\n    try:\\n        fit=SimpleExpSmoothing(s.to_timestamp(), initialization_method='estimated').fit()\\n        forecasts['SES no season']=fit.forecast(3).iloc[-1]\\n    except Exception as e: forecasts['SES err']=str(e)\\nprint(pd.Series(forecasts).to_string())\\n# backtest seasonal naive 1-year for months with prior year\\nerrs=[]\\nfor p in s.index:\\n    lag=p-12\\n    if lag in s.index:\\n        pred=s[lag]; actual=s[p]\\n        errs.append((str(p), actual, pred, actual-pred, abs(actual-pred), abs(actual-pred)/actual))\\nbt=pd.DataFrame(errs, columns=['period','actual','pred','err','abs_err','ape'])\\nprint('\\\\nSeasonal naive backtest')\\nprint(bt.agg({'abs_err':['mean','median',lambda x: np.quantile(x,0.9)],'ape':['mean','median',lambda x: np.quantile(x,0.9)]}).to_string())\\nprint(bt.tail(12).to_string(index=False))\\n# residuals from average of current model? no\\n# empirical historical 90% lower upper maybe from monthly distributions\\nprint('\\\\nQuantiles units all:', s.quantile([.05,.1,.5,.9,.95]).to_string())\\nprint('Mar quantiles small:', s[s.index.month==3].quantile([.05,.5,.95]).to_string())\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import pandas as pd, numpy as np, warnings\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing, SimpleExpSmoothing\\nunits = [\\n('2022-10',1911.9312),('2022-11',1894.1875),('2022-12',4021.2778),\\n('2023-01',1766.8344),('2023-02',2266.0893),('2023-03',2989.4453),('2023-04',2706.6736),('2023-05',2567.5834),('2023-06',4572.8155),('2023-07',3974.2641),('2023-08',3361.711),('2023-09',3070.3256),('2023-10',2283.5187),('2023-11',2140.3679),('2023-12',4203.8856),\\n('2024-01',1748.145),('2024-02',2088.2839),('2024-03',2627.9516),('2024-04',2073.9186),('2024-05',2432.3292),('2024-06',3366.869),('2024-07',3126.5237),('2024-08',3058.2544),('2024-09',3286.9559),('2024-10',2350.4981),('2024-11',2116.1017),('2024-12',3774.7624),\\n('2025-01',2192.2203),('2025-02',2090.9151),('2025-03',2922.0015),('2025-04',2995.1604),('2025-05',3172.1845),('2025-06',3306.7611),('2025-07',3250.0173),('2025-08',3519.7501),('2025-09',3178.5277),('2025-10',2508.683),('2025-11',2057.4307),('2025-12',3314.4216)]\\ns=pd.Series([u for d,u in units], index=pd.period_range('2022-10', periods=len(units), freq='M')).astype(float)\\nforecasts={}\\nwith warnings.catch_warnings():\\n    warnings.simplefilter('ignore')\\n    forecasts['Dedicated XGBoost'] = 2769.1\\n    forecasts['Seasonal naive (Mar25)']=s[pd.Period('2025-03','M')]\\n    forecasts['March mean 2023-25']=s[s.index.month==3].mean()\\n    forecasts['March recent weighted avg']=np.average(s[s.index.month==3].values, weights=[0.2,0.3,0.5])\\n    month_factor = np.mean([s[pd.Period(f'{y}-03','M')]/s[str(y)].mean() for y in [2023,2024,2025]])\\n    forecasts['2025 avg x March factor']=s['2025'].mean()*month_factor\\n    for name, args in [('ETS additive seasonal', dict(trend=None, seasonal='add')),('ETS damped trend add seas', dict(trend='add', damped_trend=True, seasonal='add'))]:\\n        try:\\n            fit=ExponentialSmoothing(s.to_timestamp(), seasonal_periods=12, initialization_method='estimated', **args).fit(optimized=True)\\n            forecasts[name]=fit.forecast(3).iloc[-1]\\n        except Exception as e: forecasts[name]=np.nan\\n    fit=SimpleExpSmoothing(s.to_timestamp(), initialization_method='estimated').fit()\\n    forecasts['SES no season']=fit.forecast(3).iloc[-1]\\nprint('Forecast candidates')\\nprint(pd.Series(forecasts).round(1).to_string())\\n# Backtest seasonal naive\\nerrs=[]\\nfor p in s.index:\\n    lag=p-12\\n    if lag in s.index:\\n        pred=s[lag]; actual=s[p]\\n        errs.append((str(p), actual, pred, actual-pred, abs(actual-pred), abs(actual-pred)/actual))\\nbt=pd.DataFrame(errs, columns=['period','actual','pred','err','abs_err','ape'])\\nprint('\\\\nSeasonal naive backtest metrics:')\\nprint('MAE', bt.abs_err.mean(), 'Median AE', bt.abs_err.median(), '90% AE', bt.abs_err.quantile(.9), 'WMAPE', bt.abs_err.sum()/bt.actual.sum(), 'Median APE', bt.ape.median())\\nprint('\\\\nLast 12 seasonal naive errors')\\nprint(bt.tail(12).to_string(index=False))\\nprint('\\\\nAll units quantiles')\\nprint(s.quantile([.05,.1,.5,.9,.95]).to_string())\\nprint('\\\\nMarch history')\\nprint(s[s.index.month==3].to_string())\\n# combine point: weighted average XGB 50%, seasonal naive 25%, March weighted 15%, ETS 10?\\npoint = .55*forecasts['Dedicated XGBoost'] + .2*forecasts['Seasonal naive (Mar25)'] + .15*forecasts['March recent weighted avg'] + .1*forecasts['2025 avg x March factor']\\nprint('\\\\nBlended point', point)\\n# candidate interval: model WMAPE 18.4 => approx absolute error 510, but median mape 41%. seasonal 90% AE ~? use 5/95 residual plus point\\nprint('SN error quantiles', bt.err.quantile([.05,.1,.5,.9,.95]).to_string())\\nprint('SN abs error quantiles', bt.abs_err.quantile([.8,.9,.95]).to_string())\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 6,
+      "all_calls": [
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code"
+      ]
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "\u00d8RB\u00c6K",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 2769.1,
+        "interval_90": [
+          363.7,
+          21022.9
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.0147,
+        "served_at_utc": "2026-09-12T19:02:20+00:00"
+      }
+    ]
+  },
+  "tokens_in": 108394,
+  "tokens_out": 7971,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.7811,
+  "error": null
+}

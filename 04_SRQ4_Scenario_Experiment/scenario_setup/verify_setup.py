@@ -77,6 +77,35 @@ class Checks:
         return [r for r in self.rows if r[0] is None]
 
 
+def _built_brands(m):
+    """Every brand with a generated agent input, per category.
+
+    The generated files ARE what a paid run sends, so this is the population
+    the leakage check should cover. Resolved back from the slug on disk to the
+    brand name the harness uses, via the matrix, because the slug is lossy --
+    OERBAEK on disk is the Danish spelling in the data.
+    """
+    import pandas as pd
+    from PATHS import SRQ4_AGENT_INPUTS_DIR
+    out = {}
+    for cat in m.CAT_FILE:
+        d = SRQ4_AGENT_INPUTS_DIR / cat
+        if not d.is_dir():
+            continue
+        names = []
+        for f in sorted(d.glob("*_brand_month.csv")):
+            # The file carries the brand name in a column, so no un-slugging
+            # is needed and no second naming rule can drift from the first.
+            try:
+                b = pd.read_csv(f, usecols=["brand"], nrows=1)["brand"].iloc[0]
+            except Exception:
+                continue
+            names.append(str(b))
+        if names:
+            out[cat] = names
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description="SRQ4 pre-flight verification")
     ap.add_argument("--live", action="store_true",
@@ -171,9 +200,15 @@ def main():
     def leakage():
         # The check that matters most: a leak does not raise, it just makes Scenario B
         # look brilliant -- the exact quantity under measurement.
-        problems, checked = [], 0
+        problems, checked, skipped = [], 0, []
+        # Check EVERY brand that has a generated agent input, not a fixed
+        # top-N sample. Those files are exactly what a paid run will send, so
+        # checking them is checking the run. The old top-2-by-volume sample
+        # verified brands the funded run does not use, and after the v6 data
+        # change it verified only 1 of the 3 that it does.
+        built = _built_brands(m)
         for cat in m.CAT_FILE:
-            for br in [b for cc, b in m._select_brands((2, 2, 2, 2)) if cc == cat][:2]:
+            for br in built.get(cat, []):
                 try:
                     fit, actual, target = m._brand_history(cat, br)
                     checked += 1
@@ -186,11 +221,22 @@ def main():
                     last = fit.sort_values(["period_year", "period_month"]).iloc[-1]
                     if (int(last.period_year), int(last.period_month)) >= (ty, tm):
                         problems.append(f"{cat}/{br}: history reaches the target month")
+                except FileNotFoundError:
+                    # No generated input for this brand. NOT a leak -- the
+                    # extract is built per brand and this one is not in the
+                    # run. Recorded as a skip; an all-skip result fails below,
+                    # so the check can never pass vacuously.
+                    skipped.append(f"{cat}/{br}")
                 except AssertionError as e:
                     problems.append(str(e)[:120])
-        return (not problems), (f"{checked} brand-series clean, target month absent "
-                                f"from every history" if not problems
-                                else "; ".join(problems[:4]))
+        if not checked:
+            return False, ("no brand had a generated agent input -- run "
+                           "build_agent_inputs.py first. Nothing was verified.")
+        note = (f"{checked} brand-series clean, target month absent from every "
+                f"history")
+        if skipped:
+            note += f"; {len(skipped)} not built ({', '.join(skipped[:3])})"
+        return (not problems), (note if not problems else "; ".join(problems[:4]))
     c.run("LEAKAGE: target month excluded from scenario data", leakage)
 
     def same_month():
@@ -246,17 +292,20 @@ def main():
         # only -- the earlier version could not have seen D, E, F or G lose
         # the month, and the month is what makes the arms comparable at all.
         csv, payload = "period_year,period_month,sales_units\n2025,12,1\n", "{}"
+        schema = "table_name,column_name,description\ncsd_clean_facts,sales_units,units\n"
         built = {
             "A": pa,
-            "B": P.scenario_b_prompt(a.brand, a.category, t, csv),
+            "B": P.scenario_b_prompt(a.brand, a.category, t, csv, schema),
             "C": pc,
             "D": P.scenario_d_prompt(a.brand, a.category, t),
-            "D-coder": P.scenario_d_coder(a.brand, a.category, t, csv),
+            "D-coder": P.scenario_d_coder(a.brand, a.category, t, csv, schema),
             "E": P.scenario_e_prompt(a.brand, a.category, t),
             "E-coder": P.scenario_e_coder(a.brand, a.category, t, payload),
-            "F": P.scenario_f_prompt(a.brand, a.category, t, csv, payload),
+            "F": P.scenario_f_prompt(a.brand, a.category, t, csv, payload,
+                                     schema),
             "G": P.scenario_g_prompt(a.brand, a.category, t),
-            "G-coder": P.scenario_g_coder(a.brand, a.category, t, csv, payload),
+            "G-coder": P.scenario_g_coder(a.brand, a.category, t, csv, payload,
+                                          schema),
         }
         missing = sorted(k for k, v in built.items() if t not in v)
         vague = sorted(k for k, v in built.items() if "next month" in v.lower())

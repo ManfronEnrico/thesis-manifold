@@ -2242,3 +2242,91 @@ This is the dominant failure mode on this project (F21/F25/F31/F32/F45/F49/F51/F
 option silently overrode the semantics of another. The instruction to "remember to pass
 both flags" was a workaround for a missing feature - a rule a human has to hold in their
 head, to stop a script doing the wrong thing, is the script's bug.
+
+
+---
+
+## F-COST — `summary.md` reports ONE billing window as if it were the total
+
+**Found 2026-09-13, reconciling against Brian's account balance.**
+
+**Producer:** `srq4_experiment.py:_write_summary()`, lines 1891-1910. **Do not
+hand-edit `summary.md`** — it is regenerated on every run and the edit is lost.
+
+### What it emits
+
+```python
+est_total = float(df.cost_usd_est.sum())
+...  f"Estimated from token counts: **${est_total:.4f}**."
+billed = fetch_billed_cost(t_start)
+...  f"Actually billed over the run window: **${billed['total_usd']:.4f}**."
+     "Report the billed figure."
+```
+
+`fetch_billed_cost(t_start)` reads **from `t_start` of THIS invocation**. The v6
+set was produced by **two** invocations — a 21-run smoke then a 42-run
+remainder — so the surviving `summary.md` describes only the second.
+
+### The three figures, and which to trust
+
+| Source | Figure | vs actual |
+|---|---|---|
+| Token estimate (`cost_usd_est`, 63 v6 rows) | $25.20 | **+29%** |
+| `summary.md:42`, one window | $18.46 | **-6%, incomplete** |
+| **Account balance: $44.41 -> $38.07 -> $24.81** | **$19.60** | **authoritative** |
+
+The instruction *"Report the billed figure"* is therefore **wrong as written**
+whenever a run set spans more than one invocation.
+
+### Three generator fixes
+
+1. **Name the window.** "Billed **between `t_start` and now**", never "actually
+   billed" unqualified.
+2. **Refuse to imply a total across invocations.** `run_full(mode="resume")`
+   appends to an existing `runs.csv`; if the loaded frame contains rows older
+   than `t_start`, say so and report the window cost as partial.
+3. **Carry the estimator bias.** Two independent measurements now put the
+   token estimate ~27-29% high. Print the multiplier beside the estimate rather
+   than leaving a reader to trust it.
+
+---
+
+## F-CE — `summary.md` does not explain that C and E are identical
+
+C_llm_model and E_prometheus_model agree on **every** metric: mean APE 13.14,
+median 14.65, CV 0.0%, TAR 1.00, and per-brand (7-UP 14.6, HARBOE 21.9,
+ØRBÆK 2.8).
+
+**This is correct.** Both read the same trained model deterministically, so the
+hosted model and the orchestrator return the same forecast. It is **evidence for
+the determinism claim**, not a duplication bug.
+
+But nothing in `summary.md` says so, and two identical columns in a
+seven-column table is exactly what a copy-paste error looks like. **An examiner
+will ask.** Add one line beneath the table, emitted by `_write_summary()`:
+
+> "C and E, and the model half of F and G, read the same persisted model; where
+> they agree exactly, that is the determinism the tool interface provides, not a
+> transcription error."
+
+---
+
+## F-ROWS — `runs.csv` holds 69 rows; 6 are a superseded schema
+
+`runs.csv` contains **6 `v2-units-no-recommendation` rows** alongside the 63
+`v6-shared-composition+af04a42a478b` rows.
+
+**Every consumer must filter `schema.str.startswith('v6')`.** Pooling across
+schemas is not hypothetical: it previously reported **$11.13 for a 21-run block
+that cost $8.05** by including six August v2 rows. `_write_summary()` was scoped
+to `P.schema_id()` to fix that — but the rows remain in the file, so any *new*
+consumer inherits the same trap.
+
+⚠ **Do not delete the v2 rows without Brian's say-so.** They are the record of a
+superseded run and may be wanted as provenance. The safe fix is a documented
+filter at every read site, not a mutation of the results file.
+
+**Related:** `raw_responses/` contains
+`A_llm_plain__CSD__RB_K__rep0.json` — a leftover from the pre-`_TRANSLIT` slug
+bug that rendered ØRBÆK as `RB_K`. Excluded from the 63 by schema, but it should
+not be committed in that state.

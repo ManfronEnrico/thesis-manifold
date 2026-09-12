@@ -1,0 +1,128 @@
+{
+  "category": "CSD",
+  "brand": "HARBOE",
+  "rep": 2,
+  "system": "G_prometheus_data_model",
+  "actual": 6365899.7748,
+  "target_month": "2026-03",
+  "forecast": 5800000.0,
+  "outcome": "ok",
+  "ape": 8.8895489219005,
+  "latency_s": 112.05,
+  "answer": "Forecast: 5,800,000 units  \nRange: 3,500,000 to 8,100,000 units (90% interval)  \nConfidence: low-to-medium -- HARBOE is a competitor brand in CSD, and recent performance is volatile with strong promotion and distribution effects; March history supports the midpoint, but the model interval is wide.  \nRecommendation: plan Royal Unibrew March execution against roughly 6 million HARBOE units, while protecting RU share in accounts and packs where HARBOE gained reach late in 2025; do not plan solely against the lower model estimate.  \nFORECAST=5800000",
+  "prompt": "How many units of HARBOE will be sold in the CSD category in Danish retail in 2026-03? Answer in units sold, not currency. Give the number, a range, how confident you are, and what you would recommend the category planner do about it.\n\nUse the analysis engine to answer this. The material it needs has already been retrieved; it does not need to query the data warehouse. End your reply with the answer, not with code.\n\nFormat your answer like this worked example (a different brand and category, shown only to fix the format):\n\n  Forecast: 1,250,000 units\n  Range: 1,050,000 to 1,480,000 units (90% interval)\n  Confidence: medium -- the brand's history is short and its recent months are volatile.\n  Recommendation: plan against the midpoint but hold cover to the upper bound, since a stockout costs more here than carrying surplus.\n  FORECAST=1250000\n\nEnd your reply with the single line FORECAST=<number> (a plain number, no commas or units).",
+  "trace": {
+    "scenario": "G_prometheus_data_model",
+    "model": "gpt-5.5-2026-04-23",
+    "temperature": null,
+    "decoding": "temperature/top_p unsupported by the model; defaults used",
+    "reasoning_effort": "medium",
+    "prompt_schema_id": "v6-shared-composition+af04a42a478b",
+    "run_at": "2026-09-12T20:29:42",
+    "tool": "prometheus+forecast_demand",
+    "wrote_code": true,
+    "target_month": "2026-03",
+    "engine_available": true,
+    "orchestrator": "prometheus_graph_engine",
+    "via_sentinel": true,
+    "sql_calls": [],
+    "code_calls": 4,
+    "tool_calls": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_verdict": "ok",
+    "usage_reported": true,
+    "sandbox_killed": "ikcqombcdkdijkv516qci",
+    "coder_reasoning_effort": "medium",
+    "coder_request_limit": 40,
+    "vendor_coder_model": "gpt-5.5",
+    "payload_complete": true,
+    "months_ahead": 3,
+    "history_months": 39,
+    "model_forecast": 4969049.5,
+    "deviates_from_model": true
+  },
+  "detail": {
+    "code_blocks": [
+      {
+        "code": "{\"code\": \"import pandas as pd, numpy as np\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom statsmodels.tsa.statespace.sarimax import SARIMAX\\nfrom sklearn.linear_model import HuberRegressor, LinearRegression, Ridge\\nfrom sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor\\nfrom sklearn.metrics import mean_absolute_percentage_error\\n\\ndata = [\\n(2022,10,4472796.2612),(2022,11,4933395.4439),(2022,12,4266595.3648),\\n(2023,1,3429983.0672),(2023,2,4061321.674),(2023,3,4978711.5612),(2023,4,3931271.1354),(2023,5,4539718.9166),(2023,6,6210563.9879),(2023,7,3969125.3972),(2023,8,4434312.4201),(2023,9,5425359.332),(2023,10,3581981.6608),(2023,11,3464200.8451),(2023,12,5513499.3346),\\n(2024,1,3530564.0953),(2024,2,4341338.5165),(2024,3,5284878.3075),(2024,4,4356722.1855),(2024,5,5418809.913),(2024,6,6225440.905),(2024,7,4835852.1622),(2024,8,4068687.7823),(2024,9,5591355.5198),(2024,10,4452118.1696),(2024,11,3367262.4253),(2024,12,4749525.9903),\\n(2025,1,3069643.2191),(2025,2,4436153.8209),(2025,3,5958928.3706),(2025,4,4144874.3631),(2025,5,7245572.1735),(2025,6,6056285.0349),(2025,7,7697653.4683),(2025,8,6156190.3078),(2025,9,6550245.0221),(2025,10,5684361.6618),(2025,11,5392954.3957),(2025,12,4965644.6208)\\n]\\ndf = pd.DataFrame(data, columns=['year','month','units'])\\ndf['date'] = pd.to_datetime(dict(year=df.year, month=df.month, day=1))\\ndf = df.set_index('date').asfreq('MS')\\ndf['t'] = np.arange(len(df))\\nprint(df[['year','month','units']].tail(15).to_string())\\n# seasonal means by month and YoY\\nprint('\\\\nMarchs:', df[df.month==3]['units'].to_string())\\nprint('Annual totals by year (complete 2023-25):')\\nprint(df[df.year.isin([2023,2024,2025])].groupby('year')['units'].sum().to_string())\\nprint('2025 vs 2024 annual growth', df[df.year==2025]['units'].sum()/df[df.year==2024]['units'].sum()-1)\\nprint('Q4 growth', df[(df.year==2025)&(df.month>=10)]['units'].sum()/df[(df.year==2024)&(df.month>=10)]['units'].sum()-1)\\nprint('Jan-Mar growth 2025 vs 2024', df[(df.year==2025)&(df.month<=3)]['units'].sum()/df[(df.year==2024)&(df.month<=3)]['units'].sum()-1)\\n# fit simple models all data forecast to Mar 2026 3 months ahead after 2025-12\\nh=3\\n# ETS additive seasonality, trend damped maybe\\nfor trend in [None,'add']:\\n  for seasonal in ['add','mul']:\\n    try:\\n      fit=ExponentialSmoothing(df['units'], trend=trend, damped_trend=(trend is not None), seasonal=seasonal, seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n      fc=fit.forecast(h)\\n      print('ETS', trend, seasonal, fc.iloc[-1], 'aic', fit.aic)\\n    except Exception as e: print('ETS err', trend,seasonal,e)\\n# SARIMA choices\\nfor order in [(0,1,1),(1,0,0),(1,1,0),(0,1,0)]:\\n for seas in [(0,1,1,12),(1,0,0,12),(0,0,0,12)]:\\n  try:\\n    res=SARIMAX(df['units'], order=order, seasonal_order=seas, trend='c', enforce_stationarity=False, enforce_invertibility=False).fit(disp=False)\\n    fc=res.get_forecast(h).predicted_mean.iloc[-1]\\n    ci=res.get_forecast(h).conf_int(alpha=0.1).iloc[-1].values\\n    print('SARIMA',order,seas,'fc',fc,'ci',ci,'aic',res.aic)\\n  except Exception as e: pass\\n# seasonal regression with trend, month dummies; robust/ridge\\nX = pd.get_dummies(df['month'].astype(int), prefix='m', drop_first=False)\\nX['t']=df['t'].values\\n# maybe post may2025 step? distribution shift not known future. include trend only\\nfuture_dates=pd.date_range('2026-01-01', periods=3, freq='MS')\\nfuture=pd.DataFrame({'month':future_dates.month, 't': np.arange(len(df), len(df)+3)})\\nXf=pd.get_dummies(future['month'].astype(int), prefix='m', drop_first=False)\\nfor c in X.columns:\\n    if c not in Xf: Xf[c]=0\\nXf=Xf[X.columns]\\nfor model in [LinearRegression(), Ridge(alpha=10), HuberRegressor(epsilon=1.5, alpha=0.0, max_iter=1000)]:\\n    model.fit(X, df['units'].values)\\n    pred=model.predict(Xf)[-1]\\n    resid=df['units'].values-model.predict(X)\\n    print(type(model).__name__, pred, 'resid q90', np.quantile(np.abs(resid),0.9), 'resid sd', resid.std())\\n# backtesting 3-ahead March forecasts? use simple candidates: seasonal naive, weighted yoy, ETS if enough\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      },
+      {
+        "code": "{\"code\":\"import pandas as pd, numpy as np\\nfrom statsmodels.tsa.holtwinters import ExponentialSmoothing\\nfrom sklearn.linear_model import HuberRegressor, LinearRegression, Ridge\\nfrom sklearn.metrics import mean_absolute_error\\n# reconstruct\\nunits = [4472796.2612,4933395.4439,4266595.3648,3429983.0672,4061321.674,4978711.5612,3931271.1354,4539718.9166,6210563.9879,3969125.3972,4434312.4201,5425359.332,3581981.6608,3464200.8451,5513499.3346,3530564.0953,4341338.5165,5284878.3075,4356722.1855,5418809.913,6225440.905,4835852.1622,4068687.7823,5591355.5198,4452118.1696,3367262.4253,4749525.9903,3069643.2191,4436153.8209,5958928.3706,4144874.3631,7245572.1735,6056285.0349,7697653.4683,6156190.3078,6550245.0221,5684361.6618,5392954.3957,4965644.6208]\\ndates=pd.date_range('2022-10-01', periods=len(units), freq='MS')\\ns=pd.Series(units,index=dates)\\n\\ndef fc_snaive(train,h):\\n    target=train.index[-1]+pd.DateOffset(months=h)\\n    return train.get(target-pd.DateOffset(years=1), train.iloc[-1])\\ndef fc_snaive_growth(train,h):\\n    target=train.index[-1]+pd.DateOffset(months=h)\\n    lydate=target-pd.DateOffset(years=1)\\n    if lydate in train.index:\\n        # growth last 12 months over prior 12 months when available\\n        if len(train)>=24:\\n            g=train.iloc[-12:].sum()/train.iloc[-24:-12].sum()-1\\n        else: g=0\\n        return train.loc[lydate]*(1+g)\\n    return train.iloc[-1]\\ndef fc_marchtrend(train,h):\\n    target=train.index[-1]+pd.DateOffset(months=h)\\n    vals=train[train.index.month==target.month]\\n    if len(vals)>=2:\\n        x=np.arange(len(vals)); coef=np.polyfit(x, vals.values, 1)\\n        return coef[0]*len(vals)+coef[1]\\n    return fc_snaive(train,h)\\ndef fc_ets(train,h):\\n    try:\\n        seasonal='add'\\n        fit=ExponentialSmoothing(train, trend=None, seasonal=seasonal, seasonal_periods=12, initialization_method='estimated').fit(optimized=True)\\n        return fit.forecast(h).iloc[-1]\\n    except Exception:\\n        return fc_snaive(train,h)\\ndef fc_huber(train,h):\\n    n=len(train); months=train.index.month\\n    X=pd.get_dummies(months, prefix='m', drop_first=False); X['t']=np.arange(n)\\n    target=train.index[-1]+pd.DateOffset(months=h)\\n    Xf=pd.get_dummies(pd.Series([target.month]), prefix='m', drop_first=False); Xf['t']=n+h-1\\n    for c in X.columns:\\n        if c not in Xf: Xf[c]=0\\n    Xf=Xf[X.columns]\\n    if n<24: return fc_snaive(train,h)\\n    model=HuberRegressor(epsilon=1.5, max_iter=1000).fit(X, train.values)\\n    return model.predict(Xf)[0]\\n\\nmodels={'seasonal_naive':fc_snaive,'snaive_ann_growth':fc_snaive_growth,'month_trend':fc_marchtrend,'ets_no_trend_add':fc_ets,'huber_month_trend':fc_huber}\\nrows=[]\\n# origins from at least 24 obs to len-3\\nfor name,fun in models.items():\\n    errs=[]; actuals=[]; preds=[]; origins=[]\\n    for end in range(24,len(s)-3+1):\\n        train=s.iloc[:end]\\n        actual=s.iloc[end+3-1]\\n        pred=fun(train,3)\\n        errs.append(actual-pred); actuals.append(actual); preds.append(pred); origins.append(train.index[-1])\\n    errs=np.array(errs); actuals=np.array(actuals); preds=np.array(preds)\\n    rows.append([name, len(errs), np.sum(np.abs(errs))/np.sum(actuals), np.median(np.abs(errs)/actuals), np.mean(errs), np.quantile(np.abs(errs),.9), preds[-1] if len(preds) else None])\\nprint(pd.DataFrame(rows, columns=['model','n','wmape','median_ape','bias','q90_abs_err','last_origin_pred']).to_string(index=False))\\n# target predictions\\nprint('\\\\nTarget 2026-03 predictions:')\\nfor name,fun in models.items(): print(name, fun(s,3))\\n# Ensemble weights inverse wmape from backtest plus dedicated model\\n\"}",
+        "container_id": null,
+        "status": "completed"
+      }
+    ],
+    "reasoning": [],
+    "web_queries": [],
+    "item_types": [
+      "execute_code",
+      "execute_code",
+      "execute_code",
+      "execute_code"
+    ],
+    "engine_stdout": "",
+    "engine_evidence": {
+      "sql_calls": [],
+      "code_calls": 4,
+      "all_calls": [
+        "execute_code",
+        "execute_code",
+        "execute_code",
+        "execute_code"
+      ]
+    },
+    "tool_outputs": [
+      {
+        "status": "ok",
+        "category": "CSD",
+        "brand": "HARBOE",
+        "forecast_month": "2026-03",
+        "months_ahead": 3,
+        "forecast_units": 4969049.5,
+        "interval_90": [
+          654487.5,
+          37726335.0
+        ],
+        "confidence": 5.9,
+        "confidence_tier": "Low",
+        "historical_wmape": 18.4,
+        "historical_median_mape": 41.4,
+        "baseline_best_by_median_mape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "baseline_best_by_wmape": {
+          "model": "SeasonalNaive",
+          "wmape": 19.2,
+          "median_mape": 54.7
+        },
+        "improvement_vs_baseline_median_pp": 13.3,
+        "improvement_vs_baseline_wmape_pp": 0.8,
+        "accuracy_basis": "held-out test split; expanding-window time-series CV, 100 Optuna trials, tuned for WMAPE (04_thesis_results/srq1/cv_metrics.csv). WMAPE is volume-weighted; median MAPE weights each brand equally. Where they disagree, metrics_disagree is set.",
+        "model": "XGBoost(tuned)",
+        "model_file": "model.json",
+        "trained_on": "train+val",
+        "trained_through": "2025-12",
+        "calibrated_on": "val",
+        "calibrated_through": "2025-12",
+        "n_calibration_rows": 665,
+        "interval_method": "split conformal, 90% quantile of validation residuals",
+        "n_features": 18,
+        "serve_seconds": 0.02,
+        "served_at_utc": "2026-09-12T18:27:50+00:00"
+      }
+    ]
+  },
+  "tokens_in": 89908,
+  "tokens_out": 5694,
+  "tokens_reasoning": 0,
+  "cost_usd_est": 0.62036,
+  "error": null
+}
