@@ -4,7 +4,7 @@ description: NOTE - Running list of structural decisions deferred out of chapter
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 6, chapter 7, chapter 8, appendix]
 created: 2026_09_09-17_10
-updated: 2026_09_10-16_10
+updated: 2026_09_12-20_44
 status: open
 ---
 
@@ -884,3 +884,40 @@ component would be added to an index that already discriminates nothing.
 *conditional on a discriminating index*, never as standalone improvements. The
 other two items are already answered - the logging question by Section 7.5, the
 cost ceiling by the measured figures now in 7.6.
+
+---
+
+## S28 - Chapter 7 cites Chapter 5's calibration table rather than repeating it
+
+**Status:** done - decided and applied 2026-09-12
+**Found:** 2026-09-12, Chapter 7 verification pass
+
+Chapter 7's Fix 5 would have filled an empty Table 18 in section 7.4 with the
+eight calibration rows. Chapter 5 section 5.5.7 already carries the same eight
+numbers as Table 13 - the same measurement, not a similar one.
+
+**The two copies had already drifted apart, and nobody had noticed:**
+
+| | Ch5 Table 13 | Ch7 Table 18 as proposed | Correct |
+|---|---|---|---|
+| width column | "Mean relative width" | "Median rel. width" | **Ch7** - the producer computes `np.median` |
+| category names | lowercase `energidrikke`, `danskvand` | capitalised | **Ch7** - matches the artefact and the on-disk folders |
+| count column | "n test" | "n" | **Ch5** - Energidrikke has n_test 308 against n_calib 264, so a bare "n" is ambiguous exactly where the difference exists |
+
+**Decision: Chapter 7 carries no calibration table.** Section 7.4 cites Table 13
+by cross-reference, and its two reading paragraphs state the figures in prose, so
+the argument survives without the grid.
+
+A reduced version was considered and rejected: the prose uses all eight cells,
+both nominal levels and all four categories, so there is nothing to cut.
+
+**Why, in one line:** when the calibration artefact is regenerated (H13 on the
+post-HPC list) exactly one table has to be updated. Two copies forty pages apart,
+already disagreeing, is a contradiction waiting for an assessor to find.
+
+Numbering follows automatically: Chapter 7's tables became field references under
+S26, so removing one renumbers Chapters 8 and 9 on their own.
+
+⚠ **Chapter 5's Table 13 is now the thesis's only copy**, which makes its three
+label defects load-bearing rather than cosmetic: "Median relative interval width",
+and capitalised `Danskvand` and `Energidrikke`. "n test" is correct and stays.

@@ -4,7 +4,7 @@ description: NOTE - Running list of thesis claims that must be re-verified or up
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 8, results]
 created: 2026_09_09-21_00
-updated: 2026_09_12-19_50
+updated: 2026_09_12-20_44
 status: partly-verified
 ---
 
@@ -434,8 +434,9 @@ the direction is safe.
 
 ## H13 - Regenerate calibration.csv / .md so the width column carries its real name
 
-**Claim as the thesis states it (Ch7 Table 18; Ch5 Table 13):** the interval-width
-column is labelled "Median rel. width".
+**Claim as the thesis states it (Ch5 Table 13):** the interval-width column is
+labelled "Median rel. width". Chapter 7 carries no copy of this table -- it cites
+Chapter 5 by cross-reference (S28).
 
 **What answers it:** `tables/calibration.csv`. Its header must read
 `median_rel_width`. The producer was renamed on 2026-09-12: the value has always
@@ -457,11 +458,13 @@ committed figures:
 | Energidrikke, RTD | LightGBM | - | **identical** |
 
 Regenerate only where the pins hold. A run on an unpinned environment would
-silently replace the figures Chapter 7 is pinned to.
+silently replace the figures Chapter 5's Table 13 is pinned to, and Chapter 7
+reads in prose.
 
-**If the regenerated figures differ from the committed ones**, Chapter 7's Fix 5
-(the eight table rows) and Fix 6 (the "above ten" and "six points" clauses) must
-both be re-derived from the new artefact before they are applied.
+**If the regenerated figures differ from the committed ones**, two places read them
+and both must be re-derived: Chapter 5's Table 13, now the thesis's only copy of
+this measurement, and the two paragraphs in Chapter 7 section 7.4 that read it in
+prose ("above ten", "six points below").
 
 **Raised by:** the Chapter 7 pass, 2026-09-12.
 
