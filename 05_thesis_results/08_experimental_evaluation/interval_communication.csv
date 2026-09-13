@@ -1,4 +1,64 @@
 run,scenario,states_interval,interval_faithful,states_confidence,gives_recommendation,score
-A_plain__CSD_COCA_COLA__rep0,A - no firm data,True,False,True,True,3
-A_plain__CSD_COCA_COLA__rep1,A - no firm data,True,False,True,False,2
-A_plain__CSD_COCA_COLA__rep2,A - no firm data,True,False,True,False,2
+A_llm_plain__CSD_7-UP__rep0,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_7-UP__rep1,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_7-UP__rep2,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_HARBOE__rep0,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_HARBOE__rep1,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_HARBOE__rep2,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_ØRBÆK__rep0,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_ØRBÆK__rep1,A - no firm data,True,False,True,True,3
+A_llm_plain__CSD_ØRBÆK__rep2,A - no firm data,True,False,True,True,3
+B_llm_data__CSD_7-UP__rep0,B - code execution,True,False,True,True,3
+B_llm_data__CSD_7-UP__rep1,B - code execution,True,False,True,True,3
+B_llm_data__CSD_7-UP__rep2,B - code execution,True,False,True,True,3
+B_llm_data__CSD_HARBOE__rep0,B - code execution,True,False,True,True,3
+B_llm_data__CSD_HARBOE__rep1,B - code execution,True,False,True,True,3
+B_llm_data__CSD_HARBOE__rep2,B - code execution,True,False,True,True,3
+B_llm_data__CSD_ØRBÆK__rep0,B - code execution,True,False,True,True,3
+B_llm_data__CSD_ØRBÆK__rep1,B - code execution,True,False,True,True,3
+B_llm_data__CSD_ØRBÆK__rep2,B - code execution,True,False,True,True,3
+C_llm_model__CSD_7-UP__rep0,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_7-UP__rep1,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_7-UP__rep2,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_HARBOE__rep0,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_HARBOE__rep1,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_HARBOE__rep2,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_ØRBÆK__rep0,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_ØRBÆK__rep1,C - dedicated model,True,True,True,True,4
+C_llm_model__CSD_ØRBÆK__rep2,C - dedicated model,True,True,True,True,4
+D_prometheus_data__CSD_7-UP__rep0,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_7-UP__rep1,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_7-UP__rep2,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_HARBOE__rep0,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_HARBOE__rep1,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_HARBOE__rep2,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_ØRBÆK__rep0,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_ØRBÆK__rep1,D_prometheus_data,True,False,True,True,3
+D_prometheus_data__CSD_ØRBÆK__rep2,D_prometheus_data,True,False,True,True,3
+E_prometheus_model__CSD_7-UP__rep0,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_7-UP__rep1,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_7-UP__rep2,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_HARBOE__rep0,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_HARBOE__rep1,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_HARBOE__rep2,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_ØRBÆK__rep0,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_ØRBÆK__rep1,E_prometheus_model,True,True,True,True,4
+E_prometheus_model__CSD_ØRBÆK__rep2,E_prometheus_model,True,True,True,True,4
+F_llm_data_model__CSD_7-UP__rep0,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_7-UP__rep1,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_7-UP__rep2,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_HARBOE__rep0,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_HARBOE__rep1,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_HARBOE__rep2,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_ØRBÆK__rep0,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_ØRBÆK__rep1,F_llm_data_model,True,False,True,True,3
+F_llm_data_model__CSD_ØRBÆK__rep2,F_llm_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_7-UP__rep0,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_7-UP__rep1,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_7-UP__rep2,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_HARBOE__rep0,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_HARBOE__rep1,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_HARBOE__rep2,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_ØRBÆK__rep0,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_ØRBÆK__rep1,G_prometheus_data_model,True,False,True,True,3
+G_prometheus_data_model__CSD_ØRBÆK__rep2,G_prometheus_data_model,True,False,True,True,3

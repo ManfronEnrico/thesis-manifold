@@ -7,8 +7,8 @@
 |---|---|
 | Table | `05_thesis_results/08_experimental_evaluation/tables/14_per_run_record.md` |
 | Producer | `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` |
-| Written | 2026-09-11 16:38 UTC |
+| Written | 2026-09-13 10:40 UTC |
 
 ---
 
-Currently 6 rows because only a scenario-A pilot has run (CSD, 2 brands, 3 reps). Intended full size is 225 rows: 15 brands x 5 repeats x 3 scenarios. Blocked on API credit (P0042 blocks 1-3, ~$40). NOT the final length.
+63 rows: 3 brands x 3 repeats x 7 scenarios, which is the funded design in full. The earlier note here said only a scenario-A pilot had run and the table was blocked on API credit -- that was true until the funded set landed and is kept only so the change is legible.

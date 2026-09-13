@@ -106,7 +106,7 @@ def _find_repo_root() -> Path:
 
 
 sys.path.insert(0, str(_find_repo_root()))
-from PATHS import THESIS_RESULTS_SRQ4_DIR  # noqa: E402
+from PATHS import THESIS_RESULTS_SRQ4_DIR, SRQ2_DIR  # noqa: E402
 
 TOL = 0.05  # a stated bound within 5% of the payload counts as faithful
 
@@ -115,8 +115,17 @@ SCENARIO = {"C_llm_model": "C - dedicated model", "B_llm_data": "B - code execut
 
 # Hedging alone is not communication of uncertainty; these are the words that
 # introduce an actual range or an explicit confidence statement.
+# The exemplar's "Range:" label first, then the phrasings a range is written in
+# without it. The label alternative is not decoration: the output exemplar
+# prescribes "Range: <lo> to <hi>", and "<lo> to <hi>" carries neither a
+# "between"/"from" lead-in nor a dash, so the other three alternatives miss it
+# entirely. Measured on the 63 funded answers, the label takes this criterion
+# from 10 to 63 -- the earlier figure was the regex failing, not the agents.
+# Anchoring on the label rather than accepting a bare "<n> to <n>" keeps a year
+# range ("2025 to 2026") from scoring as a forecast interval.
 _RANGE_RE = re.compile(
-    r"(?:between|from)\s+([\d.,]+)\s*(?:and|to|[-\u2013])\s*([\d.,]+)"
+    r"(?:^|\n)\s*range\s*:\s*([\d.,]+)\s*(?:to|and|[-\u2013])\s*([\d.,]+)"
+    r"|(?:between|from)\s+([\d.,]+)\s*(?:and|to|[-\u2013])\s*([\d.,]+)"
     r"|([\d.,]+)\s*[-\u2013]\s*([\d.,]+)"
     r"|\u00b1\s*([\d.,]+)", re.I)
 _CONF_RE = re.compile(
@@ -176,30 +185,119 @@ LABEL = {"states_interval": "States a range",
          "gives_recommendation": "Proposes a course of action"}
 
 
+_PAYLOAD_CACHE: dict[tuple, dict] = {}
+_PAYLOAD_UNVERIFIED: list[str] = []
+
+
+def _served_payload(category: str, brand: str, month: str) -> dict:
+    """The payload the interface returned for this series, recomputed.
+
+    THE RUN LOG DOES NOT CONTAIN IT. The harness records `tool_returned_forecast`
+    and `payload_complete` as booleans and discards the payload itself, so the
+    interval the agent was given is not in the trace. Criterion 2 compares the
+    stated bounds against that interval, so without it the criterion scores False
+    for every run -- including the arms that restate the bounds correctly.
+
+    Recomputing is sound here because the serving path is deterministic: it loads
+    a persisted model and calls predict, and the half-width is a constant read
+    from the served metadata. That determinism is not assumed, it is CHECKED --
+    `_payload_for_record` compares the recomputed point forecast against the one
+    the run logged and refuses the payload if they differ. A retrained model
+    therefore makes the criterion unscoreable rather than silently wrong.
+    """
+    key = (category, brand, month)
+    if key not in _PAYLOAD_CACHE:
+        try:
+            sys.path.insert(0, str(SRQ2_DIR))
+            import forecast_tool as _ft  # noqa: PLC0415
+            out = _ft.forecast_demand(category, brand, month)
+            _PAYLOAD_CACHE[key] = out if isinstance(out, dict) else {}
+        except Exception as e:  # noqa: BLE001
+            _PAYLOAD_CACHE[key] = {}
+            _PAYLOAD_UNVERIFIED.append(f"{brand}: {type(e).__name__}")
+    return _PAYLOAD_CACHE[key]
+
+
+def _payload_for_record(rec: dict) -> dict:
+    """Attach the served payload to the arms that were given one.
+
+    `payload_complete` marks the runs that received the interface's output --
+    both the arms that relay it and the arms that weigh it against other
+    evidence. The criterion is meaningful for both: it asks whether the range in
+    the answer is the range the interface supplied.
+
+    Where the arm also ADOPTED the forecast, the recomputed payload is verified
+    against the logged one. Where it departed, the logged forecast is the agent's
+    own number and cannot serve as the check, so the payload rests on the
+    determinism established on the adopting arms for the same series and month.
+    """
+    tr = rec.get("trace") or {}
+    if not tr.get("payload_complete"):
+        return {}
+    payload = _served_payload(rec.get("category"), rec.get("brand"),
+                              tr.get("target_month"))
+    if not payload:
+        return {}
+    if tr.get("tool_returned_forecast"):
+        logged, recomputed = rec.get("forecast"), payload.get("forecast_units")
+        if logged is None or recomputed is None or \
+                abs(float(recomputed) - float(logged)) > 0.05:
+            _PAYLOAD_UNVERIFIED.append(
+                f"{rec.get('system')}/{rec.get('brand')}/rep{rec.get('rep')}: "
+                f"recomputed {recomputed} against logged {logged}")
+            return {}
+    return payload
+
+
+def _run_key(rec: dict) -> tuple:
+    """A run is (system, brand, rep) -- read from the record, never the filename.
+
+    `raw_responses/` holds more files than there were runs: the pre-transliteration
+    OERBAEK slug left a second copy of some rep0 traces, and two of them were
+    re-run afterwards. Keying on the filename therefore scores those two runs
+    twice and inflates their scenario's denominator. The record itself carries
+    the brand correctly even where the filename mangles it.
+    """
+    return (rec.get("system"), rec.get("brand"), rec.get("rep"))
+
+
 def collect() -> pd.DataFrame:
-    rows = []
     d = THESIS_RESULTS_SRQ4_DIR / "raw_responses"
     if not d.is_dir():
         return pd.DataFrame()
+
+    # Keep one record per run, the most recent, so a re-run supersedes the trace
+    # it replaced rather than being averaged with it.
+    latest: dict[tuple, dict] = {}
     for f in sorted(d.glob("*.json")):
         try:
             rec = json.loads(f.read_text(encoding="utf-8"))
         except Exception:
             continue
-        scen = (rec.get("trace") or {}).get("scenario") or f.stem.split("__")[0]
-        answer = rec.get("answer") or ""
-        # Only scenario C has a tool payload; A and B are scored on the same
-        # criteria with an empty payload, so the ladder stays comparable. A
-        # cannot pass criterion 2 by construction -- that is a finding, not a bug.
-        payload = {}
-        for tc in (rec.get("tool_calls") or []):
-            payload = tc.get("tool_output") or {}
-            break
-        r = {"run": f.stem, "scenario": SCENARIO.get(scen, scen)}
-        r.update(_score_one(answer, payload))
+        k = _run_key(rec)
+        prev = latest.get(k)
+        if prev is None or _run_at(rec) >= _run_at(prev):
+            latest[k] = rec
+
+    rows = []
+    for (system, brand, rep), rec in sorted(latest.items(), key=lambda kv: str(kv[0])):
+        scen = (rec.get("trace") or {}).get("scenario") or system
+        # The run id is composed from the record, so a filename that mangles a
+        # non-ASCII brand cannot reach a published artefact.
+        run = f"{system}__{rec.get('category')}_{brand}__rep{rep}"
+        # Only the tool-backed arms carry a payload; the others are scored on the
+        # same criteria with an empty one, so the ladder stays comparable. An arm
+        # with no interface cannot pass criterion 2 by construction -- that is a
+        # finding, not a bug.
+        r = {"run": run, "scenario": SCENARIO.get(scen, scen)}
+        r.update(_score_one(rec.get("answer") or "", _payload_for_record(rec)))
         r["score"] = sum(bool(r[c]) for c in CRITERIA)
         rows.append(r)
     return pd.DataFrame(rows)
+
+
+def _run_at(rec: dict) -> str:
+    return str((rec.get("trace") or {}).get("run_at") or "")
 
 
 def main() -> None:

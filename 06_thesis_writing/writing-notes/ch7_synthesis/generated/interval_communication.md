@@ -7,12 +7,14 @@
 |---|---|
 | Table | `05_thesis_results/07_decision_synthesis/tables/13_interval_communication.md` |
 | Producer | `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` |
-| Written | 2026-09-11 16:38 UTC |
+| Written | 2026-09-13 10:40 UTC |
 
 ---
 
 Closes the Ch2 sec 2.3 / SRQ4 gap (N9/N10 Option 2). Scored retrospectively from already-logged runs -- NO new API spend. All checks deterministic (regex + numeric comparison vs the tool payload), no judge, consistent with N5b.
 
-DROPPED the 'gives a recommendation' criterion: the shared prompt asks for 'the number, a range, and how confident you are' and never asks for a recommendation, so scoring it measured compliance with an instruction never given. The 33% figure from the first pilot must NOT be cited. If we want it, the prompt has to ask for it -- and that changes the single-variable design, so it is a deliberate decision, not a scorer tweak.
+The 'gives a recommendation' criterion was dropped while the shared question did not ask for one, and RESTORED on 2026-09-13: prompts.py v3 (2026-09-03) added the request and all seven arms receive it identically, so the criterion now measures compliance with an instruction that was given. The 33% figure from the FIRST pilot still must not be cited -- it predates the prompt change.
+
+Criterion 2 is scored against a RECOMPUTED payload. The v6 harness logs payload_complete as a boolean and discards the payload, so the interval the agent was given is not in the trace; the scorer recalls the tool and verifies the recomputed point forecast against the logged one before using its interval. If the models are retrained the check fails and the criterion goes unscored rather than silently wrong.
 
 Do NOT claim improved human decisions; needs Goodwin's design + ethics approval (cf. MR-10).

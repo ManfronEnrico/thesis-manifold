@@ -931,17 +931,20 @@ def _coverage(df: pd.DataFrame) -> str:
     error that measured the prompt rather than the scenario. The prompt was
     corrected; those runs cannot be pooled with runs asked a different
     question."""
+    # The intended size is DERIVED from the design the data reports, never typed.
+    # It was `15 * 5 * 3` -- an earlier design of fifteen brands, five repeats and
+    # three scenarios. The funded set is three brands, three repeats and seven
+    # scenarios, and it is COMPLETE, so the hardcoded figure described a finished
+    # experiment as a quarter finished and told the reader the remaining arms had
+    # never run.
     got = len(df)
-    want = 15 * 5 * 3
+    brands, reps = df.brand.nunique(), df.rep.nunique()
     scen = df.system.nunique()
+    want = brands * reps * scen
     if got >= want:
         return ""
-    bits = [f"Covers {got} of an intended {want} runs "
-            "(15 brands x 5 repeats x 3 scenarios)"]
-    if scen < 3:
-        bits.append("and one of the three scenarios; the remaining scenarios "
-                    "have not yet been run at the corrected prompt")
-    return " ".join(bits) + "."
+    return (f"Covers {got} of {want} runs ({brands} brands x {reps} repeats "
+            f"x {scen} scenarios).")
 
 
 def table_scenarios(df: pd.DataFrame) -> None:
@@ -1012,9 +1015,16 @@ def table_interval_comm() -> None:
               "score_interval_communication.py)")
         return
     d = pd.read_csv(f)
+    # All four criteria the scorer computes. The fourth was dropped while the
+    # shared question did not ask for a recommendation; prompts.py v3
+    # (2026-09-03) added the request and every arm now receives it, so scoring
+    # it measures compliance with an instruction that WAS given. Dropping it
+    # here also put the appendix in contradiction with Chapter 7, which
+    # specifies four.
     crit = [("states_interval", "States a range"),
             ("interval_faithful", "Range matches the tool output"),
-            ("states_confidence", "States confidence")]
+            ("states_confidence", "States confidence"),
+            ("gives_recommendation", "Proposes a course of action")]
     scen = sorted(d.scenario.unique())
 
     # n goes in the column header, so every percentage in the column carries its
@@ -1031,7 +1041,9 @@ def table_interval_comm() -> None:
             r[hdr[s_]] = f"{sub[key].sum():.0f} of {len(sub)} ({sub[key].mean()*100:.0f})" \
                 if len(sub) else ""
         rows.append(r)
-    r = {"Criterion": "Mean criteria met (of 3)"}
+    # Derived, not typed: a criterion added or removed above must move this label
+    # with it, or the row states a denominator the table does not use.
+    r = {"Criterion": f"Mean criteria met (of {len(crit)})"}
     for s_ in scen:
         sub = d[d.scenario == s_]
         r[hdr[s_]] = f"{sub[[c for c, _ in crit]].sum(axis=1).mean():.2f}" if len(sub) else ""
@@ -1049,8 +1061,9 @@ def table_interval_comm() -> None:
                "can degrade them, because the step from interval to decision is "
                "left to the reader. These criteria record whether that step was "
                "supplied: whether a range was stated, whether it corresponds to "
-               "the one the model produced, and whether the associated confidence "
-               "was reported. Each is evaluated by direct comparison of the "
+               "the one the model produced, whether the associated confidence "
+               "was reported, and whether a course of action was proposed. Each "
+               "is evaluated by direct comparison of the "
                "numbers in the answer against the numbers the tool returned, "
                "with a five per cent tolerance; no judgement is involved. A "
                "scenario with no access to the forecasting tool cannot satisfy "
@@ -1064,14 +1077,20 @@ def table_interval_comm() -> None:
                  "retrospectively from already-logged runs -- NO new API spend. "
                  "All checks deterministic (regex + numeric comparison vs the "
                  "tool payload), no judge, consistent with N5b.\n\n"
-                 "DROPPED the 'gives a recommendation' criterion: the shared "
-                 "prompt asks for 'the number, a range, and how confident you "
-                 "are' and never asks for a recommendation, so scoring it "
-                 "measured compliance with an instruction never given. The 33% "
-                 "figure from the first pilot must NOT be cited. If we want it, "
-                 "the prompt has to ask for it -- and that changes the "
-                 "single-variable design, so it is a deliberate decision, not a "
-                 "scorer tweak.\n\n"
+                 "The 'gives a recommendation' criterion was dropped while the "
+                 "shared question did not ask for one, and RESTORED on "
+                 "2026-09-13: prompts.py v3 (2026-09-03) added the request and "
+                 "all seven arms receive it identically, so the criterion now "
+                 "measures compliance with an instruction that was given. The "
+                 "33% figure from the FIRST pilot still must not be cited -- it "
+                 "predates the prompt change.\n\n"
+                 "Criterion 2 is scored against a RECOMPUTED payload. The v6 "
+                 "harness logs payload_complete as a boolean and discards the "
+                 "payload, so the interval the agent was given is not in the "
+                 "trace; the scorer recalls the tool and verifies the recomputed "
+                 "point forecast against the logged one before using its "
+                 "interval. If the models are retrained the check fails and the "
+                 "criterion goes unscored rather than silently wrong.\n\n"
                  "Do NOT claim improved human decisions; needs Goodwin's design "
                  "+ ethics approval (cf. MR-10).")
 
@@ -1097,10 +1116,12 @@ def table_per_run(df: pd.DataFrame) -> None:
           note="The full response for each run, including any code generated and "
                "the reasoning summary returned by the model, is retained alongside "
                "these records.",
-          review=(f"Currently {len(df)} rows because only a scenario-A pilot has run "
-                  "(CSD, 2 brands, 3 reps). Intended full size is 225 rows: 15 "
-                  "brands x 5 repeats x 3 scenarios. Blocked on API credit (P0042 "
-                  "blocks 1-3, ~$40). NOT the final length."))
+          review=(f"{len(df)} rows: {df.brand.nunique()} brands x {df.rep.nunique()} "
+                  f"repeats x {df.system.nunique()} scenarios, which is the funded "
+                  "design in full. The earlier note here said only a scenario-A "
+                  "pilot had run and the table was blocked on API credit -- that "
+                  "was true until the funded set landed and is kept only so the "
+                  "change is legible."))
 
 
 def table_traceability(df: pd.DataFrame) -> None:

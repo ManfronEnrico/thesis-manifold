@@ -7,9 +7,9 @@
 | Temperature          | None                                                      |
 | Decoding             | temperature/top_p unsupported by the model; defaults used |
 | Categories evaluated | CSD                                                       |
-| Distinct brands      | 2                                                         |
+| Distinct brands      | 3                                                         |
 | Repeats per brand    | 3                                                         |
-| Total runs           | 6                                                         |
-| First run timestamp  | 2026-08-19T19:31:17                                       |
+| Total runs           | 63                                                        |
+| First run timestamp  | 2026-09-12T19:18:26                                       |
 
 *Note.* Temperature and nucleus-sampling parameters are not supported by the model used; this is recorded explicitly rather than implying a setting that was never applied.
