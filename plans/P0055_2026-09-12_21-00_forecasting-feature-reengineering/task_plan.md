@@ -228,7 +228,7 @@ P0048's problem either way.
 | Gate | Question | If no |
 |---|---|---|
 | ~~**G0**~~ | ~~Is the v6 work committed and pushed?~~ | ✅ **PASSED 2026-09-13.** `58243f3` pushed; `origin/main...HEAD` = `0 0` |
-| **G1** | Do residuals show remaining autocorrelation (Ljung-Box, §5.4)? ⚠ **must pass `dof = p+q`** per §9.7, or significance is overstated | Skip 2.B additions; do 2.A repairs anyway — they are correctness fixes, not enhancements |
+| **G1** | Do residuals show remaining autocorrelation (Ljung-Box, §5.4)? | ⚠ **PROVISIONAL 2026-09-13 — autocorrelation remains, but the gate is NOT §5.3-compliant (F13).** Ran 51/230 rejecting at α=0.05 (**22.2%** vs ~5% under white noise), `dof = p+q = 2` correctly applied per §9.7, residuals correctly in log space — **but on IN-SAMPLE residuals, where §5.3 requires cross-validation residuals.** In-sample residuals are optimistically clean, so the true rate is likely *higher*; the verdict direction is probably safe and the +0.361 vs +0.064 seasonal-ACF split is a like-for-like comparison that survives. **The number must not be cited until re-run.** Re-run lands in the Branch B tree (free). Evidence: `tables/residual_diagnostics.md` |
 | **G2** | Do retrained models beat current test WMAPE? | Don't spend the $20; keep v6 |
 | **G3** | Is there time to rewrite Ch4/Ch5 prose? | Abandon; `FALLBACK.md` |
 

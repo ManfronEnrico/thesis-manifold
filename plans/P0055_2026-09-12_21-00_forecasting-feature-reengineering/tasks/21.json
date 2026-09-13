@@ -1,0 +1,13 @@
+{
+  "id": "21",
+  "subject": "Add intervention variables (7.4): spike, step, piecewise trend",
+  "activeForm": "Adding intervention variables for brand entry and exit",
+  "description": "7.4 item 3. Spike (1 in a single period), Step ('0 before, 1 from the intervention onward'), and piecewise linear trend.\n\nSCAN_LOG verdict NEW: 'The panel has brands entering and leaving; none of this is modelled.' A step variable is exactly a brand delisting or a permanent range change -- a structural property of THIS panel that nothing currently represents.\n\nAlso the sanctioned alternative to deleting outliers: 'Rather than omit the outlier, a dummy variable removes its effect.' That directly answers 13.9's caution against replacing outliers without understanding them, so tasks 18 and 21 are natural partners.\n\nNeeds matrix rebuild + retrain.",
+  "status": "pending",
+  "blocks": [
+    "22"
+  ],
+  "blockedBy": [
+    "18"
+  ]
+}

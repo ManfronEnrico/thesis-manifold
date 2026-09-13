@@ -1,0 +1,11 @@
+{
+  "id": "18",
+  "subject": "Define the STL gap + outlier policy (13.9) -- PREREQUISITE for 2.B1/2.B2",
+  "activeForm": "Defining the STL gap and outlier policy",
+  "description": "STRUCTURAL PREREQUISITE that no 2.B row names. It BLOCKS 2.B1, 2.B2 and 12.5 bagging -- all three need STL, and 13.9 states 'ETS() and STL() do not [tolerate missing values]' while naive methods and ARIMA do.\n\nThe panel has genuine zero-runs and gaps, so STL needs a gap policy before F_T / F_S can be computed per brand at all.\n\nSCAN_LOG: 'The intermittency flags the repo already has are the right input to that decision.'\n\nOutlier rule, stated by the book as a procedure: apply STL() with robust=TRUE; outliers 'should show up in the remainder series'; flag remainders beyond 3 IQRs from the central 50%. 'This is the rule we prefer to use' -- stricter than the usual 1.5 IQR.\n\nThe caution that must be honoured: 'Simply replacing outliers without thinking about why they have occurred is a dangerous practice.' Pair with task 21 (intervention variables), which is the book's sanctioned alternative to deletion.\n\nMissingness: distinguish INFORMATIVE (handle with dummy variables) from random.",
+  "status": "pending",
+  "blocks": [
+    "19"
+  ],
+  "blockedBy": []
+}

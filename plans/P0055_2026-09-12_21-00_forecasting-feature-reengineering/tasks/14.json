@@ -1,0 +1,13 @@
+{
+  "id": "14",
+  "subject": "Add ACF features (4.2): acf10, season_acf1, differenced ACFs",
+  "activeForm": "Adding ACF and differenced-series features",
+  "description": "4.2 feat_acf(): acf1, acf10, diff1_acf1, diff1_acf10, diff2_acf1, diff2_acf10, season_acf1.\n\nSCAN_LOG: 'The repo has no differenced columns at all -- not first, not seasonal.' Verdict NEW: none of these seven exists in the matrix.\n\nRationale from the book: 'the sum of the first ten squared autocorrelation coefficients is a useful summary of how much autocorrelation there is in a series, regardless of lag.'\n\nseason_acf1 is ALSO the diagnostic that settles the lag-12-vs-13 question directly -- it measures autocorrelation at the seasonal lag per brand.\n\nSeasonal differencing is distinct from first differencing: 'the difference between consecutive Januaries, consecutive Februaries.'\n\nSCAN_LOG rates acf10 and season_acf1 'the two highest-value single additions identified so far'. Distinct from 2.B1/2.B2, which cover 4.3 STL features only.\n\nNeeds matrix rebuild + retrain.",
+  "status": "pending",
+  "blocks": [
+    "22"
+  ],
+  "blockedBy": [
+    "12"
+  ]
+}

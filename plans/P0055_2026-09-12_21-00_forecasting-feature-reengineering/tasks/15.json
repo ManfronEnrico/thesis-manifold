@@ -1,0 +1,13 @@
+{
+  "id": "15",
+  "subject": "Switch to KPSS differencing with per-series d (9.1) -- the only CONTRADICTS",
+  "activeForm": "Switching to KPSS-driven differencing",
+  "description": "9.1, which SCAN_LOG calls 'the most consequential section so far' and which carries the scan's ONLY explicit CONTRADICTS verdict on a feature-pipeline matter.\n\nFour parts:\n1. The book uses KPSS, whose 'null hypothesis is that the data are stationary' -- the repo uses ADF, whose non-rejection is merely inconclusive (the repo's own ADF artefact says so in its notes).\n2. unitroot_ndiffs() (a sequence of KPSS tests) and unitroot_nsdiffs() DETERMINE the differencing order. 'No seasonal differences are suggested if F_S < 0.64.'\n3. 'Beware that applying more differences than required will induce false dynamics or autocorrelations that do not really exist... do as few differences as necessary.' The repo applies a blanket d=1 while 27 of 79 brands test as ALREADY STATIONARY in raw form. The book says that induces artefacts.\n4. Seasonal differencing should be done FIRST, and 'other lags are unlikely to make much interpretable sense and should be avoided'.\n\nDistinct from 2.A2/2.A3, which are P0051-sourced code-hygiene fixes at the EDA/param sites -- neither covers the KPSS switch or the per-series rule.\n\nBOTH code and thesis-prose: Ch4's ADF-power argument changes.\n\nNeeds matrix rebuild + retrain.",
+  "status": "pending",
+  "blocks": [
+    "22"
+  ],
+  "blockedBy": [
+    "12"
+  ]
+}

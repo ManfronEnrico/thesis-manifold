@@ -766,3 +766,149 @@ or guard on the resolved columns. Then a lag-set change propagates the way
 `MIN_PERIODS` already does (F10e) instead of requiring 20 coordinated edits.
 **Worth proposing as the actual fix**, since it removes this whole class of
 error rather than moving it from 13 to 12.
+
+
+---
+
+## F13 - THE G1 GATE IS NOT 5.3-COMPLIANT. My own defect, found 2026-09-13.
+
+`srq1_residual_diagnostics.py` was written and run this session, and its verdict
+(22.2% rejection -> "autocorrelation remains") is what justifies all of 2.B.
+**5.3 imposes two conditions on that test. I met one and missed the other.**
+
+| 5.3 requires | What the gate did | |
+|---|---|---|
+| Residuals on the **transformed (log) scale** | log space, deliberately, documented in the docstring | OK |
+| **Cross-validation** residuals, not in-sample fitted values | `r.resid` -- in-sample | **DEFECT** |
+
+The script's own docstring says it at line 99: *"return its in-sample
+residuals"*. The book's reason is exact -- fitted values *"are often not true
+forecasts because any parameters involved are estimated using all available
+observations, including future observations."*
+
+**Which way the error cuts.** In-sample residuals are optimistically clean: the
+model has already seen the data it is scored against. So the true rejection rate
+is likely **higher** than 22.2%, not lower, and the direction of the verdict
+("autocorrelation remains") is probably safe. The +0.361 vs +0.064 seasonal-ACF
+split is a *relative* comparison between two groups scored the same way, so it
+survives regardless.
+
+**But the number must not stand as published.** G1 is downgraded from PASSED to
+PROVISIONAL in `task_plan.md` until the gate is re-run on CV residuals. Cheap:
+no retrain, no spend. Task 12.
+
+**Why this matters beyond the number.** Brian's standing requirement is that the
+repo stay faithful to the outputs the thesis cites, because an assessor checking
+the repo with AI assistance would surface exactly this kind of inconsistency as
+fast as it was surfaced here. A gate whose docstring cites 5.3 while violating
+half of it is precisely that failure.
+
+---
+
+## F14 - CORRECTION: 10.6 does NOT bear on the lag_13 -> lag_12 repair
+
+**I told Brian that 10.6 "supersedes 7.4 on how many lags to carry" and "bears
+directly on task 5", and recommended reading it before touching 19 files. That
+was wrong.**
+
+10.6 is about **lags of an exogenous predictor** (the book example is
+advertising), in the distributed-lag form
+`y_t = b0 + g0*x_t + g1*x_(t-1) + ... + gk*x_(t-k) + eta_t`. Its entire
+"how many lags" content is: **k is selected by minimising AICc.** It says
+nothing about lags of the target series, and nothing about the seasonal period.
+
+The SCAN_LOG header "supersedes 7.4 on how many lags" refers to 7.4 distributed
+lags item, which was also about promotion/advertising -- not to target lags.
+
+**The lag-12 authority is elsewhere, and is five-fold:** 2.8 (*"13 is not a
+multiple of 12"*), 2.7 (*"fifth independent confirmation"*), 5.2, 9.9, and
+5.5 Table 5.2 -- plus the repo OWN ACF measuring lag 12 significant for
+20 of 20 brands (F10d).
+
+**Consequence: task 5 proceeds on the evidence it already has.** It was never
+blocked on 10.6. What 10.6 *does* open is a separate task -- see F15 #10, now
+task 20.
+
+---
+
+## F15 - THE FINDINGS-TO-TASKS CONVERSION WAS INCOMPLETE. 25 unconverted findings.
+
+The book scan closed at 41/41 sections on 2026-09-13, and that was reported as
+though the work were done. **Coverage of the book is not the same as conversion
+into tasks.** A diff of SCAN_LOG findings against the 2.A/2.B tables found 25
+actionable findings that no task picks up. Tasks 12-26 now carry them.
+
+### Needs a matrix rebuild / retrain (6)
+
+| Task | Sec | Finding | Repo today |
+|---|---|---|---|
+| 13 | 7.4 | **Fourier terms** sin/cos(2*pi*k*t/m), K <= m/2 | encodes seasonality as three integers; integer `month` asserts Dec is 11 units from Jan, false on a cycle. Log calls 7.4 *"THE richest feature section in the book"* |
+| 14 | 4.2 | **ACF features**: acf10, season_acf1, diff1/diff2 ACFs | *"The repo has no differenced columns at all -- not first, not seasonal."* season_acf1 is the diagnostic that would settle lag-12-vs-13 directly |
+| 15 | 9.1 | **KPSS** (null = stationary), nsdiffs rule F_S < 0.64, *"do as few differences as necessary"* | uses ADF; applies blanket d=1 while 27 of 79 brands test already-stationary. **The only explicit CONTRADICTS in the scan** |
+| 20 | 10.6 | **k for exogenous lags selected by AICc** | *"carries promo_intensity at exactly one shift and has never justified that number"* |
+| - | 3.1b | **Trading-day adjustment** -- divide the target by trading days | has days_in_month / n_holidays as FEATURES; the source proposes them as an adjustment to the TARGET. non_holiday_days already exists, so it is a division |
+| 21 | 7.4 | **Intervention variables** -- spike / step / piecewise trend | *"The panel has brands entering and leaving; none of this is modelled"* |
+
+### Free, and immediately reportable (2)
+
+| Task | Sec | Finding | Why it is free |
+|---|---|---|---|
+| 16 | 5.9 | **Winkler score** -- width and coverage in ONE number | The thesis reports them separately and records the trade-off as **unresolved** (`interval-width-a-tested-negative-result.md`). The 90% bounds are already persisted. One scoring function |
+| 17 | 6.1 | **Anchoring test** -- does the LLM anchor on the last observed value (naive-1 in disguise)? | Reads the **63 already-paid runs**. No new spend, no retrain. Either result is reportable |
+
+### Prerequisite nothing names (1)
+
+| Task | Sec | Finding |
+|---|---|---|
+| 18 | 13.9 | **3-IQR robust-STL outlier rule** + a **gap policy**: *"ETS() and STL() do not [tolerate missing values]"*. The panel has genuine zero-runs. **This blocks 2.B1, 2.B2 and 12.5 bagging, and no 2.B row mentions it.** The repo existing intermittency flags are the right input |
+
+### Cheap diagnostics (2)
+
+| Task | Sec | Finding |
+|---|---|---|
+| 19 | 3.1a | **Guerrero lambda**. Ch4 defends uniform log1p because *"the tests that would drive such a selection have limited power at forty-six observations"* -- **but Guerrero is an estimator, not a test, so the low-power objection does not apply to it.** No-lose: lambda near 0 vindicates the log empirically; otherwise it overturns it; dispersed values *measure* the low-power argument instead of assuming it |
+| 22 | 7.5 | **AICc/AIC/CV for predictor selection**; dropping by p>0.05 is *"invalid"*. Repo tunes on WMAPE and computes no information criterion. **Free half: CONFIRMS the weighted-distribution rejection**, which was made on a predictive criterion and currently stands unsourced |
+
+### Prose-only, free (12) -- task 25
+
+13.3 positivity via log not post-hoc clipping (*"post-hoc clipping is nowhere
+endorsed"*; Ch5 already calls its bound *"a departure"* -- the book confirms the
+departure is real and names the alternative) - 5.6 back-transformed forecasts
+are **medians**, and *"medians do not add up"* -- so brand forecasts must not be
+summed to a category total (SRQ2-touching; P0048 already has it open, 5.6 is the
+citation and formula) - 13.8 scoring a single month at exactly H=3 sidesteps the
+mixed-horizon-variance problem -- **a deliberate strength the prose does not
+claim** - 5.10 the WMAPE-vs-RMSE tuning deviation is **principled, not an
+oversight** -- say so - 9.10 test-set comparison across model families is the
+*correct* method, a direct endorsement of SRQ1 design - 6.7 judgmental
+adjustment maps onto the B->C increment - 6.2 five judgmental principles map
+onto SRQ4 controls, sourcing the v6 schema from **outside** the ML literature -
+3.2 the log transform is an unstated **multiplicative-seasonality commitment** -
+2.3 pattern identification should drive method choice, and *"cyclic"* is
+unclaimable at 39-46 months - 2.4/2.5 seasonal **stability across years** is
+never checked, though peak_month is computed from pooled means - 11.1/11.3 the
+panel is a mixed hierarchical/grouped structure the thesis has never named
+(deferred, but it is the vocabulary for Phase 4) - 5.5 **routed to BRANCH A**,
+Ch7
+
+### The uncomfortable one -- task 23
+
+| Task | Sec | Finding |
+|---|---|---|
+| 23 | 13.7 | *"Rules-of-thumb giving minimum sample sizes... are **misleading and unsubstantiated in theory or practice**... there is no justification for the magic number of 30."* If MIN_PERIODS rests on a rule of thumb rather than on parameter count, **the book rejects that reasoning.** The log own framing: *"may require rewording rather than re-engineering."* This one **undercuts** existing prose rather than extending it |
+
+### Not actionable (recorded so they are not re-derived)
+
+4.1 SILENT, no action - 12.2 Prophet period-misconfiguration **checked and
+passed** (yearly_seasonality=True, weekly=False, daily=False at
+`srq1_baselines_stat.py:293`) -- recorded as a check that passed, not a finding
+- 7.4 dummy-variable trap is conditional on adding seasonal dummies - 9.9
+closing line (*"not possible to find a model that passes all of the residual
+tests"*) is a free limitations sentence attaching to 2.A1
+
+### What makes Branch B worth doing, in one line
+
+Four rebuild-class items are the substance -- **Fourier terms, ACF/differenced
+features, KPSS differencing, intervention variables** -- on top of the 2.A
+repairs. Two free items (**Winkler**, **anchoring**) produce new reportable
+results today with no retrain and no spend.

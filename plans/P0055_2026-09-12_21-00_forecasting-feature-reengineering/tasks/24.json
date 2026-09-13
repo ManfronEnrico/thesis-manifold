@@ -1,0 +1,11 @@
+{
+  "id": "24",
+  "subject": "Bagging via STL + block bootstrap (12.5) -- survives the roster freeze",
+  "activeForm": "Evaluating bagged forecasts",
+  "description": "12.5: transform -> STL-decompose -> BLOCK-bootstrap the remainder ('contiguous sections selected at random and joined together, because the remainder may itself be autocorrelated') -> add back trend and seasonal -> invert -> fit each simulated series -> average.\n\n'Bergmeir et al. (2016) show that, on average, bagging gives better forecasts than just applying ETS() directly.'\n\nWHY IT MATTERS HERE: SCAN_LOG distinguishes it sharply from 2.B4. '13.4 averages across MODEL FAMILIES; 12.5 averages across RESAMPLED VERSIONS OF THE SAME SERIES. The second is available even when the roster is fixed at one family, so it is COMPATIBLE WITH THE OUT-OF-SCOPE DECISION on the model roster.'\n\nSo this is the one accuracy-improving addition that does not touch the locked roster.\n\nBlocked on task 18: requires STL, which inherits 13.9's missing-value constraint. Slower -- 'a lot more computation is required'.\n\nModelling-side; no matrix rebuild.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "18"
+  ]
+}

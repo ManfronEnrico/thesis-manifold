@@ -1,0 +1,11 @@
+{
+  "id": "12",
+  "subject": "Re-run the Ljung-Box gate on CV residuals -- close F13",
+  "activeForm": "Re-running the G1 gate on cross-validation residuals",
+  "description": "MY OWN DEFECT (findings F13). srq1_residual_diagnostics.py ran on IN-SAMPLE residuals (r.resid). 5.3 requires CROSS-VALIDATION residuals: fitted values 'are often not true forecasts because any parameters involved are estimated using all available observations, including future observations.'\n\nThe log-scale half was correct and deliberate. Only the CV half is wrong.\n\nDirection of the error: in-sample residuals are optimistically clean, so the true rejection rate is likely HIGHER than the 22.2% recorded, not lower. The verdict ('autocorrelation remains') is probably safe and the +0.361 vs +0.064 seasonal-ACF split is a like-for-like comparison that survives. But the NUMBER must not be cited until this re-runs.\n\nImplement rolling-origin CV residuals per 5.10 and re-run. Lands in the BRANCH B tree, not Branch A's. Free: no retrain, no spend.\n\nG1 stays PROVISIONAL in task_plan.md until this completes.",
+  "status": "pending",
+  "blocks": [
+    "13"
+  ],
+  "blockedBy": []
+}

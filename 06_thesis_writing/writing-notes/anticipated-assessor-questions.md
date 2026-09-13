@@ -201,22 +201,25 @@ metric, both fixed in advance.
 ## Q4.2 — A scenario without your model beat your model. Doesn't that refute the thesis?
 
 **Answer. No, and it is evidence for the claim rather than against it.** The
-defensible conclusion is that dedicated models trade accuracy for auditability
-and cost at this data scale. An arm beating the model on accuracy is the trade
-being visible. The cost and latency gap is two orders of magnitude and will not
-reverse.
+defensible conclusion is that dedicated models trade accuracy for reproducibility
+and cost at this data scale. A scenario beating the model on accuracy is the
+trade becoming visible. The cost and latency gap is structural and will not
+reverse: one model inference against roughly eighty model fits plus a sandbox.
 
-**Evidence.** Pilot: the tool-backed arm answered in under seven seconds for
-about one cent with a single verifiable tool call; the code-writing arm took
-ninety seconds, cost twenty-five times more, and produced fifteen opaque code
-blocks.
+**Evidence, funded set (63 runs, 2026-09-12).** The tool-backed scenario answered
+in 6.0 seconds at $0.0091 per answer through a single verifiable tool call; the
+code-writing scenario took 123.8 seconds at $0.4667, which is **51.5 times the
+cost and 20.8 times the latency**. On accuracy the code-writing scenario leads on
+the median, 2.9 against 14.6 per cent, and trails on the mean, 27.9 against 13.1.
 
 ⚠ **"At this data scale" is load-bearing and must carry its numbers every time.**
 Without them the claim degrades into a universal one the evidence cannot support.
+The numbers are 39 months, 95 brands in the category, one category-tuned model.
 
-⚠ **The accuracy ordering is not yet interpretable.** Within-arm spread across
-repeats is comparable to between-arm gaps. Do not rank the arms until the funded
-set lands.
+⚠ **The accuracy ordering is interpretable only as median-versus-mean.** The
+code-writing scenario is better most of the time and occasionally much worse;
+that is the honest ordering, and it is not a ranking on accuracy as such.
+Differences smaller than the within-scenario spread are still not orderable.
 
 ## Q4.3 — Why does an arm that already has the forecast still write code?
 
@@ -225,10 +228,46 @@ rather than as a starting figure to revise. An agent handed a number and
 permitted to keep it will usually keep it, and the design would then measure
 deference rather than integration.
 
-**Evidence.** Verified in both combined-arm traces: each received 4,969,050 and
-neither returned it.
+**Evidence.** Verified across the funded set: **all 18 combined-scenario runs
+carry `deviates_from_model = True`**, so not one adopted the figure it was
+handed. Several cite the model's own stated uncertainty as the reason.
 
-## Q4.4 — Is your cost figure measured or estimated?
+## Q4.4 — Did code execution win, or did fitting per brand win?
+
+**Answer. The design cannot separate them, and the thesis says so rather than
+choosing.** Four explanations compete for any accuracy gap, and the first two are
+additive rather than rival:
+
+| | Explanation | What would separate it |
+|---|---|---|
+| 1 | **Per-series beats per-category.** A category-tuned model is pulled toward brands unlike the one being forecast | Fit the pipeline per brand on the same three brands and re-compare. One training run |
+| 2 | **Combination beats a single model.** The code-writing scenarios fit many models and average; the substrate serves one | Add a combination baseline to the pipeline and re-run |
+| 3 | **Established practice the substrate lacks.** Exponential smoothing and a seasonal ARIMA term | Close both gaps, then re-compare |
+| 4 | **Horizon interaction.** A per-series method may degrade more slowly | Only separable if the secondary horizon is run |
+
+**Evidence.** Measured over the 37 data-scenario responses in the funded set:
+**36 fitted exponential smoothing, 32 a seasonal ARIMA, 28 used explicit
+combination language.** Chapter 5 records that the substrate has neither ETS nor
+a seasonal term.
+
+⚠ **Explanation 1 is the largest and the cheapest to test.** The agent fits a
+bespoke model to the exact series it is asked about; the pipeline serves a slice
+of a model fitted across ninety-five brands. State this before any other
+interpretation.
+
+⚠ **The grain choice was deliberate and defensible, not an oversight.** M5 found
+cross-learning superior to series-by-series training at scale, the panel gives
+roughly 37 training months per brand, and one model per brand is not a
+small-business memory budget. It also could not serve a brand with no history.
+
+⚠ **Never let "the code scenario won" stand as the headline without the
+restatement.** As a bare fact it invites the reader to conclude the artefact is
+unnecessary. The measured claim is narrower and more useful: at 39 months and 95
+brands, a per-series ensemble outperforms a category-tuned booster on the median
+while costing 51.5 times more, taking 20.8 times longer, and producing no
+auditable tool call.
+
+## Q4.5 — Is your cost figure measured or estimated?
 
 **Answer.** Token counts come from the provider's own usage object and are
 measured; rates were verified against billing. Web search is now priced from the
@@ -317,3 +356,88 @@ the last training run**, which was 2026-09-09 at 21:10. Four artefacts in the
 benchmark folder still predate it and none is currently cited: `param_drift.csv`,
 `refit_vs_retune.csv`, `retune_single_cutoff.csv` and `sandbox_profiling.csv`.
 **Prefer the numbered appendix table to the raw CSV** wherever both exist.
+
+
+---
+
+# The forecasting methodology, and why it was not right first time
+
+*Added 2026-09-13 from the P0055 book scan (Hyndman & Athanasopoulos, 41/41
+sections read). Full catalogue at `plans/P0055_*/findings.md` F15.*
+
+## Q - Your own Chapter 4 analysis found a significant lag at 12 months. Your feature matrix uses lag 13. Why?
+
+**Answer.** The diagnostics were performed and documented; they did not
+propagate into feature construction. No contract existed between the analysis
+layer and the engineering layer - the EDA wrote reports for human readers, and
+the feature builder read a hardcoded configuration. Nothing connected them, so a
+correct diagnostic and an inconsistent feature could coexist without either
+being revised.
+
+**Evidence.** `step_2_eda_descriptive.py:543` computes `p_diff`; the decision
+rule at `:549` ignores it. `derive_log_transform()` records
+`adf_stationary_at_5pct` and then returns the constant `LOG_TRANSFORM_TARGET`.
+The repo's own provenance field states *"the lag-12 term is retained"* while the
+shipped manifests carry `13`. The ACF measured lag 12 significant for **20 of 20**
+brands tested.
+
+⚠ **Concede the narrower point.** No contract was needed to notice that 13 is
+not a multiple of 12 on monthly data. If the lag set was inherited from an
+earlier weekly-grain prototype and never re-derived when the grain became
+monthly, say so plainly - it is an ordinary and truthful explanation.
+**This must be confirmed before it is asserted.**
+
+**Why this answer holds.** It is a recognised class of defect - provenance
+failure between pipeline stages - rather than unfamiliarity with forecasting
+methodology. And it demonstrates the thesis's own SRQ2 argument from the
+negative case: a forecast is auditable only if its features carry their
+justification.
+
+## Q - You admit a non-seasonal ARIMA on a seasonal panel. Why not simply fit a seasonal one?
+
+**Answer.** The statistical baselines were implemented without `pmdarima`
+available, so the order was fixed rather than selected. Section 9.7 specifies
+the Hyndman-Khandakar algorithm that would select it. Chapter 5 states the
+limitation.
+
+**Evidence.** `srq1_baselines_stat.py:283` - `SARIMAX(order=(1,1,1))`, no
+seasonal order; the docstring at line 26 records *"no pmdarima"*.
+
+⚠ Section 9.9 supplies the mitigating sentence, and it is the book's own:
+*"it is not possible to find a model that passes all of the residual tests... we
+would normally use the best model we could find, even if it did not pass all of
+the tests."*
+
+**Measured 2026-09-13:** a Ljung-Box test on the ARIMA residuals rejects white
+noise for a substantial share of series, with the remaining autocorrelation
+concentrated at the **seasonal lag** - median ACF(12) of +0.361 among rejecting
+brands versus +0.064 among non-rejecting. That is the seasonal-order limitation
+demonstrated rather than asserted.
+
+⚠ **The exact figures are PROVISIONAL.** The gate ran on in-sample residuals
+where 5.3 requires cross-validation residuals; it is being re-run. Direction is
+expected to hold - in-sample residuals are optimistically clean, so the true
+rejection rate should be higher, not lower. **Do not quote the percentage until
+the re-run lands** (P0055 F13, task 12).
+
+## Q - Why MASE rather than MAPE, and is your MASE correct?
+
+**Answer on the choice.** Section 5.9 prefers MASE or RMSSE because percentage
+errors need a test set large enough "especially in the denominator". The choice
+is the source's own.
+
+⚠ **Concede on the implementation.** The MASE denominator currently uses the
+non-seasonal (m=1) difference on a seasonal monthly panel, where 5.8 defines it
+with m. The visible symptom is two shipped tables disagreeing about whether
+seasonal naive beats naive. **Under repair** (P0055 2.A5, task 7).
+
+---
+
+# Questions this register now answers that it did not before
+
+| Question | Where the answer sits |
+|---|---|
+| Why does the feature set contradict the chapter's own analysis? | above - provenance failure, line-numbered |
+| Is the single-month H=3 scoring a shortcut? | No - 13.8 says averaging across horizons combines unequal variances. See `ch5_model_benchmark/2026-09-13_21-15_BRANCH_A_book-citations-that-strengthen.md` |
+| Why tune on WMAPE when the book says RMSE? | Principled - 5.8 shows MAE and RMSE are minimised by different functionals, so the repo tunes once per objective. Same note |
+| Is comparing ARIMA against gradient boosting on a test set legitimate? | Yes - 9.10 states AICc **cannot** compare across model classes and prescribes exactly this. Same note |

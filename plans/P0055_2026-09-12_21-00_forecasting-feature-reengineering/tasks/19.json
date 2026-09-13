@@ -1,0 +1,11 @@
+{
+  "id": "19",
+  "subject": "Estimate Guerrero lambda (3.1) -- no-lose transformation check",
+  "activeForm": "Estimating Guerrero lambda per brand",
+  "description": "3.1: 'The guerrero feature (Guerrero, 1993) can be used to choose a value of lambda for you' -- 'a good value of lambda is one which makes the size of the seasonal variation about the same across the whole series.'\n\nTHE ARGUMENT THIS REPAIRS. Ch4 defends uniform log1p because 'the tests that would drive such a selection have limited power at forty-six observations.' SCAN_LOG's rebuttal: 'The source does not select a transformation by hypothesis test -- it ESTIMATES A PARAMETER. Guerrero is an estimator, not a test, so the low-power objection does not apply to it.'\n\nSo Ch4 is currently answering the wrong objection.\n\nNO-LOSE -- three outcomes, all publishable:\n  lambda near 0 across brands -> vindicates the log EMPIRICALLY rather than by assumption\n  lambda far from 0 -> overturns it, and that is a finding\n  dispersed lambda -> MEASURES the low-power argument instead of assuming it\n\nThe diagnostic run is cheap. Only needs a rebuild if a non-zero lambda is actually adopted.\n\nPairs with task 25 (3.2, the multiplicative-seasonality commitment) -- both repair Ch4's transformation justification.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "18"
+  ]
+}

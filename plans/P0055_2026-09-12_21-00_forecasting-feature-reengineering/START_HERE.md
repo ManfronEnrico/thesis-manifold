@@ -18,16 +18,37 @@ status: in_progress
 
 # ⚠ READ FIRST — updated 2026-09-13
 
-## 1. Branch B runs on `main`. Do NOT create a branch.
+## 1. Branch B runs on `main`, in its own FOLDER TREE. Do NOT create a git branch.
 
 `task_plan.md` step 0.5 says `git checkout -b data/forecasting-feature-reengineering`.
 **That step is deliberately NOT taken.** A concurrent session is finalising
 Branch A's Ch9/Ch10 and must push to `main` so Enrico has access; only one
 branch can be open at a time.
 
-**Isolation is by FILE SURFACE instead. Read `BRANCH_B_FILES.md` before any
-edit** — green / red / amber zones, plus the announcement rule for regenerated
-results tables. Creating a branch here would break the other session.
+**As of 2026-09-13, isolation is by FOLDER SPLIT** (task 26, Brian's decision),
+superseding the file-surface contract. `BRANCH_B_FILES.md` still governs until
+the split lands, and its RED zone stays correct afterwards.
+
+**Why a folder split and not shared files** — three reasons, all Brian's:
+
+1. **Branch A will not be retrained or re-experimented.** The money is spent and
+   the 63 runs are locked. Fixing Branch A's code would make it *look* like it
+   produced numbers it did not produce. Leaving Branch A wrong-as-shipped is
+   **provenance, not debt.**
+2. **`PATHS.py` forking is solved by naming it** — `PATHS_branch_A.py` /
+   `PATHS_branch_B.py`, one repo-wide import rename. Measured: 1123 lines,
+   **48 importers** (31 in `01_SRQ1_Model_Training`, 7 in `04_SRQ4`, 5 in
+   `05_thesis_results`, 3 in `utility_scripts`, 1 in `02_SRQ2`).
+3. **1.5 working days left.** Deleting a folder is verifiable by looking;
+   git-reverting interleaved commits is not.
+
+My original objection assumed long-run duplicate maintenance. There is none —
+one branch gets deleted at the end.
+
+**Three things the split must get right:** `05_thesis_results/05_model_benchmark/`
+splits too (or Branch B's retrain overwrites tables Ch5/Ch9 cite *now*);
+`02_SRQ2_Tool_Interface/forecast_tool.py` is in the split (`lag_13` at line 488);
+`04_SRQ4_Scenario_Experiment/` **stays single and untouched**.
 
 ## 2. Phase 0 is COMPLETE. G0 passed.
 
@@ -40,14 +61,30 @@ written. The fallback is safe.
 5.5, 6.7 and 9.7 were all obtained and read on 2026-09-13. §9.7 was never
 missing — it had been on disk since 09-10 and was merely unread.
 
-## 4. Where to start: task 4.
+## 4. Where to start: task 26, then task 12.
 
-Tasks 1 and 3 are complete (`tasks/*.json`). **Task 4 is the gate**: write and
-run a Ljung-Box residual test. It is free — no retrain, no API spend — and its
-verdict decides whether the 2.B feature additions happen at all.
+Tasks 1, 3 and 4 are complete (`tasks/*.json`). **There are now 26 tasks, not
+11** — tasks 12–26 were added 2026-09-13 after a diff of the book scan against
+the task list found **25 findings recorded but never converted** (findings F15).
 
-⚠ **It must pass `dof = p + q`** (§9.7). Omitting it overstates significance,
-biasing the gate toward "do more work".
+**Start at task 26 — the BRANCH A / BRANCH B FOLDER SPLIT.** Brian decided this
+on 2026-09-13, against my initial recommendation, and his reasoning is recorded
+in task 26 and below. Everything else lands inside Branch B's tree, so the split
+comes first.
+
+**Then task 12** — re-run the Ljung-Box gate on CV residuals.
+
+### ⚠ G1 is PROVISIONAL, not passed. The gate I ran has a defect.
+
+`srq1_residual_diagnostics.py` ran on **in-sample** residuals. §5.3 requires
+**cross-validation** residuals — *"fitted values are often not true forecasts
+because any parameters involved are estimated using all available observations,
+including future observations."* The `dof = p+q` half (§9.7) and the log-scale
+half were both done correctly; only this is wrong.
+
+In-sample residuals are optimistically clean, so the true rejection rate is
+likely **higher** than the 22.2% recorded — the verdict direction is probably
+safe, but **the number must not be cited until task 12 re-runs it.** See F13.
 
 ## 5. Two things that are true and easy to get wrong
 

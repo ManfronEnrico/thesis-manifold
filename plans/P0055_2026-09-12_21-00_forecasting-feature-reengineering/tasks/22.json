@@ -1,0 +1,14 @@
+{
+  "id": "22",
+  "subject": "Add an information criterion for predictor selection (7.5)",
+  "activeForm": "Adding AICc-based predictor selection",
+  "description": "7.5 names two INVALID approaches explicitly: dropping a predictor from a scatterplot ('This is invalid') and dropping by p > 0.05 ('also invalid... statistical significance does not always indicate predictive value').\n\nRecommended instead: 'AICc, AIC, or CV... each of which has forecasting as their objective... we use the AICc'. Adjusted R-squared is 'less suitable for forecasting'. Backwards stepwise and best-subsets are sanctioned. Warning: 'any procedure involving selecting predictors first will invalidate the assumptions behind the p-values.'\n\nSCAN_LOG: 'The repo tunes on WMAPE and computes no information criterion.'\n\nTHE FREE HALF -- do this even if the AICc work is cut. The repo's weighted-distribution rejection SURVIVES 7.5: it was rejected because measured error rose in three of four categories, which IS a predictive criterion. 7.5 CONFIRMS that decision, and it currently stands unsourced in the prose. A free defensive citation.\n\nModelling-side; no matrix rebuild.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "13",
+    "14",
+    "15",
+    "20"
+  ]
+}

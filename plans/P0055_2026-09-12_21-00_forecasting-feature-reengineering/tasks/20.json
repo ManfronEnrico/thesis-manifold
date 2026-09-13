@@ -1,0 +1,13 @@
+{
+  "id": "20",
+  "subject": "Select promo_intensity lag count k by AICc (10.6)",
+  "activeForm": "Selecting the promo lag order by AICc",
+  "description": "10.6, distributed-lag form: y_t = b0 + g0*x_t + g1*x_{t-1} + ... + gk*x_{t-k} + eta_t, where 'the value of k can be selected using the AICc'.\n\nSCAN_LOG: 'The repo carries promo_intensity at exactly one shift and has never justified that number.'\n\nThe book's worked example fits lag0..lag3 on TV advertising and selects lag1, with the methodological guard: 'When comparing models, it is important that they all use the same training set.'\n\nIMPORTANT -- see findings F14. 10.6 does NOT bear on the lag_13 -> lag_12 repair (task 5). 10.6 is about lags of an EXOGENOUS predictor; task 5 is about lags of the TARGET and the seasonal period. An earlier claim that 10.6 'supersedes 7.4 on how many lags to carry' and gates task 5 was WRONG and is retracted. The two are orthogonal.\n\nThis is the scan's THIRD independent recommendation of AICc (of four: 13.7, 7.5, 10.6, 9.6) -- the most-repeated unimplemented recommendation in the whole scan.\n\nNeeds matrix rebuild + retrain if extra promo lags are adopted.",
+  "status": "pending",
+  "blocks": [
+    "22"
+  ],
+  "blockedBy": [
+    "12"
+  ]
+}

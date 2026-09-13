@@ -1,0 +1,9 @@
+{
+  "id": "16",
+  "subject": "Compute the Winkler score (5.9) -- resolves a documented open question",
+  "activeForm": "Computing Winkler scores for the prediction intervals",
+  "description": "FREE, and the best value/cost ratio on the whole list.\n\n5.9's Winkler score combines interval width and coverage in ONE number: the interval length when the observation falls inside, plus a penalty proportional to (2/alpha) times how far outside it falls. 'Low scores are associated with narrow intervals.'\n\nSCAN_LOG: 'The thesis reports coverage and relative width separately and treats the trade-off as UNRESOLVED (interval-width-a-tested-negative-result.md). The Winkler score is exactly the measure that resolves it, and it is one line to compute from bounds already stored.'\n\nThe 90% conformal bounds are already persisted per category. No retrain, no spend, no matrix rebuild.\n\nConverts a recorded open question into a resolved one -- a thesis result, not just a repair.\n\nAlso from 5.9, two free confirmations: the test set must be large enough 'especially in the denominator', so 'MASE or RMSSE are often preferable' (CONFIRMS current practice); and 'when the data are seasonal, the benchmark used is the seasonal naive method' (reinforces 2.A5/2.A6).",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,13 @@
+{
+  "id": "13",
+  "subject": "Add Fourier seasonal terms (7.4) -- highest-value feature addition",
+  "activeForm": "Adding Fourier seasonal terms",
+  "description": "7.4, which SCAN_LOG calls 'THE richest feature section in the book'. x1=sin(2*pi*t/m), x2=cos(2*pi*t/m), x3=sin(4*pi*t/m), ... with K <= m/2.\n\nThe repo encodes seasonality as three integers: month, quarter, peak_month. An integer `month` asserts December (12) is eleven units from January (1), which is FALSE on a cycle. Fourier terms encode the cycle correctly.\n\nBook: 'If we have monthly seasonality, and we use the first 11 of these predictor variables, then we will get exactly the same forecasts as using 11 dummy variables. With Fourier terms, we often need fewer predictors.'\n\nIndependently reinforced by 12.2: Prophet's own seasonal component IS Fourier terms (order 10 by default). The mechanism is already in the project, just not available to the models that need it.\n\nALSO the cheap alternative to lag 24: gives the annual cycle and its harmonics with ZERO warm-up cost, where a 24-lag drives min_periods to 28 on a 39-month panel (F10b).\n\nNeeds matrix rebuild + retrain.",
+  "status": "pending",
+  "blocks": [
+    "22"
+  ],
+  "blockedBy": [
+    "12"
+  ]
+}

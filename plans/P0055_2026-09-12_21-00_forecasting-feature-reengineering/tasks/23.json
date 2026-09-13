@@ -1,0 +1,9 @@
+{
+  "id": "23",
+  "subject": "Check whether MIN_PERIODS rests on a rule of thumb (13.7) -- may undercut prose",
+  "activeForm": "Checking the MIN_PERIODS justification against 13.7",
+  "description": "THE UNCOMFORTABLE ONE. This finding undercuts existing thesis prose rather than extending it, which is why it must not be quietly skipped.\n\n13.7: 'Some textbooks provide rules-of-thumb giving minimum sample sizes... These are misleading and unsubstantiated in theory or practice... There is, for example, no justification for the magic number of 30... The only theoretical limit is that we need more observations than there are parameters.'\n\nRecommended instead: 'The AICc is particularly useful here, because it is a proxy for the one-step forecast out-of-sample MSE.' (First of the scan's four AICc recommendations.)\n\nTheir empirical result on 152 short M3 series: 21 got zero-parameter models, 86 one, 31 two, 13 three, only 1 got four.\n\nSCAN_LOG: 'the pipeline derives a MIN_PERIODS retention rule. If that threshold is justified by a rule-of-thumb rather than by parameter count and noise, the book explicitly rejects that reasoning. This needs checking, and it MAY REQUIRE REWORDING RATHER THAN RE-ENGINEERING.'\n\nSo: first READ how MIN_PERIODS is justified in the prose and in the code comments. Only then decide whether this is a prose fix or a threshold change. A threshold change would move brand counts everywhere and is expensive; a rewording is free.\n\nFree to check.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

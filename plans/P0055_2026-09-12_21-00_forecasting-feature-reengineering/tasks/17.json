@@ -1,0 +1,9 @@
+{
+  "id": "17",
+  "subject": "Test for LLM anchoring (6.1) over the 63 already-paid runs",
+  "activeForm": "Testing the scenarios for anchoring on the last observed value",
+  "description": "FREE. Reads the 63 runs already paid for. No new spend, no retrain, no API calls.\n\n6.1 names four failure modes of judgmental forecasting. SCAN_LOG: 'The anchoring row is the most valuable thing in this section.'\n\nThe book: it is common to 'take the last observed value as a reference point... may lead to conservatism and undervaluing new information.'\n\nTHE TESTABLE PREDICTION: an LLM given a history and asked to forecast may anchor on the final observed value -- i.e. produce naive-1 in disguise. Measurable directly against the logged runs: compare each scenario's forecasts against the last observed value and against a naive-1 baseline.\n\nEither result is reportable. If the plain-LLM arm anchors and the model-backed arm does not, that is a mechanism for the B->C increment rather than just a size. If nothing anchors, that is a negative result worth stating.\n\nCh9 material. Also pairs with 6.1's 'optimism' row and the 6.7 TFC precedent for over-forecasting in A_llm_plain.\n\nNOTE: reads 04_SRQ4_Scenario_Experiment output but MUST NOT edit anything there -- RED zone. Write the analysis in the Branch B tree and read the run log only.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}
