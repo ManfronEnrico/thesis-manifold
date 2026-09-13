@@ -5,8 +5,8 @@ category: workflow
 applies-to: [ch10_limitations]
 triggers: [chapter 10, conclusion, branch a, rewrite]
 created: 2026_09_13-18_40
-updated: 2026_09_13-18_40
-snapshot: 2026-09-13_18-18_branch-a-full-review
+updated: 2026_09_13-20_45
+snapshot: 2026-09-13_20-40_branch-a-archive-check
 status: prose ready to paste, awaiting human review
 ---
 
@@ -17,9 +17,11 @@ Verified at `c9c0587`, fetch clean. Snapshot
 session.
 
 **Notes swept:** one live note in this folder —
-`interval-width-a-tested-negative-result.md`, **not applied**, carried into F5
-below. Not archived, because it holds the alternative-scheme table that F5 only
-summarises and Chapter 9's limitations section also draws on.
+`interval-width-a-tested-negative-result.md`, **not applied**. Its argument and
+its evidence are now folded into this note: the one-sentence form in Fix 4, and
+the full tested-alternatives table in **Fix 8**, added 2026-09-13 20:45. The
+source note is archived, so this file is the single place the interval
+limitation is staged.
 
 **Read alongside** `ch9_discussion/2026-09-13_18-40_BRANCH_A_ch9-branch-a-rewrite.md`.
 The two chapters restate the same four answers at different lengths, and if only
@@ -329,14 +331,15 @@ REPLACE.
 > decision-support literature actually asks, requiring an experiment with human
 > participants that is a separate study rather than an extension of this one.
 
-### Note — what is preserved from the live chapter note
+### Note — what is preserved from the folded chapter note
 
 `interval-width-a-tested-negative-result.md` argues the interval limitation
 should be written as a contribution, because three alternative schemes were
 implemented and measured. **That argument is honoured in Ch9 Fix 10 and in
 10.4 above**, where the limitation is stated with the fact that alternatives
-were tested. It is deliberately not repeated at length here; a conclusion
-restates, it does not re-argue.
+were tested. A conclusion restates and does not re-argue, so the evidence itself
+belongs earlier in the document — **Fix 8 below places it in Chapter 5**, which
+is where a reader meets the interval for the first time.
 
 ⚠ **The "code-as-action as the artefact's own action format" bullet is
 dropped.** It rests on "the prototype's 0% numerical hallucination under JSON",
@@ -403,6 +406,176 @@ empirical results have landed. The third, whether to add a one-page executive
 summary, is a structural decision recorded separately rather than left in the
 thesis text. The reflective paragraph on the human-AI research process belongs
 in the AI Use Declaration, which already exists as its own section.
+
+---
+
+## Fix 8 — the tested alternatives belong in Chapter 5, not Chapter 10
+
+**Added 2026-09-13 20:45**, folding in `interval-width-a-tested-negative-result.md`,
+which is archived with this note.
+
+⚠ **This fix edits Chapter 5, not Chapter 10.** It is filed here because it is
+the other half of Fix 4: the conclusion says alternatives were measured, and
+this is where the measurement goes. Applying Fix 4 without this one leaves the
+conclusion asserting evidence the thesis never shows.
+
+### Why the evidence belongs earlier
+
+Section 5.5.7 is where a reader first meets an interval spanning thirty-four
+times the forecast, and it is where they will ask whether anything was tried.
+Answering it there converts the limitation from something endured into something
+tested. Chapter 10 then restates the conclusion in one sentence, which is what a
+conclusion is for.
+
+### Anchor
+
+**Section 5.5.7 Prediction-interval calibration**, the final paragraph, which is
+the last thing before the **5.5.8 Holiday enrichment** heading.
+
+Searchable opening: *"Each category's interval is calibrated on the residuals"*
+
+It ends: *"...rather than a uniform stand-in for it."*
+
+### Action
+
+INSERT AFTER — three new paragraphs and a table, between that paragraph and the
+5.5.8 heading.
+
+#### Replace with
+
+> The width was not accepted without testing whether it could be reduced. Three
+> alternative calibration schemes were implemented and measured against the same
+> held-out split, on the criterion that a scheme counts as an improvement only if
+> coverage stays within five points of the ninety per cent target **and** the
+> width falls. Narrowing an interval by undercovering is not an improvement; it
+> is the guarantee being given up quietly.
+
+| Category | Scheme | Empirical coverage | Median relative width |
+|---|---|---|---|
+| CSD | pooled, as deployed | 92.5% | 7.9x |
+| CSD | two buckets by brand size | 91.6% | **3.2x** |
+| CSD | volatility-scaled | 86.5% | **3.0x** |
+| Danskvand | pooled, as deployed | 85.1% | 15.2x |
+| Danskvand | two buckets by brand size | 79.9% | 3.7x, undercovers |
+| Danskvand | volatility-scaled | 88.5% | **5.9x** |
+| Energidrikke | pooled, as deployed | 88.6% | 18.2x |
+| Energidrikke | two buckets by brand size | 79.9% | 6.4x, undercovers |
+| Energidrikke | volatility-scaled | 82.1% | 12.4x, undercovers |
+
+**Table 14** – *Three alternative calibration schemes measured against the
+deployed one. A scheme improves on the deployed interval only where coverage
+holds and width falls; bold marks the cases where both conditions are met.*
+
+⚠ **This table renumbers eight others, and the caption number above assumes the
+renumbering has happened.** Inserting here makes the new table 14, which pushes
+every later table up by one:
+
+| Currently | Becomes | What it is |
+|---|---|---|
+| Ch5 Table 14 | **15** | Forecast and accuracy variation across five seeds |
+| Ch5 Table 15 | **16** | The selected model per seed |
+| Ch5 Table 16 | **17** | Ch5 contributions to the SRQs |
+| Ch6 Tables 17, 18, 19 | **18, 19, 20** | Scenarios, budget, technology choices |
+| Ch7 Tables 20, 21 | **21, 22** | Payload groups, Ch7 contributions |
+
+**Chapters 5, 6 and 8 use Word field references and renumber themselves.**
+Chapter 7's two captions are typed as plain text, so **they must be edited by
+hand** — that is the defect recorded as S26, and it is the only manual step.
+
+✅ **The S26 collision itself is now resolved**: Chapter 6 runs 17 to 19 and
+Chapter 7 runs 20 to 21, with no overlap. Verified against the 2026-09-13 20:40
+snapshot. The register entry can be closed once this renumbering is applied.
+
+⚠ **If you would rather not renumber eight tables two days out, the alternative
+is to drop the table and keep the prose.** The three paragraphs stand on their
+own: they state that three schemes were tested, that none won in more than two
+categories, and why. The table is better evidence, but the argument survives
+without it, and a numbering pass is the kind of change that goes wrong late.
+**NEEDS-BRIAN.**
+
+> No scheme wins in more than two of the four categories, and the scheme that
+> helps most in one category undercovers in the next. That pattern is the
+> signature of a sample-size limit rather than of a modelling choice. The
+> intuitive repair, calibrating large brands separately from small ones, fails on
+> row counts directly: the large-brand bucket holds twenty-eight calibration rows
+> for carbonated soft drinks, eighteen for energy drinks, six for water and none
+> at all for ready-to-drink beverages, where no brand exceeds the threshold. A
+> ninetieth percentile estimated from twenty-eight residuals is not a ninetieth
+> percentile, and with a minimum-row guard in place every large bucket falls back
+> to the pooled quantile on precisely the brands the scheme was meant to fix.
+>
+> Two independent causes produce the width, and neither is reachable by
+> retraining. A single quantile is pooled across brands spanning six orders of
+> magnitude of volume, and each brand contributes only a handful of validation
+> months, so a per-brand quantile cannot be estimated at all. The interval is
+> computed from residual quantiles rather than from model weights, so changing
+> how the residuals are summarised leaves both fitted models untouched. A
+> per-series interval is therefore identified as future work rather than offered
+> as an available refinement.
+
+### Note — one correction worth recording, and it is not for the prose
+
+An earlier version of this investigation reported that bucketing gave one brand a
+band of ±1.35x instead of ±7.59x, and proposed adopting it. **That figure came
+from twenty-eight validation rows covering four brands and did not survive an
+honest test on the held-out split.** It is the failure mode the
+train/validation/test discipline exists to prevent, and catching it is evidence
+the discipline was applied rather than merely described.
+
+⚠ **Keep this in the note, not in the chapter.** A thesis that narrates its own
+corrected mistakes reads as a lab book. The *conclusion* — that promising
+improvements measured on the data that motivated them tend not to survive — is
+already carried by the table above.
+
+### Note — provenance, and a caveat about regenerating it
+
+⚠ **These figures have no committed artefact.** They come from
+`plans/P0049_2026-09-07_17-50_finalizing-experiments/2026-09-11_eval_calibration_schemes.py`,
+a one-off evaluation that writes no table into `05_thesis_results/`. That is a
+departure from how every other number in Chapter 5 is produced.
+
+Two consequences, and the first is a decision for you:
+
+1. **If this table ships, the script should write its output into
+   `05_thesis_results/05_model_benchmark/tables/` like every other producer**, so
+   the numbers are regenerable and the Correctness-tier provenance rule holds.
+   That is a small change to an existing script. **NEEDS-BRIAN.**
+2. Until then the figures are a measured one-off. They are honest, and they are
+   not reproducible by a reader, which is exactly the property the thesis
+   criticises elsewhere.
+
+⚠ **Danskvand's pooled coverage reads 85.1% here and 83.9% in Table 13.** The two
+are different measurements — the scheme evaluation recomputes on its own split
+arrangement — and publishing both without explanation invites a reader to find
+the discrepancy. **Either reconcile them or report the alternatives as relative
+improvements over each category's own pooled baseline rather than as absolute
+coverage.** The second is safer and needs no re-run.
+
+---
+
+## Fix 9 — Chapter 5 states a coverage figure that exists in no artefact
+
+**Added 2026-09-13 20:45.** This is the C8 item from the cross-chapter flow note,
+repeated here because it sits in the same paragraph Fix 8 attaches to and should
+be applied in the same pass.
+
+### Anchor
+
+**Section 5.5.7**, the paragraph beginning *"danskvand fails on the other axis."*
+
+> "It misses the coverage target at both levels - 83.9 per cent against a nominal
+> ninety, and 72.4 against a nominal eighty - on the smallest calibration set in
+> the study, at 174 rows."
+
+### Action
+
+REWORD — change **72.4** to **73.6**. Nothing else in the sentence changes.
+
+### Note
+
+`calibration.csv` records Danskvand at the eighty per cent level as 73.6, and
+Table 13 ten lines above prints 73.6. The figure 72.4 appears in no results file.
+Verified again against the 2026-09-13 20:40 snapshot: still present.
 
 ---
 
