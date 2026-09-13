@@ -1,0 +1,12 @@
+{
+  "id": "2",
+  "subject": "Fix the seasonal-naive lag and re-derive the MASE table",
+  "activeForm": "Fixing the seasonal-naive lag",
+  "description": "APPROVED BY BRIAN 2026-09-13 to jump the queue -- it is a wrong number in a table assessors read, independent of any retrain.\n\nDEFECT: srq1_mase.py:144 returns te['lag_13'] as the seasonal-naive prediction. On a monthly panel seasonal naive is lag-12. Confirmed the single prediction site; srq1_baselines_stat.py uses lag_13 only as a Ridge FEATURE (that is task 5's scope, not this one).\n\nEVIDENCE OF HARM: two shipped tables contradict each other.\n  09_statistical_baselines.md: SeasonalNaive BEST on CSD (19.2% WMAPE)\n  mase.md: SeasonalNaive WORSE than Naive on CSD (26.8% vs 18.0%), MASE median 1.300 on RTD (loses to naive on its own history)\n\nRESOLVED 2026-09-13 -- VERIFIED NO lag_12 COLUMN EXISTS. csd_manifest_h3.json carries lag_1,2,3,4,8,13 + rolling_mean_4/13 + rolling_std_4. This fix therefore CANNOT ship standalone: it is BLOCKED on task 5 rebuilding the matrix with lag_12. Do not force it by computing a lag-12 inline -- that would put a second, divergent lag definition in the codebase, which is the exact error class task 6 exists to remove.\n\nRe-run srq1_mase.py, regenerate mase.md/.csv, confirm the two tables now agree. Do NOT hand-edit either table -- both are generated.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1",
+    "5"
+  ]
+}

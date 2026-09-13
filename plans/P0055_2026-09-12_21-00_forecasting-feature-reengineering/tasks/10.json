@@ -1,0 +1,12 @@
+{
+  "id": "10",
+  "subject": "Rebuild matrices and retrain -- decision gate G2",
+  "activeForm": "Rebuilding matrices and retraining",
+  "description": "3.1 rebuild all four categories locally (minutes). 3.2 full HPC retrain (P0053 runbook, 6 stages ~18.3 min -- retraining is NOT the schedule risk; the prose is).\n\nGATE G2: if the retrained models do not beat current test WMAPE, DO NOT spend the $20 on re-running SRQ4. Report the re-engineering as a measured negative result and keep the v6 experiment as-is. A negative result here is publishable and costs nothing.\n\nRe-running SRQ4 requires Brian's explicit approval -- it spends real money.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5",
+    "7"
+  ]
+}

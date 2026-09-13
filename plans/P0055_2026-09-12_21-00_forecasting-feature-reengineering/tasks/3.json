@@ -1,0 +1,13 @@
+{
+  "id": "3",
+  "subject": "Obtain book section 9.7 (Hyndman-Khandakar) and close the scan",
+  "activeForm": "Obtaining section 9.7 and closing the scan",
+  "description": "The scan IS complete: 39 sections have recorded entries plus 6.1, 11.3, 12.2, 6.7, 5.5. The trailing 'Sections still to read' list in SCAN_LOG.md is a STALE mid-scan artefact -- every section it names has a '## ' entry above it. DELETE that list; it contradicts the document's own summary.\n\nGenuinely missing, and it gates task 4:\n  9.7 arima-estimation-and-order-selection -- the Hyndman-Khandakar stepwise algorithm, which is exactly what auto_arima order selection needs\n  5.5 prediction-intervals -- zero-byte file, bears on interval reporting\n  6.7 judgmental-adjustments -- the PDF contains 6.6 instead\n\nSource: otexts.com/fpp3/. Then write the derived forecasting standard (stage 3 of the scan's original plan; stages 1-2 are done).\n\nDONE 2026-09-13: all three files verified readable at C:/Users/brian/Downloads/Hyndman Book (2021)/. 5.5 now 548KB (Table 5.1 multipliers + Table 5.2 benchmark formulae), 6.7 now genuine (URL judgmental-adjustments.html), 9.7 had been on disk since 09-10 and was merely unread -- it was never missing. Stale 'Sections still to read' list deleted; scan closed 41/41.\n\nGATE CHANGE FOR TASK 4: 9.7 requires Ljung-Box on ARIMA residuals to pass dof = p+q. Omitting it overstates significance and would make the G1 verdict untrustworthy.",
+  "status": "completed",
+  "blocks": [
+    "4"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

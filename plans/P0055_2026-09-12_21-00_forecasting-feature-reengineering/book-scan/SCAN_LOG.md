@@ -1378,8 +1378,81 @@ reporting and on judgmental adjustment respectively.
 
 ## Sections still to read
 
-5.5 (EMPTY FILE) ·
-6.1, 6.7 · 7.6 · 9.5, 9.7 ·
-11.3 · 12.2
+**NONE. Closed 2026-09-13.**
 
-**6 remaining of 41**, one of which (5.5) is an unreadable file.
+This list was a stale mid-scan artefact that contradicted the document's own
+summary above: every section it named already had a recorded `##` entry. It is
+replaced by the record below.
+
+### The three outstanding files, resolved 2026-09-13
+
+Brian re-exported 5.5 and 6.7; 9.7 had been on disk since 2026-09-10 and was
+simply unread. All three verified readable and correct this session.
+
+| Section | Was | Now |
+|---|---|---|
+| **5.5** Distributional forecasts and prediction intervals | 0 bytes | **548 KB, read.** Table 5.1 multipliers and Table 5.2 benchmark sd formulae both present |
+| **6.7** Judgmental adjustments | contained 6.6 | **198 KB, read.** Verified genuine: URL `judgmental-adjustments.html`, TFC example present |
+| **9.7** ARIMA modelling in fable | never read | **816 KB, read.** Carries the Hyndman-Khandakar algorithm in full |
+
+### 9.7 — the Hyndman-Khandakar algorithm, and one requirement it imposes
+
+**NEW.** The algorithm `auto_arima` implements, needed by repair 2.A1:
+
+1. `d` by **repeated KPSS tests** (0 <= d <= 2) -- not ADF, which is what the
+   repo's own diagnostics use (P0051 F1). Worth naming in the prose.
+2. `p`, `q`, `c` by **minimising AICc**, via stepwise search from four seeds:
+   ARIMA(0,d,0), (2,d,2), (1,d,0), (0,d,1); constant included unless d=2.
+3. Vary p and/or q by +/-1, include/exclude c, until no lower AICc.
+
+**REQUIREMENT for the Ljung-Box gate (task 4).** 9.7 specifies that a
+portmanteau test on ARIMA residuals uses **`l - K` degrees of freedom**, where
+K = p + q. The worked example passes `dof = 3` explicitly for an ARIMA(3,1,0).
+**A Ljung-Box run that omits `dof` overstates significance** -- it will report
+remaining autocorrelation that is an artefact of unadjusted degrees of freedom.
+Task 4 must pass `dof` per model, or its gate verdict is not trustworthy.
+
+**Also NEW:** 9.7 step 6 makes the residual check part of the modelling loop, not
+an afterthought -- "if they do not look like white noise, try a modified model."
+That is the gate, stated by the source.
+
+### 5.5 — Table 5.2 confirms m in the seasonal-naive interval
+
+**CONFIRMS, and bears on repair 2.A6.** The seasonal-naive h-step forecast sd is
+`sigma * sqrt(k + 1)`, where **k is the integer part of (h-1)/m** and m is the
+seasonal period. The formula is parameterised by m, so a seasonal method whose
+lag is 13 on a monthly panel is inconsistent with its own interval arithmetic.
+
+**Table 5.1 multipliers** (normal forecast distribution): 80% -> 1.28,
+95% -> 1.96. Recorded because the thesis reports both levels.
+
+⚠ **This lands on BRANCH A, not Branch B.** 5.5 states plainly: *"point forecasts
+can be of almost no value without the accompanying prediction intervals."* The
+interval-communication criterion Branch A scored on 2026-09-13 is measuring
+exactly what the source says matters. Ch7 can cite 5.5 for *why* that criterion
+exists, rather than arguing it from first principles. Hand to the Ch9/Ch10
+session.
+
+### 6.7 — judgmental adjustment, and what it says about the scenarios
+
+**SILENT on the models; directly relevant to SRQ4's framing.** Key claims:
+
+- Adjustments *"should not aim to correct for a systematic pattern in the data
+  thought to have been missed by the statistical model. This has been proven to
+  be ineffective, as forecasters tend to read non-existent patterns in noisy
+  series."*
+- They are effective *"only when there is significant additional information at
+  hand"*, and **large adjustments are more accurate than small ones**; small
+  optimistic ones actively hinder.
+- Structure matters: documenting and justifying an adjustment *"will make it
+  more challenging to override the statistical forecasts."*
+
+**Reads directly onto the ladder.** An LLM handed a model forecast plus context
+is doing judgmental adjustment, and the book's condition for it helping --
+genuine extra information, not pattern-reading -- is the distinction B->C is
+built to measure. The TFC example (published forecasts persistently optimistic)
+is a citable precedent for the over-forecasting seen in `A_llm_plain`.
+
+---
+
+# SCAN CLOSED — 41 of 41 sections read (2026-09-13)

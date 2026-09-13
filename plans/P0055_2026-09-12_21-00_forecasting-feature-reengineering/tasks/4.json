@@ -1,0 +1,13 @@
+{
+  "id": "4",
+  "subject": "Write and run the Ljung-Box residual test -- decision gate G1",
+  "activeForm": "Running the Ljung-Box residual gate",
+  "description": "THE PLAN'S NAMED GATE (task_plan.md G1). No Ljung-Box code exists anywhere in the repo -- verified by repo-wide grep. It must be written.\n\nSource: Hyndman & Athanasopoulos 5.4 (residual diagnostics), made precise by 5.3 (fitted values and residuals) -- both already in SCAN_LOG.md.\n\nReads the four persisted models at 05_thesis_results/05_model_benchmark/models/{CSD,danskvand,energidrikke,RTD}/ (CSD+danskvand are model.json XGBoost, energidrikke+RTD are model.joblib -- handle both).\n\nOUTCOME DECIDES SCOPE:\n  Residuals show remaining autocorrelation -> the 2.B feature additions (STL strength, remainder ACF, Fourier) are justified\n  Residuals are white noise -> SKIP 2.B entirely. Do the 2.A repairs anyway; they are correctness fixes, not enhancements. A negative result here is itself reportable and costs nothing.\n\nFree: no retrain, no API spend.",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "3"
+  ]
+}

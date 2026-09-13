@@ -1,0 +1,11 @@
+{
+  "id": "9",
+  "subject": "Repair 2.A2/2.A3/2.A4: the unconsumed EDA diagnostics",
+  "activeForm": "Repairing the unconsumed diagnostics",
+  "description": "Three small independent fixes from P0051 F4/F6/F7:\n\n2.A2  step_2_eda_descriptive.py:543-553 -- p_diff is computed and NEVER used in the decision rule. 'log1p+diff' is the else-branch fallback, assigned regardless of whether differencing achieved stationarity. CSD's TUBORG SQUASH has p_diff=0.471 (differencing plainly failed) and is still labelled log1p+diff. The rule can never emit 'none' or 'diff'.\n\n2.A3  step_3_derive_params.py derive_log_transform() computes `supported`, interpolates it into a provenance STRING, then returns the config constant. Either return the verdict or state plainly that the constant is the design choice.\n\n2.A4  pipeline_config.py:218 comment claims the ADF csv is consumed by later steps. Nothing reads it. One-line fix.\n\nCheap, independent, and each converts a silent contradiction into either a working rule or an honest statement.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

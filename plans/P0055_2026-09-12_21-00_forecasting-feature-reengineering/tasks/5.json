@@ -1,0 +1,13 @@
+{
+  "id": "5",
+  "subject": "Repair 2.A6: lag 13 -> 12 across 19 live files",
+  "activeForm": "Repairing the lag-13 defect",
+  "description": "THE STRONGEST-EVIDENCED DEFECT IN THE PLAN, and it needs no appeal to the textbook: the repo's OWN ACF measured lag 12 significant for 20 of 20 leading brands, and step_3_derive_params.py:211-216 provenance literally says 'the lag-12 term is retained' -- while all four manifests ship [1,2,3,4,8,13].\n\n19 LIVE FILES (verified 2026-09-13; an earlier count of 22 wrongly included two .archive/ copies). Declaration sites:\n  _shared_modules/engineer_features.py:33-34  DEFAULT_LAGS, DEFAULT_ROLLING_WINDOWS\n  _shared_modules/pipeline_config.py:87-89   MAX_LAG/MAX_WINDOW/WARMUP_PERIODS\n  srq1/_features.py  + 15 srq1 consumers\n\nCROSSES THREE TIERS -- includes 02_SRQ2_Tool_Interface/forecast_tool.py:488 (dropna on lag_13). That file is SHARED with Branch A. Coordinate before touching it; it does NOT touch the SRQ4 harness/prompts/leakage boundary, so the 63 paid runs stay valid.\n\nRequires a matrix rebuild and retrain. Also drives WARMUP_PERIODS 13->12, which relaxes min_periods -- re-derive, never hardcode.",
+  "status": "pending",
+  "blocks": [
+    "7"
+  ],
+  "blockedBy": [
+    "1"
+  ]
+}

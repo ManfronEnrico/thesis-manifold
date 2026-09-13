@@ -1,0 +1,11 @@
+{
+  "id": "11",
+  "subject": "Phase 4: the per-brand grain test (independent, runs in parallel)",
+  "activeForm": "Running the per-brand grain test",
+  "description": "Converts the brand-filtered-advantage claim from an ASSUMPTION into a measurement. Independent of the re-engineering -- can run alongside everything above.\n\nCORRECTED: srq1_pooled_perbrand.py does NOT fit per brand. Its docstring is explicit that it refits the same models as srq1_pooled.py then SCORES per brand; its loop (line 157) iterates the test frame calling .predict() on two already-fitted models. Pooled-vs-per-category, scored per brand -- a different question.\n\nWhat exists: the STATISTICAL arm is already per-brand and free (srq1_baselines_stat.py:323, guarded len(fit)>=12). The ML arm needs a modest loop reusing _fit_tuned/_all_metrics/_load/FEATURES. Extend the existing 460x13 pooled_perbrand.csv schema -- add a perbrand_wmape column; do not invent a new one.\n\nWARNING: filter on `scorable` before averaging anything. That csv carries WMAPE around 4.9e+12 for brands with mean_test_units=0.0, flagged scorable=False for exactly this reason.\n\nExpect per-brand fitting to fail on short series. That is not a defect of the test -- it is part of the answer, and it is the same short-series argument (13.7) the thesis uses elsewhere.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1"
+  ]
+}

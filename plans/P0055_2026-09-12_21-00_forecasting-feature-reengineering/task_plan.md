@@ -49,7 +49,11 @@ Until they are committed, there is no fallback to fall back to.
 | 0.4 | Record the resulting commit hash in `FALLBACK.md` |
 | 0.5 | **Then** branch: `git checkout -b data/forecasting-feature-reengineering` |
 
-**Status:** pending. Nothing below may start until 0.4 is written down.
+**Status:** ✅ **COMPLETE 2026-09-13.** `58243f3` committed and pushed;
+recorded in `FALLBACK_COMMIT_RECORD.md`. Step 0.5 (branch) **deliberately not
+taken** — Brian runs Branch B on `main` in parallel with Branch A's Ch9/Ch10
+session, because Enrico needs those pushed and only one branch can be open.
+Isolation is by file surface instead: see `BRANCH_B_FILES.md`.
 
 ### Phase 1 — Establish the gap, in code not in prose
 
@@ -99,9 +103,20 @@ Repair first; add second. Each repair is independently shippable.
 ### 2.A5 and 2.A6 are the two highest-value repairs, and 2.A5 is nearly free
 
 **2.A5 (MASE) needs no retrain.** It rescores existing predictions and is
-independently shippable. It also **explains an anomaly already in the thesis** —
-seasonal naive scoring worse than naive on MASE — which converts a puzzling
-result into a corrected one.
+independently shippable. Single site: `mase_denominator` is defined once at
+`srq1_benchmark_cv.py:184` and imported by `srq1_mase.py`.
+
+> ⚠ **CORRECTED 2026-09-13.** This section previously claimed 2.A5 "explains an
+> anomaly already in the thesis — seasonal naive scoring worse than naive on
+> MASE". **It does not, on its own.** The larger cause is that seasonal naive
+> predicts `lag_13` on a monthly panel (`srq1_mase.py:144`), which is repair
+> 2.A6 and needs a matrix rebuild. Fixing 2.A5 and declaring the anomaly
+> explained would be wrong.
+>
+> The anomaly is real and ships to assessors: `09_statistical_baselines.md` has
+> SeasonalNaive best on CSD (19.2% WMAPE) while `mase.md` has it losing to Naive
+> (26.8% vs 18.0%; MASE median 1.300 on RTD). Two shipped tables, contradicting
+> each other about the same two models.
 
 **2.A6 (lag 12) is the strongest-evidenced defect in the plan** and needs no
 appeal to the textbook: the repo's own ACF measured lag 12 significant for
@@ -212,8 +227,8 @@ P0048's problem either way.
 
 | Gate | Question | If no |
 |---|---|---|
-| **G0** | Is the v6 work committed and pushed? | **STOP.** Do Phase 0 |
-| **G1** | Do residuals show remaining autocorrelation (Ljung-Box, §5.4)? | Skip 2.B additions; do 2.A repairs anyway — they are correctness fixes, not enhancements |
+| ~~**G0**~~ | ~~Is the v6 work committed and pushed?~~ | ✅ **PASSED 2026-09-13.** `58243f3` pushed; `origin/main...HEAD` = `0 0` |
+| **G1** | Do residuals show remaining autocorrelation (Ljung-Box, §5.4)? ⚠ **must pass `dof = p+q`** per §9.7, or significance is overstated | Skip 2.B additions; do 2.A repairs anyway — they are correctness fixes, not enhancements |
 | **G2** | Do retrained models beat current test WMAPE? | Don't spend the $20; keep v6 |
 | **G3** | Is there time to rewrite Ch4/Ch5 prose? | Abandon; `FALLBACK.md` |
 

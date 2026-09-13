@@ -1,0 +1,12 @@
+{
+  "id": "1",
+  "subject": "Adopt the BRANCH_B_FILES contract for parallel-safe work on main",
+  "activeForm": "Adopting the parallel-safe file contract",
+  "description": "Write plans/P0055_.../BRANCH_B_FILES.md naming every file Branch B may touch and every file it must not. Branch A's Ch9/Ch10 session is writing to main concurrently.\n\nMAY TOUCH (tier 01 SRQ1 + its results only):\n  01_SRQ1_Model_Training/**  (features, baselines, benchmarks, training)\n  05_thesis_results/05_model_benchmark/**  (SRQ1 tables/figures)\n  plans/P0055_*/**\n\nMUST NOT TOUCH (Branch A live surface):\n  04_SRQ4_Scenario_Experiment/**  -- prompts.py especially; any edit invalidates 63 paid runs\n  05_thesis_results/07_decision_synthesis/**, 08_experimental_evaluation/**\n  06_thesis_writing/**  -- the Ch9/Ch10 session owns this\n  02_SRQ2_Tool_Interface/forecast_tool.py  -- SHARED, see task 6\n\nVerify before every commit: git status --short, and stage by explicit path.\n\nDONE 2026-09-13: BRANCH_B_FILES.md written. Green/red/amber zones, plus an ANNOUNCEMENT RULE added per Brian's correction -- Branch B regenerates SRQ1 tables that Ch5/Ch9/Ch10 may cite, so every regeneration is logged to progress.md naming which numbers moved and which chapter cites them.",
+  "status": "completed",
+  "blocks": [
+    "2",
+    "3"
+  ],
+  "blockedBy": []
+}

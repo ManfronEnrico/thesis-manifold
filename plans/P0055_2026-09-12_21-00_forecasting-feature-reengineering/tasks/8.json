@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Repair 2.A1: seasonal ARIMA order on a seasonal monthly panel",
+  "activeForm": "Repairing the ARIMA seasonal order",
+  "description": "srq1_baselines_stat.py:283: SARIMAX(y, order=(1,1,1)) with NO seasonal order, on a monthly panel with confirmed annual seasonality. Its own docstring at line 26 admits 'no pmdarima'.\n\nSources: 9.9 (seasonal ARIMA, the 4th independent confirmation of m=12 in the scan) and 9.6 (estimation and order selection, AICc). The stepwise search itself is 9.7 -- BLOCKED ON TASK 3, which obtains it.\n\nChapter 5 ALREADY ADMITS this omission, so fixing it converts a stated limitation into a result with no new prose argument needed.\n\nBenchmark change, not a feature change: needs no matrix rebuild and ships independently of any retrain. Also note P0051 F2: 27 of 79 brands test as ALREADY STATIONARY, so the blanket d=1 over-differences them -- a fixed d is a specification, not an ADF-selected value, and the prose must say so.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ]
+}

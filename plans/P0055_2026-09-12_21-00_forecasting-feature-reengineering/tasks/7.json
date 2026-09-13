@@ -1,0 +1,12 @@
+{
+  "id": "7",
+  "subject": "Repair 2.A5: MASE seasonal denominator m=1 -> m=12",
+  "activeForm": "Repairing the MASE denominator",
+  "description": "srq1_benchmark_cv.py:200: d = float(np.mean(np.abs(np.diff(y)))) -- that is a lag-1 difference, i.e. m=1. Hyndman & Athanasopoulos 5.8 gives the seasonal denominator q_j = e_j / [1/(T-m) * sum|y_t - y_{t-m}|], m=12 for monthly data.\n\nSINGLE SITE, verified: mase_denominator is defined once at srq1_benchmark_cv.py:184 and imported by srq1_mase.py. One fix, not two.\n\nCORRECTION TO task_plan.md:101 -- it claims 2.A5 alone 'explains the anomaly' of seasonal naive scoring worse than naive. It does NOT. The larger cause is the lag-13 seasonal naive (task 2). Fixing 2.A5 and declaring the anomaly explained would be wrong.\n\nNeeds no retrain -- it rescores existing predictions.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "4",
+    "5"
+  ]
+}

@@ -211,3 +211,87 @@ reportable.
   Nothing in this session changed that, and it remains the gate.
 - No code was modified. The session was read-only apart from plan files.
 - Next: write the derived standard, then diff prose (Phase 5 list is in F10c).
+
+
+---
+
+## Session 2026-09-13 (afternoon) — Branch B opened; tasks 1 and 3 done
+
+**G0 SATISFIED.** `git rev-list --left-right --count origin/main...HEAD` returns
+`0 0`. The Branch A fallback (`58243f3`) is pushed. An earlier report in this
+plan said it was not — that was true when written; Brian pushed since.
+
+### Decisions taken
+
+**Branch B runs on `main`, in parallel with Branch A — deliberately.** Enrico
+needs Ch9/Ch10 pushed and only one branch can be open. Isolation is therefore by
+FILE SURFACE, not by branch. Contract: `BRANCH_B_FILES.md`.
+
+Brian's correction, applied: `05_thesis_results/05_model_benchmark/` is not
+cleanly Branch B's, because Branch B generates numbers the thesis will cite. So
+the contract carries an **announcement rule** — every regeneration under
+`05_thesis_results/` is logged here, naming which numbers moved and which
+chapter cites them.
+
+### Task 1 — DONE. `BRANCH_B_FILES.md` written
+
+Green (01_SRQ1, 05_model_benchmark, plans/P0055) / Red (04_SRQ4 esp.
+`prompts.py`, 07_*, 08_*, 06_thesis_writing) / Amber (`forecast_tool.py:488`,
+the citable SRQ1 tables).
+
+### Task 3 — DONE. Scan closed 41/41
+
+All three outstanding PDFs verified readable at
+`C:/Users/brian/Downloads/Hyndman Book (2021)/`.
+
+⚠ **§9.7 was never missing** — on disk since 2026-09-10, merely unread. An
+earlier claim in this session that it was a gap was wrong: "not yet read" was
+conflated with "not obtainable".
+
+Deleted the stale "Sections still to read" list from `SCAN_LOG.md`; every
+section it named already had a recorded entry, and it contradicted the
+document's own summary.
+
+### Three findings recorded
+
+1. **§9.7 changes task 4's design.** A portmanteau test on ARIMA residuals needs
+   `dof = p + q`. Omitting it OVERSTATES significance — i.e. it would report
+   remaining autocorrelation that is an artefact, biasing G1 toward "do more
+   work". Recorded against task 4 before it is written.
+2. **§5.5 lands on BRANCH A, not B.** *"Point forecasts can be of almost no value
+   without the accompanying prediction intervals."* Ch7 can cite 5.5 for why the
+   interval-communication criterion exists. **Hand to the Ch9/Ch10 session.**
+3. **§5.5 hardens task 2.** Seasonal-naive interval is `sigma*sqrt(k+1)`,
+   k = floor((h-1)/m) — parameterised by m, so lag-13 seasonal naive contradicts
+   its own interval arithmetic.
+
+### Task 2 re-sequenced — it is NOT the standalone quick win it was offered as
+
+Brian approved jumping the queue on the seasonal-naive contradiction. On
+scoping: **`csd_manifest_h3.json` carries lag_1,2,3,4,8,13 — there is no lag_12
+column to point at.** So task 2 is now `blockedBy: [1, 5]`, behind the matrix
+rebuild. Computing a lag-12 inline was rejected: it would put a second,
+divergent lag definition in the codebase, which is the error class task 6 exists
+to remove.
+
+### Verified, not transcribed
+
+- All three repair sites still live, untouched by Branch A's commits:
+  `srq1_benchmark_cv.py:200` (MASE m=1), `srq1_baselines_stat.py:283`
+  (SARIMAX no seasonal order), 19 live lag-13 files (**19, not 22** — the
+  earlier count wrongly included two `.archive/` copies)
+- `mase_denominator` is defined ONCE at `srq1_benchmark_cv.py:184` and imported
+  by `srq1_mase.py`. Task 7 is a single-site fix
+- No Ljung-Box code exists anywhere in the repo. Task 4 writes it from scratch
+- The 5 pre-existing modified files (`prompts.py`, `srq4_experiment.py`,
+  `export_appendix.py`, `score_interval_communication.py`,
+  `train_and_persist.py`) are **Branch A comment corrections**, "three
+  scenarios" -> "seven". Diffed: NO prompt string changed, `SCHEMA_VERSION =
+  "v6-shared-composition"` intact, 63 paid runs valid. **Left uncommitted —
+  they are not Branch B's to commit.**
+
+### Next
+
+**Task 4** — write and run the Ljung-Box gate, with `dof = p+q`. Free, no
+retrain, no spend. Its verdict decides whether the 2.B feature additions happen
+at all.

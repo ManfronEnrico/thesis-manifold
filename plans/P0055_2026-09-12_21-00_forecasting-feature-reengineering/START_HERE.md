@@ -14,6 +14,50 @@ status: in_progress
 > thesis ships the results already on `main`. **Read `FALLBACK.md` in this
 > folder before touching anything** — it records the exact commit to return to.
 
+---
+
+# ⚠ READ FIRST — updated 2026-09-13
+
+## 1. Branch B runs on `main`. Do NOT create a branch.
+
+`task_plan.md` step 0.5 says `git checkout -b data/forecasting-feature-reengineering`.
+**That step is deliberately NOT taken.** A concurrent session is finalising
+Branch A's Ch9/Ch10 and must push to `main` so Enrico has access; only one
+branch can be open at a time.
+
+**Isolation is by FILE SURFACE instead. Read `BRANCH_B_FILES.md` before any
+edit** — green / red / amber zones, plus the announcement rule for regenerated
+results tables. Creating a branch here would break the other session.
+
+## 2. Phase 0 is COMPLETE. G0 passed.
+
+`58243f3` is committed **and pushed** — `origin/main...HEAD` returns `0 0`.
+Earlier text in this plan folder says it was not pushed; that was true when
+written. The fallback is safe.
+
+## 3. The scan is CLOSED, 41 of 41.
+
+5.5, 6.7 and 9.7 were all obtained and read on 2026-09-13. §9.7 was never
+missing — it had been on disk since 09-10 and was merely unread.
+
+## 4. Where to start: task 4.
+
+Tasks 1 and 3 are complete (`tasks/*.json`). **Task 4 is the gate**: write and
+run a Ljung-Box residual test. It is free — no retrain, no API spend — and its
+verdict decides whether the 2.B feature additions happen at all.
+
+⚠ **It must pass `dof = p + q`** (§9.7). Omitting it overstates significance,
+biasing the gate toward "do more work".
+
+## 5. Two things that are true and easy to get wrong
+
+- **Task 2 (seasonal-naive lag) is NOT a standalone quick win.** There is no
+  `lag_12` column in the matrices — verified in `csd_manifest_h3.json`. It is
+  blocked behind task 5's rebuild. Do not compute a lag-12 inline.
+- **§5.5 gives BRANCH A a free citation.** *"Point forecasts can be of almost no
+  value without the accompanying prediction intervals."* Ch7 can cite it for why
+  the interval-communication criterion exists. Hand to the Ch9/Ch10 session.
+
 **You have no conversation history. This file is the whole picture.**
 
 ---

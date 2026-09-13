@@ -1,0 +1,11 @@
+{
+  "id": "6",
+  "subject": "Repair 2.A7: guard on _features.LAGS, not a hardcoded lag_13 literal",
+  "activeForm": "Replacing hardcoded lag literals with the LAGS contract",
+  "description": "Removes the ERROR CLASS rather than this instance of it. Every site that hardcodes 'lag_13' should read the declared lag contract instead, so the next lag change is one edit.\n\nSame 19 files as task 5; do them in one pass. Highest-value single site is 02_SRQ2_Tool_Interface/forecast_tool.py:488, whose dropna currently names lag_13 directly -- a silent degradation if the matrix changes under it.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "5"
+  ]
+}
