@@ -311,7 +311,8 @@ def train_category(cat: str, slug: str) -> dict | None:
         "category": cat,
         "model": f"{model_name}(tuned)" if params else model_name,
         "model_file": model_file_name,
-        "model_selected_by": "lowest test WMAPE in SRQ1 metrics.csv",
+        "model_selected_by": "lowest cross-validated WMAPE in cv_metrics.csv "
+                             "(tuned_for=wmape); test is never consulted",
         "features": feats,
         "n_features": len(feats),
         "clip_negative_features": model_name == "Ridge",

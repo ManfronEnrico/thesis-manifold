@@ -60,7 +60,7 @@ recommendation. It briefly did not: an earlier version of the question asked
 only for a number, a range and a confidence, and scoring a recommendation
 against it measured compliance with an instruction never given -- a finding
 about the prompt rather than about the scenario. The question was changed
-(identically for all three scenarios, so no factor varies between them) rather
+(identically for all seven scenarios, so no factor varies between them) rather
 than the criterion quietly dropped, because Goodwin's result makes the
 interpretive step the part that carries the decision value.
 

@@ -3,8 +3,9 @@
 """
 SRQ4 experiment harness — does model availability improve an LLM's forecasts?
 
-Three scenarios forming an INFORMATION LADDER (B-DEC-5, 2026-08-19). Each adds one
-thing to the scenario below it, so the two increments can be attributed separately:
+Seven scenarios forming an INFORMATION LADDER. Each adds one thing to the scenario
+below it, so the increments can be attributed separately, and the three production
+rungs pair column-wise with their hosted counterparts:
 
   A_llm_plain   no firm data; web search only. Not a null condition -- it finds
             annual reports and market commentary and answers confidently.
@@ -159,7 +160,7 @@ _ft = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_ft)
 # ---------------------------------------------------------------------------
 # Model + pricing (DEC-LLM 2026-07-12, confirmed B-DEC-1 2026-08-19)
 # ---------------------------------------------------------------------------
-# All three scenarios MUST run the same model: the design isolates a single variable
+# Every scenario MUST run the same model: the design isolates a single variable
 # (how the forecast is produced), so a model that differs between scenarios measures
 # LLM quality instead of the intervention.
 #
@@ -178,7 +179,7 @@ REASONING_EFFORT = "medium"   # API default; stated explicitly because reasoning
 # ("Unsupported parameter"). The original protocol specified temperature 0 as
 # the decoding control across scenarios; that is not available on a reasoning model.
 #
-# This does NOT break the comparison -- all three scenarios are equally uncontrolled,
+# This does NOT break the comparison -- every scenario is equally uncontrolled,
 # so decoding is held constant across scenarios in the only sense the API permits.
 # What it changes is the WRITE-UP: run-to-run consistency is a purely measured
 # outcome, and cannot be described as "despite temperature 0". Reporting
@@ -584,7 +585,7 @@ def _eval_forecast(category, brand, month=None):
 # ---------------------------------------------------------------------------
 # Shared OpenAI plumbing
 # ---------------------------------------------------------------------------
-# All three scenarios go through _usage() so token accounting is identical across
+# Every scenario goes through _usage() so token accounting is identical across
 # them. Any per-scenario difference in how cost is measured would confound the cost
 # comparison, which B-DEC-6 promoted to a primary outcome.
 # The engine classes exist because scenarios D and E can fail in ways A-C
@@ -674,7 +675,7 @@ def _trace(scenario, extra=None):
          # The PROMPT REGISTRY entry (Dong et al., 2024 name execution traces,
          # tool-call spans and prompt registries as the artefacts an agent needs
          # to be auditable; ch2 §2.5). schema_id() hashes every prompt string
-         # sent to the model -- the question, all three capability notes, the
+         # sent to the model -- the question, every capability note, the
          # exemplar, the sentinel and the tool schema -- while excluding the
          # per-run substitutions logged separately.
          #
@@ -732,7 +733,7 @@ def _response_detail(r):
 
 
 def _result(scenario, text, err, t0, u, forecast, containers=0, hit_limit=False, trace_extra=None):
-    """Uniform result record. One shape across all three scenarios so the results
+    """Uniform result record. One shape across all seven scenarios so the results
     writer never has to branch on which scenario produced a row."""
     return {"answer": text or (err or "(no output)"),
             "latency_s": round(time.perf_counter() - t0, 2),
@@ -1918,7 +1919,7 @@ def _write_summary(df, OUT, repeats, brands, t_start):
 def main():
     ap = argparse.ArgumentParser(description="SRQ4 experiment: seven-scenario information ladder")
     ap.add_argument("--demo", action="store_true",
-                    help="one brand through all three scenarios, no repeats -- the smoke test")
+                    help="one brand through all seven scenarios, no repeats -- the smoke test")
     ap.add_argument("--full", action="store_true", help="the full experiment")
     ap.add_argument("--repeats", type=int, default=5)
     # Default is None, NOT [4,4,4,3] -- the literal default silently overrode

@@ -12,7 +12,7 @@ methodology appendix without transcription.
 
 THE SHARED QUESTION
 -------------------
-All three scenarios are asked the SAME user question, verbatim:
+All seven scenarios are asked the SAME user question, verbatim:
 
     How many units of {brand} will be sold in the {category} category in
     Danish retail in {target}? Answer in units sold, not currency. Give the
@@ -56,7 +56,7 @@ An earlier version of this question asked only for a number, a range and a
 confidence. That made the interpretive step unobservable: the evaluation could
 show whether a forecast was accurate, but not whether the system did the thing
 Chapter 2 argues is the point of having an agent at all. The request is added
-IDENTICALLY to all three scenarios, so it varies no factor between them.
+IDENTICALLY to all seven scenarios, so it varies no factor between them.
 
 WHY A ONE-SHOT OUTPUT EXEMPLAR
 ------------------------------
@@ -88,7 +88,7 @@ Run `python prompts.py` to print every prompt with a worked example.
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# The shared user question -- identical across all three scenarios
+# The shared user question -- identical across all seven scenarios
 # ---------------------------------------------------------------------------
 # "how many UNITS" is not a stylistic choice. The first paid run (2026-08-19)
 # asked "what will X sell", and all six Scenario A runs answered in DKK --
@@ -120,10 +120,10 @@ USER_QUESTION = (
 # One exemplar, not several. Brown et al. (2020) show that most of the gain from
 # in-context examples arrives with the first, with sharply diminishing returns
 # after; and every additional example is tokens paid on every run across all
-# three scenarios. One example is also the smallest intervention that fixes the
+# seven scenarios. One example is also the smallest intervention that fixes the
 # format, which matters because the exemplar is prompt content and therefore a
-# potential confound: whatever it demonstrates, it demonstrates to A, B and C
-# alike, so it cannot advantage one scenario over another.
+# potential confound: whatever it demonstrates, it demonstrates to every rung of
+# the ladder alike, so it cannot advantage one scenario over another.
 #
 # The exemplar deliberately uses a DIFFERENT category and a DIFFERENT brand from
 # any scored cell, and rounded, obviously-illustrative figures. It shows the
@@ -373,8 +373,8 @@ FORECAST_TOOL_SCHEMA = {
 #   v3  2026-09-03  adds the recommendation request (Goodwin: the interpretive
 #                   step from interval to decision is where the decision value
 #                   lies) and a one-shot output exemplar fixing the answer shape
-#                   for programmatic extraction. Both applied identically to all
-#                   three scenarios, so no factor varies between them.
+#                   for programmatic extraction. Both applied identically to
+#                   every scenario, so no factor varies between them.
 #   v4  2026-09-10  adds scenarios D and E (the Prometheus orchestrator). The
 #                   A/B/C strings are BYTE-IDENTICAL to v3 -- question, exemplar
 #                   and sentinel unchanged -- so A-C ask exactly what they did.
@@ -389,7 +389,7 @@ SCHEMA_VERSION = "v6-shared-composition"
 def schema_id() -> str:
     """Short stable hash of every prompt string sent to the model.
 
-    Covers the question, all three capability notes, the exemplar, the sentinel
+    Covers the question, every capability note, the exemplar, the sentinel
     instruction and the tool schema. Excludes per-run substitutions (brand,
     category, month, CSV) -- those vary by design and are logged per run."""
     import hashlib

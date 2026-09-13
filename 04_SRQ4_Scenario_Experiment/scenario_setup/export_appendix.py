@@ -923,8 +923,8 @@ def _current_schema() -> str | None:
 def _coverage(df: pd.DataFrame) -> str:
     """State what the table covers, so a draft screenshot cannot mislead.
 
-    The live `runs.csv` currently holds only the scenario-A pilot. The one
-    earlier run that exercised all three scenarios (2026-08-19) is retained
+    The live `runs.csv` holds the complete funded set: seven scenarios, three
+    brands, three repeats. The one earlier run (2026-08-19) is retained
     under `run_2026-08-19_dkk-confound/` and is deliberately NOT aggregated
     here: its prompt asked "what will X sell" without naming a unit, and every
     scenario-A answer came back in currency rather than units, scoring a ~4500%
