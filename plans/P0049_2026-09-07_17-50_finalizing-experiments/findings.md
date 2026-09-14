@@ -3,7 +3,7 @@ name: p0049-findings
 description: STATE - Findings from P0049. F23 records the horizon fix: what was broken, where, and how each layer was verified.
 pid: P0049
 created: 2026_09_07-18_55
-updated: 2026_09_07-18_55
+updated: 2026_09_14-23_55
 ---
 
 # P0049 — Findings
@@ -2330,3 +2330,79 @@ filter at every read site, not a mutation of the results file.
 `A_llm_plain__CSD__RB_K__rep0.json` — a leftover from the pre-`_TRANSLIT` slug
 bug that rendered ØRBÆK as `RB_K`. Excluded from the 63 by schema, but it should
 not be committed in that state.
+
+---
+
+## F60 - `scenario_inputs/` shipped the PRE-patch four-column slice for two days
+
+**2026-09-14.** Brian asked why `scenario_inputs/` held 4-5 column CSVs when the
+warehouse patch was applied before the funded runs. It did. The folder was a
+stale export, and the experiment was never affected.
+
+### What actually ran
+
+The funded prompts carry **32 warehouse columns**, verified in the run logs:
+
+> *"Here is the brand's monthly sales history, as it comes out of the sales data
+> warehouse after joining the fact and dimension tables and aggregating to
+> brand-month:"* followed by `period_year, period_month, n_skus_observed,
+> sales_value, ... weighted_distribution_any_tpr`
+
+`_brand_history()` was changed 2026-09-12 to read the pre-cleaning extract via
+`_agent_history()`. Its comment states the reasoning: the engineered matrix
+*"gives away the work SRQ4 exists to measure"*, and `promo_intensity` is an
+engineered shifted ratio, not a warehouse column. It also names the
+falsifiability argument - 4 columns where the warehouse holds 32 made *"the
+agent found no signal"* unfalsifiable.
+
+### Why the export disagreed
+
+Two writers, two days apart. `export_scenario_inputs.py` calls `_brand_history()`
+and so cannot produce a wrong shape - but it had not been RUN since the function
+changed, or since F58's volume floor replaced NIKOLINE/VOELKEL with 7-UP/OERBAEK.
+**The export was stale in two independent ways at once.**
+
+Its README meanwhile claimed the files *"cannot drift from what the scenarios
+actually run on"*. True of the mechanism, false of the artefact, and the
+confident phrasing is what made it costly - S33 records someone joining against
+it and getting ratios up to 9,230x before tracing the staleness.
+
+### The fix, and the one thing that made it non-obvious
+
+Re-running crashed on Danskvand: `agent_inputs/` holds **only CSD**, because the
+funded experiment scored only CSD - 65 runs, three brands. `_agent_history()`
+refuses to fall back to the engineered matrix, by design, so the crash was
+correct behaviour.
+
+That crash had already led another session to conclude re-export was *"not
+possible"* and recommend deleting the folder. **The premise was half right.**
+Re-exporting all four categories is impossible; re-exporting what actually ran
+needs no warehouse access at all. Rebuilding the other nine brands would have
+manufactured evidence for runs that never happened.
+
+`export_scenario_inputs.py` now tests each category's extract before reading any
+brand and skips with a named reason, so the partial-write state cannot recur.
+
+### Verified
+
+All three CSVs are **byte-identical to the CSV embedded in the funded runs'
+logged prompts** - 32 columns, 39 rows - checked on two independent runs.
+
+| Brand | stratum | scored | held-out actual |
+|---|---|---|---|
+| HARBOE | max_volume | 2026-03 | 6,365,899.77 |
+| 7-UP | median_volume | 2026-03 | 13,041.55 |
+| OERBAEK | min_volume | 2026-03 | 2,850.13 |
+
+### The general lesson, which is F21's again
+
+A generated artefact carries the state of its last RUN, not the state of its
+generator. A provenance claim that describes the mechanism (*"calls the harness's
+own function"*) reads as a claim about the artefact and is not one. The README
+now carries the export date and states plainly that it does not update itself -
+per S33's own closing warning that an inaccurate provenance claim is worse than
+none.
+
+Third instance in one day, with the residual-diagnostics table and the appendix
+prompt schema. **The pattern is a dated artefact whose caveat lives somewhere the
+reader will not look.**

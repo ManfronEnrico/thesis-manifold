@@ -3,7 +3,7 @@ name: p0049-progress
 description: STATE - Session log for P0049. What was delivered, what was tried and rejected, and exactly where the two-horizon run stopped.
 pid: P0049
 created: 2026_09_07-20_45
-updated: 2026_09_07-20_45
+updated: 2026_09_14-23_55
 ---
 
 # P0049 — Progress
@@ -387,3 +387,82 @@ be verified".
 
 **Not restored**, because it predates this session and the right content is a
 judgement call. Recoverable with `git show 202f75a^:06_thesis_writing/writing-notes/unverified-claims-to-check.md`.
+
+---
+
+## Session 2026-09-14 — scenario inputs re-exported; Branch B closed
+
+Scope this session was **SRQ4 experiment code and Branch A prose only**. The
+appendix, figure and citation work belongs to a parallel session and was not
+touched.
+
+### Delivered
+
+**`scenario_inputs/` re-exported to the brands the funded runs actually scored**
+(F60). It had shipped a four-column slice naming pre-F58 brands since 09-10.
+The experiment was never affected — the funded prompts carry 32 warehouse
+columns, confirmed in the run logs — but the shipped evidence contradicted the
+method. Three CSVs now verified **byte-identical to the logged prompts**, on two
+independent runs. Eleven CSVs naming brands no funded run scored were deleted.
+
+**`export_scenario_inputs.py` checks before it reads.** It walked all four
+categories unconditionally and crashed on Danskvand, leaving five CSD files
+describing two brand selections. It now tests each category's warehouse extract
+first and skips with a named reason.
+
+**The residual-diagnostics table states its own limitation.** The Ljung-Box gate
+ran on in-sample residuals where ch 5.3 requires cross-validation residuals, and
+the cross-validation re-run is not happening. The caveat moved INTO the generator
+(not the output file, which the next run would overwrite), with the seasonal-ACF
+split computed rather than quoted: +0.361 among the 51 rejecting series against
++0.064 among the 179 that do not.
+
+**Branch B closed.** Submission is 2026-09-15 14:00 and a retrain plus experiment
+re-run does not fit. P0055 marked inactive, `BRANCH_B_FILES.md` superseded.
+
+### Tried and rejected
+
+**Rebuilding `agent_inputs/` for the other three categories.** `build_agent_inputs.py`
+would have produced warehouse extracts for brands no scenario ever forecast —
+evidence for runs that do not exist. Deleting the stale CSVs was correct.
+
+**Deleting `scenario_inputs/` entirely**, which S33 recommended. Its premise that
+re-export is "not possible" holds only for categories the experiment never
+scored. Re-exported, the folder is the only place an assessor sees the exact
+bytes a scenario received without running the harness.
+
+### Near-misses
+
+**`git add <directory>` swept in nine of the parallel session's files** — the
+destination half of an `.archive/smoke` move they had staged. Caught by reading
+`git diff --cached --name-status` before committing, unstaged, their move intact.
+Directory-level staging is not selective staging.
+
+**A hand-edited generated table.** The residual caveat was first written directly
+into `residual_diagnostics.md`, which the next producer run would have destroyed
+— exactly the failure the provenance rule exists to stop. Moved into the
+generator and re-run to verify reproduction.
+
+**The EOD producer re-run mutated a committed artefact.** `README.md` embeds
+`date.today()`, so re-running after midnight changed 09-14 to 09-15. Reverted:
+the committed date is when the export was verified against the funded prompts.
+A dated artefact is not idempotent across midnight.
+
+### Commits
+
+| | |
+|---|---|
+| `41ecb76` | residual table caveat in the generator; Branch B closed |
+| `2b33025` | scenario inputs re-exported; exporter guards categories; S33 closed |
+
+Both staged by explicit pathspec — the working tree carries a parallel session's
+appendix renumbering throughout.
+
+### Open, and NOT this session's
+
+The parallel session owns the appendix table renumbering (33 deletions in
+`git status`, all verified as renames or regenerations), the prompt-schema
+refresh, `ch7_scenarios_v2.svg`, and the citation pass.
+
+`CSD__7-UP.csv` is the appendix example when they want it — mid-volume, so it
+invites neither "you showed the easy one" nor "you showed the degenerate one".
