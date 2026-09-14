@@ -4,7 +4,7 @@ description: NOTE - Running list of structural decisions deferred out of chapter
 category: workflow
 applies-to: [chapter 4, chapter 5, chapter 6, chapter 7, chapter 8, appendix]
 created: 2026_09_09-17_10
-updated: 2026_09_12-20_44
+updated: 2026_09_14-12_40
 status: open
 ---
 
@@ -921,3 +921,110 @@ S26, so removing one renumbers Chapters 8 and 9 on their own.
 ⚠ **Chapter 5's Table 13 is now the thesis's only copy**, which makes its three
 label defects load-bearing rather than cosmetic: "Median relative interval width",
 and capitalised `Danskvand` and `Energidrikke`. "n test" is correct and stays.
+
+---
+
+## S33 - `scenario_inputs/` is a stale export whose README claims it cannot drift
+
+**Status:** `done` 2026-09-14 - **re-exported, not deleted.** The folder now holds
+the three CSD brands the funded runs scored, verified byte-identical to the
+logged prompts. See *Resolution* at the end of this entry
+**Found:** 2026-09-14, while running the anchoring test
+
+`05_thesis_results/08_experimental_evaluation/scenario_inputs/` was written
+2026-09-10 and names CSD brands **NIKOLINE** and **VOELKEL**. The funded runs
+(2026-09-12) used **7-UP** and **ØRBÆK**, following F58's 1,000-unit volume floor
+— VOELKEL at nine units a month made APE measure integer rounding rather than
+forecasting skill. `index.csv` therefore records held-out actuals of 457.1 and
+9.0 for brands no funded run scored.
+
+Its README states the files *"cannot drift from what the scenarios actually run
+on"*, because they are written by the harness's own `_brand_history()`. That was
+true when written and is **false now** — the export was simply not re-run after
+the brand selection changed.
+
+**No chapter cites it, so nothing in the thesis is wrong.** The risk is entirely
+to a reader of the submission repository who joins against it. That happened in
+this project on 2026-09-14 and produced ratios up to 9,230x before the staleness
+was traced.
+
+**Recommendation: delete the folder.** Re-export was attempted and cannot
+succeed; the reasoning is below.
+
+### Update 2026-09-14 — the re-export was attempted and failed
+
+`export_scenario_inputs.py` was run. It wrote the three corrected CSD files
+(HARBOE, 7-UP, ØRBÆK) and then **crashed** on Danskvand:
+
+```
+FileNotFoundError: No agent input for Danskvand/HARBOE.
+  Expected: 04_SRQ4_Scenario_Experiment/agent_inputs/Danskvand/HARBOE_brand_month.csv
+```
+
+**`agent_inputs/` contains only CSD.** The generator reads the warehouse extract
+through `_brand_history()` (changed 2026-09-12), and that extract was only ever
+built for the one category the funded run scored. Rebuilding the other nine
+brands' inputs means running `build_agent_inputs.py` against the warehouse for
+three more categories.
+
+**The half-written state was worse than the stale one** — five CSD files
+describing two different brand selections, with `index.csv` never rewritten and
+still naming the old pair. It was reverted immediately (`git checkout` plus
+removing two untracked files); the folder is byte-identical to `41ecb76` and
+`git status` is clean.
+
+**Why delete rather than rebuild:**
+
+1. The folder is **evidence, not a dependency** — its own docstring says so. The
+   harness reads `_03_engineered/*.parquet` and never reads this directory, and
+   the engineered matrices ship with the submission.
+2. **No chapter cites it.**
+3. Rebuilding it requires warehouse access for three categories that the funded
+   experiment never used, to produce evidence for runs that were never scored.
+4. Left in place, it is a trap: its README claims the files "cannot drift from
+   what the scenarios actually run on", and a reader who believes that gets the
+   pre-F58 brands. **That is exactly the failure it caused on 2026-09-14.**
+
+⚠ **If the folder is kept instead, the README's drift claim must be deleted and
+replaced with the export date and the brand selection it reflects.** An
+inaccurate provenance claim is worse than no provenance claim.
+
+### Resolution 2026-09-14 - kept and re-exported. One premise above was wrong.
+
+**"Re-export is not possible" was too strong.** Re-exporting *every* category is
+not possible, because `agent_inputs/` holds only CSD. But the funded experiment
+scored **only CSD** - 65 runs across three brands - so exporting exactly what ran
+needs no warehouse access at all. The blocked half was evidence for runs that
+never happened.
+
+The exporter crashed because it walked all four categories unconditionally. It
+now checks for each category's extract first, skips the three that have none with
+a named reason, and exports the rest. The failure mode that produced the
+half-written state is gone rather than worked around.
+
+**What the folder now holds**, verified twice on independent runs:
+
+| Brand | stratum | cols | rows | scored | vs. logged prompt |
+|---|---|---|---|---|---|
+| HARBOE | max_volume | 32 | 39 | 2026-03 | **byte-identical** |
+| 7-UP | median_volume | 32 | 39 | 2026-03 | **byte-identical** |
+| ØRBÆK | min_volume | 32 | 39 | 2026-03 | **byte-identical** |
+
+The eleven CSVs naming brands no funded run scored are deleted. `index.csv` gains
+a `cols` column, so the 32-column shape is visible without opening a file.
+
+**The README's false claim is gone.** It now carries the export date, the
+categories and brands covered, the column shape, and an explicit statement that
+this is a dated export which does not update itself. It also records that these
+are warehouse columns rather than engineered features, and that the scenario
+receives the warehouse's column documentation alongside them - both of which a
+reader would otherwise have to infer from the harness.
+
+**Why keeping it beat deleting it.** The recommendation to delete was sound while
+the folder was a trap. Re-exported it is the opposite: the only place an assessor
+can see the exact bytes a scenario was handed without running the harness or
+opening a parquet. Ch8's appendix can now show one of these files as the worked
+example of Scenario B's input, which is what prompted the re-export.
+
+⚠ **It is still an export, and it still has no defence against going stale.**
+That is now stated on the artefact itself rather than contradicted by it.
