@@ -1,10 +1,46 @@
 ---
 name: p0055-start-here
-description: STATE - Entry point for P0055. The forecasting-feature re-engineering attempt, run on a branch with a named fallback. Written for a session with no conversation history.
+description: STATE - Entry point for P0055. INACTIVE as of 2026-09-14 - Branch B was not pursued and the thesis ships Branch A. Kept for the book findings it records.
 pid: P0055
 created: 2026_09_12-21_00
-updated: 2026_09_12-21_00
-status: in_progress
+updated: 2026_09_14-11_00
+status: inactive
+---
+
+# ⛔ P0055 IS INACTIVE — the fallback was taken, as designed
+
+**Decided 2026-09-14, 11:00.** Submission is due 14:00 on 2026-09-15, and
+retraining plus re-running the experiment does not fit in the time remaining.
+**The thesis ships Branch A** — the results already on `main`.
+
+This is the plan working as intended, not a plan failing. It was written as
+optional work with a named fallback, and the fallback was taken.
+
+## Do not start any task in this folder.
+
+Tasks 2 and 5–26 were never started. **Tasks 1, 3 and 4 are complete and their
+output is on `main`** — the book scan and the Ljung-Box residual gate. Task 12
+(re-run the gate on cross-validation residuals) will not run, so the gate's
+in-sample limitation is permanent and is now **stated on the table itself**:
+`05_thesis_results/05_model_benchmark/tables/residual_diagnostics.md`.
+
+## What this folder is still good for
+
+`findings.md` — 22 findings from a complete read of Hyndman & Athanasopoulos,
+each one line-numbered against this repo. That is the evidence base behind the
+limitations Chapters 5 and 9 admit, and behind the defence answers in
+`06_thesis_writing/writing-notes/anticipated-assessor-questions.md`. It is worth
+reading before the defence and is the most durable thing this plan produced.
+
+---
+
+<details>
+<summary><strong>Superseded planning text, kept for the record — click to expand</strong></summary>
+
+> Everything below describes Branch B as live work. It is retained because it
+> records the reasoning behind the folder-split decision and the task list, but
+> **none of it should be acted on.**
+
 ---
 
 # P0055 — Forecasting feature re-engineering: START HERE
@@ -156,3 +192,5 @@ stale regardless of whether this plan proceeds. See `findings.md` F4.
 | **P0050** | figures and tables | Regenerates everything after a retrain |
 | **P0051** | EDA diagnostics computed-but-unconsumed | **READ IT FIRST.** It is this plan's evidence base, not a subset — see findings F5. Stays open |
 | **P0053** | HPC training runs | The retraining executes there; runbook is in its `START_HERE.md` |
+
+</details>

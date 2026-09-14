@@ -1,10 +1,32 @@
 ---
 name: branch-b-files
-description: CONTRACT - Which files Branch B may touch while Branch A's Ch9/Ch10 session works concurrently on main. Read before every edit and every commit.
+description: SUPERSEDED - The file contract for Branch B, which was not pursued. Kept as a record of how parallel work on main was to be isolated. Do not treat as a live constraint.
 pid: P0055
 created: 2026_09_13
-updated: 2026_09_13
-status: current
+updated: 2026_09_14
+status: superseded
+---
+
+# ⛔ SUPERSEDED 2026-09-14 — Branch B was not pursued
+
+**The thesis ships Branch A.** Brian decided on 2026-09-14, with submission due
+14:00 on 2026-09-15, that there was not enough time to retrain and re-run the
+experiment. No folder split was built, and no Branch B tree exists.
+
+**Nothing in this file is a live constraint.** It is kept because it records how
+two concurrent sessions on `main` were kept apart, which is the part worth
+remembering if the situation recurs.
+
+Two notes for anyone reading this later:
+
+- **The 🔴 RED zone below lists `06_thesis_writing/**` as Branch A's.** Four
+  chapter notes were nonetheless written there on 2026-09-13, at Brian's explicit
+  instruction, recording book citations that strengthen Branch A. That was
+  authorised and is not a contract violation.
+- **The general rule outlived the contract.** Stage by explicit path, never
+  `git add -A` — that one is in `CLAUDE.md` and applies regardless of what this
+  file says.
+
 ---
 
 # Branch B file contract — parallel work on `main`

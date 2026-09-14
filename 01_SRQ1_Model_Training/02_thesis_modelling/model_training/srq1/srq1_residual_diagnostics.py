@@ -35,6 +35,27 @@ The baseline in srq1_baselines_stat.py fits SARIMAX(order=(1,1,1)), giving
 p = 1, q = 1 and therefore DOF = 2. Both are derived from ARIMA_ORDER below rather
 than written as a literal, so the two cannot drift apart.
 
+THE IN-SAMPLE LIMITATION, AND WHY IT IS STATED ON THE TABLE
+-----------------------------------------------------------
+Ch 5.3 draws a line this script does NOT cross: residuals are not forecast
+errors, because "any parameters involved are estimated using all available
+observations, including future observations". A diagnostic meant to describe
+FORECASTING behaviour belongs on cross-validation residuals. This one runs on
+the in-sample residuals of a single fit per series, and is therefore a
+statement about fit rather than about forecast accuracy.
+
+That limitation is permanent -- the cross-validation re-run was planned and not
+taken -- so it is written into the emitted table rather than tracked elsewhere.
+A reader of the table must be able to see the caveat without access to any plan
+folder.
+
+The bias has a known direction, which is what makes the verdict still usable:
+in-sample residuals are optimistically clean, because the fitted parameters have
+already absorbed some of the structure the test looks for. The rejection rates
+are therefore LOWER BOUNDS, and structure detected under an optimistic test is
+genuinely present. The seasonal-ACF split is stronger still -- both halves are
+measured identically, so the optimism cancels in the contrast.
+
 WHAT IT READS AND WRITES
 ------------------------
 Reads the same engineered brand x month matrices as the baselines, and applies the
@@ -256,6 +277,13 @@ def main():
     pb.to_csv(out_dir / "residual_diagnostics_per_brand.csv", index=False)
     summ.to_csv(out_dir / "residual_diagnostics.csv", index=False)
 
+    # The seasonal-ACF split, computed here rather than quoted. It is the one
+    # claim in this table that survives the in-sample limitation, because both
+    # halves are measured the same way and the optimism cancels in the contrast.
+    _rej_mask = pb["rejects"].astype(bool)
+    acf12_reject = float(pb.loc[_rej_mask, "acf_seasonal"].median())
+    acf12_norej = float(pb.loc[~_rej_mask, "acf_seasonal"].median())
+
     # Every figure below is interpolated from a value computed this run. Nothing
     # is transcribed -- a hardcoded result is true when typed and wrong after the
     # next re-run.
@@ -304,7 +332,35 @@ def main():
         f"construction. A rate materially above that is remaining structure, "
         f"not test noise.",
         "",
+        f"**These residuals are in-sample, and that qualifies the rejection "
+        f"rates above.** Hyndman & Athanasopoulos (3rd ed., ch 5.3) distinguish "
+        f"residuals from true forecast errors: fitted values \"are often not "
+        f"true forecasts because any parameters involved are estimated using "
+        f"all available observations, including future observations\". A "
+        f"residual diagnostic that is to describe forecasting behaviour should "
+        f"therefore be computed on cross-validation residuals. The figures here "
+        f"are computed on the in-sample residuals of a single fit per series.",
+        "",
+        f"The direction of that bias is known. In-sample residuals are "
+        f"optimistically clean, because the fitted parameters have already "
+        f"absorbed some of the structure the test is looking for. **The "
+        f"rejection rates in this table are therefore lower bounds**, and the "
+        f"qualitative verdict is the conservative one: structure detected under "
+        f"an optimistic test is structure that is genuinely present. The rates "
+        f"themselves should be read as indicative rather than exact.",
+        "",
         f"**Verdict: {verdict}.**",
+        "",
+        f"The seasonal localisation survives this limitation intact, because it "
+        f"is a comparison made under identical conditions rather than an "
+        f"absolute level: among the {overall_rej} rejecting series the median "
+        f"ACF at lag {SEASONAL_PERIOD} is {acf12_reject:+.3f}, against "
+        f"{acf12_norej:+.3f} among the {overall_n - overall_rej} that do not "
+        f"reject. Both halves of that contrast are computed the same way, so "
+        f"the in-sample optimism applies equally to each and cancels in the "
+        f"comparison. What remains unmodelled is concentrated at the annual "
+        f"lag, which is what a non-seasonal ARIMA on a monthly panel would be "
+        f"expected to leave behind.",
         "",
     ]
     (out_dir / "residual_diagnostics.md").write_text(
