@@ -380,3 +380,78 @@ retired an artefact.
 ### Still uncommitted
 
 Everything from all three of today's sessions.
+
+---
+
+## Session 2026-09-14 / 15 — the SVG table styling pass
+
+Brian's instruction: every table, including plain lookups, renders through the
+same `.svg` path, *"because it guarantees style consistency across ALL tables"*.
+Only the highlighting is conditional; the form never is.
+
+### Delivered
+
+`05_thesis_results/styled_tables.py` — the shared renderer. Cambria 9pt, white
+ground, left alignment everywhere, per-side rules, semantic colour, a legend
+generated from the same constants that style the cells, and the note carried
+inside the table rather than in the graph caption.
+
+**Page geometry settled from Brian's own Word setup**: A4 landscape, margins
+2/2/1/1, giving a 27.7 x 17 cm text block = 785 x 482 pt, **ratio 1.63**. This
+supersedes the 3.6 cap, which came from the portrait figure rule and was never
+right for appendix tables. Applied as a **ceiling, not a target** — Brian:
+*"I would set the cap so nothing exceeds landscape, and let narrow tables stay
+narrow"* — so a four-column lookup is not stretched to fill the page.
+
+**Font chosen on evidence, not preference.** Times New Roman was asked for
+first. The Times files exist in Windows but graphviz ships its own text stack
+and never sees them: it falls back to a sans face for *metrics* while the SVG
+still names Times, so text would display in one font and every column width be
+computed in another. Cambria loads cleanly and measures narrower at 9pt (189 vs
+219 on the same string). Also measured: **there is no semi-bold** — "Cambria
+Semibold" and a deliberately invented font name both render as Bold, so the
+header/first-column contrast comes from the borders.
+
+Folder migration: table SVGs into `tables/`, charts into `plots/`, `.source_md/`
+per chapter, and the writers repointed so the next regeneration does not undo it.
+
+Prophet memory profiling implemented and re-run — it now records real values
+(5.2 MB) rather than reporting nothing.
+
+### Two defects found by looking at the output, not by reading the code
+
+**F37 — an empty graphviz `SIDES` means all four sides.** Brian reported "the
+cell borders of content are messed up" and hypothesised a border-application
+ordering bug. Probed: `""`, `"none"` and `" "` all render a full box. Under
+`CELLBORDER="1"` the default is all four sides and an empty value falls back to
+it, so every interior body cell was drawn as a grid box. Not an ordering
+problem. `_sides()` carried a docstring asserting the opposite and this file
+repeated it as verified — a confident claim in two places, never probed.
+
+**F38 — the EDA figure count globs `*.png` in an SVG-only tree.** Prints "0
+figures" where there are eight. The number is computed from a real directory
+read, which is what the provenance rule asks for, and is still wrong: the
+predicate went stale at DEC-SVG-ONLY. A zero from a live `glob` is
+indistinguishable from a true zero.
+
+### Investigated and answered, so the next session does not re-derive it
+
+**`interval_faithful` 0 of 9 for A, B, D, F, G is not a regex failure.** All 63
+runs have `states_interval = True` — a range is always stated. Criterion 2 also
+needs the payload the tool returned, and `_payload_for_record()` returns empty
+unless `payload_complete` is set, so a run without one fails by construction.
+For A and B that is the intended finding. **F and G remain open**: both are
+tool-backed by name and still score zero, which is either a logging gap or the
+recompute guard rejecting the payload. That distinction decides whether the Ch7
+note describes the artefact or the harness — do not write the note before
+settling it.
+
+### Deliberately not done
+
+The border fix itself. Brian: *"Please update the requirements document before
+implementing."* The contract is now current, including the corrected mechanism,
+and implementation starts from it.
+
+### Still uncommitted
+
+Everything from this session and the three before it.

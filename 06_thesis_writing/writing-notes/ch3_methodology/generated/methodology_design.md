@@ -7,11 +7,11 @@
 |---|---|
 | Table | `05_thesis_results/03_methodology/figures/ch3_methodology_design_v1.svg` |
 | Producer | `05_thesis_results/generate_methodology_diagram.py` |
-| Written | 2026-09-10 17:27 UTC |
+| Written | 2026-09-14 19:08 UTC |
 
 ---
 
-Parsed from `06_thesis_writing/docx-exported-snapshots/2026-09-10_19-08_ch5-sequential-followup/chapters/ch3-methodology.md` in snapshot `2026-09-10_19-08_ch5-sequential-followup`: 7 sections, 4 sub-questions, 6 of 6 DSR activities carrying an explicit chapter.
+Parsed from `06_thesis_writing/docx-exported-snapshots/2026-09-14_16-21_post-comment-pass-archive/chapters/ch3-methodology.md` in snapshot `2026-09-14_16-21_post-comment-pass-archive`: 7 sections, 4 sub-questions, 6 of 6 DSR activities carrying an explicit chapter.
 
 Two halves, different provenance. PARSED: section numbers and titles, the sub-question subjects, and the activity-to-chapter mapping -- all re-read on every run, so a chapter edit cannot leave them stale. CURATED: the three-phase grouping in `_GROUPS` and the one-line gloss per section in `_GLOSS`. Those are an editorial reading of the chapter and there is no artefact to derive them from.
 

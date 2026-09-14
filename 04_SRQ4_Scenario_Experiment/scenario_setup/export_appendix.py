@@ -133,6 +133,11 @@ _TABLE_CHAPTER: dict = {
     "scenario_comparison": "experimental_evaluation",
     "outcome_taxonomy": "experimental_evaluation",
     "per_run_record": "experimental_evaluation",
+    # The record is split across pages -- 63 rows do not fit a 482pt text
+    # block at any scale. Each part routes to the same chapter as the whole.
+    "per_run_record_p1": "experimental_evaluation",
+    "per_run_record_p2": "experimental_evaluation",
+    "model_metadata": "model_benchmark",
     "run_configuration": "experimental_evaluation",
     "sandbox_resource_profile": "experimental_evaluation",
 }
@@ -165,15 +170,175 @@ def _emit(slug: str, title: str, caption: str, df: pd.DataFrame,
     stem = f"{_SEQ[0]:02d}_{slug}"
     df.to_csv(out / f"{stem}.csv", index=False, encoding="utf-8")
 
-    lines = [f"**{title}.** {caption}", "", df.to_markdown(index=False)]
+    # The SVG is rendered from the UNEMPHASISED frame. `md` may carry Markdown
+    # emphasis; `df` never does, so no renderer inherits another's markup.
+    md = _md_emphasis.pop(id(df), df)
+    lines = [f"**{title}.** {caption}", "", md.to_markdown(index=False)]
     if note:
         lines += ["", f"*Note.* {note}"]
     (out / f"{stem}.md").write_text("\n".join(lines) + "\n",
                                     encoding="utf-8", newline="\n")
 
+    _render_svg(slug, stem, title, caption, df, note)
     _write_review_note(slug, stem, title, review)
     _INDEX.append((title, stem))
     print(f"  {stem:42s} {len(df):>4d} rows  {title}")
+
+
+# Which tables carry a comparison worth marking, and in which direction. A slug
+# ABSENT from this map still gets the house styling -- same header band, borders,
+# type and spacing -- but no semantic colour, because a lookup has no winner and
+# colouring one would assert a comparison the table does not make.
+#
+# Consistency of FORM across every table; highlighting only where it means
+# something.
+_RANKED: dict = {
+    "scenario_comparison": {
+        "Median APE (%)": True, "Mean APE (%)": True,
+        "Consistency, CV across repeats (%)": True,
+        "Cost per answer, estimated (USD)": True,
+        "Response time (s)": True, "Tokens per answer": True,
+        "Replicability, identical answers (%)": False,
+        "Top-answer agreement rate": False,
+    },
+    "interval_communication": {"Mean criteria met (of 4)": False},
+    # These five previously got their emphasis from _bold_best writing `***`
+    # into the data, which the SVG printed literally. They now rank here, so
+    # each rendering applies its own emphasis. Lower is better throughout:
+    # every ranked row is a time, a memory figure or an error.
+    "substrate_resource_profile": "_ALL_LOWER",
+    "sandbox_resource_profile": "_ALL_LOWER",
+    "retraining_cost": "_ALL_LOWER",
+    "parameter_drift": "_ALL_LOWER",
+    "statistical_baselines": "_ALL_LOWER",
+    "seed_stability": "_ALL_LOWER",
+}
+
+
+# One warning per run, not one per table: sixteen identical lines would bury
+# the thing they are warning about.
+_SVG_WARNED: list = []
+
+
+# Which rows belong together, per table. A light rule separates one band from
+# the next, so a reader sees at a glance which measures answer the same
+# question. Editorial by necessity -- the grouping is a statement about what the
+# measures MEAN, which no column in the data carries.
+_SCENARIO_BANDS = {
+    "Runs completed": 0, "Usable answers": 0,
+    "Median APE (%)": 1, "Mean APE (%)": 1,
+    "Consistency, CV across repeats (%)": 2,
+    "Replicability, identical answers (%)": 2,
+    "Top-answer agreement rate": 2,
+    "Tokens per answer": 3, "of which reasoning tokens": 3,
+    "Cost per answer, estimated (USD)": 3,
+    "Response time (s)": 4,
+}
+
+_ROW_GROUP: dict = {
+    # runs | performance | consistency | cost | latency
+    "scenario_comparison": lambda lbl: _SCENARIO_BANDS.get(str(lbl), 9),
+}
+
+
+def _svg_num(v):
+    """The number behind a formatted cell, or None when there isn't one."""
+    s = str(v).replace(",", "").replace("$", "").replace("%", "").strip()
+    s = s.split()[0] if s else s
+    try:
+        return float(s)
+    except (TypeError, ValueError):
+        return None
+
+
+def _render_svg(slug, stem, title, caption, df, note) -> None:
+    """Write the styled SVG twin of a table. Never fatal: a figure that fails
+    to draw must not cost the run its .md and .csv, which are the artefacts the
+    thesis actually cites today."""
+    try:
+        from styled_tables import render_table, BEST, SECOND, PLAIN
+    except ImportError as e:
+        # Say so. Returning quietly would produce a run that reports sixteen
+        # tables written and silently emits no figures at all -- the degrade-
+        # without-failing pattern this repository has been bitten by before.
+        if not _SVG_WARNED:
+            _SVG_WARNED.append(True)
+            print(f"     (no styled SVGs: {e}; .md and .csv are unaffected)")
+        return
+
+    directions = _RANKED.get(slug)
+    style_fn = None
+    if directions:
+        marks = {}
+        cols = [c for c in df.columns if c != df.columns[0]]
+        # "_ALL_LOWER": every row of this table is a time, a memory figure or an
+        # error, so lower wins everywhere and listing each row label would be a
+        # second copy of the table's own first column.
+        all_lower = directions == "_ALL_LOWER"
+        for _, r in df.iterrows():
+            label = r[df.columns[0]]
+            if not all_lower and label not in directions:
+                continue
+            vals = {c: _svg_num(r[c]) for c in cols}
+            vals = {c: v for c, v in vals.items() if v is not None}
+            if len(vals) < 3:
+                continue
+            lower_wins = True if all_lower else directions[label]
+            order = sorted(vals, key=vals.get, reverse=not lower_wins)
+            top = vals[order[0]]
+            winners = [c for c in order if vals[c] == top]
+            # A tie across more than half the row is not a distinction.
+            if len(winners) > len(vals) / 2:
+                continue
+            for c in winners:
+                marks[(label, c)] = BEST
+            rest = [c for c in order if vals[c] != top]
+            if rest:
+                runner = vals[rest[0]]
+                for c in (c for c in rest if vals[c] == runner):
+                    marks[(label, c)] = SECOND
+        if marks:
+            def style_fn(row_label, col, _v, _m=marks):
+                return _m.get((row_label, col), PLAIN)
+
+    try:
+        render_table(df, stem=stem, chapter=_TABLE_CHAPTER[slug], title=title,
+                     caption=caption, style_fn=style_fn, note=note,
+                     row_group=_ROW_GROUP.get(slug),
+                     legend=(BEST, SECOND) if style_fn else ())
+    except Exception as e:
+        print(f"     (svg skipped for {stem}: {str(e)[:90]})")
+
+
+def _usage_reported(d: pd.DataFrame) -> bool:
+    """Did the orchestrator surface token usage for these runs?
+
+    A reasoning-token count of zero means one of two different things, and the
+    table must not conflate them: the model reasoned and spent nothing, or the
+    orchestrator never reported it. `prometheus_bridge._usage_from` records the
+    distinction as `usage_reported`, but the harness coerced the count with
+    `or 0` before writing runs.csv, so the flag never reached the appendix and
+    every Prometheus arm published a measured-looking zero.
+
+    Prefer the flag. Fall back to inference only for run logs written before the
+    flag existed, and make the inference narrow: EVERY run in the group reports
+    exactly zero while also reporting output tokens, which a model that had
+    genuinely done no reasoning would not produce so uniformly.
+    """
+    if "usage_reported" in d.columns:
+        return bool(d["usage_reported"].astype(bool).any())
+    if "tokens_reasoning" not in d.columns or d.empty:
+        return True
+    silent = (d["tokens_reasoning"].fillna(0) == 0).all()
+    produced = ("tokens_out" in d.columns
+                and (d["tokens_out"].fillna(0) > 0).all())
+    return not (silent and produced)
+
+
+# Markdown emphasis lives here, keyed by the id() of the CLEAN frame, not in
+# the frame itself. _emit pops it when writing the .md and hands the clean frame
+# to the SVG renderer, so neither rendering inherits the other's markup.
+_md_emphasis: dict = {}
 
 
 def _bold_best(df: pd.DataFrame, cols: list[str], lower_is_better=True,
@@ -183,7 +348,8 @@ def _bold_best(df: pd.DataFrame, cols: list[str], lower_is_better=True,
     Applied only where the values in a row are genuinely comparable -- the same
     measure computed for different models. Bolding down a column of unlike
     quantities would assert a comparison that does not exist."""
-    out = df.copy()
+    clean = df.copy()      # what the SVG renderer receives: no markup, ever
+    out = df.copy()        # what the .md receives: emphasis applied below
     for i in out.index:
         if any(str(out.loc[i, k]) in skip for k in ("Measure", "Metric")
                if k in out.columns):
@@ -201,11 +367,18 @@ def _bold_best(df: pd.DataFrame, cols: list[str], lower_is_better=True,
         if len(vals) < 2:
             continue
         best = min(vals, key=vals.get) if lower_is_better else max(vals, key=vals.get)
-        # Bold + italic. Markdown has no underline primitive, and the <u> tag
-        # that would supply one does not survive the paste into Word, so the
-        # two emphases Markdown does define are combined instead.
+        # Markdown emphasis, applied to the MARKDOWN COPY only.
+        #
+        # This used to edit the DataFrame that both renderers receive, which
+        # meant the SVG was handed a value already wrapped in asterisks and
+        # printed them literally -- graphviz has no notion of Markdown, so
+        # `***1.4***` appeared in five published tables. Emphasis is a property
+        # of a rendering, not of the datum; the SVG applies its own through
+        # _RANKED/style_fn, which is why the scenario comparison was the one
+        # table that looked right.
         out.loc[i, best] = f"***{out.loc[i, best]}***"
-    return out
+    _md_emphasis[id(clean)] = out
+    return clean
 
 
 def _fmt(df: pd.DataFrame, spec: dict[str, str]) -> pd.DataFrame:
@@ -618,8 +791,11 @@ def table_baselines_wide() -> None:
         return fmt.format(v)
 
     blocks = []
-    for metric, label, fmt in (("wmape", "Weighted MAPE (%)", "{:.1f}"),
-                               ("median_mape", "Median MAPE (%)", "{:.1f}")):
+    # Abbreviated in the table, expanded in the note. Spelled out, these two
+    # labels are the widest cells in the first column and set the table's width
+    # for no information -- the expansion is stated once below instead.
+    for metric, label, fmt in (("wmape", "wMAPE (%)", "{:.1f}"),
+                               ("median_mape", "mMAPE (%)", "{:.1f}")):
         if metric not in df.columns:
             continue
         p = df.pivot_table(index="category", columns="model", values=metric,
@@ -649,18 +825,14 @@ def table_baselines_wide() -> None:
           "volume; median MAPE reports the typical per-series error. Lower is "
           "better throughout; n denotes the number of series in each category, and the lowest error in each row is shown in bold italic.",
           wide,
-          note="Prophet was evaluated on every category and is reported in full. Its "
-               "error is high on three of the four because monthly observations do "
-               "not support the weekly-seasonality and holiday-window components "
-               "that the method is designed around, leaving a piecewise trend and an "
-               "annual seasonal term estimated over a short history (Taylor & "
-               "Letham, 2018). The unclipped Ridge variant is reported alongside the "
-               "clipped one to show the effect of constraining predictions to be "
-               "non-negative. On two categories the unconstrained fit diverges to "
-               "an error many orders of magnitude beyond the plausible range; those "
-               "entries are marked as divergent and given by order of magnitude, "
-               "since a decimal figure would imply a precision the result does not "
-               "have.",
+          note="Prophet's error is high on three of four categories: monthly "
+               "observations do not support the weekly-seasonality and "
+               "holiday-window components it is designed around (Taylor & "
+               "Letham, 2018). Ridge is reported clipped and unclipped to show "
+               "the effect of constraining predictions to be non-negative; "
+               "where the unclipped fit diverges, the entry is given by order "
+               "of magnitude rather than to a decimal it does not support. "
+               "wMAPE (%) = weighted MAPE; mMAPE (%) = median MAPE across series.",
           review="Prophet's failure is a RESULT, not a gap -- it IS implemented "
                  "(srq1_baselines_stat.py:236). NLM Section J: PRO-04 Contradicted "
                  "(T&L do NOT exclude monthly data), PRO-05 Not Found (they do not "
@@ -847,9 +1019,12 @@ def table_stability() -> None:
 
     rows = []
     for metric, label, mul, fmt in (
-            ("median_cv", "Median coefficient of variation (%)", 100, "{:.2f}"),
-            ("wmape_std", "Standard deviation of WMAPE across seeds (pp)", 1, "{:.2f}"),
-            ("wmape_mean", "Mean WMAPE across seeds (%)", 1, "{:.2f}")):
+            # Abbreviated for width; the mapping is given in the note, once.
+            # Spelled out these three repeat "across seeds" on every row and
+            # the first column then sets the table's width.
+            ("median_cv", "medCV (%)", 100, "{:.2f}"),
+            ("wmape_std", "sdWMAPE (pp)", 1, "{:.2f}"),
+            ("wmape_mean", "mWMAPE (%)", 1, "{:.2f}")):
         if metric not in d.columns:
             continue
         for c in cats:
@@ -872,8 +1047,10 @@ def table_stability() -> None:
                "assumed, following the stability criterion of Klee and Xia (2025). "
                "The coefficient of variation measures dispersion of the forecasts "
                "themselves; the standard deviation of WMAPE measures how far the "
-               "resulting accuracy moves, and is the quantity against which any "
-               "difference between models should be judged material.",
+               "resulting accuracy moves. "
+               "mWMAPE (%) = mean WMAPE across seeds; sdWMAPE (pp) = its "
+               "standard deviation; medCV (%) = median coefficient of "
+               "variation of the forecasts.",
           review="The WMAPE-sd column here is the seed-noise magnitude that the "
                  "retraining_cost table's caveat rests on: it is larger than the "
                  "refit-vs-retune accuracy gap, which is why that gap cannot be "
@@ -970,20 +1147,60 @@ def table_scenarios(df: pd.DataFrame) -> None:
             "Replicability, identical answers (%)": f"{rep.mean()*100:.0f}" if len(rep) else "",
             "Top-answer agreement rate": f"{tar.mean():.2f}" if len(tar) else "",
             "Tokens per answer": f"{d.tokens.mean():,.0f}",
-            "of which reasoning tokens": f"{d.tokens_reasoning.mean():,.0f}",
+            "of which reasoning tokens": ("unknown" if not _usage_reported(d)
+                                          else f"{d.tokens_reasoning.mean():,.0f}"),
             "Cost per answer, estimated (USD)": f"${d.cost_usd_est.mean():.4f}",
             "Response time (s)": f"{d.latency_s.mean():.1f}",
         }
     rows = [{"Measure": k, **{HDR.get(s, s): stats[s][k] for s in present}}
             for k in next(iter(stats.values()))]
 
-    note = ("The scenarios form an information ladder: A has no access to firm data, "
-            "B may execute code against it, and C additionally calls the dedicated "
-            "forecasting model. Correctness, consistency and replicability are the "
-            "primary dimensions; cost and response time are secondary. The "
-            "top-answer agreement rate is the share of repeated runs returning the "
-            "most common answer within a 1% tolerance, where 1.00 denotes complete "
-            "agreement across repeats.")
+    # The ladder is described from the scenarios actually present, not from a
+    # typed list. A hardcoded sentence explained A, B and C and stopped there;
+    # the table beside it had grown to seven columns, so four scenarios appeared
+    # in the data and went unexplained.
+    _RUNG = {
+        "A_llm_plain": "A has no access to firm data",
+        "B_llm_data": "B may execute code against it",
+        "C_llm_model": "C calls the dedicated forecasting model instead",
+        "D_prometheus_data": "D repeats B on the production orchestrator",
+        "E_prometheus_model": "E repeats C on the production orchestrator",
+        "F_llm_data_model": "F combines code execution with the forecasting model",
+        "G_prometheus_data_model": "G repeats F on the production orchestrator",
+    }
+    rungs = [_RUNG[s] for s in sorted(present) if s in _RUNG]
+    unmapped = sorted(s for s in present if s not in _RUNG)
+    if unmapped:
+        raise KeyError(
+            f"scenario(s) {unmapped} have no description in _RUNG -- add one. "
+            "A note that silently omits a scenario is how this table came to "
+            "explain three of seven.")
+    # Name the scenarios whose orchestrator did not surface reasoning usage, so
+    # the footnote lists what the data shows rather than a typed set.
+    _silent = [s for s in sorted(present) if not _usage_reported(df[df.system == s])]
+    unknown_note = ""
+    if _silent:
+        # Kept to one sentence. The full reasoning -- that each of these repeats
+        # a capability-matched scenario whose usage IS reported, so the figures
+        # are expected to be comparable rather than absent -- belongs in Ch8,
+        # where there is room for it. Here it is chrome, and chrome is what made
+        # this table too tall to place.
+        unknown_note = (
+            " Reasoning tokens show as unknown for "
+            + ", ".join(s.split("_")[0] for s in _silent) +
+            ": the production orchestrator does not report them, so this is an "
+            "absent figure rather than a measured zero.")
+    # Kept short deliberately. A note is chrome: it is drawn under every row and
+    # its height counts against the 482pt appendix text block, so a 1,100-word
+    # note on an 11-row table made the table too tall to place. The ladder is
+    # set out in full in the chapter; this states only what the reader needs to
+    # read THIS table.
+    note = ("The scenarios form an information ladder, each adding one "
+            "capability to the one below: " + "; ".join(rungs) + ". "
+            "Correctness, consistency and replicability are primary; cost and "
+            "response time secondary. Top-answer agreement is the share of "
+            "repeats returning the most common answer within 1%."
+            + unknown_note)
     cov = _coverage(df)
     _emit("scenario_comparison", "Comparison of decision-support scenarios",
           "Performance of each scenario across the five evaluation dimensions. "
@@ -992,15 +1209,23 @@ def table_scenarios(df: pd.DataFrame) -> None:
           review="'TAR@N' was jargon -- renamed 'top-answer agreement rate' and "
                  "defined inline + in the dictionary. Cite Atil et al. (2025).")
 
+    # Scenario identifiers abbreviated to their letter in the header. Spelled
+    # out, seven of them are 23 characters against 8-character cells and set
+    # the table's width for no information -- the same defect the per-run
+    # record had. The key goes in the note, once.
+    _short = {s: str(s).split("_")[0] for s in present}
     tax = [{"Outcome": CLASS_LABEL[c],
-            **{HDR.get(s, s): (lambda d: f"{int((d.outcome==c).sum())} "
-                               f"({int((d.outcome==c).sum())/max(len(d),1)*100:.0f}%)")(
+            **{_short[s]: (lambda d: f"{int((d.outcome==c).sum())} "
+                           f"({int((d.outcome==c).sum())/max(len(d),1)*100:.0f}%)")(
                 df[df.system == s]) for s in present}}
            for c in CLASSES]
+    _tax_key = (" Scenarios are abbreviated to their letter: "
+                + "; ".join(f"{_short[s]} = {s}" for s in present) + ".")
     _emit("outcome_taxonomy", "Distribution of run outcomes by scenario",
           "Counts and percentages of runs falling into each outcome class.",
           pd.DataFrame(tax),
-          note="Failures are reported as classes rather than averaged into the "
+          note=_tax_key + " Failures are reported as classes rather than "
+               "averaged into the "
                "accuracy figures. A scenario that returns a usable answer in a "
                "fraction of runs is not directly comparable to one that always "
                "answers, and a single implausible value distorts a mean without "
@@ -1056,23 +1281,19 @@ def table_interval_comm() -> None:
           "payload the forecasting tool returned. n denotes the number of "
           "answers scored in each scenario.",
           pd.DataFrame(rows),
-          note="Goodwin, Onkal and Thomson (2010) find that a prediction interval "
-               "presented as a bare numeric range does not improve decisions and "
-               "can degrade them, because the step from interval to decision is "
-               "left to the reader. These criteria record whether that step was "
-               "supplied: whether a range was stated, whether it corresponds to "
-               "the one the model produced, whether the associated confidence "
-               "was reported, and whether a course of action was proposed. Each "
-               "is evaluated by direct comparison of the "
-               "numbers in the answer against the numbers the tool returned, "
-               "with a five per cent tolerance; no judgement is involved. A "
-               "scenario with no access to the forecasting tool cannot satisfy "
-               "the second criterion, which requires a retrieved source against "
-               "which a stated range can be checked. These measures concern what "
-               "the system communicated. Whether such communication improves the "
-               "decisions of human planners is not examined in this thesis and "
-               "would require a controlled decision experiment with human "
-               "participants.",
+          # Cut from 1,000 characters to ~370. A note is chrome: it is drawn
+          # under every row and counts against the 482pt appendix text block,
+          # and this one alone made a five-row table too tall to place. The
+          # Goodwin argument and the human-decision caveat belong in Chapter 7,
+          # where there is room to make them; the table needs only what a
+          # reader must know to read these five rows.
+          note="Each criterion is scored by comparing the numbers in the answer "
+               "against the numbers the tool returned, within five per cent; no "
+               "judgement is involved. A scenario with no tool access cannot "
+               "satisfy the second criterion, which requires a retrieved source "
+               "to check a stated range against -- that is a finding, not a "
+               "scoring artefact. These measures record what was communicated, "
+               "not whether it improved a human decision.",
           review="Closes the Ch2 sec 2.3 / SRQ4 gap (N9/N10 Option 2). Scored "
                  "retrospectively from already-logged runs -- NO new API spend. "
                  "All checks deterministic (regex + numeric comparison vs the "
@@ -1101,6 +1322,14 @@ def table_per_run(df: pd.DataFrame) -> None:
             "cost_usd_est"]
     d = df[[c for c in cols if c in df.columns]].copy()
     d["system"] = d.system.map(lambda s: HDR.get(s, s))
+    # Same distinction as the comparison table: a scenario whose orchestrator
+    # never reported reasoning usage shows "unknown", not a zero that reads as
+    # a measurement. Applied per scenario, from the data.
+    if "tokens_reasoning" in d.columns:
+        d["tokens_reasoning"] = d["tokens_reasoning"].astype(object)
+        for s in d.system.unique():
+            if not _usage_reported(df[df.system.map(lambda x: HDR.get(x, x)) == s]):
+                d.loc[d.system == s, "tokens_reasoning"] = "unknown"
     disp = _fmt(d, {"actual": "{:,.0f}", "forecast": "{:,.0f}", "ape": "{:.1f}",
                     "latency_s": "{:.1f}", "cost_usd_est": "${:.4f}"}).rename(columns={
         "category": "Category", "brand": "Brand", "system": "Scenario", "rep": "Repeat",
@@ -1108,20 +1337,48 @@ def table_per_run(df: pd.DataFrame) -> None:
         "outcome": "Outcome", "latency_s": "Response time (s)",
         "tokens_in": "Tokens in", "tokens_out": "Tokens out",
         "tokens_reasoning": "Reasoning tokens", "cost_usd_est": "Cost (USD)"})
-    cov = _coverage(df)
-    _emit("per_run_record", "Complete record of individual runs",
-          "Every run logged, with its forecast, error, outcome class, response time "
-          "and cost. This is the evidence base from which the aggregate figures are "
-          "computed. " + cov, disp,
-          note="The full response for each run, including any code generated and "
-               "the reasoning summary returned by the model, is retained alongside "
-               "these records.",
-          review=(f"{len(df)} rows: {df.brand.nunique()} brands x {df.rep.nunique()} "
-                  f"repeats x {df.system.nunique()} scenarios, which is the funded "
-                  "design in full. The earlier note here said only a scenario-A "
-                  "pilot had run and the table was blocked on API credit -- that "
-                  "was true until the funded set landed and is kept only so the "
-                  "change is legible."))
+    # The scenario identifier is the widest column by a factor of three (23
+    # characters against the next longest at 8) and carries only seven distinct
+    # values, so spelling it out on all 63 rows sets the table's width for no
+    # information. Abbreviated to its letter, with the key in the note.
+    _key = ""
+    if "Scenario" in disp.columns:
+        seen = [s for s in disp["Scenario"].unique()]
+        disp = disp.copy()
+        disp["Scenario"] = disp["Scenario"].map(lambda s: str(s).split("_")[0])
+        _key = (" Scenarios are abbreviated to their letter: "
+                + "; ".join(f"{str(s).split('_')[0]} = {s}" for s in seen) + ".")
+
+    # Split across pages. 63 rows at ~27pt is 1,755pt tall against a 482pt
+    # appendix text block -- it does not fit at any scale, and scaling to fit
+    # would make it unreadable rather than long. Two halves sit side by side on
+    # one landscape page, which is how Brian inserts it; each carries the page
+    # marker in its title so a reader knows the record continues.
+    _PARTS = 2
+    _n = len(disp)
+    _size = -(-_n // _PARTS)
+    for _p in range(_PARTS):
+        _chunk = disp.iloc[_p * _size:(_p + 1) * _size]
+        if _chunk.empty:
+            continue
+        _emit(f"per_run_record_p{_p + 1}",
+              f"Complete record of individual runs - part {_p + 1} of {_PARTS}",
+              "Every run logged, with its forecast, error, outcome class, "
+              "response time and cost. This is the evidence base from which "
+              "the aggregate figures are computed. "
+              f"Rows {_p * _size + 1} to {min((_p + 1) * _size, _n)} of {_n}. "
+              + _coverage(df), _chunk,
+              note=("The full response for each run, including any code "
+                    "generated and the reasoning summary returned by the "
+                    "model, is retained alongside these records." + _key)
+              if _p == _PARTS - 1 else
+              (f"Continues in part {_p + 2} of {_PARTS}." + _key),
+              review="")
+
+    # The single whole-table emit that used to live here is GONE: the two-part
+    # split above replaces it. Keeping both would have published the same 63
+    # runs three times over -- once whole and once per half -- and a reader
+    # meeting three versions of one record cannot tell which is authoritative.
 
 
 def table_traceability(df: pd.DataFrame) -> None:
@@ -1214,7 +1471,13 @@ def _clear_previous() -> int:
     removed = 0
     for slug, chapter in _TABLE_CHAPTER.items():
         for f in get_chapter_tables_dir(chapter).glob(f"[0-9][0-9]_{slug}.*"):
-            if f.suffix not in (".md", ".csv"):
+            # .svg included. It was omitted when the styled renderer was added,
+            # so every renumbering left the previous generation's SVG behind
+            # under its old prefix: adding one table shifted twelve others and
+            # orphaned twelve files, three times in one session before the
+            # cause was found. The .svg is this exporter's output like the
+            # other two and is cleared on the same terms.
+            if f.suffix not in (".md", ".csv", ".svg"):
                 continue
             try:
                 f.unlink()
@@ -1269,6 +1532,56 @@ def _fm_role(col: str, features: set) -> str:
             return "Feature - distribution"
         return ""                       # caught by the assert in the caller
     return "Excluded - contemporaneous"
+
+
+def table_model_metadata() -> None:
+    """What is actually deployed per category, read from the served metadata.
+
+    Every field comes from the model's own metadata.json, written by
+    train_and_persist at fit time -- so the table describes the estimator that
+    answers a forecast call today, not the configuration someone intended.
+    """
+    import json
+    from PATHS import get_chapter_models_dir
+
+    mdir = get_chapter_models_dir("model_benchmark")
+    rows = []
+    for meta in sorted(mdir.glob("*/metadata.json")):
+        m = json.loads(meta.read_text(encoding="utf-8"))
+        rows.append({
+            # The model folders are named by the lowercase category key; the
+            # tables elsewhere use the on-disk capitalisation, so match it.
+            "Category": {"csd": "CSD"}.get(meta.parent.name.lower(),
+                                           meta.parent.name.capitalize()),
+            "Deployed model": m.get("model", "?"),
+            "Inputs": m.get("n_features"),
+            "Train rows": f"{m.get('n_train_rows', 0):,}",
+            "Trained through": m.get("trained_through", ""),
+            "Test rows": f"{m.get('n_test_rows', 0):,}",
+            "Brands": m.get("brands"),
+            "Interval q90 (log)": f"{float(m.get('q90_log', 0)):.3f}",
+            "Fit (s)": f"{float(m.get('train_seconds', 0)):.2f}",
+            "Peak fit RAM (MB)": f"{float(m.get('train_peak_ram_mb', 0)):.1f}",
+        })
+    if not rows:
+        print("  (skip model metadata: no metadata.json under models/)")
+        return
+
+    _emit("model_metadata", "Deployed model configuration by category",
+          "The estimator serving each category, with the data it was fitted on "
+          "and the cost of fitting it. Read from each model's own metadata "
+          "record rather than from the benchmark, so it describes what answers "
+          "a forecast call rather than what was evaluated.",
+          pd.DataFrame(rows),
+          note="One model is served per category, selected on cross-validated "
+               "score. `Interval q90 (log)` is the split-conformal quantile of "
+               "the validation residuals in log space, which is what sets the "
+               "width of the 90% prediction interval the tool returns. Input "
+               "counts differ because promotional measures are absent for two "
+               "categories, where the column is omitted rather than zero-filled.",
+          review="Reads the SAME metadata.json that forecast_tool loads at "
+                 "serve time, so a drift between this table and the deployed "
+                 "model is impossible by construction.")
 
 
 def table_feature_matrix() -> None:
@@ -1364,6 +1677,7 @@ def main() -> None:
     table_pipeline_execution()
     table_pipeline_data_reduction()
     table_feature_matrix()
+    table_model_metadata()
     table_resource_profile()
     table_sandbox_profile()
     table_param_drift()

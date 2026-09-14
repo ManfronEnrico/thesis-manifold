@@ -5,7 +5,7 @@ category: reference
 applies-to: [defence preparation, all chapters]
 triggers: [preparing for defence, deciding whether a claim is defensible, writing a limitations section, answering "will they ask about this"]
 created: 2026_09_11-20_35
-updated: 2026_09_11-20_35
+updated: 2026_09_14-12_40
 ---
 
 # Anticipated assessor questions
@@ -414,11 +414,66 @@ concentrated at the **seasonal lag** - median ACF(12) of +0.361 among rejecting
 brands versus +0.064 among non-rejecting. That is the seasonal-order limitation
 demonstrated rather than asserted.
 
-⚠ **The exact figures are PROVISIONAL.** The gate ran on in-sample residuals
-where 5.3 requires cross-validation residuals; it is being re-run. Direction is
-expected to hold - in-sample residuals are optimistically clean, so the true
-rejection rate should be higher, not lower. **Do not quote the percentage until
-the re-run lands** (P0055 F13, task 12).
+✅ **The figures are final as of 2026-09-14 (`41ecb76`) and may be quoted.** The
+earlier "provisional, do not quote" hold is lifted.
+
+The gate runs on **in-sample** residuals where 5.3 prefers cross-validation
+residuals, and that limitation is now **permanent rather than pending** — Branch
+B is closed, so it is stated on the emitted table itself rather than tracked in a
+plan folder no reader sees.
+
+**Why the verdict survives the limitation**, which is the answer to give if
+pressed: in-sample residuals are optimistically clean, because the fitted
+parameters have already absorbed some of the structure the test looks for. So
+the rejection rates are **lower bounds**, and structure detected under an
+optimistic test is structure that is genuinely there. Quote the rates as
+indicative rather than exact.
+
+**The seasonal localisation is unaffected**, because it is a contrast rather than
+a level: median ACF(12) of **+0.361** among the 51 rejecting series against
+**+0.064** among the 179 that do not. Both halves are computed identically, so
+the optimism applies equally and cancels.
+
+**Evidence.** `05_thesis_results/05_model_benchmark/tables/residual_diagnostics.md`,
+regenerated 2026-09-14; overall rejection rate 22.2% over 230 series.
+
+## Q - Your language model was handed a sales history. Did it just repeat the last month?
+
+*Added 2026-09-14. Measured on the funded runs; no new spend.*
+
+**Answer. No, and not once in eighteen runs.** The history each scenario was
+shown is recorded alongside the answer it gave, so this is measurable rather
+than arguable. Across the eighteen funded runs whose series is recoverable,
+**no forecast fell within five per cent of the brand's last observed month.**
+The forecasts sat substantially closer to a trailing twelve-month average than
+to the final observation, with roughly half the dispersion around it. The
+scenarios were performing seasonal averaging, not adjusting from the most recent
+value — which is consistent with the explicit model-fitting visible in their
+working (36 of 37 fitted exponential smoothing, 32 a seasonal ARIMA).
+
+**Evidence.** Computed from `raw_responses/*.json`, where each run's prompt
+embeds the exact series it received. Pooled median ratio to the last observed
+month **0.860**; to the trailing twelve-month mean **0.991**, with the standard
+deviation falling from 0.243 to 0.133.
+
+**Why this question matters more than it looks.** It is the cheapest attack on
+the entire SRQ4 result — if the strong LLM baseline were just echoing the last
+number, the comparison would be measuring nothing. It is now answered with a
+measurement.
+
+⚠ **Quote the count, not the ratios.** Per brand the medians are 1.082, 0.991
+and 0.825, so only one of three brands is genuinely centred on its trailing
+mean; the pooled 0.991 is three behaviours averaging into one. **"Not one of
+eighteen within five per cent of the last value"** is the claim that survives
+scrutiny.
+
+⚠ **This does not cover `A_llm_plain`.** That arm receives no history, so it
+cannot anchor and is outside the measurement. Its 502 per cent error is a
+different phenomenon.
+
+⚠ **No committed artefact.** `raw_responses/` is gitignored (65 MB, embeds
+Nielsen data). The claim is stated as a count and a direction precisely so it
+survives without one. See `ch9_discussion/2026-09-14_BRANCH_A_ch9-followup-02-anchoring.md`.
 
 ## Q - Why MASE rather than MAPE, and is your MASE correct?
 
@@ -426,10 +481,21 @@ the re-run lands** (P0055 F13, task 12).
 errors need a test set large enough "especially in the denominator". The choice
 is the source's own.
 
-⚠ **Concede on the implementation.** The MASE denominator currently uses the
-non-seasonal (m=1) difference on a seasonal monthly panel, where 5.8 defines it
-with m. The visible symptom is two shipped tables disagreeing about whether
-seasonal naive beats naive. **Under repair** (P0055 2.A5, task 7).
+⚠ **Concede on the implementation, and concede it as permanent.** The MASE
+denominator uses the non-seasonal (m=1) difference on a seasonal monthly panel,
+where 5.8 defines it with m. The visible symptom is two shipped tables
+disagreeing about whether seasonal naive beats naive.
+
+**This is not under repair.** Branch B closed on 2026-09-14; changing the
+denominator would re-score every category and every model, which is not a late
+edit. The thesis reports MASE honestly on the denominator it used.
+
+**What this costs, and it is bounded:** Chapter 5 must not cite 5.9's seasonal
+sentence, because it would be quoting a rule the chapter breaks three lines above
+a table reporting a seasonal-naive MASE. The safe half of 5.9 — the preference
+for scaled over percentage errors on a small test set — **is** cited and is
+correct. Chapter 5 already handles the disagreement well, reporting it as
+*"surfaced rather than resolved by picking one"*.
 
 ---
 

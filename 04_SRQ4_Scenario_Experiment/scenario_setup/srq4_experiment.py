@@ -1635,6 +1635,12 @@ def run_full(repeats=5, brands_per_cat=(4, 4, 4, 3), scenarios=None, out_dir=Non
                     tokens_in=r.get("tokens_in") or 0, tokens_out=r.get("tokens_out") or 0,
                     tokens_cached_in=r.get("tokens_cached_in") or 0,
                     tokens_reasoning=r.get("tokens_reasoning") or 0,
+                    # Whether the engine SURFACED usage at all. Without this the
+                    # `or 0` above is indistinguishable from a measured zero, and
+                    # an orchestrator that does not report reasoning tokens looks
+                    # like one that used none. prometheus_bridge._usage_from sets
+                    # it False when the graph state carried no usage.
+                    usage_reported=bool(r.get("usage_reported", True)),
                     tokens=(r.get("tokens_in") or 0) + (r.get("tokens_out") or 0),
                     containers=r.get("containers") or 0,
                     cost_usd_est=r.get("cost_usd_est") or 0.0,

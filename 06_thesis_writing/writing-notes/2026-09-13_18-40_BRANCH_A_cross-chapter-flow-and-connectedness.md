@@ -5,9 +5,9 @@ category: reference
 applies-to: [ch1_introduction, ch2_literature_review, ch3_methodology, ch4_data_assessment, ch5_model_benchmark, ch6_architecture, ch7_synthesis, ch8_experiment]
 triggers: [does the thesis hang together, reading flow, cross-chapter consistency, chapter transitions, is branch a submission ready]
 created: 2026_09_13-18_40
-updated: 2026_09_13-18_40
+updated: 2026_09_14-09_45
 snapshot: 2026-09-13_18-18_branch-a-full-review
-status: findings, not prose - fixes routed per chapter
+status: findings, not prose - fixes routed per chapter. C2 STRUCK 2026-09-14, see the item.
 ---
 
 # Cross-chapter flow, Chapters 1 to 8
@@ -66,27 +66,48 @@ claim. The Ch9 and Ch10 rewrites already say four.
 
 ---
 
-## C2 — Chapter 1 promises exogenous enrichment the thesis does not deliver
+## C2 — STRUCK. The claim was wrong.
 
-Ch1 §1.1 closes: *"This thesis takes up that direction by incorporating
-exogenous predictors into its forecasting substrate."* It builds to this over
-two paragraphs of M4/M5 evidence about explanatory variables.
+~~Chapter 1 promises exogenous enrichment the thesis does not deliver.~~
 
-What the substrate actually has: a Danish public-holiday calendar (three
-columns) and promotional intensity for two of four categories. Weighted
-distribution was **tested and excluded** (Ch4 §4.3). There is no consumer
-sentiment, no weather, no promotional calendar in the M5 sense.
+**Corrected 2026-09-14, by Brian.** This item asserted that Ch1's closing
+sentence — *"This thesis takes up that direction by incorporating exogenous
+predictors into its forecasting substrate"* — promises something the thesis does
+not deliver.
 
-Your own comment threads on this paragraph say so twice — *"We didnt really add
-any enrichment"* and *"Again we did not enrich"* — and a third calls the premise
-*"an artifact from previous RQ"*.
+**That is false, and the substrate is the evidence.** Four of the eighteen model
+features are exogenous in the standard sense, meaning they are known in advance
+and are not functions of the target's own history:
 
-**The honest version is narrower and still true:** the thesis incorporates the
-exogenous predictors the panel makes available, and reports that their measured
-contribution is small and category-dependent. Ch5 §5.5.8 already says exactly
-that, with an ablation behind it.
+| Feature | Source |
+|---|---|
+| `n_holidays` | Danish public-holiday calendar, Nager.Date |
+| `days_in_month` | same |
+| `non_holiday_days` | same |
+| `promo_intensity` | Nielsen promotional variants, where reported |
 
-→ **Routed: Ch1.** Three threads close with one reworded sentence.
+The holiday calendar was joined onto the monthly grid, cached with a per-year
+checksum, and **its contribution was measured rather than assumed**: an ablation
+tuned both arms independently and found the calendar columns improved accuracy in
+six of the nine category-and-model combinations tested (Ch4 §4.3).
+
+**So Ch1's sentence is accurate as written.** The thesis took up the M4/M5
+direction, incorporated the exogenous predictors the panel makes available, and
+measured what they were worth.
+
+⚠ **The Word comment threads on that paragraph are older than the holiday API.**
+They predate the enrichment landing and should be resolved as **VERIFIED-OK**
+rather than acted on — the objection they raise was true when written and is not
+true now.
+
+**One residual item, and it is a different point:** the same Ch1 paragraph
+carries `[CITATION TO ADD: cloud-instance pricing source]` and states the RAM
+ceiling as **eight** gigabytes. Both are real and both are recorded elsewhere —
+the placeholder as S31, the budget as C1 and S32. **They sit in the same two
+paragraphs**, so whoever edits Ch1 §1.1 should fix both in one pass rather than
+opening the section twice.
+
+→ **No Ch1 edit is required by this item.** C1 and S31 still require one.
 
 ---
 

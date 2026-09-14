@@ -110,7 +110,8 @@ class _SRQ1Out:
 
 RES = _SRQ1Out(results_root())
 SEED = 42
-MODELS = ["Ridge", "LightGBM", "XGBoost", "ARIMA(per-series)"]
+MODELS = ["Ridge", "LightGBM", "XGBoost", "ARIMA(per-series)",
+          "Prophet(per-series)"]
 # weighted_distribution / weighted_dist is deliberately ABSENT (P0036 task 7,
 # 2026-08-19).
 #
@@ -301,6 +302,64 @@ def main():
     def fit_arima():
         return SARIMAX(yfit, order=(1, 1, 1), enforce_stationarity=False,
                        enforce_invertibility=False).fit(disp=False)
+    # Prophet on the SAME representative brand series, for the same reason and
+    # by the same protocol as ARIMA: both are per-series statistical models, so
+    # a matrix-wide fit would not describe how either is actually used.
+    #
+    # Added 2026-09-14. Prophet was benchmarked for ACCURACY from the start but
+    # never profiled, so Ch6 s6.3 named five substrate families while the memory
+    # evidence covered four. The fit call mirrors srq1_baselines_stat.run_prophet
+    # exactly -- same seasonality flags, same log1p target -- so this measures the
+    # model that produced the published accuracy rather than a lookalike.
+    if only == "Prophet(per-series)":
+        from prophet import Prophet
+        import logging as _logging
+        _logging.getLogger("prophet").setLevel(_logging.CRITICAL)
+        _logging.getLogger("cmdstanpy").setLevel(_logging.CRITICAL)
+
+        # `date` is the real monthly timestamp; `period_index` is a 0-based
+        # counter, so parsing it as YYYYMM yields NaT for every row and Prophet
+        # rejects the frame. srq1_baselines_stat passes Prophet a `fit_ds` taken
+        # from the same `date` column, so this matches the published fit.
+        tr = one[one.split.isin(["train", "val"])].sort_values("period_index")
+        dfit = pd.DataFrame({
+            "ds": pd.to_datetime(tr["date"]),
+            "y": np.log1p(np.maximum(tr["sales_units"].values, 0.0)),
+        }).dropna(subset=["ds"])
+        if len(dfit) < 2:
+            raise SystemExit(
+                f"Prophet needs >=2 dated rows, got {len(dfit)} -- check the "
+                "`date` column on the representative brand series.")
+
+        def fit_prophet():
+            m = Prophet(yearly_seasonality=True, weekly_seasonality=False,
+                        daily_seasonality=False)
+            m.fit(dfit)
+            return m
+
+        mp, fit_t, fit_mb, fit_tm = _profile(fit_prophet)
+        future = mp.make_future_dataframe(periods=h, freq="MS")
+        _, pred_t, pred_mb, pred_tm = _profile(lambda: mp.predict(future))
+        try:
+            import pickle
+            size_mb = round(len(pickle.dumps(mp)) / 1e6, 2)
+        except Exception:
+            # Prophet holds a compiled Stan backend that does not always pickle.
+            # Reporting nothing is correct; a zero would read as a measurement.
+            size_mb = None
+        row = dict(model="Prophet(per-series)", fit_s=round(fit_t, 3),
+                   predict_ms=round(pred_t * 1000, 1),
+                   peak_fit_RSS_MB=round(fit_mb, 1),
+                   peak_predict_RSS_MB=round(pred_mb, 2),
+                   peak_fit_tracemalloc_MB=round(fit_tm, 1),
+                   model_size_MB=size_mb,
+                   n_train=len(dfit), n_features=1)
+        rows.append(row)
+        print('__ROW__' + json.dumps(row))
+        print(f"  {'Prophet':10s} fit={fit_t:6.3f}s predict={pred_t*1000:7.1f}ms "
+              f"RSS={fit_mb:8.1f}MB tracemalloc={fit_tm:7.1f}MB (1 series)")
+        return
+
     if only != "ARIMA(per-series)":
         return
     r, fit_t, fit_mb, fit_tm = _profile(fit_arima)
@@ -318,6 +377,22 @@ def main():
     return
 
 
+def _size_cell(v) -> str:
+    """Serialised size, or an explicit dash where the measure does not apply.
+
+    Pandas renders a missing float as the literal `nan`, which reads as a
+    measurement that failed rather than as a quantity that was never defined.
+    ARIMA and Prophet hold fitted state that does not pickle to a comparable
+    artefact, so there is no size to report -- and saying so is the honest cell.
+    """
+    try:
+        if v is None or (isinstance(v, float) and v != v):
+            return "--"
+    except TypeError:
+        return "--"
+    return str(v)
+
+
 def _write_report(df):
     df.to_csv(RES / "profiling.csv", index=False)
     n_cores = os.cpu_count()
@@ -328,7 +403,7 @@ def _write_report(df):
     lines = ["# SRQ1 operational profiling (CSD brand×month; tuned configs)", "",
              "Peak **process RSS** and wall-clock per model, each measured in isolation. "
              "Supports the ≤4 GB sequential-execution constraint (the measured Prometheus "
-             "sandbox template). ARIMA is per-series "
+             "sandbox template). ARIMA and Prophet are per-series "
              "(univariate); tabular models train on the full matrix in one fit.", "",
              f"Environment: {n_cores} logical cores, {total_gb:.1f} GB system RAM, "
              f"XGBoost `n_jobs=-1`. Native buffers scale with core count, so these "
@@ -338,7 +413,8 @@ def _write_report(df):
     for _, x in df.iterrows():
         lines.append(f"| {x['model']} | {x['fit_s']} | {x['predict_ms']} | {x['peak_fit_RSS_MB']} | "
                      f"{x['peak_predict_RSS_MB']} | {x['peak_fit_tracemalloc_MB']} | "
-                     f"{x['model_size_MB']} | {int(x['n_train'])} | {int(x['n_features'])} |")
+                     f"{_size_cell(x['model_size_MB'])} | {int(x['n_train'])} | "
+                     f"{int(x['n_features'])} |")
     lines += ["",
               "**Reading the two memory columns.** RSS is what the operating system charges "
               "the process and is the figure the sandbox budget is denominated in. tracemalloc "

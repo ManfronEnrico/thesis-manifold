@@ -110,8 +110,13 @@ from PATHS import THESIS_RESULTS_SRQ4_DIR, SRQ2_DIR  # noqa: E402
 
 TOL = 0.05  # a stated bound within 5% of the payload counts as faithful
 
-SCENARIO = {"C_llm_model": "C - dedicated model", "B_llm_data": "B - code execution",
-            "A_llm_plain": "A - no firm data"}
+# Scenario identifiers are written through UNCHANGED. A relabel map used to sit
+# here, rewriting A, B and C into descriptive glosses while leaving D, E, F and G
+# as raw identifiers -- so the appendix table carried two naming systems in one
+# header and a reader met the same seven scenarios under two vocabularies.
+#
+# The key IS the label. The glosses are still the right words for PROSE; they
+# must not be a second naming system in generated output.
 
 # Hedging alone is not communication of uncertainty; these are the words that
 # introduce an actual range or an explicit confidence statement.
@@ -289,7 +294,7 @@ def collect() -> pd.DataFrame:
         # same criteria with an empty one, so the ladder stays comparable. An arm
         # with no interface cannot pass criterion 2 by construction -- that is a
         # finding, not a bug.
-        r = {"run": run, "scenario": SCENARIO.get(scen, scen)}
+        r = {"run": run, "scenario": scen}
         r.update(_score_one(rec.get("answer") or "", _payload_for_record(rec)))
         r["score"] = sum(bool(r[c]) for c in CRITERIA)
         rows.append(r)

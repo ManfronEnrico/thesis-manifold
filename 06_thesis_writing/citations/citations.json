@@ -1,5 +1,55 @@
 [
   {
+    "key": "94VFSWKI",
+    "itemType": "book",
+    "title": "The Elements of Statistical Learning",
+    "copyright": "http://www.springer.com/tdm",
+    "isbn": "978-0-387-84857-0 978-0-387-84858-7",
+    "url": "http://link.springer.com/10.1007/978-0-387-84858-7",
+    "doi": "10.1007/978-0-387-84858-7",
+    "urldate": "2026-09-14T16:59:09Z",
+    "publisher": "Springer",
+    "author": "Hastie Trevor, Tibshirani Robert, Friedman Jerome",
+    "year": "2009",
+    "keywords": [
+      "Averaging",
+      "Boosting",
+      "Projection pursuit",
+      "Random Forest",
+      "Support Vector Machine",
+      "classification",
+      "clustering",
+      "data mining",
+      "machine learning",
+      "supervised learning",
+      "unsupervised learning"
+    ],
+    "series": "Springer Series in Statistics",
+    "place": "New York, NY",
+    "libraryCatalog": "DOI.org (Crossref)"
+  },
+  {
+    "key": "4TVC5APJ",
+    "itemType": "webpage",
+    "title": "Elements of Statistical Learning: data mining, inference, and prediction. 2nd Edition.",
+    "url": "https://hastie.su.domains/ElemStatLearn/",
+    "urldate": "2026-08-22T15:34:52Z"
+  },
+  {
+    "key": "SPW7NXHT",
+    "itemType": "webpage",
+    "title": "Elements of Statistical Learning: data mining, inference, and prediction. 2nd Edition.",
+    "url": "https://hastie.su.domains/ElemStatLearn/",
+    "urldate": "2026-09-14T16:58:14Z"
+  },
+  {
+    "key": "Q4IIBE2Z",
+    "itemType": "webpage",
+    "title": "Elements of Statistical Learning: data mining, inference, and prediction. 2nd Edition.",
+    "url": "https://hastie.su.domains/ElemStatLearn/",
+    "urldate": "2026-09-14T16:58:05Z"
+  },
+  {
     "key": "MX3HGCV2",
     "itemType": "journalArticle",
     "title": "M5 accuracy competition: Results, findings, and conclusions",
@@ -821,13 +871,6 @@
     "year": "2017",
     "libraryCatalog": "Neural Information Processing Systems",
     "proceedingsTitle": "Advances in Neural Information Processing Systems"
-  },
-  {
-    "key": "4TVC5APJ",
-    "itemType": "webpage",
-    "title": "Elements of Statistical Learning: data mining, inference, and prediction. 2nd Edition.",
-    "url": "https://hastie.su.domains/ElemStatLearn/?utm_source=chatgpt.com",
-    "urldate": "2026-08-22T15:34:52Z"
   },
   {
     "key": "5G55UDSP",

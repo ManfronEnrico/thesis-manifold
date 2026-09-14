@@ -1102,3 +1102,82 @@ translation layer in place for the next rename to break again.
 This is the same shape as F3 in this file (dead path constants fail silently) and the
 `generated-artefact-provenance` rule: **the defect is a second source of truth**, whether
 it holds a path, a number, or a label.
+
+## F37 - an empty graphviz SIDES means ALL FOUR sides, not none
+
+**Found 2026-09-14** while diagnosing a defect Brian reported on three tables:
+*"the cell borders of content are messed up again"*.
+
+The styling contract asks for selective per-side rules -- a header underline, a
+first-column right rule, a last-row underline -- and nothing else. What rendered
+was a **full grid**: every interior body cell drawn as a complete box.
+
+### The hypothesis was reasonable and wrong
+
+Brian's reading: *"perhaps the order of the border application is wrong ... the
+table content must be first formatted, then the header row, then the first
+and/or last column"* -- i.e. a later write overwriting an earlier one.
+
+Probed instead of assumed. Three spellings of "no sides":
+
+```
+SIDES=""        polygon(box)=1  polyline(sides)=0
+SIDES="none"    polygon(box)=1  polyline(sides)=0
+SIDES=" "       polygon(box)=1  polyline(sides)=0
+```
+
+All three render a **full box**. Under `CELLBORDER="1"` the default is all four
+sides, and an empty `SIDES` does not override the default -- it falls back to
+it. Nothing is overwriting anything; the cells that asked for no border were
+never able to ask.
+
+`styled_tables._side()` returns `""` for exactly the cells that look wrong: not
+a group boundary, not the first column, not the last row. Header cells always
+carry `bottom`, so they emit a single-sided `<polyline>` and look right. **That
+contrast is the whole visible symptom**, and it pointed at ordering because the
+header is drawn separately from the body.
+
+### Why it shipped
+
+`_sides()` carried a docstring asserting the opposite -- *"Empty means no border
+on any side"* -- and the requirements file repeated it as verified. A claim
+written confidently in two places, never probed, in a toolchain where the
+default is the non-obvious direction.
+
+**The lesson is narrow and repeatable: a library default that is "all" rather
+than "none" inverts every absent-value assumption built on top of it.** The
+probe took one minute and the assumption survived several sessions.
+
+### The fix
+
+No code path may emit `SIDES=""`. Either set `CELLBORDER="0"` on the table and
+draw each rule as an explicit single-sided cell, or emit a sentinel graphviz
+reads as empty. Ordering then becomes a real requirement on top of it -- Brian:
+*"the section wise cell borders would need to be the last step"* -- so group
+rules are applied after the structural ones rather than before.
+
+Propagates through **every** table, not the three that were reported.
+
+## F38 - a figure counted PNGs in a tree that no longer has any
+
+**Found 2026-09-14.** `ch4_eda_pipeline_csd_v1` prints "0 figures" for a
+category that has eight.
+
+`generate_architecture_diagrams.py:941` reads `pdir.glob("*.png")`. DEC-SVG-ONLY
+(F28) converted the whole results tree to SVG and removed the PNG twins, so the
+glob matches nothing and can never match anything again.
+
+**The count is computed, not typed -- and still wrong.** The provenance rule
+says every number must be read from an artefact at render time, and this one is.
+It reads the right directory with the wrong extension, which is the failure mode
+the rule does not catch: a live query whose predicate went stale. A zero from a
+real `glob` looks exactly like a true zero.
+
+Worth generalising: **after a format migration, every glob filtered on the old
+extension is a silent zero.** The migration changed the files and left the
+readers, and nothing failed loudly because an empty directory listing is legal.
+
+Brian's related instruction on vocabulary: the document distinguishes tables,
+figures and appendices -- a plot IS a figure. The `plots/` vs `figures/` split
+is a repository convenience for which producer regenerates what, and must not
+leak into a count printed inside an artefact.
