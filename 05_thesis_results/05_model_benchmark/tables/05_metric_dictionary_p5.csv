@@ -1,0 +1,3 @@
+Dimension,Metric,Unit,Definition,Better when,Source
+Efficiency,Refit time,s,Wall-clock seconds to re-estimate model coefficients on updated data while holding stored hyperparameters fixed.,lower,srq1/refit_vs_retune.csv
+Efficiency,Re-tune time,s,"Wall-clock seconds to re-run the full hyperparameter search, which repeats a cross-validated fit for every trial.",lower,srq1/refit_vs_retune.csv

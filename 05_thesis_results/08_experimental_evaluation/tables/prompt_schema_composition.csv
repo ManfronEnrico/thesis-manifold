@@ -1,0 +1,12 @@
+ ,A,B,C,D,E,F,G
+The question,•,•,•,•,•,•,•
+Output exemplar,•,•,•,•,•,•,•
+Sentinel instruction,•,•,•,•,•,•,•
+No firm data,•,,,,,,
+Sales history + schema,,•,,c,,•,c
+Model forecast payload,,,,,c,•,c
+Forecast tool,,,•,,,,
+Analysis task,,•,,c,,,
+"Analysis task, with model",,,,,,•,c
+Do not query warehouse,,,,c,c,,c
+Route to analysis engine,,,,c,c,,c

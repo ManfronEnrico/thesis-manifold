@@ -1,0 +1,4 @@
+Measure,Category,LightGBM,XGBoost
+mWMAPE (%),Danskvand,27.01,25.80
+mWMAPE (%),Energidrikke,16.24,16.95
+mWMAPE (%),RTD,30.50,30.08

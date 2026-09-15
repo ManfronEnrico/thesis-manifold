@@ -107,7 +107,7 @@
 <title>out</title>
 <polygon fill="white" stroke="#1f5c8b" stroke-width="1.5" points="529.33,-359.95 385.33,-359.95 385.33,-319.05 529.33,-319.05 529.33,-359.95"/>
 <text xml:space="preserve" text-anchor="start" x="407.08" y="-343.25" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1a1a1a">Documented findings</text>
-<text xml:space="preserve" text-anchor="start" x="418.7" y="-329.5" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">22 tables, 0 figures</text>
+<text xml:space="preserve" text-anchor="start" x="418.7" y="-329.5" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#1a1a1a">22 tables, 8 figures</text>
 </g>
 <!-- g1&#45;&gt;out -->
 <g id="edge5" class="edge">

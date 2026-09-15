@@ -5,9 +5,9 @@
 
 | | |
 |---|---|
-| Table | `05_thesis_results/08_experimental_evaluation/tables/08_sandbox_resource_profile.md` |
+| Table | `05_thesis_results/08_experimental_evaluation/tables/17_sandbox_resource_profile.md` |
 | Producer | `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` |
-| Written | 2026-09-14 19:15 UTC |
+| Written | 2026-09-15 12:23 UTC |
 
 ---
 

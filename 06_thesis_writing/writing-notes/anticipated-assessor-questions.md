@@ -507,3 +507,59 @@ correct. Chapter 5 already handles the disagreement well, reporting it as
 | Is the single-month H=3 scoring a shortcut? | No - 13.8 says averaging across horizons combines unequal variances. See `ch5_model_benchmark/2026-09-13_21-15_BRANCH_A_book-citations-that-strengthen.md` |
 | Why tune on WMAPE when the book says RMSE? | Principled - 5.8 shows MAE and RMSE are minimised by different functionals, so the repo tunes once per objective. Same note |
 | Is comparing ARIMA against gradient boosting on a test set legitimate? | Yes - 9.10 states AICc **cannot** compare across model classes and prescribes exactly this. Same note |
+
+---
+
+# The AI Use Declaration, and the CBS GenAI guidelines
+
+Added 2026-09-15. **The declaration ships as Variant D**, reworded against the
+CBS guidelines for final projects. See
+`2026-09-15_BRANCH_A_ai-declaration-variant-D-final.md`.
+
+## Q — "What did 'editorial support' cover?"
+
+**The likeliest question, and it must be answered plainly rather than by
+standing on the wording.**
+
+**The answer:** generative AI was used as a language assistant on the manuscript
+and to discuss how arguments were organised and chapters sequenced. What to
+claim, which evidence supports a claim, and how to interpret a result were the
+authors' decisions. Every empirical claim was verified against the artefact that
+produces it before it entered the text.
+
+⚠ **Do not deny drafting assistance.** The submitted repository carries its own
+git history and note folders. A denial is disprovable; the declaration as written
+is not.
+
+## Q — "Does this satisfy the 'specific reference' rule?"
+
+CBS: *"Using GenAI to generate text, images, or other content as part of the
+final product is only acceptable if a specific reference is provided."*
+
+**The distinction to draw:** the guidelines separate *assistance in producing
+your own product* — which they compare to Grammarly and to asking a mentor for
+input, and which needs no per-passage reference — from *generated content as a
+component of the final product*, which does. A figure generated wholesale, or a
+passage inserted verbatim, is the second. Drafting reviewed, revised and verified
+by the authors is the first.
+
+**This is an interpretation, and it should be stated as one if pressed.** It is
+declared in the front matter and in Section 3.8, which is where the guidelines
+ask for it.
+
+## Q — "Was the licensed panel exposed to an AI tool?"
+
+**No.** The raw panel never leaves the local environment; `.gitignore` enforces
+this and the repository has no copy. The only data reaching an external model is
+the brand-level aggregates forming the documented inputs to the Chapter 8
+experiment, which are reproduced in full in the appendix and were the object of
+the experiment.
+
+## ⚠ Before the defence — a CBS requirement, not a courtesy
+
+> *"You need to inform your supervisor and censor if you have used GenAI when
+> preparing for your oral defense. However, you may not use GenAI during the
+> actual defense to e.g. generate answers."*
+
+**Two actions:** state the preparation use to supervisor and censor beforehand,
+and use no AI tool during the defence itself.

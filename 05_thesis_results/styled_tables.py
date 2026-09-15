@@ -257,7 +257,18 @@ def render_table(df: pd.DataFrame, *, stem: str, chapter: str, title: str,
     # Wrap only where a column actually runs long. Measured per column so a
     # table of short values is never broken up for a rule that does not bind.
     widths = {c: int(df[c].astype(str).str.len().max() or 0) for c in cols}
-    wrap_at = {c: (34 if widths[c] > 34 else 0) for c in cols}
+    # A very long cell wraps NARROWER, not wider.
+    #
+    # Widening the measure was tried first, on the reasoning that fewer, longer
+    # lines are shorter overall. Measured, it is worse on both axes: the metric
+    # dictionary went 719x779pt to 843x552pt, because graphviz sizes a column
+    # to its longest line, so a 60-character measure makes the COLUMN 60
+    # characters wide and the table overflows sideways instead.
+    #
+    # Height is then the row budget's job, not the wrap's. The wrap only has to
+    # keep one column from setting the table's width.
+    wrap_at = {c: (28 if widths[c] > 120 else (34 if widths[c] > 34 else 0))
+               for c in cols}
 
     # Where consecutive rows change group, the boundary gets a light rule: the
     # band is shown by separating it, not by shading it.
@@ -269,21 +280,56 @@ def render_table(df: pd.DataFrame, *, stem: str, chapter: str, title: str,
         last = (i == n_rows - 1)
         starts_group = row_group is not None and i > 0 and groups[i] != groups[i - 1]
 
+        # A boundary is drawn on the row ABOVE it, as that row's bottom rule.
+        # See the comment at the cell build below for why it cannot be the
+        # boundary row's own top rule.
+        ends_group = (row_group is not None and i < n_rows - 1
+                      and groups[i + 1] != groups[i])
+
         def _side(col_i: int) -> str:
+            # On a band-ending row the first column DROPS its vertical rule for
+            # that one row, rather than having it drawn grey.
+            #
+            # The cell carries one colour, and here it must serve a grey
+            # horizontal band and a black vertical rule. Measured, letting the
+            # colour change draws a grey stub in the label column at every
+            # boundary -- four of them, and each reads as a rendering fault.
+            # Breaking the vertical rule for 25pt instead is the quieter
+            # failure: a rule that runs the table's height has an almost
+            # invisible gap, and the band gains its eighth segment.
             return _sides(
-                top=starts_group,
-                # First column carries the vertical rule that separates the
-                # row label from the values it labels.
-                right=(col_i == 0),
-                bottom=last,
+                right=(col_i == 0 and not (ends_group and not last)),
+                bottom=(last or ends_group),
             )
 
-        def _colour(col_i: int) -> str:
-            # A group boundary is quieter than the table's own structure, but
-            # the first column's rule and the final underline stay black.
-            return RULE if (col_i == 0 or last) else (
-                GROUP_RULE if starts_group else RULE)
+        def _colour(_col_i: int) -> str:
+            # The last row's underline is structural and black. Every other
+            # rule on a band-ending row is the band itself, and grey.
+            #
+            # The first column's vertical rule is the one casualty: on a
+            # band-ending row it is drawn grey along with the band. That is
+            # accepted deliberately -- it is one row's worth of a rule that
+            # runs the table's full height, and it buys a band that lands on a
+            # single y across all eight columns.
+            return RULE if last else (GROUP_RULE if ends_group else RULE)
 
+        # THE BAND RULE IS DRAWN BY THE ROW ABOVE, as a bottom rule, uniformly
+        # across every cell including the label. Three approaches were measured
+        # before this one:
+        #
+        #   colour the boundary row's cells grey   -> the label's own VERTICAL
+        #                                             rule turns grey too
+        #   exclude column 0 from the grey         -> band spans 7 of 8 columns
+        #   nest a bordered table in column 0      -> band sits 1-6pt low,
+        #                                             because the inner border
+        #                                             draws inside the cell
+        #
+        # All three come from one cause: graphviz gives a cell ONE border
+        # colour, and column 0 on a boundary needs a grey horizontal rule and a
+        # black vertical one at once. Drawing the band as the PRECEDING row's
+        # bottom rule removes the conflict -- that row's column 0 has no
+        # vertical rule of its own to lose, so one colour suffices everywhere
+        # and all eight segments land on the same y.
         cells = [_cell(label, {**PLAIN, "bold": True}, align="LEFT",
                        bg=PAPER, wrap=wrap_at[cols[0]],
                        sides=_side(0), rule=_colour(0))]
@@ -319,8 +365,19 @@ def render_table(df: pd.DataFrame, *, stem: str, chapter: str, title: str,
     # Roughly two characters per unit of column width at 9pt, floored so a
     # one-column table still gets a readable measure.
     if note:
-        note_wrap = max(60, min(_NOTE_WRAP, sum(
-            max(len(str(c)), widths[c]) + 3 for c in cols)))
+        # Fill the TABLE'S FULL WIDTH. The note is set in 9pt against body text
+        # at 11pt, so a wrap measured in characters of the table's own content
+        # under-fills badly: measured on 05_model_metadata, a 768pt table
+        # carried its note in a 430pt column, using barely half the width and
+        # costing extra lines for no reason.
+        #
+        # ~1.75 characters per unit of column width at 9pt against 11pt
+        # content. Still capped, because a note is prose and a 200-character
+        # measure is unreadable however much room there is; still floored, so a
+        # one-column table keeps a sane measure.
+        _CH_PER_UNIT = 1.75
+        table_units = sum(max(len(str(c)), widths[c]) + 3 for c in cols)
+        note_wrap = max(60, min(160, int(table_units * _CH_PER_UNIT)))
         body = "".join(
             f'<TR><TD ALIGN="LEFT" CELLPADDING="1">'
             f'<FONT POINT-SIZE="9" COLOR="{MUTE}">{_esc(ln)}</FONT></TD></TR>'

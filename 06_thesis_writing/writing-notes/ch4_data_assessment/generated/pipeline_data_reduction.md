@@ -5,9 +5,9 @@
 
 | | |
 |---|---|
-| Table | `05_thesis_results/04_data_assessment/tables/03_pipeline_data_reduction.md` |
+| Table | `05_thesis_results/04_data_assessment/tables/07_pipeline_data_reduction.md` |
 | Producer | `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` |
-| Written | 2026-09-14 19:15 UTC |
+| Written | 2026-09-15 12:23 UTC |
 
 ---
 

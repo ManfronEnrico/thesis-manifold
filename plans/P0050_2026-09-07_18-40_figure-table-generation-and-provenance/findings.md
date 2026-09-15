@@ -1215,3 +1215,92 @@ Brian's related instruction on vocabulary: the document distinguishes tables,
 figures and appendices -- a plot IS a figure. The `plots/` vs `figures/` split
 is a repository convenience for which producer regenerates what, and must not
 leak into a count printed inside an artefact.
+
+## F39 - one cell, one border colour: four ways to draw a group band, three wrong
+
+**Found 2026-09-15** fixing the row grouping Brian reported as "didn't work properly"
+on the scenario comparison.
+
+The styling contract asks for a grey rule above and below each row group. The obstacle
+is that **graphviz gives a table cell exactly one border colour**, and the first column
+of a boundary row needs two: a GREY horizontal band rule, and the BLACK vertical rule
+separating the row label from its values.
+
+Four approaches, each measured against the rendered SVG rather than reasoned about:
+
+| Approach | What rendered |
+|---|---|
+| colour the boundary row's cells grey | the label's own VERTICAL rule turned grey -- a stray 25pt grey stroke in the label column at every boundary |
+| exclude column 0 from the grey | band spanned 7 of 8 columns, stopping short of the label a reader scans |
+| nest a bordered table inside column 0 | band sat 6pt low; moving the padding inward cut it to 1pt but never to 0, because the inner border draws inside the cell |
+| **draw the band as the PRECEDING row's bottom rule** | **correct: 4 levels, 8 segments each, single y** |
+
+### Why the fourth works and the others cannot
+
+The conflict only exists on the boundary row's own top edge. The row ABOVE it has no
+vertical rule of its own to lose in column 0, so one colour serves the whole row and
+every segment lands on the same y.
+
+It costs one thing, accepted deliberately: on a band-ending row the first column's
+vertical rule is drawn grey with the band. A rule that runs the table's full height
+with one 25pt segment in a lighter grey is far less visible than a stray stub, and the
+band gains its eighth segment.
+
+**The measurement technique mattered more than the fix.** Counting `<polyline>` elements
+by stroke colour, and recording each one's y-levels and x-span, is what distinguished
+"7 segments" from "8 segments" and "one y" from "two y 1pt apart". None of that is
+visible in a screenshot at page scale.
+
+## F40 - three hand-rolled page splits, each with a typed part count
+
+**Found 2026-09-15.** Brian asked for `04_feature_matrix` to be split "into three parts
+due to its excessive length". Implementing it revealed the same logic already existed
+twice, and that a typed part count is the wrong shape for it.
+
+`per_run_record` carried `_PARTS = 2` and produced two 940pt halves -- each still
+double the 482pt text block. The count had been right when written, for a smaller run
+set, and nothing recomputed it when repeats were added. The feature matrix then got a
+third copy, also typed, also wrong: three parts of 18 rows came to 455pt of body before
+any chrome.
+
+**A part count is a derived quantity and must never be typed.** `_PAGE_ROWS` now maps a
+slug to a ROW BUDGET, and `_emit_paged` divides by it:
+
+    _PAGE_ROWS = {"metric_dictionary": 9, "per_run_record": 11,
+                  "seed_stability": 9, "feature_matrix": 9}
+
+A table that grows adds a page instead of overflowing one. A slug absent from the map
+is emitted whole, which is the right default -- splitting a table that fits costs the
+reader a page turn for nothing.
+
+Budgets differ per table because the chrome does: a note's height varies with its
+length, and the metric dictionary's definitions wrap to four lines where the per-run
+record's cells are single values.
+
+**Related trap, same run:** enumerating the parts in `_TABLE_CHAPTER`
+(`feature_matrix_p1..p3`) raised `KeyError` on `p4` when the budget produced six --
+mid-run, AFTER `_clear_previous` had swept the tables that follow it. Routing by base
+slug fixes it, and the resolution now lives in one helper because a second copy of the
+lookup in `main()` missed the fix and failed the same way on the next run.
+
+## F41 - a table's width was set by its headers, not by its data
+
+**Found 2026-09-15.** `per_run_record` rendered 918pt wide against a 785pt text block,
+and `interval_communication` 1103pt.
+
+Measured per column: in **9 of 13** columns the HEADER was wider than the widest value
+beneath it. "Response time (s)" is 17 characters over 5-character numbers; "Forecast
+(units)" 16 over 9; "Reasoning tokens" 16 over 7.
+
+Graphviz sizes a column to its longest unbroken string, header included, so those nine
+headers set the table's width while carrying no information the note could not state
+once. Shortening them and moving the units into the note took 134 width units to ~100
+without losing a datum.
+
+The same defect in a second form: seven scenario identifiers spelled out
+(`G_prometheus_data_model`, 23 characters) over cells holding `9 of 9 (100)`.
+Abbreviated to their letter with the key in the note -- a fix already applied to two
+other tables, and not carried across because each table built its own header dict.
+
+**The general rule: a header is one string, a column is many. Where they disagree about
+width, the header is almost always the one to change.**

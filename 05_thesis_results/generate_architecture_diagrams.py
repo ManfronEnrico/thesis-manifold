@@ -294,8 +294,28 @@ def substrate() -> list:
 
 
 def ladder() -> list:
+    """The model families evaluated, in Ch5 s5.2 order.
+
+    Reads BOTH result tables, because neither holds all of them: the tabular
+    arm lands in metrics.csv and the classical univariate arm in
+    stat_baselines.csv. Reading only the first is the same defect `substrate()`
+    was already fixed for, and it left the modelling-pipeline figure showing
+    four candidates while Ch5 s5.2 describes six families and s5.5.2 states
+    "Six model families were evaluated in total".
+
+    SeasonalNaive is kept here, unlike in `substrate()`: this figure is about
+    what was EVALUATED, and s5.2.1 makes seasonal naive the decisive benchmark
+    the tuned models must beat. The other three parameter-free floors are not
+    drawn individually -- they are one rung, not three candidates.
+    """
     found = {r["model"] for r in _rows(TABLES / "metrics.csv")}
-    order = ["SeasonalNaive", "Ridge", "LightGBM", "XGBoost"]
+    stat = TABLES / "stat_baselines.csv"
+    if stat.is_file():
+        found |= {r["model"] for r in _rows(stat)}
+    # Ridge(unclipped) is the same estimator without its extrapolation bound:
+    # a diagnostic variant, not a separate family.
+    found -= {"Ridge(unclipped)", "Naive", "Drift", "Mean"}
+    order = ["SeasonalNaive", "ARIMA", "Prophet", "Ridge", "LightGBM", "XGBoost"]
     return [m for m in order if m in found] + sorted(found - set(order))
 
 
@@ -601,8 +621,26 @@ def fig_scenarios():
 def fig_resource_profile():
     """Measured fit cost per model, against the deployment envelope."""
     prof = profiling()
-    names = [m for m in ladder() if m in prof]
-    vals = [float(prof[m]["peak_fit_RSS_MB"]) for m in names]
+
+    # Resolve by FAMILY, not by exact key. profiling.csv records the classical
+    # models as "ARIMA(per-series)" and "Prophet(per-series)" -- how they were
+    # fitted -- while ladder() names the family. An `m in prof` test therefore
+    # dropped both without a word, leaving a five-model profile drawn with
+    # three bars while Ch5 s5.2 describes six families.
+    #
+    # Same shape as the *.png glob: a live lookup whose keys went stale, which
+    # fails as a silent omission rather than as an error. Matching on the
+    # prefix means a future "(per-brand)" suffix cannot reintroduce it.
+    def _row(fam: str):
+        if fam in prof:
+            return prof[fam]
+        hits = [k for k in prof if k.split("(")[0] == fam]
+        return prof[hits[0]] if len(hits) == 1 else None
+
+    pairs = [(m, _row(m)) for m in ladder()]
+    pairs = [(m, r) for m, r in pairs if r and r.get("peak_fit_RSS_MB")]
+    names = [m for m, _ in pairs]
+    vals = [float(r["peak_fit_RSS_MB"]) for _, r in pairs]
 
     fig, ax = plt.subplots(figsize=(7.2, 3.4))
     bars = ax.barh(names, vals, color=ACCENT, height=0.55)
@@ -761,10 +799,16 @@ def fig_research_questions_tree():
         "and cost constraints?", size=10),
         color=ACCENT, penwidth="1.5", fillcolor="white")
 
+    # The chapter each question is answered in. EDITORIAL, and typed -- there is
+    # no artefact that states it, because it is a claim about the document's
+    # structure rather than about any result. That is precisely why it goes
+    # stale: it survived a chapter reorder unchanged and had SRQ1 in 6 and SRQ2
+    # in 5, corrected against the prose 2026-09-15. Check it against the
+    # chapter headings whenever the document is reordered.
     srqs = [
-        ("s1", "SRQ1 - Models and Efficiency", "Chapter 6",
+        ("s1", "SRQ1 - Models and Efficiency", "Chapter 5",
          ("accuracy, memory efficiency", "and category specialisation")),
-        ("s2", "SRQ2 - Structured Tool Interface", "Chapters 5 and 7",
+        ("s2", "SRQ2 - Structured Tool Interface", "Chapters 6 and 7",
          ("reliability, uncertainty", "and traceability")),
         ("s3", "SRQ3 - Integration Readiness", "Chapters 5, 7 and 9",
          ("capabilities a production", "system requires")),
@@ -779,14 +823,21 @@ def fig_research_questions_tree():
     # 27.7 x 17 cm -- ratio 1.63 -- and four peer boxes side by side put this
     # tree at 3.53, which has to be scaled to a third of its size to fit and is
     # then unreadable. Folded into a 2x2 the same content lands inside the cap.
-    half = (len(srqs) + 1) // 2
-    top, bottom = srqs[:half], srqs[half:]
-    for r0 in (top, bottom):
-        with g.subgraph() as row:
-            row.attr(rank="same")
-            for nid, title, chap, body in r0:
-                row.node(nid, _box(title, chap, "", *body),
-                         width="2.6", fixedsize="false")
+    # ONE ROW. The 2x2 fold was added to pull the ratio under the landscape
+    # cap and cost the figure its meaning: four peer questions drawn as a
+    # square read as two groups of two, and the lower pair sat indented under
+    # the upper, which asserts a hierarchy that does not exist. The SRQs are
+    # siblings and belong on one rank.
+    #
+    # The cap is a constraint on figures that must be SHRUNK to fit. A tree of
+    # one parent over four equal children is naturally wide and short; that is
+    # the honest shape, and it is placed across a landscape page rather than
+    # scaled into illegibility.
+    with g.subgraph() as row:
+        row.attr(rank="same")
+        for nid, title, chap, body in srqs:
+            row.node(nid, _box(title, chap, "", *body),
+                     width="2.6", fixedsize="false")
 
     # `rank="same"` groups nodes; it cannot push one group BELOW another while
     # an edge from a shared parent fixes both at the same rank. Declaring two
@@ -794,11 +845,11 @@ def fig_research_questions_tree():
     # back byte-identical at 3.53. The second row is ranked by giving it its own
     # parent edge from the first row instead, drawn invisibly so the tree still
     # reads as one parent over four children.
-    for nid, *_ in top:
+    # One edge per question, from the main question to each. With all four on
+    # a single rank there is no second row to push down, so the invisible
+    # ranking edges the 2x2 fold needed are gone with it.
+    for nid, *_ in srqs:
         g.edge("mrq", nid)
-    for nid, *_ in bottom:
-        g.edge(top[0][0], nid, style="invis")
-        g.edge("mrq", nid, constraint="false")
 
     _caption(g, "Structure of the research questions. The main question is "
                 "answered through four subsidiary questions, each shown with "
@@ -938,7 +989,19 @@ def fig_eda_pipeline():
             slug = parts[3]
             secs.setdefault(parts[2], []).append(
                 LABELS.get(slug, slug.replace("_", " ")))
-    plots = sorted(p.stem for p in pdir.glob("*.png"))
+    # SVG, not PNG. DEC-SVG-ONLY converted the whole results tree and removed
+    # the PNG twins, so a *.png glob can never match again -- it reported "0
+    # figures" for a category holding eight. The count is computed from a real
+    # directory read, which is what the provenance rule asks for, and was still
+    # wrong: a live query whose predicate went stale reads exactly like a true
+    # zero. After a format migration, every glob filtered on the old extension
+    # is a silent zero.
+    #
+    # Called "figures" because that is the thesis's own vocabulary: the
+    # document distinguishes tables, figures and appendices, and a plot IS a
+    # figure. plots/ vs figures/ is a repository convenience about which
+    # producer regenerates what, and must not leak into a printed count.
+    plots = sorted(p.stem for p in pdir.glob("*.svg"))
 
     g = _g("eda_pipeline", rankdir="LR")
     g.attr(ranksep="0.7", nodesep="0.18")

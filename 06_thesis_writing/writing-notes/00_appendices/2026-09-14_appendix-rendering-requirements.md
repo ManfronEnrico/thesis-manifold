@@ -206,6 +206,80 @@ the last step."* So once the per-side emission is fixed, precedence is:
 4. last row
 5. **row-group rules last**, so a group boundary is never overwritten
 
+### The band rule is drawn by the row ABOVE it — settled 2026-09-15
+
+A cell carries ONE border colour, and the first column of a boundary row needs
+two: a grey horizontal band and a black vertical rule. Four approaches were
+measured (F39); three fail visibly:
+
+| Approach | Rendered |
+|---|---|
+| colour the boundary row grey | stray grey stub down the label column |
+| exclude column 0 from the grey | band spans 7 of 8 columns |
+| nest a bordered table in column 0 | band sits 1–6pt low |
+| **band = the preceding row's bottom rule** | **4 levels, 8 segments, single y** |
+
+The row above has no vertical rule to lose, so one colour serves it. Cost: on a
+band-ending row the first column's vertical rule is grey for that row — a far
+quieter failure than a stray stub.
+
+---
+
+# 6. Fitting the page — the mechanisms, settled 2026-09-15
+
+## Splitting is a ROW BUDGET, never a part count
+
+`_PAGE_ROWS` maps a slug to rows-per-page; `_emit_paged` derives the number of
+parts. A typed count goes stale the moment the data grows — `per_run_record`
+carried `_PARTS = 2` and produced two 940pt halves against a 482pt block (F40).
+
+A slug absent from the map is emitted whole. Budgets differ per table because
+the chrome does: a note's height varies with its length.
+
+**A split's parts route by BASE slug.** Enumerating `feature_matrix_p1..p3` in
+the chapter map raised `KeyError` on `p4` mid-run, after the previous output
+had already been swept.
+
+## Headers set the width, not the data
+
+Measured on the per-run record: in **9 of 13** columns the header was wider
+than the widest value under it (F41). Graphviz sizes a column to its longest
+unbroken string, header included.
+
+| Fix | Applied to |
+|---|---|
+| units moved from header into the note | per-run record — "Response time (s)" → "Time (s)" |
+| scenario identifiers → their letter, key in the note | scenario comparison, interval communication, outcome taxonomy, per-run record |
+
+**Every table now fits**: 17 of 17 within 785 × 482 pt, zero stroked boxes.
+
+---
+
+# 7. Chapter mapping in the Ch1 tree is TYPED, and must be checked
+
+`ch1_research_questions_tree_v2` states which chapter answers each question.
+There is no artefact to derive it from — it is a claim about the document's
+structure — so it is typed in the generator and it goes stale silently.
+
+Corrected 2026-09-15 against the prose, per Brian:
+
+| | Chapter |
+|---|---|
+| SRQ1 — Models and Efficiency | **5** (was 6) |
+| SRQ2 — Structured Tool Interface | **6 and 7** (was 5 and 7) |
+| SRQ3 — Integration Readiness | 5, 7 and 9 |
+| SRQ4 — Models versus Code | 8 |
+
+**Re-check this whenever the document is reordered.**
+
+## Open: the Ch1 tree exceeds the ratio cap
+
+Four SRQs on one rank — as instructed, the 2×2 fold having produced the
+misalignment Brian rejected — puts the tree at **822 × 244 pt, ratio 3.37**
+against the 1.63 cap. It is a parent over four equal children; that shape is
+naturally wide and short. Placed across a landscape page it reads, but it is
+the one artefact still outside the cap. **Brian's call.**
+
 ## Weight
 
 - Header row: **bold**

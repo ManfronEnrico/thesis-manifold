@@ -46,6 +46,7 @@ Output: 04_thesis_results/appendix/
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -118,6 +119,9 @@ _TABLE_CHAPTER: dict = {
     # Ch4 -- how the data set was built
     "pipeline_execution": "data_assessment",
     "pipeline_data_reduction": "data_assessment",
+    # Split across three pages -- the matrix runs to dozens of columns and no
+    # scale fits them in a 482pt text block. Each part routes to the same
+    # chapter as the whole, the same way the per-run record does.
     "feature_matrix": "data_assessment",
     # Ch5 -- the models, their cost and their stability
     "metric_dictionary": "model_benchmark",
@@ -132,15 +136,38 @@ _TABLE_CHAPTER: dict = {
     # Ch8 -- the scenario comparison itself
     "scenario_comparison": "experimental_evaluation",
     "outcome_taxonomy": "experimental_evaluation",
+    # Parts route by BASE slug via _chapter_slug; they are NOT enumerated here.
+    # Leaving `per_run_record_p1`/`_p2` behind from the old two-part split made
+    # a routing bug look partial -- those two rendered, every later part did
+    # not -- which cost a diagnosis.
     "per_run_record": "experimental_evaluation",
-    # The record is split across pages -- 63 rows do not fit a 482pt text
-    # block at any scale. Each part routes to the same chapter as the whole.
-    "per_run_record_p1": "experimental_evaluation",
-    "per_run_record_p2": "experimental_evaluation",
     "model_metadata": "model_benchmark",
     "run_configuration": "experimental_evaluation",
     "sandbox_resource_profile": "experimental_evaluation",
 }
+
+
+def _chapter_slug(slug: str) -> str:
+    """The slug that carries a table's chapter, for a table split across pages.
+
+    A split's part COUNT is derived from a row budget, so it changes when the
+    data does. Enumerating `feature_matrix_p1..p3` in _TABLE_CHAPTER meant a
+    matrix that grew to six parts raised KeyError on p4 -- mid-run, after
+    _clear_previous had already swept the tables that follow it.
+
+    Stripping the `_pN` suffix keeps the loud failure for a genuinely unmapped
+    table while letting a split grow a page. Every caller resolves through
+    here: the index in main() held a second copy of this lookup and so missed
+    the fallback, which is how the same defect surfaced twice in one run.
+    """
+    base = re.sub(r"_p\d+$", "", slug)
+    return base if (slug not in _TABLE_CHAPTER
+                    and base in _TABLE_CHAPTER) else slug
+
+
+def _chapter_of(slug: str) -> str:
+    """The chapter folder name for a table slug, parts included."""
+    return _TABLE_CHAPTER[_chapter_slug(slug)]
 
 
 def _chapter_dir(slug: str) -> Path:
@@ -149,11 +176,54 @@ def _chapter_dir(slug: str) -> Path:
     A default would file a new table in whichever chapter was convenient and let
     it sit there unnoticed; failing loudly costs one line in the map above.
     """
+    slug = _chapter_slug(slug)
     if slug not in _TABLE_CHAPTER:
         raise KeyError(
             f"table {slug!r} has no chapter in _TABLE_CHAPTER -- add one. "
             f"Known: {sorted(_TABLE_CHAPTER)}")
     return get_chapter_tables_dir(_TABLE_CHAPTER[slug])
+
+
+# Tables too tall for one appendix page, and the row budget each is split on.
+#
+# A 482pt text block holds roughly 9 to 14 rows once the header, caption, note
+# and legend chrome are paid for -- measured at ~25.3pt a row against ~161pt of
+# chrome, and the chrome varies with the length of the note, which is why the
+# budget is per table rather than one constant.
+#
+# A slug ABSENT from this map is emitted whole, which is the right default: most
+# tables fit, and splitting one that fits costs the reader a page turn for
+# nothing.
+_PAGE_ROWS: dict = {
+    "metric_dictionary": 5,      # 254-char definitions wrap to ~9 lines each
+    "per_run_record": 11,        # 63 rows; at 16 a part was still 551pt tall
+    "seed_stability": 9,         # 12 rows, 514pt
+    "feature_matrix": 9,         # 54 columns described, one row each
+}
+
+
+def _emit_paged(slug: str, title: str, caption: str, df: pd.DataFrame,
+                note: str = "", review: str = "") -> None:
+    """Emit a table, split across pages when it is too tall for one.
+
+    The part COUNT is derived from the row budget, never typed, so a table that
+    grows adds a page instead of overflowing one. Parts route to their chapter
+    by base slug (see _chapter_slug), and the caption states which columns or
+    rows a part covers so a reader can place it without the others to hand.
+    """
+    budget = _PAGE_ROWS.get(slug)
+    if not budget or len(df) <= budget:
+        _emit(slug, title, caption, df, note=note, review=review)
+        return
+
+    n_parts = -(-len(df) // budget)
+    for i in range(n_parts):
+        lo, hi = i * budget, min((i + 1) * budget, len(df))
+        _emit(f"{slug}_p{i + 1}",
+              f"{title} - part {i + 1} of {n_parts}",
+              f"Rows {lo + 1} to {hi} of {len(df)}. {caption}",
+              df.iloc[lo:hi].reset_index(drop=True),
+              note=note, review=review if i == 0 else "")
 
 
 def _emit(slug: str, title: str, caption: str, df: pd.DataFrame,
@@ -235,9 +305,23 @@ _SCENARIO_BANDS = {
     "Response time (s)": 4,
 }
 
+
+def _band(lbl) -> int:
+    """The band a measure belongs to, keyed on its UNWRAPPED label.
+
+    The renderer wraps a long first-column label across lines, and a lookup on
+    the wrapped text misses -- "Replicability, identical answers (%)" arrives as
+    two lines and fell through to the default, so it read as its own band and
+    put a grey rule between every row instead of between the five groups. A
+    default of 9 makes a miss invisible: it never raises, it just draws a
+    boundary where there is none.
+    """
+    return _SCENARIO_BANDS.get(" ".join(str(lbl).split()), 9)
+
+
 _ROW_GROUP: dict = {
     # runs | performance | consistency | cost | latency
-    "scenario_comparison": lambda lbl: _SCENARIO_BANDS.get(str(lbl), 9),
+    "scenario_comparison": _band,
 }
 
 
@@ -302,7 +386,12 @@ def _render_svg(slug, stem, title, caption, df, note) -> None:
                 return _m.get((row_label, col), PLAIN)
 
     try:
-        render_table(df, stem=stem, chapter=_TABLE_CHAPTER[slug], title=title,
+        # Through _chapter_of, not a bare lookup. This was the THIRD copy of
+        # the slug->chapter resolution, and the one that failed silently: a
+        # split part raised KeyError here, the broad except below caught it,
+        # and the run printed "(svg skipped)" while still writing the .md and
+        # .csv. Eleven tables shipped without their SVG that way.
+        render_table(df, stem=stem, chapter=_chapter_of(slug), title=title,
                      caption=caption, style_fn=style_fn, note=note,
                      row_group=_ROW_GROUP.get(slug),
                      legend=(BEST, SECOND) if style_fn else ())
@@ -443,7 +532,8 @@ METRICS = [
      "commonly returned value, within a 1% tolerance; averaged across brands. A "
      "value of 1.00 means every repeat returned effectively the same answer, 0.20 "
      "that five repeats returned five different ones. Reported because LLM outputs "
-     "vary between identical requests even at temperature zero (Atil et al., 2025).",
+     "vary between identical requests under identical decoding settings "
+     "(Atil et al., 2025).",
      "higher", "runs.csv: forecast"),
 
     ("Cost", "Tokens per answer", "tokens",
@@ -497,7 +587,7 @@ METRICS = [
 def table_metric_dictionary() -> None:
     df = pd.DataFrame(METRICS, columns=[
         "Dimension", "Metric", "Unit", "Definition", "Better when", "Source"])
-    _emit("metric_dictionary", "Metric dictionary",
+    _emit_paged("metric_dictionary", "Metric dictionary",
           "Definition, unit, direction of improvement and source field for every "
           "quantity reported in this appendix.", df,
           note="Percentage-valued metrics are given as numbers with the unit in the "
@@ -1036,7 +1126,7 @@ def table_stability() -> None:
 
     out = _bold_best(pd.DataFrame(rows), models, lower_is_better=True)
     n_seeds = int(d.n_seeds.max()) if "n_seeds" in d.columns else None
-    _emit("seed_stability", "Sensitivity of the substrate to random seed",
+    _emit_paged("seed_stability", "Sensitivity of the substrate to random seed",
           "Variation in fitted accuracy across repeated fits that differ only in "
           "the random seed supplied to the training procedure"
           + (f", over {n_seeds} seeds per model and category" if n_seeds else "")
@@ -1152,7 +1242,14 @@ def table_scenarios(df: pd.DataFrame) -> None:
             "Cost per answer, estimated (USD)": f"${d.cost_usd_est.mean():.4f}",
             "Response time (s)": f"{d.latency_s.mean():.1f}",
         }
-    rows = [{"Measure": k, **{HDR.get(s, s): stats[s][k] for s in present}}
+    # Scenario identifiers abbreviated to their LETTER in the header. Spelled
+    # out, seven of them run to 23 characters against cells holding four, and
+    # they set the table's width for no information: measured, the table came
+    # to 906pt against a 785pt text block and overflowed the page purely on
+    # header text. The key goes in the note, once -- the same fix the per-run
+    # record and the outcome taxonomy already carry.
+    _letter = {s: str(s).split("_")[0] for s in present}
+    rows = [{"Measure": k, **{_letter[s]: stats[s][k] for s in present}}
             for k in next(iter(stats.values()))]
 
     # The ladder is described from the scenarios actually present, not from a
@@ -1168,7 +1265,10 @@ def table_scenarios(df: pd.DataFrame) -> None:
         "F_llm_data_model": "F combines code execution with the forecasting model",
         "G_prometheus_data_model": "G repeats F on the production orchestrator",
     }
-    rungs = [_RUNG[s] for s in sorted(present) if s in _RUNG]
+    # The glosses no longer reach the note -- the ladder is described in the
+    # chapter, and repeating it under the table cost three wrapped lines and
+    # put the table 3pt over the text block. _RUNG stays, because the guard
+    # below is what caught this table explaining three of its seven columns.
     unmapped = sorted(s for s in present if s not in _RUNG)
     if unmapped:
         raise KeyError(
@@ -1195,11 +1295,21 @@ def table_scenarios(df: pd.DataFrame) -> None:
     # note on an 11-row table made the table too tall to place. The ladder is
     # set out in full in the chapter; this states only what the reader needs to
     # read THIS table.
-    note = ("The scenarios form an information ladder, each adding one "
-            "capability to the one below: " + "; ".join(rungs) + ". "
-            "Correctness, consistency and replicability are primary; cost and "
-            "response time secondary. Top-answer agreement is the share of "
-            "repeats returning the most common answer within 1%."
+    # The letter key, derived from the same `present` list that built the
+    # header, so a scenario cannot appear as a column without appearing here.
+    _key = "; ".join(f"{_letter[s]} = {s}" for s in sorted(present))
+    # Terse deliberately. A note is chrome drawn under every row, and its
+    # height counts against the 482pt text block: this table came to 485pt,
+    # 3pt over, on one wrapped line of the key's lead-in.
+    # The LADDER GLOSS IS NOT REPEATED HERE. It ran to seven clauses -- one per
+    # scenario -- and wrapped to three lines, which is what held this table at
+    # 485pt against a 482pt text block. The letters are keyed above, and each
+    # scenario is described in full in Chapter 8; restating it under the table
+    # spends the page on prose the reader meets either side of it.
+    note = ("Scenarios: " + _key
+            + ". Correctness, consistency and replicability are primary; cost "
+            "and response time secondary. Top-answer agreement is the share "
+            "of repeats returning the most common answer within 1%."
             + unknown_note)
     cov = _coverage(df)
     _emit("scenario_comparison", "Comparison of decision-support scenarios",
@@ -1252,9 +1362,19 @@ def table_interval_comm() -> None:
             ("gives_recommendation", "Proposes a course of action")]
     scen = sorted(d.scenario.unique())
 
-    # n goes in the column header, so every percentage in the column carries its
-    # own denominator and no cell can be read without it.
-    hdr = {s_: f"{s_} (n={len(d[d.scenario == s_])})" for s_ in scen}
+    # Scenario identifiers abbreviated to their LETTER, with n beside it. Spelled
+    # out, seven of them run to 23 characters over cells holding "9 of 9 (100)"
+    # and set the table's width for no information: measured, this table came to
+    # 1103pt against a 785pt text block and overflowed the page on header text
+    # alone. The key goes in the note, once -- the same fix the scenario
+    # comparison, the per-run record and the outcome taxonomy already carry.
+    #
+    # n stays in the header, so every percentage in the column carries its own
+    # denominator and no cell can be read without it.
+    _letter = {s_: str(s_).split("_")[0] for s_ in scen}
+    hdr = {s_: f"{_letter[s_]} (n={len(d[d.scenario == s_])})" for s_ in scen}
+    _scen_key = ("Scenarios are abbreviated to their letter: "
+                 + "; ".join(f"{_letter[s_]} = {s_}" for s_ in scen) + ". ")
 
     rows = []
     for key, label in crit:
@@ -1287,7 +1407,7 @@ def table_interval_comm() -> None:
           # Goodwin argument and the human-decision caveat belong in Chapter 7,
           # where there is room to make them; the table needs only what a
           # reader must know to read these five rows.
-          note="Each criterion is scored by comparing the numbers in the answer "
+          note=_scen_key + "Each criterion is scored by comparing the numbers in the answer "
                "against the numbers the tool returned, within five per cent; no "
                "judgement is involved. A scenario with no tool access cannot "
                "satisfy the second criterion, which requires a retrieved source "
@@ -1332,11 +1452,17 @@ def table_per_run(df: pd.DataFrame) -> None:
                 d.loc[d.system == s, "tokens_reasoning"] = "unknown"
     disp = _fmt(d, {"actual": "{:,.0f}", "forecast": "{:,.0f}", "ape": "{:.1f}",
                     "latency_s": "{:.1f}", "cost_usd_est": "${:.4f}"}).rename(columns={
-        "category": "Category", "brand": "Brand", "system": "Scenario", "rep": "Repeat",
-        "actual": "Actual (units)", "forecast": "Forecast (units)", "ape": "APE (%)",
-        "outcome": "Outcome", "latency_s": "Response time (s)",
-        "tokens_in": "Tokens in", "tokens_out": "Tokens out",
-        "tokens_reasoning": "Reasoning tokens", "cost_usd_est": "Cost (USD)"})
+        # Headers carry the UNITS in the note, not in the cell. Measured: in 9
+        # of 13 columns the header was wider than the widest value it sat over
+        # -- "Response time (s)" is 17 characters above 5-character numbers,
+        # "Forecast (units)" 16 above 9 -- and the table came to 918pt against
+        # a 785pt text block on header text alone. The units are stated once
+        # below instead of 63 times above.
+        "category": "Category", "brand": "Brand", "system": "Scenario", "rep": "Rep",
+        "actual": "Actual", "forecast": "Forecast", "ape": "APE (%)",
+        "outcome": "Outcome", "latency_s": "Time (s)",
+        "tokens_in": "Tok in", "tokens_out": "Tok out",
+        "tokens_reasoning": "Tok reas.", "cost_usd_est": "Cost (USD)"})
     # The scenario identifier is the widest column by a factor of three (23
     # characters against the next longest at 8) and carries only seven distinct
     # values, so spelling it out on all 63 rows sets the table's width for no
@@ -1349,31 +1475,24 @@ def table_per_run(df: pd.DataFrame) -> None:
         _key = (" Scenarios are abbreviated to their letter: "
                 + "; ".join(f"{str(s).split('_')[0]} = {s}" for s in seen) + ".")
 
-    # Split across pages. 63 rows at ~27pt is 1,755pt tall against a 482pt
-    # appendix text block -- it does not fit at any scale, and scaling to fit
-    # would make it unreadable rather than long. Two halves sit side by side on
-    # one landscape page, which is how Brian inserts it; each carries the page
-    # marker in its title so a reader knows the record continues.
-    _PARTS = 2
-    _n = len(disp)
-    _size = -(-_n // _PARTS)
-    for _p in range(_PARTS):
-        _chunk = disp.iloc[_p * _size:(_p + 1) * _size]
-        if _chunk.empty:
-            continue
-        _emit(f"per_run_record_p{_p + 1}",
-              f"Complete record of individual runs - part {_p + 1} of {_PARTS}",
-              "Every run logged, with its forecast, error, outcome class, "
-              "response time and cost. This is the evidence base from which "
-              "the aggregate figures are computed. "
-              f"Rows {_p * _size + 1} to {min((_p + 1) * _size, _n)} of {_n}. "
-              + _coverage(df), _chunk,
-              note=("The full response for each run, including any code "
-                    "generated and the reasoning summary returned by the "
-                    "model, is retained alongside these records." + _key)
-              if _p == _PARTS - 1 else
-              (f"Continues in part {_p + 2} of {_PARTS}." + _key),
-              review="")
+    # Split across pages by the shared row budget, not by a typed part count.
+    # 63 rows at ~27pt is 1,755pt against a 482pt appendix text block: it does
+    # not fit at any scale, and scaling to fit makes it unreadable rather than
+    # long. A hardcoded `_PARTS = 2` sat here and produced two 940pt halves
+    # that each still overflowed -- the count has to follow from the budget, or
+    # it goes stale the moment a repeat is added.
+    _emit_paged("per_run_record",
+                "Complete record of individual runs",
+                "Every run logged, with its forecast, error, outcome class, "
+                "response time and cost. This is the evidence base from which "
+                "the aggregate figures are computed. " + _coverage(df), disp,
+                note=("Actual and Forecast are in units; Rep is the repeat "
+                      "index; Tok in, Tok out and Tok reas. are input, output "
+                      "and reasoning tokens. The full response for each run, "
+                      "including any code generated and the reasoning summary "
+                      "returned by the model, is retained alongside these "
+                      "records." + _key),
+                review="")
 
     # The single whole-table emit that used to live here is GONE: the two-part
     # split above replaces it. Keeping both would have published the same 63
@@ -1428,7 +1547,6 @@ def table_config(df: pd.DataFrame) -> None:
             continue
     rows = [("Language model", tr.get("model", "n/a")),
             ("Reasoning effort", tr.get("reasoning_effort", "n/a")),
-            ("Temperature", str(tr.get("temperature", "n/a"))),
             ("Decoding", tr.get("decoding", "n/a")),
             ("Categories evaluated", ", ".join(sorted(df.category.dropna().unique()))),
             ("Distinct brands", str(df.brand.nunique())),
@@ -1470,7 +1588,15 @@ def _clear_previous() -> int:
     """
     removed = 0
     for slug, chapter in _TABLE_CHAPTER.items():
-        for f in get_chapter_tables_dir(chapter).glob(f"[0-9][0-9]_{slug}.*"):
+        # BOTH the whole table and its pages. Parts are no longer enumerated in
+        # _TABLE_CHAPTER -- they route by base slug -- so a glob on the base
+        # alone never matched `<slug>_p3` and every renumbering left the whole
+        # previous generation behind: measured, 15 slugs existed at two
+        # prefixes at once, which is exactly the "three tables all called 02_"
+        # defect this function was written to prevent.
+        pats = (f"[0-9][0-9]_{slug}.*", f"[0-9][0-9]_{slug}_p[0-9].*")
+        for f in (g for pat in pats
+                  for g in get_chapter_tables_dir(chapter).glob(pat)):
             # .svg included. It was omitted when the styled renderer was added,
             # so every renumbering left the previous generation's SVG behind
             # under its old prefix: adding one table shifted twelve others and
@@ -1635,35 +1761,39 @@ def table_feature_matrix() -> None:
     sh = man["shape"]
     n_feat, n_excl = len(features), int((out.Role.str.startswith("Excluded")).sum())
 
-    _emit("feature_matrix",
-          "Composition of the modelling matrix",
-          f"Every column of the {_FM_CATEGORY} feature matrix at a "
-          f"{man['forecast_horizon']}-month forecast horizon, with the role it "
-          f"plays in training. The matrix holds {sh['rows']:,} brand-months "
-          f"across {sh['brands']} brands in {sh['columns']} columns, of which "
-          f"{n_feat} are model inputs.", out,
-          note=f"The target is {man['target_col']}, modelled as log1p and "
-               f"inverted for reporting. Splits are chronological: training "
-               f"{sd['train_start']} to {sd['train_end']}, validation "
-               f"{sd['val_start']} to {sd['val_end']}, test "
-               f"{sd['test_start']} to {sd['test_end']}. The "
-               f"{n_excl} columns marked excluded are same-period sales and "
-               f"baseline measures, retained so a prediction can be traced "
-               f"back to the observation it was made from; they are not "
-               f"available to the model, which would otherwise observe the "
-               f"quantity it is asked to predict. Populated is the share of "
-               f"rows with a value: autoregressive features are empty for a "
-               f"brand's earliest months by construction.",
-          review=f"Read from {pq.name} and {mf.name} at render time; the "
-                 f"feature list is the manifest's own, not a copy. Role "
-                 f"assignment is BY RULE (_fm_role) and asserts that no column "
-                 f"falls through -- a column added upstream fails the export "
-                 f"rather than appearing unclassified. Counts here supersede "
-                 f"the 13/14/16-feature figures in earlier drafts (P0048 F3, "
-                 f"F10): the current matrix carries {n_feat} features after the "
-                 f"holiday enrichment. CSD is shown as the worked category; the "
-                 f"other three differ in the promotional block, which is absent "
-                 f"at source for the promo-zero categories.")
+    # Split across three pages. The matrix is too tall for a 482pt text block
+    # at any readable scale, and shrinking it to fit is what the page cap
+    # exists to prevent. Split by ROW COUNT rather than by role, because the
+    # role ordering above already groups the columns: cutting on role would
+    # give three parts of wildly different length, and a reader following the
+    # ordering finds the next role on the next page either way.
+    _emit_paged(
+        "feature_matrix",
+        "Composition of the modelling matrix",
+        f"Every column of the {_FM_CATEGORY} feature matrix at a "
+        f"{man['forecast_horizon']}-month forecast horizon, with the role it "
+        f"plays in training. The matrix holds {sh['rows']:,} brand-months "
+        f"across {sh['brands']} brands in {sh['columns']} columns, of which "
+        f"{n_feat} are model inputs.", out,
+        note=(f"The target is {man['target_col']}, modelled as log1p and "
+              f"inverted for reporting. Splits are chronological: training "
+              f"{sd['train_start']} to {sd['train_end']}, validation "
+              f"{sd['val_start']} to {sd['val_end']}, test "
+              f"{sd['test_start']} to {sd['test_end']}. The {n_excl} columns "
+              f"marked excluded are same-period sales and baseline measures, "
+              f"retained so a prediction can be traced back to the "
+              f"observation it was made from; they are not available to the "
+              f"model, which would otherwise observe the quantity it is asked "
+              f"to predict. Populated is the share of rows with a value: "
+              f"autoregressive features are empty for a brand's earliest "
+              f"months by construction. Columns are ordered by role, so the "
+              f"grouping continues across parts."),
+        review=f"Read from {pq.name} and {mf.name} at render time; the "
+               f"feature list is the manifest's own, not a copy. Role "
+               f"assignment is BY RULE (_fm_role) and asserts that no column "
+               f"falls through -- a column added upstream fails the export "
+               f"rather than appearing unclassified.")
+    return
 
 
 def main() -> None:
@@ -1727,7 +1857,12 @@ def main() -> None:
            "than under the script that produced them.", "",
            "| # | Chapter | Table | File |", "|---|---|---|---|"]
     for i, (title, stem) in enumerate(_INDEX, 1):
-        ch = _TABLE_CHAPTER[stem.split("_", 1)[1]]
+        # Through _chapter_of, not a bare dict lookup. This line held a second
+        # copy of the slug->chapter resolution and so missed the base-slug
+        # fallback _chapter_dir had already grown: every table wrote correctly
+        # and then the index raised KeyError on `feature_matrix_p1`, after the
+        # run had already swept the previous output. One resolver, one place.
+        ch = _chapter_of(stem.split("_", 1)[1])
         idx.append(f"| {i} | {ch} | {title} | `{ch}/tables/{stem}.md` |")
     index_path = THESIS_RESULTS_DIR / "APPENDIX_TABLES.md"
     index_path.write_text("\n".join(idx) + "\n",
