@@ -113,15 +113,40 @@ def _esc(s) -> str:
 
 
 def _sides(*, top=False, right=False, bottom=False, left=False) -> str:
-    """Graphviz SIDES string. Empty means no border on any side.
+    """Graphviz SIDES string. Empty means NO SIDE WAS ASKED FOR.
 
-    Per-side borders need CELLBORDER="1" on the TABLE; with CELLBORDER="0" the
-    SIDES attribute is ignored entirely and nothing is drawn. Every cell must
-    then state its sides explicitly, because the default under CELLBORDER="1"
-    is all four.
+    It does NOT mean "draw nothing" -- see `_border_attrs`, which is the only
+    place allowed to turn this into markup. Under CELLBORDER="1" an empty SIDES
+    falls back to the graphviz default of ALL FOUR sides, so a cell that omits
+    it gets a full box: the grid this styling exists to remove.
     """
     return ("T" if top else "") + ("R" if right else "") + \
            ("B" if bottom else "") + ("L" if left else "")
+
+
+def _border_attrs(sides: str | None, rule: str) -> str:
+    """Per-cell border markup. The ONE place that decides drawn vs not drawn.
+
+    MEASURED 2026-09-15, because the obvious spelling is wrong. Counts below
+    exclude the one <polygon> every SVG carries for the graph background:
+
+        CELLBORDER="1" + SIDES=""              -> a full box   (the bug)
+        CELLBORDER="1" + SIDES="none" / " "    -> a full box
+        CELLBORDER="0" on the table            -> nothing draws, SIDES ignored
+        CELLBORDER="1" + BORDER="0" on a cell  -> nothing draws  <-- this one
+
+    So "no border" is a property of the CELL (`BORDER="0"`), not an empty
+    SIDES, and it composes: a sibling cell in the same row still renders its
+    own `SIDES="B"` rule normally. That is what lets the table keep
+    CELLBORDER="1" for the cells that DO carry a rule while the interior stays
+    clean.
+
+    COLOR is omitted where nothing is drawn. Naming a colour for an absent
+    border is harmless to graphviz and misleading to the next reader.
+    """
+    if not sides:
+        return 'BORDER="0"'
+    return f'BORDER="1" SIDES="{sides}" COLOR="{rule}"'
 
 
 def _cell(value, style: dict, align="LEFT", bg=None, wrap=0,
@@ -134,12 +159,10 @@ def _cell(value, style: dict, align="LEFT", bg=None, wrap=0,
     cap purely on first-column text while their headers were under ten
     characters. Wrapping the cell fixes what narrowing the header cannot.
     """
-    # SIDES must be stated on EVERY cell. The table sets CELLBORDER="1" so that
-    # per-side rules are drawn at all, and the default under that is all four
-    # sides -- so a cell that omits SIDES gets a full box, which is the grid
-    # this styling exists to remove.
+    # Borders go through _border_attrs, never spelled inline. A cell that wants
+    # no rule needs BORDER="0"; an empty SIDES means all four (F37).
     attrs = (f'ALIGN="{align}" BALIGN="{align}" CELLPADDING="5" '
-             f'SIDES="{sides if sides is not None else ""}" COLOR="{rule}"')
+             + _border_attrs(sides, rule))
 
     if wrap and len(str(value)) > wrap:
         return (f'<TD BGCOLOR="{style.get("bg") or bg or PAPER}" {attrs}>'
@@ -164,9 +187,12 @@ def _legend_row(styles: list) -> str:
     for st in styles:
         if not st.get("legend"):
             continue
+        # The swatch keeps all four sides: it is a colour sample, and an
+        # unoutlined pale fill on white has no edge to read. The one place a
+        # full box is deliberate, so it asks rather than inheriting (F37).
         parts.append(
             f'{_cell(" ", st)}'
-            f'<TD ALIGN="LEFT" CELLPADDING="6">'
+            f'<TD BORDER="0" ALIGN="LEFT" CELLPADDING="6">'
             f'<FONT POINT-SIZE="10" COLOR="{MUTE}">{_esc(st["legend"])}</FONT></TD>')
     return "".join(parts)
 
@@ -222,9 +248,9 @@ def render_table(df: pd.DataFrame, *, stem: str, chapter: str, title: str,
     # forms the "H" the styling contract asks for -- structure carried by rules
     # rather than by fills, which stay free to mean something.
     head = "".join(
-        f'<TD BGCOLOR="{PAPER}" ALIGN="LEFT" BALIGN="LEFT" '
-        f'SIDES="{_sides(bottom=True, right=(i == 0))}" COLOR="{RULE}" '
-        f'CELLPADDING="5"><B>{_esc(c)}</B></TD>'
+        f'<TD BGCOLOR="{PAPER}" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="5" '
+        + _border_attrs(_sides(bottom=True, right=(i == 0)), RULE)
+        + f'><B>{_esc(c)}</B></TD>'
         for i, c in enumerate(cols))
     rows = [f"<TR>{head}</TR>"]
 
@@ -267,10 +293,16 @@ def render_table(df: pd.DataFrame, *, stem: str, chapter: str, title: str,
                                sides=_side(j), rule=_colour(j)))
         rows.append("<TR>" + "".join(cells) + "</TR>")
 
+    # The legend and the note are CHROME, not data: they sit below the last
+    # row's rule and carry no border of their own. Each spacer and each block
+    # therefore states BORDER="0" -- inheriting the table's CELLBORDER="1"
+    # default drew a rectangle around both, which read as a second table
+    # rather than as a footnote (G6).
     key = _legend_row(list(legend))
     if key:
-        rows.append(f'<TR><TD COLSPAN="{len(cols)}" CELLPADDING="2"></TD></TR>')
-        rows.append(f'<TR><TD COLSPAN="{len(cols)}" ALIGN="LEFT">'
+        rows.append(f'<TR><TD COLSPAN="{len(cols)}" BORDER="0" '
+                    f'CELLPADDING="2"></TD></TR>')
+        rows.append(f'<TR><TD COLSPAN="{len(cols)}" BORDER="0" ALIGN="LEFT">'
                     f'<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">'
                     f'<TR>{key}</TR></TABLE></TD></TR>')
 
@@ -293,8 +325,9 @@ def render_table(df: pd.DataFrame, *, stem: str, chapter: str, title: str,
             f'<TR><TD ALIGN="LEFT" CELLPADDING="1">'
             f'<FONT POINT-SIZE="9" COLOR="{MUTE}">{_esc(ln)}</FONT></TD></TR>'
             for ln in _wrap(f"Note. {note}", note_wrap))
-        rows.append(f'<TR><TD COLSPAN="{len(cols)}" CELLPADDING="3"></TD></TR>')
-        rows.append(f'<TR><TD COLSPAN="{len(cols)}" ALIGN="LEFT">'
+        rows.append(f'<TR><TD COLSPAN="{len(cols)}" BORDER="0" '
+                    f'CELLPADDING="3"></TD></TR>')
+        rows.append(f'<TR><TD COLSPAN="{len(cols)}" BORDER="0" ALIGN="LEFT">'
                     f'<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">'
                     f'{body}</TABLE></TD></TR>')
 

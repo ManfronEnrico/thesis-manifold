@@ -148,28 +148,52 @@ step overwrites an earlier one.
 **The order is not the mechanism.** Probed directly:
 
 ```
-SIDES=""        polygon(box)=1  polyline(sides)=0
-SIDES="none"    polygon(box)=1  polyline(sides)=0
-SIDES=" "       polygon(box)=1  polyline(sides)=0
+CELLBORDER="1" + SIDES=""              -> a full box     (the bug)
+CELLBORDER="1" + SIDES="none" / " "    -> a full box
+CELLBORDER="0" on the table            -> nothing draws, SIDES ignored entirely
+CELLBORDER="1" + BORDER="0" on a cell  -> nothing draws  <-- the fix
 ```
 
 An **empty `SIDES` falls back to the graphviz default of all four sides.** It
 does not mean "no border". So every interior body cell — one that is not in a
-group boundary, not the first column, not the last row — asks for nothing and
-is drawn as a full `<polygon>` box, which is exactly the grid this styling
-exists to remove. Header cells always carry `bottom`, so they emit a
-single-sided `<polyline>` and look correct; that contrast is the visible
-symptom.
+group boundary, not the first column, not the last row — asked for nothing and
+was drawn as a full box, which is exactly the grid this styling exists to
+remove. Header cells always carry `bottom`, so they emit a single-sided
+`<polyline>` and look correct; that contrast is the visible symptom, and it is
+what made an ordering bug the natural hypothesis.
 
 The earlier claim in this file that "an explicitly empty side suppresses the
 default" was **wrong**, and is the reason the defect shipped.
 
-**The fix**: a cell that wants no border must not be reachable through
-`SIDES`. Either give the table `CELLBORDER="0"` and draw every rule as an
-explicit single-sided cell, or emit a sentinel that graphviz reads as empty.
-Whichever is chosen, the invariant is that **no code path may emit `SIDES=""`**.
+### How to measure this, because the obvious way is wrong
 
-This propagates through every table, not only the three named.
+A graphviz SVG emits a `<polygon>` for the **graph background** and another for
+**every cell carrying a `BGCOLOR`** — all of them `stroke="none"`. A drawn
+border is a `<polyline>`. Counting raw `<polygon>` elements therefore measures
+cell fills, not borders, and produced two wrong readings before this was caught
+(see F37):
+
+```python
+stroked = [x for x in re.findall(r'<polygon[^>]*>', svg)
+           if 'stroke="none"' not in x]        # genuine boxes
+rules   = re.findall(r'<polyline[^>]*>', svg)  # single-sided rules
+```
+
+**The fix, as implemented**: "no border" is a property of the **cell** —
+`BORDER="0"` — not of an empty `SIDES`. The table keeps `CELLBORDER="1"` so
+that cells which *do* carry a rule still draw it, and the two compose: a
+sibling cell in the same row renders its own `SIDES="B"` normally. One helper,
+`styled_tables._border_attrs`, is the only place allowed to turn a sides string
+into markup, so **no code path can emit `SIDES=""`** by construction.
+
+`CELLBORDER="0"` on the table was the other candidate and was rejected: it
+makes `SIDES` inert everywhere, so every rule would have to be drawn as its own
+single-sided cell.
+
+**Verified after the fix**: all 17 tables regenerated with **0 stroked polygons
+and their rules intact**. `17_run_configuration` (8 rows x 2 columns) emits 11
+polylines = 2 header bottoms + 8 first-column rights + 1 last-row bottom —
+exactly the "H". G5 and G6 are closed.
 
 ### Ordering, which is a separate and real requirement
 

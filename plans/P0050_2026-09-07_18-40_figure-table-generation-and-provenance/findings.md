@@ -1118,18 +1118,52 @@ Brian's reading: *"perhaps the order of the border application is wrong ... the
 table content must be first formatted, then the header row, then the first
 and/or last column"* -- i.e. a later write overwriting an earlier one.
 
-Probed instead of assumed. Three spellings of "no sides":
+Probed instead of assumed -- but **the first probe was read wrongly, twice, and
+the correction is the most useful part of this finding.**
+
+### Counting `<polygon>` does not measure borders
+
+A graphviz SVG emits a `<polygon>` for the **graph background**, and another for
+**every cell that carries a `BGCOLOR` fill**. All of those are `stroke="none"`.
+A drawn border is a `<polyline>`, or a polygon with a real `stroke`.
+
+So `polygon=1` never meant "one box was drawn" -- it meant *zero* boxes plus the
+background. A later count of "1911 boxes" across the regenerated tables was
+1911 **white cell fills** and said nothing about borders at all.
+
+**The measurement that actually works**, and the one to reuse:
+
+```python
+stroked = [x for x in re.findall(r'<polygon[^>]*>', svg)
+           if 'stroke="none"' not in x]     # genuine boxes
+rules   = re.findall(r'<polyline[^>]*>', svg)   # single-sided rules
+```
+
+### What the corrected probe shows
+
+Counts below exclude the background polygon:
 
 ```
-SIDES=""        polygon(box)=1  polyline(sides)=0
-SIDES="none"    polygon(box)=1  polyline(sides)=0
-SIDES=" "       polygon(box)=1  polyline(sides)=0
+CELLBORDER="1" + SIDES=""             -> a full box     (the bug)
+CELLBORDER="1" + SIDES="none" / " "   -> a full box
+CELLBORDER="0" on the table           -> nothing draws, SIDES ignored entirely
+CELLBORDER="1" + BORDER="0" on a cell -> nothing draws  <-- the fix
 ```
 
-All three render a **full box**. Under `CELLBORDER="1"` the default is all four
-sides, and an empty `SIDES` does not override the default -- it falls back to
-it. Nothing is overwriting anything; the cells that asked for no border were
-never able to ask.
+Under `CELLBORDER="1"` the default is all four sides, and an empty `SIDES` does
+not override the default -- it falls back to it. Nothing is overwriting
+anything; the cells that asked for no border were never able to ask.
+
+**"No border" is a property of the CELL (`BORDER="0"`), not of an empty SIDES**,
+and it composes: a sibling cell in the same row still draws its own `SIDES="B"`
+rule, which is what lets the table keep `CELLBORDER="1"` for the cells that
+carry a rule while the interior stays clean.
+
+### Verified after the fix
+
+All 17 tables regenerated: **0 stroked polygons, rules intact.**
+`17_run_configuration` (8 rows x 2 cols) emits 11 polylines = 2 header bottoms +
+8 first-column rights + 1 last-row bottom. Exactly the "H".
 
 `styled_tables._side()` returns `""` for exactly the cells that look wrong: not
 a group boundary, not the first column, not the last row. Header cells always
