@@ -1,0 +1,5 @@
+Category,Deployed model,Inputs,Train rows,Trained through,Test rows,Brands,Interval q90 (log),Fit (s),Peak fit RAM (MB)
+CSD,XGBoost(tuned),18,"2,280",2025-12,665,95,2.027,4.80,47.5
+Danskvand,XGBoost(tuned),17,580,2026-01,174,29,2.040,1.82,0.2
+Energidrikke,LightGBM(tuned),18,924,2025-12,308,44,2.691,4.96,43.7
+Rtd,LightGBM(tuned),17,"1,240",2026-01,372,62,1.890,1.23,8.2

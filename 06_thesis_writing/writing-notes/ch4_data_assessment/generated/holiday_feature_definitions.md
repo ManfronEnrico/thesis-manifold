@@ -7,7 +7,7 @@
 |---|---|
 | Table | `05_thesis_results/04_data_assessment/tables/93_holiday_feature_definitions.md` |
 | Producer | `01_SRQ1_Model_Training/01_thesis_data/_00_raw/holidays/export_holiday_appendix.py` |
-| Written | 2026-09-10 17:27 UTC |
+| Written | 2026-09-14 10:01 UTC |
 
 ---
 

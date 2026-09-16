@@ -5,9 +5,9 @@
 
 | | |
 |---|---|
-| Table | `05_thesis_results/07_decision_synthesis/tables/13_interval_communication.md` |
+| Table | `05_thesis_results/07_decision_synthesis/tables/24_interval_communication.md` |
 | Producer | `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` |
-| Written | 2026-09-13 10:40 UTC |
+| Written | 2026-09-15 12:23 UTC |
 
 ---
 

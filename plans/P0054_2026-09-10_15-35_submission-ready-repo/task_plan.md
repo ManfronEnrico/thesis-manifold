@@ -8,6 +8,12 @@ focus_detail: "Designing the export procedure + /submission-export skill. Nothin
 
 # P0054 — Submission-ready repository export
 
+> **SUPERSEDED 2026-09-15 by [`submission_export_plan.md`](submission_export_plan.md).**
+> The ship list below was a proposal; Brian fixed the real one on 2026-09-15 and
+> the export tree is already copied. Where the two disagree, the new file wins.
+> This one is kept for the reasoning behind the copy-don't-clean decision and the
+> comment-pass rationale, both of which still hold.
+
 ## What this produces
 
 A **separate, clean repository** containing only what a CBS assessor needs to

@@ -1,5 +1,105 @@
 [
   {
+    "key": "AJHWPX9B",
+    "itemType": "journalArticle",
+    "title": "LLM on the edge: the new frontier",
+    "url": "https://www.researchgate.net/publication/389853487_LLM_on_the_edge_the_new_frontier",
+    "abstract": "The advent of large language models (LLMs) has revolutionized natural language processing, enabling unprecedented capabilities in text generation, reasoning, and human-machine interaction. However, their deployment on resource-constrained edge devices presents significant challenges due to high computational complexity, large model sizes, and stringent latency and privacy requirements. This survey provides a comprehensive examination of the emerging field of edge-based LLMs, exploring the techniques, frameworks, hardware solutions, and real-world applications that enable their efficient deployment at the edge. We review key strategies such as model quantization, pruning, knowledge distillation, and adapter tuning, alongside edge-cloud collaborative architectures like EdgeShard, Edge-LLM, and PAC. Additionally, we analyze hardware acceleration solutions, including Cambricon-LLM, AxLaM, and DTATrans/DTQAtten, and their role in overcoming resource limitations. The survey highlights diverse applications, from IoT and smart cities to personalized services and multi-modal intelligence, supported by case studies of real-world deployments. Finally, we discuss open challenges – such as resource efficiency, privacy, security, and scalability – and propose future research directions to advance this transformative technology.",
+    "language": "en",
+    "author": "Semerikov Serhiy O, Vakaliuk Tetiana A, Kanevska Olga B, Moiseienko Mykhailo V, Donchev Ivan I, Kolhatin Andrii O",
+    "year": "03.2",
+    "libraryCatalog": "Zotero"
+  },
+  {
+    "key": "5CUXIVYE",
+    "itemType": "conferencePaper",
+    "title": "Sample, Predict, then Proceed: Self-Verification Sampling for Tool Use of LLMs",
+    "shorttitle": "Sample, Predict, then Proceed",
+    "url": "https://openreview.net/forum?id=rw1B9Zl0OV",
+    "abstract": "Tool use in stateful environments presents unique challenges for large language models (LLMs), where existing test-time compute strategies relying on repeated trials in the environment are impractical. We propose dynamics modelling (DyMo), a method that augments LLMs with a state prediction capability alongside function calling during post-training. This enables LLMs to predict the future states of their actions through an internal environment model. On the Berkeley Function Calling Leaderboard V2, DyMo improves success rates and significantly reduces hallucinations. We further integrate the internal environment model into self-verification sampling (SVS), and show that this substantially improves pass^k over number of trials k, and allows the model to refuse unreliable outputs. Together, DyMo and SVS greatly enhance the effectiveness and reliability of LLMs for tool use. We believe this work charts a path towards scalable planning RL methods for LLM inference without repeatedly querying the oracle environment.",
+    "language": "en",
+    "urldate": "2026-08-24T15:42:29Z",
+    "author": "Guo Shangmin, Domingues Omar Darwiche, Avalos Raphaël, Courville Aaron, Strub Florian",
+    "year": "2025",
+    "libraryCatalog": "openreview.net",
+    "conferenceName": "Eighteenth European Workshop on Reinforcement Learning"
+  },
+  {
+    "key": "SPW7NXHT",
+    "itemType": "webpage",
+    "title": "Elements of Statistical Learning: data mining, inference, and prediction. 2nd Edition.",
+    "url": "https://hastie.su.domains/ElemStatLearn/",
+    "urldate": "2026-09-14T16:58:14Z",
+    "author": "Hastie Trevor"
+  },
+  {
+    "key": "3MTF7LGL",
+    "itemType": "computerProgram",
+    "title": "Nager.Date",
+    "copyright": "MIT",
+    "url": "https://github.com/nager/Nager.Date",
+    "abstract": "Easily access public holidays for 200+ countries via .NET, REST API, Docker, or NuGet for online and offline use.",
+    "urldate": "2026-09-10T12:22:00Z",
+    "month": "sep",
+    "year": "2026",
+    "libraryCatalog": "GitHub",
+    "extra": "original-date: 2014-08-15T08:35:19Z"
+  },
+  {
+    "key": "HVAURH2K",
+    "itemType": "journalArticle",
+    "title": "Smart “Predict, then Optimize” | Management Science",
+    "url": "https://pubsonline.informs.org/doi/10.1287/mnsc.2020.3922",
+    "doi": "https://doi.org/10.1287/mnsc.2020.3922",
+    "urldate": "2026-08-22T17:18:14Z",
+    "author": "Elmachtoub Adam N., Grigas Paul",
+    "year": "12.0"
+  },
+  {
+    "key": "hevner_cycles",
+    "itemType": "journalArticle",
+    "title": "A Three Cycle View of Design Science Research",
+    "url": "https://www.researchgate.net/publication/254804390_A_Three_Cycle_View_of_Design_Science_Research",
+    "abstract": "Access 135+ million publications and connect with 20+ million researchers. Join for free and gain visibility by uploading your research.",
+    "language": "en",
+    "number": "19",
+    "urldate": "2026-09-15T09:57:42Z",
+    "journal": "ResearchGate",
+    "publisher": "Scandinavian Journal of Information Systems",
+    "author": "Hevner Alan",
+    "year": "01.2",
+    "citationKey": "hevner_cycles"
+  },
+  {
+    "key": "94VFSWKI",
+    "itemType": "book",
+    "title": "The Elements of Statistical Learning",
+    "copyright": "http://www.springer.com/tdm",
+    "isbn": "978-0-387-84857-0 978-0-387-84858-7",
+    "url": "http://link.springer.com/10.1007/978-0-387-84858-7",
+    "doi": "10.1007/978-0-387-84858-7",
+    "urldate": "2026-09-14T16:59:09Z",
+    "publisher": "Springer",
+    "author": "Hastie Trevor, Tibshirani Robert, Friedman Jerome",
+    "year": "2009",
+    "keywords": [
+      "Averaging",
+      "Boosting",
+      "Projection pursuit",
+      "Random Forest",
+      "Support Vector Machine",
+      "classification",
+      "clustering",
+      "data mining",
+      "machine learning",
+      "supervised learning",
+      "unsupervised learning"
+    ],
+    "series": "Springer Series in Statistics",
+    "place": "New York, NY",
+    "libraryCatalog": "DOI.org (Crossref)"
+  },
+  {
     "key": "MX3HGCV2",
     "itemType": "journalArticle",
     "title": "M5 accuracy competition: Results, findings, and conclusions",
@@ -77,19 +177,6 @@
     "edition": "3rd"
   },
   {
-    "key": "3MTF7LGL",
-    "itemType": "computerProgram",
-    "title": "Nager.Date",
-    "copyright": "MIT",
-    "url": "https://github.com/nager/Nager.Date",
-    "abstract": "Easily access public holidays for 200+ countries via .NET, REST API, Docker, or NuGet for online and offline use.",
-    "urldate": "2026-09-10T12:22:00Z",
-    "month": "sep",
-    "year": "2026",
-    "libraryCatalog": "GitHub",
-    "extra": "original-date: 2014-08-15T08:35:19Z"
-  },
-  {
     "key": "2MVL956G",
     "itemType": "journalArticle",
     "title": "A Design Science Research Methodology for Information Systems Research",
@@ -130,38 +217,6 @@
     "author": "Saunders Mark NK, Lewis P., Thornhill A.",
     "year": "Marc",
     "edition": "9th"
-  },
-  {
-    "key": "69RUBISC",
-    "itemType": "journalArticle",
-    "title": "Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes: A Clean-in-Place Case Study",
-    "shorttitle": "Hybrid AI and LLM-Enabled Agent-Based Real-Time Decision Support Architecture for Industrial Batch Processes",
-    "volume": "7",
-    "copyright": "http://creativecommons.org/licenses/by/3.0/",
-    "issn": "2673-2688",
-    "url": "https://www.mdpi.com/2673-2688/7/2/51",
-    "doi": "10.3390/ai7020051",
-    "abstract": "A hybrid AI and LLM-enabled architecture is presented for real-time decision support in industrial batch processes, where supervision still relies heavily on human operators and ad hoc SCADA logic. Unlike algorithmic contributions proposing novel AI methods, this work addresses the practical integration and deployment challenges arising when applying existing AI techniques to safety-critical industrial environments with legacy PLC/SCADA infrastructure and real-time constraints. The framework combines deterministic rule-based agents, fuzzy and statistical enrichment, and large language models (LLMs) to support monitoring, diagnostic interpretation, preventive maintenance planning, and operator interaction with minimal manual intervention. High-frequency sensor streams are collected into rolling buffers per active process instance; deterministic agents compute enriched variables, discrete supervisory states, and rule-based alarms, while an LLM-driven analytics agent answers free-form operator queries over the same enriched datasets through a conversational interface. The architecture is instantiated and deployed in the Clean-in-Place (CIP) system of an industrial beverage plant and evaluated following a case study design aimed at demonstrating architectural feasibility and diagnostic behavior under realistic operating regimes rather than statistical generalization. Three representative multi-stage CIP executions—purposively selected from 24 runs monitored during a six-month deployment—span nominal baseline, preventive-warning, and diagnostic-alert conditions. The study quantifies stage-specification compliance, state-to-specification consistency, and temporal stability of supervisory states, and performs spot-check audits of numerical consistency between language-based summaries and enriched logs. Results in the evaluated CIP deployment show high time within specification in sanitizing stages (100% compliance across the evaluated runs), coherent and mostly stable supervisory states in variable alkaline conditions (state-specification consistency Γs≥0.98), and data-grounded conversational diagnostics in real time (median numerical error below 3% in audited samples), without altering the existing CIP control logic. These findings suggest that the architecture can be transferred to other industrial cleaning and batch operations by reconfiguring process-specific rules and ontologies, though empirical validation in other process types remains future work. The contribution lies in demonstrating how to bridge the gap between AI theory and industrial practice through careful system architecture, data transformation pipelines, and integration patterns that enable reliable AI-enhanced decision support in production environments, offering a practical path toward AI-assisted process supervision with explainable conversational interfaces that support preventive maintenance decision-making and equipment health monitoring.",
-    "language": "en",
-    "number": "2",
-    "urldate": "2026-08-24T16:00:25Z",
-    "journal": "AI",
-    "publisher": "Multidisciplinary Digital Publishing Institute",
-    "author": "González-Potes Apolinar, Martínez-Castro Diego, Paredes Carlos M., Ochoa-Brust Alberto, Mena Luis J., Martínez-Peláez Rafael, Félix Vanessa G., Félix-Cuadras Ramón A.",
-    "year": "2026",
-    "pages": "51",
-    "keywords": [
-      "Clean-in-Place",
-      "Industry 4.0",
-      "explainable AI",
-      "industrial IoT",
-      "large language models",
-      "multi-agent systems",
-      "predictive maintenance",
-      "process supervision",
-      "real-time decision support"
-    ],
-    "libraryCatalog": "www.mdpi.com"
   },
   {
     "key": "DAN2UBT6",
@@ -322,20 +377,6 @@
     "libraryCatalog": "Taylor and Francis+NEJM"
   },
   {
-    "key": "5CUXIVYE",
-    "itemType": "conferencePaper",
-    "title": "Sample, Predict, then Proceed: Self-Verification Sampling for Tool Use of LLMs",
-    "shorttitle": "Sample, Predict, then Proceed",
-    "url": "https://openreview.net/forum?id=rw1B9Zl0OV&utm_source=chatgpt.com",
-    "abstract": "Tool use in stateful environments presents unique challenges for large language models (LLMs), where existing test-time compute strategies relying on repeated trials in the environment are impractical. We propose dynamics modelling (DyMo), a method that augments LLMs with a state prediction capability alongside function calling during post-training. This enables LLMs to predict the future states of their actions through an internal environment model. On the Berkeley Function Calling Leaderboard V2, DyMo improves success rates and significantly reduces hallucinations. We further integrate the internal environment model into self-verification sampling (SVS), and show that this substantially improves pass^k over number of trials k, and allows the model to refuse unreliable outputs. Together, DyMo and SVS greatly enhance the effectiveness and reliability of LLMs for tool use. We believe this work charts a path towards scalable planning RL methods for LLM inference without repeatedly querying the oracle environment.",
-    "language": "en",
-    "urldate": "2026-08-24T15:42:29Z",
-    "author": "Guo Shangmin, Domingues Omar Darwiche, Avalos Raphaël, Courville Aaron, Strub Florian",
-    "year": "2025",
-    "libraryCatalog": "openreview.net",
-    "conferenceName": "Eighteenth European Workshop on Reinforcement Learning"
-  },
-  {
     "key": "VA9UT3F9",
     "itemType": "preprint",
     "title": "ART: Automatic multi-step reasoning and tool-use for large language models",
@@ -400,32 +441,6 @@
     "place": "Vienna, Austria",
     "libraryCatalog": "ACM Digital Library",
     "proceedingsTitle": "Proceedings of the 41st International Conference on Machine Learning"
-  },
-  {
-    "key": "I86QMNYE",
-    "itemType": "journalArticle",
-    "title": "Model Averaging and Double Machine Learning",
-    "volume": "40",
-    "copyright": "© 2025 The Author(s). Journal of Applied Econometrics published by John Wiley & Sons Ltd.",
-    "issn": "1099-1255",
-    "url": "https://onlinelibrary.wiley.com/doi/abs/10.1002/jae.3103",
-    "doi": "10.1002/jae.3103",
-    "abstract": "This paper discusses pairing double/debiased machine learning (DDML) with stacking, a model averaging method for combining multiple candidate learners, to estimate structural parameters. In addition to conventional stacking, we consider two stacking variants available for DDML: Short-stacking exploits the cross-fitting step of DDML to substantially reduce the computational burden, and pooled stacking enforces common stacking weights over cross-fitting folds. Using calibrated simulation studies and two applications estimating gender gaps in citations and wages, we show that DDML with stacking is more robust to partially unknown functional forms than common alternative approaches based on single pre-selected learners. We provide Stata and R software implementing our proposals.",
-    "language": "en",
-    "number": "3",
-    "urldate": "2026-08-24T15:06:23Z",
-    "journal": "Journal of Applied Econometrics",
-    "author": "Ahrens Achim, Hansen Christian B., Schaffer Mark E., Wiemann Thomas",
-    "year": "2025",
-    "pages": "249-269",
-    "keywords": [
-      "causal inference",
-      "high-dimensional models",
-      "nonparametric estimation",
-      "partially linear model",
-      "super learners"
-    ],
-    "libraryCatalog": "Wiley Online Library"
   },
   {
     "key": "UXPL266D",
@@ -583,13 +598,6 @@
       "Machine Learining"
     ],
     "libraryCatalog": "www.jair.org"
-  },
-  {
-    "key": "HVAURH2K",
-    "itemType": "webpage",
-    "title": "Smart “Predict, then Optimize” | Management Science",
-    "url": "https://pubsonline.informs.org/doi/10.1287/mnsc.2020.3922",
-    "urldate": "2026-08-22T17:18:14Z"
   },
   {
     "key": "Q744EZLB",
@@ -821,13 +829,6 @@
     "year": "2017",
     "libraryCatalog": "Neural Information Processing Systems",
     "proceedingsTitle": "Advances in Neural Information Processing Systems"
-  },
-  {
-    "key": "4TVC5APJ",
-    "itemType": "webpage",
-    "title": "Elements of Statistical Learning: data mining, inference, and prediction. 2nd Edition.",
-    "url": "https://hastie.su.domains/ElemStatLearn/?utm_source=chatgpt.com",
-    "urldate": "2026-08-22T15:34:52Z"
   },
   {
     "key": "5G55UDSP",
@@ -1164,33 +1165,6 @@
       "Variable importance"
     ],
     "libraryCatalog": "Taylor and Francis+NEJM"
-  },
-  {
-    "key": "BW87Z3JR",
-    "itemType": "journalArticle",
-    "title": "A data-driven and context-aware approach for demand forecasting in the beverage industry",
-    "volume": "0",
-    "issn": "1367-5567",
-    "url": "https://doi.org/10.1080/13675567.2025.2566806",
-    "doi": "10.1080/13675567.2025.2566806",
-    "abstract": "Accurate demand forecasting is essential for logistics and supply chain management as it enables efficient inventory planning, reduces operational costs, and ensures high service levels across the network. However, in practice, diverse demand patterns of items make this task challenging, and a one-size-fits-all forecasting approach is inadequate. This paper proposes a data-driven and context-aware forecasting framework and tests it by using both endogenous data from a large private-label beverage manufacturer and exogenous features (such as holidays and temperature). Our method begins by classifying SKUs based on demand volume, volatility, and intermittency, and then refining the derived clusters by taking volume distribution into account. Totally, we obtain four distinct clusters, which are (i) stable and high volume, (ii) stable with low volume, (iii) erratic and intermittent, and (iv) lumpy. To explore the appropriate forecasting models for different demand patterns, we employ statistical models (exponential smoothing, ARIMA, and Croston), machine learning models (XGBoost), deep learning models (TiDE and N-BEATS), and even qualitative approaches such as collaborative planning, forecasting, and replenishment (CPFR). Our experimental results suggest which forecasting models are recommended for each demand pattern, and insightful implications are provided for the managers.",
-    "number": "0",
-    "urldate": "2026-08-01T15:02:36Z",
-    "journal": "International Journal of Logistics Research and Applications",
-    "publisher": "Taylor & Francis",
-    "author": "Ma Benedict Jun, Jackson Ilya, Huang Maggie, Villegas Sebastian, Macias-Aguayo Jaime",
-    "month": "oct",
-    "year": "2025",
-    "pages": "1-28",
-    "keywords": [
-      "Demand forecasting",
-      "deep learning",
-      "fast-moving consumer goods",
-      "machine learning",
-      "supply chain management"
-    ],
-    "libraryCatalog": "Taylor and Francis+NEJM",
-    "extra": "_eprint: https://doi.org/10.1080/13675567.2025.2566806"
   },
   {
     "key": "AMB2F6T2",
@@ -1860,20 +1834,6 @@
     "libraryCatalog": "arXiv.org",
     "citationKey": "paranjape_art:_2023",
     "extra": "arXiv:2303.09014 [cs]"
-  },
-  {
-    "key": "wang_executable_2024",
-    "itemType": "conferencePaper",
-    "title": "Executable Code Actions Elicit Better LLM Agents",
-    "url": "https://openreview.net/forum?id=jJ9BoXAfFa&trk=public_post_comment-text",
-    "abstract": "Large Language Model (LLM) agents, capable of performing a broad range of actions, such as invoking tools and controlling robots, show great potential in tackling real-world challenges. LLM agents are typically prompted to produce actions by generating JSON or text in a pre-defined format, which is usually limited by constrained action space (e.g., the scope of pre-defined tools) and restricted flexibility (e.g., inability to compose multiple tools). This work proposes to use executable Python **code** to consolidate LLM agents' **act**ions into a unified action space (**CodeAct**). Integrated with a Python interpreter, CodeAct can execute code actions and dynamically revise prior actions or emit new actions upon new observations through multi-turn interactions. Our extensive analysis of 17 LLMs on API-Bank and a newly curated benchmark shows that CodeAct outperforms widely used alternatives (up to 20% higher success rate). The encouraging performance of CodeAct motivates us to build an open-source LLM agent that interacts with environments by executing interpretable code and collaborates with users using natural language. To this end, we collect an instruction-tuning dataset CodeActInstruct that consists of 7k multi-turn interactions using CodeAct. We show that it can be used with existing data to improve models in agent-oriented tasks without compromising their general capability. CodeActAgent, finetuned from Llama2 and Mistral, is integrated with Python interpreter and uniquely tailored to perform sophisticated tasks (e.g., model training) using existing libraries and autonomously self-debug.",
-    "language": "en",
-    "urldate": "2026-04-16T15:25:33Z",
-    "author": "Wang Xingyao, Chen Yangyi, Yuan Lifan, Zhang Yizhe, Li Yunzhu, Peng Hao, Ji Heng",
-    "year": "2024",
-    "libraryCatalog": "openreview.net",
-    "citationKey": "wang_executable_2024",
-    "conferenceName": "Forty-first International Conference on Machine Learning"
   },
   {
     "key": "nava-martinez_heart_2025",

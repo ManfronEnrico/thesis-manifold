@@ -138,17 +138,26 @@ def _srqs(text: str) -> list:
     the questions the chapter sets out to answer.
     """
     found = {}
-    # The exported prose separates the bold runs with stray markup, so the
-    # pattern tolerates whatever sits between the label and its subject.
+    # Read from the SUBSECTION HEADINGS, not from a bolded lead-in.
+    #
+    # The chapter used to open each protocol with "**SRQ1** **-** **subject.**"
+    # in running prose. The 2026-09-14 comment pass promoted each protocol to
+    # its own subsection, so the label now lives in a heading:
+    #
+    #     ### 3.5.1 SRQ1 - forecasting accuracy and computational efficiency
+    #
+    # A heading is the more stable anchor of the two: it survives rewording of
+    # the paragraph beneath it, and it is what the table of contents carries.
+    #
+    # The guard below caught the break three times while two attempted fixes to
+    # the OLD pattern changed nothing -- because the pattern was never the
+    # fault. The lesson is to print the text the parser actually receives
+    # before editing the expression that reads it.
     for n, subject in re.findall(
-            r"\*\*SRQ(\d)\*\*.{0,12}?\*\*\s*(.+?)\.\*\*", text, flags=re.S):
+            r"^#{2,4}\s*\d+(?:\.\d+)*\s+SRQ(\d)\s*[-–—]\s*(.+?)\s*$",
+            text, flags=re.M):
         subject = re.sub(r"[*_]", "", subject)
-        subject = re.sub(r"\s+", " ", subject).strip()
-        # The chapter writes "**SRQ1** **-** **subject.**", so the separating
-        # dash lands at the head of the captured subject. Strip it: the figure
-        # already separates label from subject by putting them on two lines,
-        # and a leading "- " there reads as a bullet that is not one.
-        subject = re.sub(r"^[-‐-―]\s*", "", subject).strip()
+        subject = re.sub(r"\s+", " ", subject).strip().rstrip(".")
         found.setdefault(n, subject)
     return [(n, found[n]) for n in sorted(found)]
 
@@ -257,8 +266,11 @@ def fig_methodology() -> None:
     # the foundations sections adopt -- and holds the width.
     with g.subgraph() as col:
         col.attr(rank="same")
-        col.node("dsr", _stack("the DSR process (Peffers et al., 2007), "
-                               "and where each activity is realised",
+        # Title kept short deliberately: a stack's width is set by its longest
+        # line, so a title carrying its own explanatory clause forced every
+        # activity box inside it excessively wide. What the mapping means
+        # belongs in the caption, which wraps.
+        col.node("dsr", _stack("The DSR Process (Peffers et al., 2007)",
                                [(a, w) for a, w in acts]),
                  shape="box", style="filled", fillcolor=CLUSTER, color=LINE,
                  **SW)

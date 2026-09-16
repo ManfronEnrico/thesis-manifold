@@ -1,0 +1,6 @@
+Dimension,Metric,Unit,Definition,Better when,Source
+Reliability,Outcome class,count,"One of: ok, code_error, no_forecast, timeout, implausible. Reported as counts rather than averaged, because a scenario that answers 60% of the time is not comparable to one that always answers.",n/a,runs.csv: outcome
+Traceability,Argument-match rate,%,Share of tool calls in which the arguments the agent chose named the same series it was asked about. A mismatch corrupts the accuracy figure without being visible in the answer text.,higher,raw_responses/*.json: tool_calls
+Efficiency,Peak fit RSS,MB,"Peak resident set size of the process during model fitting, sampled at 5 ms in an isolated subprocess. Captures allocation by native (C++) libraries.",lower,srq1/profiling.csv
+Efficiency,Peak fit tracemalloc,MB,Peak Python-heap allocation during fitting. Reported beside RSS for comparison; it does not observe native allocation.,lower,srq1/profiling.csv
+Efficiency,Fit time,s,"Wall-clock seconds to fit one model on the full training window, given hyperparameters.",lower,srq1/profiling.csv: fit_s

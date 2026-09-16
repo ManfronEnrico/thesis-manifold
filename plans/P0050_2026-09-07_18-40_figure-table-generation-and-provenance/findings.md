@@ -1102,3 +1102,205 @@ translation layer in place for the next rename to break again.
 This is the same shape as F3 in this file (dead path constants fail silently) and the
 `generated-artefact-provenance` rule: **the defect is a second source of truth**, whether
 it holds a path, a number, or a label.
+
+## F37 - an empty graphviz SIDES means ALL FOUR sides, not none
+
+**Found 2026-09-14** while diagnosing a defect Brian reported on three tables:
+*"the cell borders of content are messed up again"*.
+
+The styling contract asks for selective per-side rules -- a header underline, a
+first-column right rule, a last-row underline -- and nothing else. What rendered
+was a **full grid**: every interior body cell drawn as a complete box.
+
+### The hypothesis was reasonable and wrong
+
+Brian's reading: *"perhaps the order of the border application is wrong ... the
+table content must be first formatted, then the header row, then the first
+and/or last column"* -- i.e. a later write overwriting an earlier one.
+
+Probed instead of assumed -- but **the first probe was read wrongly, twice, and
+the correction is the most useful part of this finding.**
+
+### Counting `<polygon>` does not measure borders
+
+A graphviz SVG emits a `<polygon>` for the **graph background**, and another for
+**every cell that carries a `BGCOLOR` fill**. All of those are `stroke="none"`.
+A drawn border is a `<polyline>`, or a polygon with a real `stroke`.
+
+So `polygon=1` never meant "one box was drawn" -- it meant *zero* boxes plus the
+background. A later count of "1911 boxes" across the regenerated tables was
+1911 **white cell fills** and said nothing about borders at all.
+
+**The measurement that actually works**, and the one to reuse:
+
+```python
+stroked = [x for x in re.findall(r'<polygon[^>]*>', svg)
+           if 'stroke="none"' not in x]     # genuine boxes
+rules   = re.findall(r'<polyline[^>]*>', svg)   # single-sided rules
+```
+
+### What the corrected probe shows
+
+Counts below exclude the background polygon:
+
+```
+CELLBORDER="1" + SIDES=""             -> a full box     (the bug)
+CELLBORDER="1" + SIDES="none" / " "   -> a full box
+CELLBORDER="0" on the table           -> nothing draws, SIDES ignored entirely
+CELLBORDER="1" + BORDER="0" on a cell -> nothing draws  <-- the fix
+```
+
+Under `CELLBORDER="1"` the default is all four sides, and an empty `SIDES` does
+not override the default -- it falls back to it. Nothing is overwriting
+anything; the cells that asked for no border were never able to ask.
+
+**"No border" is a property of the CELL (`BORDER="0"`), not of an empty SIDES**,
+and it composes: a sibling cell in the same row still draws its own `SIDES="B"`
+rule, which is what lets the table keep `CELLBORDER="1"` for the cells that
+carry a rule while the interior stays clean.
+
+### Verified after the fix
+
+All 17 tables regenerated: **0 stroked polygons, rules intact.**
+`17_run_configuration` (8 rows x 2 cols) emits 11 polylines = 2 header bottoms +
+8 first-column rights + 1 last-row bottom. Exactly the "H".
+
+`styled_tables._side()` returns `""` for exactly the cells that look wrong: not
+a group boundary, not the first column, not the last row. Header cells always
+carry `bottom`, so they emit a single-sided `<polyline>` and look right. **That
+contrast is the whole visible symptom**, and it pointed at ordering because the
+header is drawn separately from the body.
+
+### Why it shipped
+
+`_sides()` carried a docstring asserting the opposite -- *"Empty means no border
+on any side"* -- and the requirements file repeated it as verified. A claim
+written confidently in two places, never probed, in a toolchain where the
+default is the non-obvious direction.
+
+**The lesson is narrow and repeatable: a library default that is "all" rather
+than "none" inverts every absent-value assumption built on top of it.** The
+probe took one minute and the assumption survived several sessions.
+
+### The fix
+
+No code path may emit `SIDES=""`. Either set `CELLBORDER="0"` on the table and
+draw each rule as an explicit single-sided cell, or emit a sentinel graphviz
+reads as empty. Ordering then becomes a real requirement on top of it -- Brian:
+*"the section wise cell borders would need to be the last step"* -- so group
+rules are applied after the structural ones rather than before.
+
+Propagates through **every** table, not the three that were reported.
+
+## F38 - a figure counted PNGs in a tree that no longer has any
+
+**Found 2026-09-14.** `ch4_eda_pipeline_csd_v1` prints "0 figures" for a
+category that has eight.
+
+`generate_architecture_diagrams.py:941` reads `pdir.glob("*.png")`. DEC-SVG-ONLY
+(F28) converted the whole results tree to SVG and removed the PNG twins, so the
+glob matches nothing and can never match anything again.
+
+**The count is computed, not typed -- and still wrong.** The provenance rule
+says every number must be read from an artefact at render time, and this one is.
+It reads the right directory with the wrong extension, which is the failure mode
+the rule does not catch: a live query whose predicate went stale. A zero from a
+real `glob` looks exactly like a true zero.
+
+Worth generalising: **after a format migration, every glob filtered on the old
+extension is a silent zero.** The migration changed the files and left the
+readers, and nothing failed loudly because an empty directory listing is legal.
+
+Brian's related instruction on vocabulary: the document distinguishes tables,
+figures and appendices -- a plot IS a figure. The `plots/` vs `figures/` split
+is a repository convenience for which producer regenerates what, and must not
+leak into a count printed inside an artefact.
+
+## F39 - one cell, one border colour: four ways to draw a group band, three wrong
+
+**Found 2026-09-15** fixing the row grouping Brian reported as "didn't work properly"
+on the scenario comparison.
+
+The styling contract asks for a grey rule above and below each row group. The obstacle
+is that **graphviz gives a table cell exactly one border colour**, and the first column
+of a boundary row needs two: a GREY horizontal band rule, and the BLACK vertical rule
+separating the row label from its values.
+
+Four approaches, each measured against the rendered SVG rather than reasoned about:
+
+| Approach | What rendered |
+|---|---|
+| colour the boundary row's cells grey | the label's own VERTICAL rule turned grey -- a stray 25pt grey stroke in the label column at every boundary |
+| exclude column 0 from the grey | band spanned 7 of 8 columns, stopping short of the label a reader scans |
+| nest a bordered table inside column 0 | band sat 6pt low; moving the padding inward cut it to 1pt but never to 0, because the inner border draws inside the cell |
+| **draw the band as the PRECEDING row's bottom rule** | **correct: 4 levels, 8 segments each, single y** |
+
+### Why the fourth works and the others cannot
+
+The conflict only exists on the boundary row's own top edge. The row ABOVE it has no
+vertical rule of its own to lose in column 0, so one colour serves the whole row and
+every segment lands on the same y.
+
+It costs one thing, accepted deliberately: on a band-ending row the first column's
+vertical rule is drawn grey with the band. A rule that runs the table's full height
+with one 25pt segment in a lighter grey is far less visible than a stray stub, and the
+band gains its eighth segment.
+
+**The measurement technique mattered more than the fix.** Counting `<polyline>` elements
+by stroke colour, and recording each one's y-levels and x-span, is what distinguished
+"7 segments" from "8 segments" and "one y" from "two y 1pt apart". None of that is
+visible in a screenshot at page scale.
+
+## F40 - three hand-rolled page splits, each with a typed part count
+
+**Found 2026-09-15.** Brian asked for `04_feature_matrix` to be split "into three parts
+due to its excessive length". Implementing it revealed the same logic already existed
+twice, and that a typed part count is the wrong shape for it.
+
+`per_run_record` carried `_PARTS = 2` and produced two 940pt halves -- each still
+double the 482pt text block. The count had been right when written, for a smaller run
+set, and nothing recomputed it when repeats were added. The feature matrix then got a
+third copy, also typed, also wrong: three parts of 18 rows came to 455pt of body before
+any chrome.
+
+**A part count is a derived quantity and must never be typed.** `_PAGE_ROWS` now maps a
+slug to a ROW BUDGET, and `_emit_paged` divides by it:
+
+    _PAGE_ROWS = {"metric_dictionary": 9, "per_run_record": 11,
+                  "seed_stability": 9, "feature_matrix": 9}
+
+A table that grows adds a page instead of overflowing one. A slug absent from the map
+is emitted whole, which is the right default -- splitting a table that fits costs the
+reader a page turn for nothing.
+
+Budgets differ per table because the chrome does: a note's height varies with its
+length, and the metric dictionary's definitions wrap to four lines where the per-run
+record's cells are single values.
+
+**Related trap, same run:** enumerating the parts in `_TABLE_CHAPTER`
+(`feature_matrix_p1..p3`) raised `KeyError` on `p4` when the budget produced six --
+mid-run, AFTER `_clear_previous` had swept the tables that follow it. Routing by base
+slug fixes it, and the resolution now lives in one helper because a second copy of the
+lookup in `main()` missed the fix and failed the same way on the next run.
+
+## F41 - a table's width was set by its headers, not by its data
+
+**Found 2026-09-15.** `per_run_record` rendered 918pt wide against a 785pt text block,
+and `interval_communication` 1103pt.
+
+Measured per column: in **9 of 13** columns the HEADER was wider than the widest value
+beneath it. "Response time (s)" is 17 characters over 5-character numbers; "Forecast
+(units)" 16 over 9; "Reasoning tokens" 16 over 7.
+
+Graphviz sizes a column to its longest unbroken string, header included, so those nine
+headers set the table's width while carrying no information the note could not state
+once. Shortening them and moving the units into the note took 134 width units to ~100
+without losing a datum.
+
+The same defect in a second form: seven scenario identifiers spelled out
+(`G_prometheus_data_model`, 23 characters) over cells holding `9 of 9 (100)`.
+Abbreviated to their letter with the key in the note -- a fix already applied to two
+other tables, and not carried across because each table built its own header dict.
+
+**The general rule: a header is one string, a column is many. Where they disagree about
+width, the header is almost always the one to change.**

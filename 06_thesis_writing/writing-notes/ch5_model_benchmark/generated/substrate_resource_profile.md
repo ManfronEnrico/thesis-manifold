@@ -5,9 +5,9 @@
 
 | | |
 |---|---|
-| Table | `05_thesis_results/05_model_benchmark/tables/05_substrate_resource_profile.md` |
+| Table | `05_thesis_results/05_model_benchmark/tables/15_substrate_resource_profile.md` |
 | Producer | `04_SRQ4_Scenario_Experiment/scenario_setup/export_appendix.py` |
-| Written | 2026-09-13 10:40 UTC |
+| Written | 2026-09-15 12:23 UTC |
 
 ---
 

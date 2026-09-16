@@ -114,3 +114,12 @@ graphviz==0.21
 # have failed on both.
 matplotlib==3.10.7
 statsmodels==0.14.6
+
+# ---------------------------------------------------------------------------
+# PDF splitting (2026-09-14)
+# ---------------------------------------------------------------------------
+# split_thesis_pdf.py reads the thesis PDF's bookmark outline to derive chapter
+# and section page ranges, then writes one PDF per unit. Unlike the swallowed
+# failures above, this one is loud -- the script exits at import with an
+# install hint -- but it is declared here so a clean clone can run it at all.
+pypdf==6.18.1

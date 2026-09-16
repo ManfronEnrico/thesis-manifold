@@ -952,6 +952,34 @@ def get_chapter_tables_dir(slug: str) -> Path:
     return d
 
 
+def get_chapter_plots_dir(slug: str) -> Path:
+    """Charts for a chapter -- matplotlib output: bars, overlays, heatmaps.
+
+    Distinct from figures/, which holds DIAGRAMS: flowcharts and conceptual
+    drawings. A chart is generated from data and moves when the data moves; a
+    diagram is drawn to explain a structure. They were mixed until 2026-09-14.
+    """
+    d = get_chapter_results_dir(slug) / "plots"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_chapter_source_md_dir(slug: str) -> Path:
+    """The numbers behind each rendered artefact, as markdown.
+
+    An SVG chart is unreadable to an agent -- image analysis of a plotted line
+    is guesswork, while the series behind it is exact. Every producer writes
+    the values it drew from here, so a later reader can interpret the artefact
+    from data rather than from pixels.
+
+    NOT SUBMITTED. The dot prefix groups it with .archive/ as a working
+    folder the submission export drops.
+    """
+    d = get_chapter_results_dir(slug) / ".source_md"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 def get_chapter_models_dir(slug: str) -> Path:
     """Serialised estimators + hyperparameters, for chapters that train."""
     d = get_chapter_results_dir(slug) / "models"

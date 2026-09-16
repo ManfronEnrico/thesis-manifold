@@ -161,8 +161,8 @@ The exact payload handed back to the LLM for one brand. Every field beyond the n
   "n_calibration_rows": 665,
   "interval_method": "split conformal, 90% quantile of validation residuals",
   "n_features": 18,
-  "serve_seconds": 0.5288,
-  "served_at_utc": "2026-09-10T17:27:20+00:00"
+  "serve_seconds": 0.7038,
+  "served_at_utc": "2026-09-14T10:01:59+00:00"
 }
 ```
 

@@ -5,7 +5,7 @@ category: reference
 applies-to: [defence preparation, all chapters]
 triggers: [preparing for defence, deciding whether a claim is defensible, writing a limitations section, answering "will they ask about this"]
 created: 2026_09_11-20_35
-updated: 2026_09_11-20_35
+updated: 2026_09_14-12_40
 ---
 
 # Anticipated assessor questions
@@ -414,11 +414,66 @@ concentrated at the **seasonal lag** - median ACF(12) of +0.361 among rejecting
 brands versus +0.064 among non-rejecting. That is the seasonal-order limitation
 demonstrated rather than asserted.
 
-⚠ **The exact figures are PROVISIONAL.** The gate ran on in-sample residuals
-where 5.3 requires cross-validation residuals; it is being re-run. Direction is
-expected to hold - in-sample residuals are optimistically clean, so the true
-rejection rate should be higher, not lower. **Do not quote the percentage until
-the re-run lands** (P0055 F13, task 12).
+✅ **The figures are final as of 2026-09-14 (`41ecb76`) and may be quoted.** The
+earlier "provisional, do not quote" hold is lifted.
+
+The gate runs on **in-sample** residuals where 5.3 prefers cross-validation
+residuals, and that limitation is now **permanent rather than pending** — Branch
+B is closed, so it is stated on the emitted table itself rather than tracked in a
+plan folder no reader sees.
+
+**Why the verdict survives the limitation**, which is the answer to give if
+pressed: in-sample residuals are optimistically clean, because the fitted
+parameters have already absorbed some of the structure the test looks for. So
+the rejection rates are **lower bounds**, and structure detected under an
+optimistic test is structure that is genuinely there. Quote the rates as
+indicative rather than exact.
+
+**The seasonal localisation is unaffected**, because it is a contrast rather than
+a level: median ACF(12) of **+0.361** among the 51 rejecting series against
+**+0.064** among the 179 that do not. Both halves are computed identically, so
+the optimism applies equally and cancels.
+
+**Evidence.** `05_thesis_results/05_model_benchmark/tables/residual_diagnostics.md`,
+regenerated 2026-09-14; overall rejection rate 22.2% over 230 series.
+
+## Q - Your language model was handed a sales history. Did it just repeat the last month?
+
+*Added 2026-09-14. Measured on the funded runs; no new spend.*
+
+**Answer. No, and not once in eighteen runs.** The history each scenario was
+shown is recorded alongside the answer it gave, so this is measurable rather
+than arguable. Across the eighteen funded runs whose series is recoverable,
+**no forecast fell within five per cent of the brand's last observed month.**
+The forecasts sat substantially closer to a trailing twelve-month average than
+to the final observation, with roughly half the dispersion around it. The
+scenarios were performing seasonal averaging, not adjusting from the most recent
+value — which is consistent with the explicit model-fitting visible in their
+working (36 of 37 fitted exponential smoothing, 32 a seasonal ARIMA).
+
+**Evidence.** Computed from `raw_responses/*.json`, where each run's prompt
+embeds the exact series it received. Pooled median ratio to the last observed
+month **0.860**; to the trailing twelve-month mean **0.991**, with the standard
+deviation falling from 0.243 to 0.133.
+
+**Why this question matters more than it looks.** It is the cheapest attack on
+the entire SRQ4 result — if the strong LLM baseline were just echoing the last
+number, the comparison would be measuring nothing. It is now answered with a
+measurement.
+
+⚠ **Quote the count, not the ratios.** Per brand the medians are 1.082, 0.991
+and 0.825, so only one of three brands is genuinely centred on its trailing
+mean; the pooled 0.991 is three behaviours averaging into one. **"Not one of
+eighteen within five per cent of the last value"** is the claim that survives
+scrutiny.
+
+⚠ **This does not cover `A_llm_plain`.** That arm receives no history, so it
+cannot anchor and is outside the measurement. Its 502 per cent error is a
+different phenomenon.
+
+⚠ **No committed artefact.** `raw_responses/` is gitignored (65 MB, embeds
+Nielsen data). The claim is stated as a count and a direction precisely so it
+survives without one. See `ch9_discussion/2026-09-14_BRANCH_A_ch9-followup-02-anchoring.md`.
 
 ## Q - Why MASE rather than MAPE, and is your MASE correct?
 
@@ -426,10 +481,21 @@ the re-run lands** (P0055 F13, task 12).
 errors need a test set large enough "especially in the denominator". The choice
 is the source's own.
 
-⚠ **Concede on the implementation.** The MASE denominator currently uses the
-non-seasonal (m=1) difference on a seasonal monthly panel, where 5.8 defines it
-with m. The visible symptom is two shipped tables disagreeing about whether
-seasonal naive beats naive. **Under repair** (P0055 2.A5, task 7).
+⚠ **Concede on the implementation, and concede it as permanent.** The MASE
+denominator uses the non-seasonal (m=1) difference on a seasonal monthly panel,
+where 5.8 defines it with m. The visible symptom is two shipped tables
+disagreeing about whether seasonal naive beats naive.
+
+**This is not under repair.** Branch B closed on 2026-09-14; changing the
+denominator would re-score every category and every model, which is not a late
+edit. The thesis reports MASE honestly on the denominator it used.
+
+**What this costs, and it is bounded:** Chapter 5 must not cite 5.9's seasonal
+sentence, because it would be quoting a rule the chapter breaks three lines above
+a table reporting a seasonal-naive MASE. The safe half of 5.9 — the preference
+for scaled over percentage errors on a small test set — **is** cited and is
+correct. Chapter 5 already handles the disagreement well, reporting it as
+*"surfaced rather than resolved by picking one"*.
 
 ---
 
@@ -441,3 +507,59 @@ seasonal naive beats naive. **Under repair** (P0055 2.A5, task 7).
 | Is the single-month H=3 scoring a shortcut? | No - 13.8 says averaging across horizons combines unequal variances. See `ch5_model_benchmark/2026-09-13_21-15_BRANCH_A_book-citations-that-strengthen.md` |
 | Why tune on WMAPE when the book says RMSE? | Principled - 5.8 shows MAE and RMSE are minimised by different functionals, so the repo tunes once per objective. Same note |
 | Is comparing ARIMA against gradient boosting on a test set legitimate? | Yes - 9.10 states AICc **cannot** compare across model classes and prescribes exactly this. Same note |
+
+---
+
+# The AI Use Declaration, and the CBS GenAI guidelines
+
+Added 2026-09-15. **The declaration ships as Variant D**, reworded against the
+CBS guidelines for final projects. See
+`2026-09-15_BRANCH_A_ai-declaration-variant-D-final.md`.
+
+## Q — "What did 'editorial support' cover?"
+
+**The likeliest question, and it must be answered plainly rather than by
+standing on the wording.**
+
+**The answer:** generative AI was used as a language assistant on the manuscript
+and to discuss how arguments were organised and chapters sequenced. What to
+claim, which evidence supports a claim, and how to interpret a result were the
+authors' decisions. Every empirical claim was verified against the artefact that
+produces it before it entered the text.
+
+⚠ **Do not deny drafting assistance.** The submitted repository carries its own
+git history and note folders. A denial is disprovable; the declaration as written
+is not.
+
+## Q — "Does this satisfy the 'specific reference' rule?"
+
+CBS: *"Using GenAI to generate text, images, or other content as part of the
+final product is only acceptable if a specific reference is provided."*
+
+**The distinction to draw:** the guidelines separate *assistance in producing
+your own product* — which they compare to Grammarly and to asking a mentor for
+input, and which needs no per-passage reference — from *generated content as a
+component of the final product*, which does. A figure generated wholesale, or a
+passage inserted verbatim, is the second. Drafting reviewed, revised and verified
+by the authors is the first.
+
+**This is an interpretation, and it should be stated as one if pressed.** It is
+declared in the front matter and in Section 3.8, which is where the guidelines
+ask for it.
+
+## Q — "Was the licensed panel exposed to an AI tool?"
+
+**No.** The raw panel never leaves the local environment; `.gitignore` enforces
+this and the repository has no copy. The only data reaching an external model is
+the brand-level aggregates forming the documented inputs to the Chapter 8
+experiment, which are reproduced in full in the appendix and were the object of
+the experiment.
+
+## ⚠ Before the defence — a CBS requirement, not a courtesy
+
+> *"You need to inform your supervisor and censor if you have used GenAI when
+> preparing for your oral defense. However, you may not use GenAI during the
+> actual defense to e.g. generate answers."*
+
+**Two actions:** state the preparation use to supervisor and censor beforehand,
+and use no AI tool during the defence itself.

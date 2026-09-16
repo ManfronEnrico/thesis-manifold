@@ -1,0 +1,342 @@
+<title>Defence Deck — Variant S</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --mid:#555; --line:#c8c8c8; --ground:#fff;
+    --tint:#f4f4f4; --accent:#1f4e79; --warn:#8a5a00;
+  }
+  *{box-sizing:border-box}
+  body{background:#e9e9e9;color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;padding:24px 16px}
+  .wrap{max-width:1040px;margin:0 auto}
+  header.doc{margin:0 0 24px}
+  header.doc h1{font-size:22px;margin:0 0 6px}
+  header.doc p{margin:0;color:var(--mid);font-size:13px}
+  .meta{background:var(--tint);border:1px solid var(--line);padding:12px 14px;margin:16px 0 28px;font-size:12.5px}
+  .meta b{color:var(--accent)}
+  .slide{background:var(--ground);border:1px solid var(--line);margin:0 0 20px;padding:0;page-break-inside:avoid}
+  .slide > .hd{border-bottom:1px solid var(--line);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .slide > .hd .n{font-weight:700;font-size:12px;color:var(--accent);letter-spacing:.06em}
+  .slide > .hd .t{font-weight:700;font-size:16px;flex:1 1 320px}
+  .slide > .hd .clock{font-size:12px;color:var(--mid);white-space:nowrap}
+  .body{padding:14px 16px}
+  .onscreen{border-left:3px solid var(--accent);padding:2px 0 2px 12px;margin:0 0 14px}
+  .onscreen ul{margin:6px 0 0;padding-left:18px}
+  .onscreen li{margin:3px 0}
+  .onscreen .big{font-size:17px;font-weight:600;margin:0}
+  .say{font-size:13px;color:#333}
+  .say h4,.notes h4{margin:0 0 5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mid)}
+  .say p{margin:0 0 8px}
+  .notes{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-size:12.5px;color:#444}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin:8px 0}
+  th,td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+  th{background:var(--tint);font-weight:600}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .strong{font-weight:700}
+  .fig{background:var(--tint);border:1px dashed var(--line);padding:9px 12px;font-size:12px;color:#444;margin:8px 0}
+  .fig code{font-size:11.5px}
+  .warn{background:#fdf6e7;border:1px solid #e3cf9a;padding:9px 12px;font-size:12.5px;margin:10px 0}
+  .warn b{color:var(--warn)}
+  .speaker{display:inline-block;background:var(--ink);color:#fff;font-size:10.5px;padding:1px 7px;border-radius:2px;letter-spacing:.05em;vertical-align:1px}
+  h2.sec{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--mid);margin:30px 0 12px;border-bottom:1px solid var(--line);padding-bottom:5px}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){--ink:#e8e8e8;--mid:#a0a0a0;--line:#4a4a4a;--ground:#1e1e1e;--tint:#2a2a2a;--accent:#7aa8d2;--warn:#d8b25f}
+    :root:not([data-theme="light"]) body{background:#141414}
+    :root:not([data-theme="light"]) .say p{color:#ddd}
+    :root:not([data-theme="light"]) .notes{color:#c4c4c4}
+    :root:not([data-theme="light"]) .warn{background:#2e2717;border-color:#5c4a22}
+    :root:not([data-theme="light"]) .speaker{background:#e8e8e8;color:#1e1e1e}
+  }
+  :root[data-theme="dark"]{--ink:#e8e8e8;--mid:#a0a0a0;--line:#4a4a4a;--ground:#1e1e1e;--tint:#2a2a2a;--accent:#7aa8d2;--warn:#d8b25f}
+  :root[data-theme="dark"] body{background:#141414}
+  :root[data-theme="dark"] .speaker{background:#e8e8e8;color:#1e1e1e}
+  @media print{
+    body{background:#fff;padding:0;font-size:11pt}
+    .slide{border:1px solid #999;margin-bottom:12px}
+    .meta{border:1px solid #999}
+  }
+</style>
+
+<div class="wrap">
+<header class="doc">
+  <h1>Oral defence — Variant S (contribution-only)</h1>
+  <p>Extending a production agentic decision-support system with lightweight forecasting · CBS MSc Data Science · students 175888 &amp; 176171</p>
+</header>
+
+<div class="meta">
+  <b>15 minutes, two speakers.</b> 9 content slides + title + closing.
+  Every figure is read from <code>05_thesis_results/</code>, not from the prose.
+  <br><br>
+  <b>This is Variant S.</b> It carries no slide about the lag-12/13 defect. The 90 seconds
+  are returned to the ladder (slide 6) and the closing (slide 10), both of which are stronger
+  with room to breathe.
+  <br><br>
+  <b>⚠ Read this before choosing S over T.</b> The defect is <i>already stated in the submitted
+  thesis</i>, in Chapter 9 §9.4, as a provenance failure between the analytical and engineering
+  layers. So Variant S does not conceal anything — it omits a slide about text the examiners can
+  read on the page. But it also forgoes the credit CBS explicitly signals for using the
+  presentation to correct flaws, and it means the topic arrives on the examiner's terms rather
+  than yours. <b>Choose S if you would rather spend the time on contribution and answer the
+  defect when asked; choose T if you would rather own it first.</b>
+  <br><br>
+  <b>Either way the answer must be ready.</b> The drill file prepares it identically for both variants.
+</div>
+
+<h2 class="sec">Opening · 2 min</h2>
+
+<div class="slide">
+  <div class="hd"><span class="n">01</span><span class="t">Title &amp; what we will cover</span><span class="clock">0:00–0:45 · <span class="speaker">A</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <p class="big">Forecasting for agentic decision-support</p>
+      <ul>
+        <li>A capability gap in a deployed product</li>
+        <li>What we built, and the ladder we tested it with</li>
+        <li>The finding — and why it qualifies our own premise</li>
+        <li>What transfers beyond this artefact</li>
+      </ul>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"We will cover four things. The problem, which comes from a live product rather than a hypothetical. The artefact and the evaluation design. The central finding, which is not the one we expected. And the design knowledge we think transfers."</p>
+    </div>
+    <div class="notes">
+      <h4>Why this slide</h4>
+      CBS advice is explicit: announce the headlines first, so the examiners know what is coming if they interrupt. Under 45 seconds.
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="hd"><span class="n">02</span><span class="t">The gap: a production system that explains but cannot anticipate</span><span class="clock">0:45–2:00 · <span class="speaker">A</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <ul>
+        <li>Manifold AI ships a conversational assistant to Danish retailers and FMCG manufacturers</li>
+        <li>It reports volumes, share, weighted distribution — <span class="strong">it does not forecast</span></li>
+        <li>Constraint: ~4 GB RAM, the budget a small provider actually runs on</li>
+        <li>So: extend, don't replace — which rules out the greenfield architecture most of the literature assumes</li>
+      </ul>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"The thesis starts from a product, not a dataset. The system is deployed, it answers descriptive questions well, and the one thing customers ask that it cannot do is say what happens next. That framing does most of the work, because it forbids the obvious move — we could not design a forecasting system from scratch and we could not assume cloud-scale compute."</p>
+    </div>
+    <div class="notes">
+      <h4>Evidence if pressed</h4>
+      Ch1 §1.2. The 4 GB ceiling is a formal design criterion (Ch1 §1.4), motivated by Ng (2017) on memory as the binding variable in scanner-panel work.
+    </div>
+  </div>
+</div>
+
+<h2 class="sec">Design · 4 min</h2>
+
+<div class="slide">
+  <div class="hd"><span class="n">03</span><span class="t">Research question, and the four layers it decomposes into</span><span class="clock">2:00–3:15 · <span class="speaker">A</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <p class="big" style="font-size:15px;font-weight:600">How can a production agentic decision-support system without native predictive capability be extended with lightweight forecasting to support reliable, forecast-informed, cost-justified decisions under computational constraints?</p>
+      <table>
+        <tr><th>SRQ</th><th>Layer</th><th>Asks</th></tr>
+        <tr><td>1</td><td>substrate</td><td>which lightweight models trade accuracy against memory best</td></tr>
+        <tr><td>2</td><td>interface</td><td>how a forecast reaches the agent with reliability, uncertainty, traceability intact</td></tr>
+        <tr><td>3</td><td>host system</td><td>what a production system must already do</td></tr>
+        <tr><td>4</td><td>evidence</td><td>do dedicated models beat an agent writing its own code</td></tr>
+      </table>
+    </div>
+    <div class="fig">
+      <b>Figure:</b> <code>05_thesis_results/01_introduction/figures/ch1_research_questions_tree_v2.svg</code>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"One question per layer of the extension. SRQ4 is the one that could have sunk the thesis, because it asks whether the artefact was necessary at all."</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="hd"><span class="n">04</span><span class="t">The artefact: three layers, and one decision that carries SRQ2</span><span class="clock">3:15–4:45 · <span class="speaker">A</span> → <span class="speaker">B</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <ul>
+        <li>Forecasting substrate — five model families, one served per category, selected on <span class="strong">cross-validated</span> not test accuracy</li>
+        <li>Typed tool interface — JSON function calling, closed schema, two arguments</li>
+        <li>Bounded tool-using agent — orchestrates, validates, communicates; <span class="strong">advises, never acts</span></li>
+      </ul>
+      <p style="margin:10px 0 0;padding:8px 10px;background:var(--tint);border-left:3px solid var(--accent)"><span class="strong">The load-bearing decision:</span> the language model never handles a feature vector. Feature construction stays server-side, versioned, identical on every call.</p>
+    </div>
+    <div class="fig">
+      <b>Figures:</b> <code>06_architecture/figures/ch6_layered_architecture_v2.svg</code>, then <code>ch6_tool_interface_v1.svg</code>.
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p><span class="speaker">A</span> "Three layers." → hand over → <span class="speaker">B</span> "And the single decision that makes the forecast auditable rather than merely available: the model gets a forecast, not a feature vector. That is most of our SRQ2 contribution."</p>
+    </div>
+    <div class="notes">
+      <h4>Handover — rehearse this</h4>
+      A finishes on the three layers; B opens on the server-side boundary. One sentence each, no pause, no "over to you".
+      <br><br><b>Framing correction to own, not defend:</b> a <i>bounded tool-using agent</i>, not a multi-agent system, in Sapkota et al.'s (2026) sense — fixed tool set, no delegation, no autonomous action. Ch9 §9.2.1 says so. If asked "what is agentic about it then?": tool-mediated reasoning under a schema, and the boundedness is what keeps it auditable and inside budget.
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="hd"><span class="n">05</span><span class="t">SRQ1 in one slide — and the qualification we report rather than absorb</span><span class="clock">4:45–6:00 · <span class="speaker">A</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <ul>
+        <li>Both gradient boosters beat Ridge and ARIMA in all four categories</li>
+        <li>But a five-seed sweep <span class="strong">changes which one is selected in every category</span> — so they are statistically indistinguishable here</li>
+        <li>⚠ <span class="strong">Two of four categories are beaten outright by a parameter-free benchmark</span>: seasonal naive on RTD (27.3 vs 30.1), Prophet on water (19.4)</li>
+        <li>Memory: fitting peaks at 34.5 MB against a 4096 MB ceiling — <span class="strong">0.84% of budget</span></li>
+      </ul>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"Two things worth saying plainly. First, we do not name a winner between LightGBM and XGBoost, because the seed changes the answer — the difference between the families is smaller than the variation each produces on its own. Second, a forecast costing nothing to compute beats our substrate in two of four categories, and we report that rather than burying it."</p>
+    </div>
+    <div class="notes">
+      <h4>Evidence</h4>
+      <code>19_statistical_baselines.md</code>, <code>20_seed_stability_p1.md</code>, <code>15_substrate_resource_profile.md</code>.
+      <br><br><b>The memory answer, if challenged:</b> the budget bound the <i>selection space</i>, not the runtime footprint. It excluded transformers and locally hosted LLMs before any was fitted. That the survivors sat far below the ceiling is a result, not a failed constraint. Concede openly.
+    </div>
+  </div>
+</div>
+
+<h2 class="sec">The experiment · 5½ min</h2>
+
+<div class="slide">
+  <div class="hd"><span class="n">06</span><span class="t">Why a ladder, not a two-way comparison</span><span class="clock">6:00–8:00 · <span class="speaker">B</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <table>
+        <tr><th>Rung</th><th>Given</th><th>Isolates</th></tr>
+        <tr><td>A</td><td>no firm data, web search</td><td>—</td></tr>
+        <tr><td>B</td><td>+ history in a code sandbox</td><td>what data access buys</td></tr>
+        <tr><td>C</td><td>+ the trained model behind the tool</td><td><span class="strong">what the artefact adds</span></td></tr>
+        <tr><td>D · E · G</td><td>B · C · F on the production platform</td><td>orchestrator effect</td></tr>
+        <tr><td>F</td><td>both sandbox and tool</td><td>integration behaviour</td></tr>
+      </table>
+      <p style="margin:8px 0 0">7 scenarios × 3 brands × 3 repeats = <span class="strong">63 funded runs</span>, $19.60</p>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"A two-arm design would have confounded two different things: the value of giving an agent the firm's data at all, and the value of giving it a trained model rather than a sandbox. So every rung adds exactly one capability, and the B-to-C step is the thesis contribution."</p>
+      <p><span class="strong">[extra 30 s available here in this variant]</span> "Three rungs are repeated inside the production platform. That matters more than it looks: the same intervention applied in two independently built agentic systems means a consistent effect cannot be an artefact of one evaluation harness. And the two settings fail differently on purpose — the general-purpose rungs are reproducible from our repository, an API key and the panel, while the production rungs are ecologically valid but cannot be re-executed by a reader. Neither property is sufficient alone, so the design is built so the two corroborate each other."</p>
+    </div>
+    <div class="fig"><b>Figure:</b> <code>07_decision_synthesis/figures/ch7_scenarios_v2.svg</code></div>
+    <div class="notes">
+      <h4>Design defences held in reserve</h4>
+      Identical question to every scenario; capability notes composed from shared blocks with an automated byte-identity check; prompt set hashed. An audit before the funded run caught the notes having drifted — one scenario told to produce an interval while its pair was not — and it was fixed <i>before</i> any funded run. Volunteer that if asked about instrument validity.
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="hd"><span class="n">07</span><span class="t">The finding: no scenario leads on every axis</span><span class="clock">8:00–10:00 · <span class="speaker">B</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <table>
+        <tr><th>Measure</th><th class="num">A plain</th><th class="num">B data+code</th><th class="num">C model</th></tr>
+        <tr><td>Usable answers</td><td class="num"><span class="strong">6</span>/9</td><td class="num">9/9</td><td class="num">9/9</td></tr>
+        <tr><td>Median APE</td><td class="num">502.2%</td><td class="num"><span class="strong">2.9%</span></td><td class="num">14.6%</td></tr>
+        <tr><td>Mean APE</td><td class="num">662.1%</td><td class="num">27.9%</td><td class="num"><span class="strong">13.1%</span></td></tr>
+        <tr><td>Variation across repeats</td><td class="num">26.7%</td><td class="num">4.1%</td><td class="num"><span class="strong">0.0%</span></td></tr>
+        <tr><td>Identical on repeat</td><td class="num">0%</td><td class="num">0%</td><td class="num"><span class="strong">100%</span></td></tr>
+        <tr><td>Cost per answer</td><td class="num">$0.38</td><td class="num">$0.4667</td><td class="num"><span class="strong">$0.0091</span></td></tr>
+        <tr><td>Latency</td><td class="num">69.5 s</td><td class="num">123.8 s</td><td class="num"><span class="strong">6.0 s</span></td></tr>
+      </table>
+      <p style="margin:8px 0 0"><span class="strong">B → C: 51× cheaper, 21× faster, zero variance — and worse on the median.</span></p>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"Read the first increment first: giving the model the firm's own data moves median error from 502% to 2.9%. That is worth far more than anything above it on the ladder. Now the contribution step. Our artefact is <i>worse</i> on the median and better on the mean — the code-writing agent is better most of the time and occasionally much worse. What our model buys is 51 times the cost efficiency, 21 times the speed, and an identical answer every single time."</p>
+    </div>
+    <div class="notes">
+      <h4>Do not let "the code arm won" stand bare</h4>
+      Always restate: at 39 months and 95 brands, a per-series ensemble beats a category-tuned booster on the median while costing 51× more, taking 21× longer, and producing no auditable tool call. The three advantages follow from one structural fact: a trained pipeline is work done once; an agent handed the same data repeats that work every session.
+      <br><br><b>⚠ If they read the appendix:</b> scenario D (code, production orchestrator) is the most accurate rung at 0.9% median — better than B. An orchestrator effect on the <i>code</i> path, not a point for our artefact. Say so.
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="hd"><span class="n">08</span><span class="t">The negative result we chose to report</span><span class="clock">10:00–11:15 · <span class="speaker">B</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <ul>
+        <li>Reliability holds: every figure the agent reported <span class="strong">matched the tool's figure</span>, in every run</li>
+        <li>Traceability: implemented in full, <span class="strong">evaluated in part</span> — we say which</li>
+        <li>⚠ Uncertainty is where we return a negative: the 90% interval spans <span class="strong">8 to 34×</span> the quantity forecast</li>
+        <li>The confidence index built on it <span class="strong">discriminates nothing</span> — every forecast in every category tiers "Low"</li>
+      </ul>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"Our interface delivers a truthful account of its own uncertainty rather than a useful one. The interval attains its coverage guarantee and is still too wide for a planner to act on for a single brand. Three alternative calibration schemes were implemented and measured; none improved coverage and width together in more than two of four categories. We report that as a finding rather than hiding it as an omission — and it is what makes the chapter's actual claim: what carries the reliability of a forecast is the measured track record travelling beside it, not the interval."</p>
+    </div>
+    <div class="notes">
+      <h4>Why this slide earns its place in S</h4>
+      It is the most intellectually honest thing in the thesis and it is a <i>designed</i> negative result, not a defect. It also pre-empts the obvious attack on SRQ2 by making it first.
+      <br><br>If asked why the index shipped at all: published experiment runs are scored against it, and it cannot be repaired by re-weighting because both terms are functions of a quantile fixed within a category. An unexpected defence — in the combined scenarios both agents departed from the model's forecast and cited its confidence tier and interval width as the reason. A constant "low" was, on that brand, the honest signal, and it changed behaviour.
+    </div>
+  </div>
+</div>
+
+<h2 class="sec">Contribution · 3½ min</h2>
+
+<div class="slide">
+  <div class="hd"><span class="n">09</span><span class="t">What transfers: five design principles</span><span class="clock">11:15–12:45 · <span class="speaker">A</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <table>
+        <tr><th>#</th><th>Principle</th><th>Because we measured</th></tr>
+        <tr><td>1</td><td>Delegate prediction; do not generate it</td><td>tool arms identical every repeat; code arms differed almost every time</td></tr>
+        <tr><td>2</td><td>Refuse explicitly rather than fall back</td><td>a fallback asserts something was found; an agent cannot tell</td></tr>
+        <tr><td>3</td><td>Carry the track record, not only the interval</td><td>interval spans 8–34× the forecast; confidence index discriminates nothing</td></tr>
+        <tr><td>4</td><td>Budget memory at selection time, report it at run time</td><td>4 GB excluded transformers up front; realised peak ~231 MB</td></tr>
+        <tr><td>5</td><td>Report cost and latency beside accuracy</td><td>51× cost difference between scenarios of comparable accuracy</td></tr>
+      </table>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"Design science says an instantiation becomes a contribution only when the knowledge it embodies is stated separately from it. Each of these is at the level of a problem class, not our artefact, and each is falsifiable against the evidence column — we assert them because something in our evaluation would have come out differently had they not held."</p>
+    </div>
+    <div class="notes">
+      <h4>Expect the methodology question here</h4>
+      "You completed one design cycle, so these are derived, not validated." Ch10 §10.4 concedes exactly that. The answer: one cycle is what a thesis-scale DSR study delivers; the principles are stated so they <i>can</i> be falsified, and the evidence column is what makes each one testable rather than asserted.
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="hd"><span class="n">10</span><span class="t">Closing: the result that most deserves to survive</span><span class="clock">12:45–14:30 · <span class="speaker">B</span></span></div>
+  <div class="body">
+    <div class="onscreen">
+      <ul>
+        <li>The extension is feasible inside a small provider's budget — 231 MB end to end</li>
+        <li>The constraint binds at <span class="strong">design time</span>, not run time</li>
+        <li>A language model with data and a sandbox is a <span class="strong">stronger forecaster than the literature grants it</span></li>
+        <li>So a dedicated predictive layer must be justified on <span class="strong">reproducibility, cost and auditability</span> — not on error alone</li>
+      </ul>
+      <p style="margin:10px 0 0;padding:8px 10px;background:var(--tint);border-left:3px solid var(--accent)">A forecast becomes usable not when it carries an interval, but when it carries evidence of how far its model has been right before.</p>
+    </div>
+    <div class="say">
+      <h4>Say</h4>
+      <p>"The result we did not set out to find is the one we would keep. We set out to show a dedicated forecasting layer was needed, and what we can actually defend is narrower and more useful: it earns its place on properties the error metric does not see."</p>
+      <p><span class="strong">[extra 30 s available here in this variant]</span> "It is worth being precise about what that means for a practitioner, because it is the part we would want to survive the thesis. If you need the same question answered the same way every time, cheaply enough to ask on every query, and auditable afterwards, the dedicated model is the configuration to deploy. If you want a one-off analysis and a human will read the working, the code-writing configuration gives a better typical answer and an occasional very poor one — which is acceptable under review and not acceptable unattended. That is a deployment rule a two-arm comparison could not have produced."</p>
+    </div>
+    <div class="notes">
+      <h4>Then stop</h4>
+      Do not summarise the summary. 55% of the slot is dialogue, and leaving room for it is the strongest close.
+      <br><br><b>Scope boundary to state before they ask:</b> one organisation, one national market, four categories, and the scenario comparison rests on three brands within one of them.
+    </div>
+  </div>
+</div>
+
+<div class="meta" style="margin-top:28px">
+  <b>Timing check.</b> 14:30 in a 15-minute budget. Slides 6 and 10 carry the 90 seconds that Variant T spends on the defect slide; both are marked <i>[extra 30 s available here]</i> and both work without it if you run long.
+  <br><br>
+  <b>Before the defence — CBS requirement, not a courtesy.</b> Inform supervisor <i>and</i> censor that generative AI was used in preparation. No AI tool may be used during the defence itself.
+  <br><br>
+  <b>Print for the examiners.</b> Prints greyscale-safe. Bring the Q&amp;A drill separately — exam aids are permitted.
+</div>
+</div>

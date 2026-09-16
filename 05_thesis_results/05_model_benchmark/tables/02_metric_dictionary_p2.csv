@@ -1,0 +1,6 @@
+Dimension,Metric,Unit,Definition,Better when,Source
+Correctness,Mean APE,%,Mean of APE over runs classed ok.,lower,runs.csv: ape
+Correctness,WMAPE -- weighted MAPE,%,"Sum of absolute errors divided by sum of actuals across series. Weights each series by its volume, so a large brand is not outvoted by many small ones, and it stays defined when individual actuals approach zero.",lower,srq1/stat_baselines.csv: wmape
+Consistency,CV across repeats,%,"Per brand, the coefficient of variation of the forecast over repeated runs of the same prompt, averaged across brands. Measures run-to-run instability at fixed input.",lower,runs.csv: forecast
+Replicability,Identical-answer rate,%,Share of brands whose forecasts across all repeats fall within a 1% band.,higher,runs.csv: forecast
+Replicability,Top-answer agreement rate (1% tolerance),ratio,"For one brand, the share of repeated runs whose forecast agrees with the most commonly returned value, within a 1% tolerance; averaged across brands. A value of 1.00 means every repeat returned effectively the same answer, 0.20 that five repeats returned five different ones. Reported because LLM outputs vary between identical requests under identical decoding settings (Atil et al., 2025).",higher,runs.csv: forecast

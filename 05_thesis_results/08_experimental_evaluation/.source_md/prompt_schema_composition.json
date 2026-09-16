@@ -1,0 +1,62 @@
+{
+ "schema": "v6-shared-composition+af04a42a478b",
+ "shared_by_every_arm": [
+  "The question",
+  "Output exemplar",
+  "Sentinel instruction"
+ ],
+ "component_words": {
+  "The question": 43,
+  "Output exemplar": 64,
+  "Sentinel instruction": 15,
+  "No firm data": 14,
+  "Sales history + schema": 34,
+  "Model forecast payload": 16,
+  "Forecast tool": 27,
+  "Analysis task": 43,
+  "Analysis task, with model": 54,
+  "Do not query warehouse": 31,
+  "Route to analysis engine": 33
+ },
+ "arms_add": {
+  "A": [
+   "No firm data"
+  ],
+  "B": [
+   "Sales history + schema",
+   "Analysis task"
+  ],
+  "C": [
+   "Forecast tool"
+  ],
+  "D user": [
+   "Route to analysis engine"
+  ],
+  "D coder": [
+   "Sales history + schema",
+   "Analysis task",
+   "Do not query warehouse"
+  ],
+  "E user": [
+   "Route to analysis engine"
+  ],
+  "E coder": [
+   "Model forecast payload",
+   "Do not query warehouse"
+  ],
+  "F": [
+   "Sales history + schema",
+   "Model forecast payload",
+   "Analysis task, with model"
+  ],
+  "G user": [
+   "Route to analysis engine"
+  ],
+  "G coder": [
+   "Sales history + schema",
+   "Model forecast payload",
+   "Analysis task, with model",
+   "Do not query warehouse"
+  ]
+ }
+}

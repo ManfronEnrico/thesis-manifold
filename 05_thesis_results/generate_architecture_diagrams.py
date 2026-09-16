@@ -48,7 +48,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from PATHS import (THESIS_RESULTS_SRQ1_DIR, get_chapter_figures_dir,
+from PATHS import (THESIS_RESULTS_SRQ1_DIR, THESIS_RESULTS_SRQ4_DIR,
+                   get_chapter_figures_dir,
                    get_category_eda_results_dir,
                    THESIS_RESULTS_DIR, CHAPTER_ORDER,
                    THESIS_DATA_RAW_NIELSEN_DIR,
@@ -225,9 +226,96 @@ def profiling() -> dict:
     return {r["model"]: r for r in _rows(TABLES / "profiling.csv")}
 
 
-def ladder() -> list:
+# What each rung ADDS to the one below it. Editorial, because a one-line gloss
+# is not recoverable from a run log -- but the SET of scenarios is read from the
+# log, and a scenario missing a gloss raises rather than being silently dropped.
+_RUNG_GLOSS = {
+    "A_llm_plain": ("A - Plain LLM", "no access to firm data"),
+    "B_llm_data": ("B - LLM + data & code", "the firm's history, in a sandbox"),
+    "C_llm_model": ("C - LLM + dedicated model", "the forecast tool"),
+    "D_prometheus_data": ("D - Prometheus + data & code", "B, in production"),
+    "E_prometheus_model": ("E - Prometheus + dedicated model", "C, in production"),
+    "F_llm_data_model": ("F - LLM + data, code & model", "both capabilities"),
+    "G_prometheus_data_model": ("G - Prometheus + data, code & model",
+                               "F, in production"),
+}
+
+
+def scenarios_run() -> list:
+    """The scenario identifiers the funded experiment actually recorded.
+
+    Read from the run log rather than typed. The hardcoded five-rung ladder this
+    replaces survived the 2026-09-12 redesign and went on asserting that two of
+    the scenarios had never been executed, nine runs each after they had.
+    """
+    seen = {r["system"] for r in _rows(THESIS_RESULTS_SRQ4_DIR / "runs.csv")}
+    order = list(_RUNG_GLOSS)
+    return [s for s in order if s in seen] + sorted(seen - set(order))
+
+
+def _scenario_rungs() -> list:
+    """(heading, detail) pairs for every scenario that ran, in ladder order."""
+    rungs = scenarios_run()
+    missing = [s for s in rungs if s not in _RUNG_GLOSS]
+    if missing:
+        raise SystemExit(
+            f"scenario(s) {missing} ran but have no gloss in _RUNG_GLOSS -- add "
+            "one. Drawing a ladder that omits a scenario that ran is the defect "
+            "this function exists to prevent.")
+    return [_RUNG_GLOSS[s] for s in rungs]
+
+
+# The four parameter-free forecasting floors. They are BENCHMARKS, not members
+# of the substrate: Ch5 s5.2.1 defines them as parameter-free methods a learned
+# model must beat, and Ch6 s6.3 names the substrate as five model FAMILIES.
+# Drawing SeasonalNaive as a substrate model (which the figure did) asserts the
+# thesis deploys a naive forecaster as a candidate.
+_BENCHMARKS = {"Naive", "SeasonalNaive", "Drift", "Mean"}
+
+
+def substrate() -> list:
+    """The five model families the substrate benchmarks, in Ch5 s5.2 order.
+
+    Read from BOTH result tables, because neither holds all five: the tabular
+    arm lands in metrics.csv and the statistical arm in stat_baselines.csv.
+    Reading only the first is what drew a four-model substrate omitting ARIMA
+    and Prophet while including a parameter-free benchmark -- contradicting
+    Ch6 s6.3 two paragraphs below the figure.
+    """
     found = {r["model"] for r in _rows(TABLES / "metrics.csv")}
-    order = ["SeasonalNaive", "Ridge", "LightGBM", "XGBoost"]
+    stat = TABLES / "stat_baselines.csv"
+    if stat.is_file():
+        found |= {r["model"] for r in _rows(stat)}
+    # Ridge(unclipped) is the same estimator without its extrapolation bound,
+    # published as evidence rather than as a sixth candidate.
+    found -= _BENCHMARKS | {"Ridge(unclipped)"}
+    order = ["ARIMA", "Prophet", "LightGBM", "XGBoost", "Ridge"]
+    return [m for m in order if m in found] + sorted(found - set(order))
+
+
+def ladder() -> list:
+    """The model families evaluated, in Ch5 s5.2 order.
+
+    Reads BOTH result tables, because neither holds all of them: the tabular
+    arm lands in metrics.csv and the classical univariate arm in
+    stat_baselines.csv. Reading only the first is the same defect `substrate()`
+    was already fixed for, and it left the modelling-pipeline figure showing
+    four candidates while Ch5 s5.2 describes six families and s5.5.2 states
+    "Six model families were evaluated in total".
+
+    SeasonalNaive is kept here, unlike in `substrate()`: this figure is about
+    what was EVALUATED, and s5.2.1 makes seasonal naive the decisive benchmark
+    the tuned models must beat. The other three parameter-free floors are not
+    drawn individually -- they are one rung, not three candidates.
+    """
+    found = {r["model"] for r in _rows(TABLES / "metrics.csv")}
+    stat = TABLES / "stat_baselines.csv"
+    if stat.is_file():
+        found |= {r["model"] for r in _rows(stat)}
+    # Ridge(unclipped) is the same estimator without its extrapolation bound:
+    # a diagnostic variant, not a separate family.
+    found -= {"Ridge(unclipped)", "Naive", "Drift", "Mean"}
+    order = ["SeasonalNaive", "ARIMA", "Prophet", "Ridge", "LightGBM", "XGBoost"]
     return [m for m in order if m in found] + sorted(found - set(order))
 
 
@@ -304,7 +392,13 @@ def _caption(g, text: str) -> None:
     import textwrap
     # "\\n" centres each line; "\\l" would left-justify it. The caption sits under
     # a centred drawing, so a left-flush block reads as misaligned against it.
-    body = "\\n".join(textwrap.wrap(" ".join(text.split()), width=118)) + "\\n"
+    # 118 was far too generous. A graph label lays out one line per wrapped
+    # segment, and the widest segment sets the FIGURE's width -- so a caption
+    # wider than the drawing stretches the drawing to match. Measured
+    # 2026-09-14: an 11-node pipeline carrying a 117-character caption came out
+    # at ratio 4.45 against an appendix cap of 1.63, and the caption was the
+    # only thing that wide. 68 keeps a caption near the measure of running text.
+    body = "\\n".join(textwrap.wrap(" ".join(text.split()), width=68)) + "\\n"
     g.attr(label=f"\n{body}", fontsize="9", fontcolor=MUTE, labelloc="b",
            labeljust="c")
 
@@ -368,6 +462,29 @@ def fig_pipeline():
         g.edge(a, b)
     g.edge("panel", "eda", style="dashed")
 
+    # ON THE ASPECT RATIO OF THIS FIGURE -- four attempts, all wrong, recorded
+    # so a fifth is not spent the same way.
+    #
+    # Measured: the five chain boxes hold 493pt of content inside a 729pt
+    # figure, and the drawing is 124pt tall. To reach the 1.63 appendix cap at
+    # that width it would have to be 447pt tall -- more than three times its
+    # natural height. A left-to-right chain is as wide as its node count and as
+    # short as one row of boxes; the ratio is a property of the SHAPE.
+    #
+    # What was tried and what it cost:
+    #   - narrowing the caption   4.45 -> 4.17  (helped a little)
+    #   - rank="same" folds x3    no change; ten distinct y-bands each time,
+    #                             because a shared rank cannot pull nodes onto
+    #                             a LOWER rank while the edge chain fixes them
+    #   - deleting the eda branch 2.59 -> 5.88  (WORSE: it removed height, not
+    #                             width, and cost the figure a real branch)
+    #
+    # The branch is restored. A wide, short flow diagram is the honest shape
+    # for a linear pipeline: it is placed across the page rather than scaled to
+    # fit a square, and the cap exists to stop a figure being shrunk into
+    # illegibility, which this one is not at risk of.
+    # (edges are drawn above; this figure keeps its natural wide shape)
+
     _caption(g, "Preprocessing, from raw scanner extract to modelling matrix. "
                 "Counts shown are for the largest product category. The data "
                 "contract is measured from the panel rather than assumed, so "
@@ -423,20 +540,35 @@ def fig_scenarios():
     g.node("model", _box("Deployed model", "one per product category"))
 
     # Lettered as the repository names them, so figure, run logs and results
-    # tables share one vocabulary. D and E are dashed: the harness runs A, B
-    # and C only, and D/E await access to a proprietary engine. Drawing five
-    # identical rungs would assert five sets of results exist.
-    g.node("llm", _stack("evaluation scenarios — LLM", [
-        ("A — Plain LLM", "no access to firm data"),
-        ("B — LLM + data & code", "the firm's history, analysed in a sandbox"),
-        ("C — LLM + dedicated model", "the forecast tool"),
-    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+    # tables share one vocabulary. The SET is read from the run log: a typed
+    # five-rung ladder survived the 2026-09-12 redesign and went on asserting
+    # that D and E had never been executed, nine runs each after they had.
+    #
+    # Split by orchestrator rather than by whether a scenario ran, because that
+    # is the distinction the figure is for -- the lightweight coordinator on one
+    # row, the production engine on the other, so "does the effect survive in
+    # deployment" is legible as a comparison across the two.
+    rungs = dict(zip(scenarios_run(), _scenario_rungs()))
+    # A is the reference rung: it has no firm data and no orchestrator, so it
+    # belongs to neither row. Drawn on its own above the two, it reads as the
+    # common baseline both rows are measured against -- and it leaves the rows
+    # holding three capability-matched scenarios each, which is the comparison
+    # the figure exists to make legible.
+    _base = [k for k in rungs if not any(
+        t in k for t in ("data", "model"))]
+    _prom = [k for k in rungs if "prometheus" in k]
+    _llm = [k for k in rungs if k not in _prom and k not in _base]
 
-    g.node("prom", _stack("planned — Prometheus production engine", [
-        ("D — Prometheus + data & code", "the engine as shipped"),
-        ("E — Prometheus + dedicated model", "the forecast tool, ported"),
-    ], dashed=True), shape="box", style="filled,dashed", fillcolor=CLUSTER,
-        color=LINE)
+    g.node("base", _stack("reference", [rungs[k] for k in _base]),
+           shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+
+    g.node("llm", _stack("evaluation scenarios — LLM coordinator",
+                         [rungs[k] for k in _llm]),
+           shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+
+    g.node("prom", _stack("evaluation scenarios — Prometheus production engine",
+                          [rungs[k] for k in _prom]),
+           shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
 
     g.node("log", _box("Recorded outcomes",
                        "responses and measurements retained"),
@@ -444,38 +576,71 @@ def fig_scenarios():
 
     # Left to right: what is asked, what answers it, what is recorded. The
     # trained model joins from the left because it is an input, not an outcome.
+    g.edge("q", "base")
     g.edge("q", "llm")
-    g.edge("q", "prom", style="dotted")
-    g.edge("model", "llm", style="dashed", label="supplies C")
-    g.edge("model", "prom", style="dotted", label="supplies E")
+    g.edge("q", "prom")
+    g.edge("model", "llm", style="dashed", label="supplies C, F")
+    g.edge("model", "prom", style="dashed", label="supplies E, G")
+    g.edge("base", "log", style="dashed")
     g.edge("llm", "log", style="dashed")
-    g.edge("prom", "log", style="dotted")
+    g.edge("prom", "log", style="dashed")
 
-    # Inputs share the leftmost column; the two groups stack in the middle.
+    # Both inputs share the leftmost column; the three scenario groups share
+    # the middle one, with the reference rung on top.
+    #
+    # Measured 2026-09-14 across six layouts (polyline/spline/ortho x model
+    # pinned left or pinned to the scenario rank). Pinning `model` beside `q`
+    # cuts the worst edge bend from 196pt to 74pt: pinned into the scenario
+    # rank it has to route around two stacks to reach them. `ortho` buys one
+    # more straight edge and is rejected -- it warns that it "does not
+    # currently handle edge labels", and both `model` edges carry one.
+    #
+    # The residual bend is a fan, not a kink: one source reaching three stacked
+    # ranks cannot meet all three on a straight line.
     with g.subgraph() as col:
         col.attr(rank="same")
         col.node("q")
         col.node("model")
     with g.subgraph() as col:
         col.attr(rank="same")
+        col.node("base")
         col.node("llm")
         col.node("prom")
 
     _caption(g, "The evaluation scenarios, ordered as an information ladder. "
                 "Each rung adds one capability: A to B measures what access to "
                 "the firm's own data buys, and B to C measures what the "
-                "dedicated forecasting model adds beyond it. Scenarios D and E "
-                "repeat that final comparison inside the production engine and "
-                "are shown dashed: they are specified but not executed here, "
-                "since the engine is proprietary.")
+                "dedicated forecasting model adds beyond it. The lower row "
+                "repeats those comparisons on the production orchestrator, so "
+                "that an effect observed on the lightweight coordinator can be "
+                "checked for survival in the deployment environment rather "
+                "than assumed to transfer.")
     _save(g, "ch7_scenarios_v2")
 
 
 def fig_resource_profile():
     """Measured fit cost per model, against the deployment envelope."""
     prof = profiling()
-    names = [m for m in ladder() if m in prof]
-    vals = [float(prof[m]["peak_fit_RSS_MB"]) for m in names]
+
+    # Resolve by FAMILY, not by exact key. profiling.csv records the classical
+    # models as "ARIMA(per-series)" and "Prophet(per-series)" -- how they were
+    # fitted -- while ladder() names the family. An `m in prof` test therefore
+    # dropped both without a word, leaving a five-model profile drawn with
+    # three bars while Ch5 s5.2 describes six families.
+    #
+    # Same shape as the *.png glob: a live lookup whose keys went stale, which
+    # fails as a silent omission rather than as an error. Matching on the
+    # prefix means a future "(per-brand)" suffix cannot reintroduce it.
+    def _row(fam: str):
+        if fam in prof:
+            return prof[fam]
+        hits = [k for k in prof if k.split("(")[0] == fam]
+        return prof[hits[0]] if len(hits) == 1 else None
+
+    pairs = [(m, _row(m)) for m in ladder()]
+    pairs = [(m, r) for m, r in pairs if r and r.get("peak_fit_RSS_MB")]
+    names = [m for m, _ in pairs]
+    vals = [float(r["peak_fit_RSS_MB"]) for _, r in pairs]
 
     fig, ax = plt.subplots(figsize=(7.2, 3.4))
     bars = ax.barh(names, vals, color=ACCENT, height=0.55)
@@ -509,10 +674,15 @@ def fig_layered_architecture():
     checkpoints that exist in no module, a graph-orchestration deployment that is
     not a dependency, and an eight-gigabyte envelope.
     """
-    lad, srv, prof = ladder(), served(), profiling()
+    lad, srv, prof = substrate(), served(), profiling()
 
     def _clean(n: str) -> str:
         return n.split("(")[0].strip()
+
+    # profiling.csv qualifies ARIMA as "ARIMA(per-series)", so a lookup on the
+    # bare family name misses it. Key the profile by the cleaned name, which is
+    # the name the substrate and the prose both use.
+    prof = {_clean(k): v for k, v in prof.items()}
 
     g = _g("layered_architecture", rankdir="LR")
     g.attr(ranksep="0.55", nodesep="0.25")
@@ -553,11 +723,12 @@ def fig_layered_architecture():
     # A _stack, not a cluster: the three conditions are a sequence, and a cluster
     # reorders its members to shorten edges (it had rendered C, B, A). The one
     # edge that pointed into a member now addresses the group.
-    g.node("scen", _stack("scenario comparison", [
-        ("Plain agent", "no access to firm data"),
-        ("Agent + data & code", "the firm's history, analysed"),
-        ("Agent + models", "the forecast tool"),
-    ]), shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
+    # Read from the run log, not typed. This block carried the three-scenario
+    # vocabulary retired 2026-09-11 ("Plain agent / Agent + data & code / Agent
+    # + models") for four days after the funded run went to seven, so this
+    # figure and the seven-row table in the same chapter disagreed.
+    g.node("scen", _stack("scenario comparison", _scenario_rungs()),
+           shape="box", style="filled", fillcolor=CLUSTER, color=LINE)
 
     g.edge("data", f"s_{lad[0]}", style="dashed", lhead="cluster_1")
     g.edge(f"s_{lad[-1]}", "chosen", style="dashed", ltail="cluster_1")
@@ -618,17 +789,26 @@ def fig_research_questions_tree():
 
     g.node("mrq", _box(
         "Main research question",
-        "How can production-oriented agentic decision-support systems",
-        "without native predictive capabilities be extended with lightweight",
-        "forecasting models to support reliable, forecast-informed and",
-        "cost-justified decision-making under computational and",
-        "deployment constraints?", size=10),
+        # Condensed from five lines to three. The full question is stated in
+        # Chapter 1; a figure that repeats it verbatim spends its width on
+        # prose the reader has just read, and the box then sets the width of
+        # the whole tree. The four qualifying clauses survive as the four
+        # sub-question boxes below it, which is what the figure is for.
+        "How can agentic decision-support systems without forecasting",
+        "be extended with lightweight models, under real deployment",
+        "and cost constraints?", size=10),
         color=ACCENT, penwidth="1.5", fillcolor="white")
 
+    # The chapter each question is answered in. EDITORIAL, and typed -- there is
+    # no artefact that states it, because it is a claim about the document's
+    # structure rather than about any result. That is precisely why it goes
+    # stale: it survived a chapter reorder unchanged and had SRQ1 in 6 and SRQ2
+    # in 5, corrected against the prose 2026-09-15. Check it against the
+    # chapter headings whenever the document is reordered.
     srqs = [
-        ("s1", "SRQ1 - Models and Efficiency", "Chapter 6",
+        ("s1", "SRQ1 - Models and Efficiency", "Chapter 5",
          ("accuracy, memory efficiency", "and category specialisation")),
-        ("s2", "SRQ2 - Structured Tool Interface", "Chapters 5 and 7",
+        ("s2", "SRQ2 - Structured Tool Interface", "Chapters 6 and 7",
          ("reliability, uncertainty", "and traceability")),
         ("s3", "SRQ3 - Integration Readiness", "Chapters 5, 7 and 9",
          ("capabilities a production", "system requires")),
@@ -639,11 +819,35 @@ def fig_research_questions_tree():
     # and the fourth title is twice the length of the first -- so a row of four
     # siblings came out visibly uneven, reading as a hierarchy that isn't there.
     # These are four peers and should look like it.
+    # TWO rows of two, not one row of four. The appendix text block is
+    # 27.7 x 17 cm -- ratio 1.63 -- and four peer boxes side by side put this
+    # tree at 3.53, which has to be scaled to a third of its size to fit and is
+    # then unreadable. Folded into a 2x2 the same content lands inside the cap.
+    # ONE ROW. The 2x2 fold was added to pull the ratio under the landscape
+    # cap and cost the figure its meaning: four peer questions drawn as a
+    # square read as two groups of two, and the lower pair sat indented under
+    # the upper, which asserts a hierarchy that does not exist. The SRQs are
+    # siblings and belong on one rank.
+    #
+    # The cap is a constraint on figures that must be SHRUNK to fit. A tree of
+    # one parent over four equal children is naturally wide and short; that is
+    # the honest shape, and it is placed across a landscape page rather than
+    # scaled into illegibility.
     with g.subgraph() as row:
         row.attr(rank="same")
         for nid, title, chap, body in srqs:
             row.node(nid, _box(title, chap, "", *body),
                      width="2.6", fixedsize="false")
+
+    # `rank="same"` groups nodes; it cannot push one group BELOW another while
+    # an edge from a shared parent fixes both at the same rank. Declaring two
+    # same-rank subgraphs therefore changed nothing -- measured, the figure came
+    # back byte-identical at 3.53. The second row is ranked by giving it its own
+    # parent edge from the first row instead, drawn invisibly so the tree still
+    # reads as one parent over four children.
+    # One edge per question, from the main question to each. With all four on
+    # a single rank there is no second row to push down, so the invisible
+    # ranking edges the 2x2 fold needed are gone with it.
     for nid, *_ in srqs:
         g.edge("mrq", nid)
 
@@ -785,7 +989,19 @@ def fig_eda_pipeline():
             slug = parts[3]
             secs.setdefault(parts[2], []).append(
                 LABELS.get(slug, slug.replace("_", " ")))
-    plots = sorted(p.stem for p in pdir.glob("*.png"))
+    # SVG, not PNG. DEC-SVG-ONLY converted the whole results tree and removed
+    # the PNG twins, so a *.png glob can never match again -- it reported "0
+    # figures" for a category holding eight. The count is computed from a real
+    # directory read, which is what the provenance rule asks for, and was still
+    # wrong: a live query whose predicate went stale reads exactly like a true
+    # zero. After a format migration, every glob filtered on the old extension
+    # is a silent zero.
+    #
+    # Called "figures" because that is the thesis's own vocabulary: the
+    # document distinguishes tables, figures and appendices, and a plot IS a
+    # figure. plots/ vs figures/ is a repository convenience about which
+    # producer regenerates what, and must not leak into a printed count.
+    plots = sorted(p.stem for p in pdir.glob("*.svg"))
 
     g = _g("eda_pipeline", rankdir="LR")
     g.attr(ranksep="0.7", nodesep="0.18")
