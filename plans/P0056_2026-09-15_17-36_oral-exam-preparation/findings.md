@@ -1,9 +1,9 @@
 ---
 name: p0056-findings
-description: STATE - What the submitted thesis actually says, which plan-folder claims it supersedes, and the verified numbers any slide may quote.
+description: STATE - What the submitted thesis actually says, which plan-folder claims it supersedes, the verified numbers any slide may quote, and the measured shape of the top-grade reference deck (F11), and the post-submission reference-list correction (F12).
 pid: P0056
 created: 2026_09_15-17_36
-updated: 2026_09_15-18_05
+updated: 2026_09_20-14_15
 ---
 
 # P0056 — Findings
@@ -14,6 +14,24 @@ updated: 2026_09_15-18_05
 - Snapshot **`2026-09-15_17-43_oral-exam-prep`**; source `.docx` modified 15:40:33, SHA `0b8c197b…`, **47,299 words**, 17 level-1 chapters, 30 tables, **1** live comment.
 - Zotero re-pulled the same session: **88 items**.
 - **Step 3 of `/re-snap` (diff against previous snapshot) deliberately skipped.** It exists to show which proposed fixes an author applied; the thesis is submitted, so there is no pending pass. Previous snapshot was 110 minutes earlier.
+
+### ⚠ Superseded 2026-09-20 — re-read this before trusting anything above
+
+The reasoning for skipping step 3 was **wrong, and it caused F12.** "The thesis
+is submitted, so the document cannot move" is an assumption, and the document
+moved: the bibliography field was refreshed after submission, adding 27
+reference entries. Any audit against the 09-15 snapshot is stale.
+
+**Current currency (2026-09-20 14:09):**
+
+| | |
+|---|---|
+| Repo | `b9dbfd4`, branch `main`, fetch clean, **0 ahead / 0 behind** `origin/main` |
+| Snapshot | `2026-09-20_14-09_defence-deck-citation-audit` — **47,139 words**, 17 chapters, 142 leaf sections, **0 comments** |
+| Zotero | re-pulled same session, **88 items**; `bibtex.bib` + `citations.json` written, then the known cosmetic crash (F10) |
+| Reference list | **61 entries** (was 34) |
+
+**Verify against the 09-20 snapshot, not the 09-15 one.**
 
 ## F2 — The submitted document's shape
 
@@ -168,6 +186,259 @@ did.** If an examiner asks how the bibliography was produced, know the answer.
 **The deck reuses these.** Making new charts would both waste effort and risk
 numbers that disagree with the submitted document.
 
+## F11 — The reference deck, measured: 13 presented slides against 22 held in reserve
+
+Brian supplied a printed handout with speaker notes from **Max's group, who took
+the top grade**. Topic is unrelated to ours — participatory governance, content
+integrity and user trust on decentralised social media (Mastodon and Bluesky),
+a mixed-methods interpretivist study with 10 interviews and a 148-respondent
+survey. **It is evidence about deck shape, not about content.**
+
+Read 2026-09-19 from
+`~/OneDrive/.../Documents/Max - Oral Defense Presentation_with_notes_OCR.pdf`,
+35 pages, OCR'd. Text extracted with `pypdf`; OCR quality is poor on table
+interiors but section structure and speaker notes are legible.
+
+### The shape
+
+| Pages | What |
+|---|---|
+| 1 | Title |
+| 2 | Agenda — six sections, no numbers on screen |
+| 3–4 | Motivation of the Study — anomaly, phenomenon, research question |
+| 5 | Literature Review & Analytical Framework — concept matrix, propositions P1a–P3 |
+| 6–7 | Methodology & Data Collection |
+| 8–9 | Our Most Relevant Findings (1/2) and (2/2) |
+| 10 | Revisited Analytical Framework |
+| 11–12 | Limitations, Implications and Reflection |
+| **13** | **"Let's discuss!"** — the wall begins |
+| 14–35 | **22 reserve slides**, never presented |
+
+**Presented: 13. Reserve: 22.** The reserve set is ~1.7× the deck.
+
+### What is in their reserve wall
+
+Participant overview, survey respondent overview, data-analysis workflow,
+code-to-theme mapping, ethics, research quality & reflexivity, architectural
+comparison of the two platforms, construct definitions, proposition-strength
+assessment, and **nine further analytical diagrams** — each one answering a
+single question that an examiner might ask and that a diagram answers faster
+than a sentence.
+
+### The three transferable moves
+
+1. **The presented slides are sparse.** Findings get two slides for a whole
+   mixed-methods study. Density is deliberately pushed behind the wall.
+2. **Reserve slides are titled as answers, not as topics.** *"The architectural
+   differences between Mastodon and Bluesky"*, *"How the two platforms produce
+   user agency over the feed"* — the title is findable under pressure.
+3. **The methodology slide states philosophy before instruments.** Interpretivist
+   → abductive → exploratory → mixed-methods → sample. The *why* precedes the
+   *what*, which is exactly the move our DSR slide needs.
+
+### Where the analogy stops — do not copy these
+
+- **They revisit an analytical framework; we do not have one.** Our equivalent
+  slot is the five design principles (DSR method contribution). Not the same
+  object, and calling ours a "framework" would invite a methodology examiner to
+  ask which framework literature it extends.
+- **Their findings are propositions with support levels.** Ours are measured
+  quantities with a negative result inside them. Our findings slides must carry
+  numbers; theirs carry strength assessments.
+- **Their limitations are sampling and scope.** Ours include a *defect* (lag-13),
+  which is a different kind of admission and is already in our submitted Ch9 §9.4
+  (F5). Do not soften it into a "limitation" — it is a corrected flaw, which CBS
+  explicitly invites us to surface.
+
+### One caution on inference
+
+We know this deck accompanied a top grade. **We do not know the deck caused it**,
+and no part of the defence rubric rewards deck structure directly — the
+presentation is ~20% of the slot. Treat the reserve wall as a good idea that is
+demonstrably survivable at the top of the grade range, not as a formula.
+
+## F12 — ⚠ The reference list was completed AFTER submission. My 2026-09-19 citation audit was measuring a stale document.
+
+**Correcting myself.** On 2026-09-19 I audited citations against the
+`2026-09-15_17-43_oral-exam-prep` snapshot, found **35** reference-list entries
+against ~68 in-text citations, and told Brian his slide claim of "61 sources
+cited" did not match the document. **The slide was right. My audit was stale.**
+
+`/re-snap` on 2026-09-20 (`2026-09-20_14-09_defence-deck-citation-audit`) shows
+the `.docx` was edited after submission:
+
+| | 09-15 snapshot | 09-20 snapshot |
+|---|---:|---:|
+| Reference-list entries | 34 | **61** |
+| Reference list, words | 934 | 1,642 (**+708**) |
+| Table of contents, words | 829 | 109 (−720) |
+| Live comments | 1 | **0** |
+| Total words | 47,749 | 47,139 |
+
+**The bibliography field had not been refreshed** when the submission snapshot
+was taken; it has been since.
+
+> ⚠ **Corrected by F15 (2026-09-20).** The "61" in the table above is one short.
+> It was produced by counting entries matching a bare `(YYYY)`, which misses
+> **Klee & Xia**, dated `(2025, July 30)`. The reference list holds **62**.
+> So the headline of this finding — *"the slide was right"* — is itself wrong:
+> the slide's 61 matches neither the reference list (62) nor Ch2's own stated
+> corpus (42). **Enrico's comment on slide 8 was correct to query it.**
+> The lesson about stale snapshots below still stands and is unaffected.
+
+### What the lesson actually is
+
+`plan-verification-discipline.md` says the submitted `.docx` is ground truth —
+and I applied that rule. The failure was subtler: **I treated a snapshot as the
+document.** A snapshot is a dated mirror, and this one was five days old. The
+`/re-snap` skill exists precisely for this and I did not run it before auditing.
+
+This is the same class of error as F5, inverted. There, a plan folder was stale
+against the document. Here, a *snapshot* was stale against the document. Both
+resolve the same way: **re-snap before verifying anything, every time.**
+
+### Residual, measured on the fresh snapshot
+
+13 in-text citations still have no exact reference-list match, but **8 of those
+are year variants where the source IS listed** — Ahrens 2024↔2025, Elmachtoub
+2024↔2022, González-Potes 2024↔2026, Gu 2024↔2025, Ji 2025↔2024, Ye 2025↔2024,
+Chen 2024↔2026, plus Liu/Li/Wang first-author ambiguities. Those are in-text
+year typos or genuine companion works, not missing sources.
+
+**Five have no entry under any year:** Cain (2017), Doane (2017), Klee (2025),
+Önkal (2010), Atıl (2025), Schwartz (2020). Of these, **Klee & Xia is cited in
+four chapters** and is in Zotero; Önkal appears in Ch7 and Ch9 and is in Zotero
+as part of Goodwin, Önkal & Thomson (2010), so it is almost certainly a
+same-work name-order variant rather than a missing reference. **Atıl and
+Schwartz are in neither the list nor Zotero** — those two are the only genuine
+unknowns, and both sit in Ch3.
+
+Five entries are listed but never cited: Li (2024), Liu (2025), Nager (2026),
+Olszak (2025), Wang (2025).
+
+**None of this needs action.** The thesis is submitted and closed. It is
+recorded so that (a) the slide's "61 sources cited" is confirmed correct and
+defensible, and (b) if an examiner raises a specific citation, the answer is
+known rather than improvised.
+
+### Consequence for the deck
+
+**Brian's literature-review slide needs no change.** "61 sources cited" matches
+the reference list exactly. My 2026-09-19 recommendation to drop the number was
+based on the stale count and is **withdrawn**.
+
+## F13 — The PDF split left 8 stale files behind, and 6 of them had misleading names
+
+Re-ran `split_thesis_pdf.py` on 2026-09-20 against the current PDF (**136
+pages**, dated 2026-09-16). The previous split was against a **142-page**
+version, so the PDF was regenerated post-submission too — consistent with F12.
+
+**`split_thesis_pdf.py` writes but does not delete.** Eight PDFs from the old
+run survived alongside the new ones:
+
+| Stale file | Why it is dangerous |
+|---|---|
+| `Thesis-Ch05-5.5-Results.pdf` | current §5.5 is **Evaluation metrics**; Results is now **§5.6** |
+| `Thesis-Ch05-5.2-Model_descriptions.pdf` | current §5.2 is **Modelling Pipeline** |
+| `…5.3-Experimental_setup`, `…5.4-Evaluation_metrics`, `…5.6-Model_selection_decision`, `…5.7-Connection_to_SRQs` | same off-by-one |
+| `Thesis-Ch00-AI_Use_Declaration.pdf` (×2) | heading no longer in the PDF outline |
+
+**Cause:** Chapter 5 gained a section — *5.2 Modelling Pipeline* — so every
+later section shifted up by one number. The old files therefore occupy
+*filenames that still look current* while carrying the previous document's
+content under the wrong number. Opening `5.5-Results.pdf` would have given the
+old §5.5 labelled as Results.
+
+All 8 were verified absent from both regenerated `00_INDEX.md` files before
+deletion. Final state: **13 chapter PDFs, 73 section PDFs**, matching the
+script's reported unit counts exactly, 133 of 136 pages covered (1–3 are title
+and TOC front matter, excluded by design).
+
+**This is the same defect `figure-generation-standards.md` already names** —
+*"A generator must delete, not only write"* — which `export_appendix.py` solves
+with `_clear_previous()` and `generate_architecture_diagrams.py` with
+`_out_for()`. `split_thesis_pdf.py` has no equivalent. It would be a small fix
+(delete `Thesis-*.pdf` in the output dir before writing), **but the thesis is
+closed and this plan does not touch tooling.** Recorded so the next person to
+re-run it knows to sweep first.
+
+## F14 — Forecasting methodology: snapshot vs codebase, line by line
+
+Verified 2026-09-20 against snapshot `2026-09-20_14-09` and the live code.
+**Most of the methodology holds and is implemented as described.** One link
+fails, and one adjacent item is weaker than it first appears.
+
+### Implemented as the thesis describes ✅
+
+| Claim | Code |
+|---|---|
+| 4-fold expanding-window CV, split on **periods not rows** | Ch5 §5.4.4; rationale cites Bergmeir 2018 / Cerqueira 2020 correctly — K-fold rejected *for this data*, not on principle |
+| Rolling origin, each fold refits from scratch | §5.4.4, Tashman (2000) |
+| Test split untouched by selection | §5.4.4 |
+| Conformal calibration genuinely out-of-sample | `train_and_persist.py:273` — `m_cal` fitted on TRAIN, residuals taken on VAL. ⚠ **This corrects a P0055 note suggesting an in-sample residual gate** |
+| Sequential fit/unload so peak memory is per-model | §5.4.3 |
+| Seed fixed at 42, sensitivity *measured* not assumed | §5.4.3 → §5.6.10 |
+| Optuna TPE, 100 trials, budget justified by measured plateau (0–83, median 54) | §5.4.5 |
+| ACF/PACF run per brand per category | `step_2_eda_descriptive.py` s16 |
+
+### Where the chain breaks ⚠
+
+**The diagnostic was performed correctly and never reached the feature spec.**
+
+| Layer | Says |
+|---|---|
+| ACF evidence, CSD | **lag 12 significant for 5 of 5** leading brands; lag 13 for 2 — and both of those show *every* lag 1–15, i.e. trend not seasonality |
+| `engineer_features.py:33` | `DEFAULT_LAGS = (1, 2, 3, 4, 8, 13)` |
+| Shipped `csd_feature_matrix_h1.parquet` | `lag_13`, `rolling_mean_13` |
+| `srq1_baselines_stat.py:21` | seasonal naive reads `y(t+h-12)` ✅ |
+| `srq1_residual_diagnostics.py:105` | `SEASONAL_PERIOD = 12` ✅ |
+
+So **the codebase understands monthly seasonality everywhere except the feature
+matrix.** This is not a conceptual error; it is a configuration that no analysis
+wrote to. `step_2_eda_descriptive.py` says it outright: the ACF is *"reported
+here, never persisted."*
+
+⚠ **`step_3_derive_params.py:213`** records the provenance string **"the lag-12
+term is retained"** beside `lags = (1,2,3,4,8,13)`. Justification and value
+contradict each other in the same function.
+
+**Do not put this in the deck as "our code documents the bug."** It is a
+stronger claim than the thesis makes, invites *"what else disagrees with its own
+comments?"*, and the honest reading is duller — the string was written when the
+intent was lag 12 and never revised.
+
+### What the submitted prose now says
+
+**Ch5 §5.4.2 documents the defect's value as correct:** lags "at one, two,
+three, four, eight and **thirteen** months… carry recent history and the
+year-ago comparison." Thirteen months is not the year-ago comparison.
+
+**Ch9 §9.4 states the defect in full**, and names the mechanism precisely — "a
+gap of provenance between the analytical and engineering layers rather than of
+method… the same class of defect the structured interface is designed to
+prevent downstream of the model."
+
+**The two chapters therefore disagree**, which is the realistic examiner entry
+point: Ch5 asserts the feature is right, Ch9 explains why it is wrong. The
+defence answer is that Ch9 supersedes Ch5 and the correction was made late.
+
+### Adjacent items — prepared, not volunteered
+
+| Gap | Real weight |
+|---|---|
+| **Non-seasonal ARIMA** `SARIMAX(order=(1,1,1))`, no `seasonal_order` | Genuine. Ch9 §9.4 already concedes the substrate "lacks exponential smoothing and a seasonal ARIMA term" |
+| **MASE denominator** = one-step naive, where Hyndman & Koehler prescribe seasonal naive | **Much weaker than P0055 F-notes imply** — Ch5 §5.6.3 reports naive *and* seasonal-naive MASE side by side and surfaces the disagreement. Not a hidden error |
+| **`rolling_mean_13`** | Same root cause as `lag_13`; not separately stated in the thesis |
+
+### Consequence for the deck
+
+Written up as optional slide **06.x** in `slide-plan.md` (Variant T only), as a
+two-column *"what we applied / where the chain broke"* table. The framing is
+that the methodology holds and one diagnostic did not reach one configuration
+file — which is both true and the most defensible reading.
+
+**Volunteer one defect, not four.**
+
 ## F8 — The one live Word comment
 
 Thread **279**, Ch8 §8.3, tagged `APPENDIX`, opened by Brian 2026-09-15 10:33 on
@@ -175,3 +446,69 @@ Thread **279**, Ch8 §8.3, tagged `APPENDIX`, opened by Brian 2026-09-15 10:33 o
 Replace". Unresolved at submission. Cosmetic/appendix-regeneration intent, not a
 factual defect — but confirm with Brian whether Table 24 in the submitted
 document is the regenerated one.
+
+---
+
+## F15 — Deck review pass 01: every number is right, five citation/count defects are not
+
+**Verified 2026-09-20** against deck snapshot `2026-09-20_19-24_review_pass` (40
+slides) and thesis snapshot `2026-09-20_14-09_defence-deck-citation-audit`.
+Full pass: `06_thesis_writing/defence/slide-review/2026-09-20_deck-review-pass-01.md`.
+
+**The evidence base is sound.** All 21 cells of slide 21 match
+`08_experimental_evaluation/tables/22_scenario_comparison.csv` exactly. All four
+rows of slide 23 trace to Ch9/Ch10, several verbatim. 8-34x interval, three of
+seven scenarios, 502% to 2.9%, 4 GB ceiling, zero variance: all confirmed.
+
+**What is wrong is citation hygiene, counts and two self-contradictions:**
+
+| | Defect | Truth |
+|---|---|---|
+| Slide 15 | `Saunders et al. (2021)` | **2023** (9th ed.) — all 8 in-text uses; slide 8 already correct, so the deck contradicts itself |
+| Slide 8 | `~150 screened, ~60 read closely` | Ch2: **~100** and **~40** |
+| Slide 8 | `61 sources cited` | **62** in the reference list; **42** is Ch2's own corpus. 61 is neither |
+| Slides 20 vs 23 | `34 MB` vs `35 MB` | **34.5 MB** (`15_substrate_resource_profile.csv`, XGBoost peak fit RSS) |
+| Slide 15 | three cycles under `Hevner et al. (2004)` | **Hevner (2007)** per Ch3 §3.2 |
+| Slide 15 | `MdAPE` | never used in the thesis; it writes `median APE`, `WMAPE`, `MASE` |
+| Slide 21 vs 23 | `51x / 21x` vs `~50x / ~20x` | thesis says "roughly fifty/twenty" everywhere; 123.8/6.0 = **20.6**, so 21 rounds the wrong way |
+| Slide 10 | RQ in quotation marks | **not verbatim** — drops "production-oriented", "native predictive capability" and the whole "reliable, forecast-informed, cost-justified" clause |
+| Slide 9 | `feasibility demonstrated at scale` | §2.6's exemplar is a **single plant, one process site** |
+| Slide 9 | gap cell `benchmark compute; nothing on serving` | **unsourced** — §2.7 names four strands, retail forecasting is not among them |
+
+**Enrico's slide-8 comment is resolved: he was right.** 61 is not a number the
+thesis supports. This supersedes F12's conclusion that 61 was correct — F12
+counted the *reference list* and got 61 by a regex that missed Klee & Xia, whose
+date is `(2025, July 30)` rather than a bare year. The list holds **62**.
+
+**Structural finding — the speaker notes are inverted.** 15 of 40 slides carry
+notes; **13 of those 15 are the thesis's own figure caption pasted in**, beginning
+"Original Figure Description:". Only slides 8 and 21 have notes in a speaking
+voice, and 21's is one line. Meanwhile the four densest *presented* slides — 9,
+15, 23, 25 — have **none**, while appendix slides 29/30/32 carry 81/86/89 words.
+Alt text already records each figure's provenance and source path, so the caption
+in the notes field is duplicated and has cost the notes field on every figure
+slide.
+
+**Reserve wall is 8 slides against the planned 20**, titled by artefact rather
+than by the question each answers. All 20 planned artefacts verified present on
+disk. The five most costly absences: statistical baselines, seed stability, the
+ACF/PACF lag-12 evidence, the full seven-scenario ladder, and interval
+communication.
+
+**Three thesis-side defects found in passing, all now unfixable** — record so they
+are drilled, not raised:
+- Ch2 §2.5 cites `Atıl et al. (2025)` and `Schwartz et al. (2020)`; **neither is
+  in the reference list**.
+- Ch2 §2.10 says "Section 2.8 frames the response as Design Science Research" —
+  it is **2.9**.
+- Ch3 §3.2 calls Ch2 a "systematic literature review", contradicting Ch2's own
+  "narrative, integrative review **rather than** a systematic review". This one
+  sits directly under slide 8's headline claim.
+
+**The sharpest unasked question, already answered in the thesis.** Ch9 §9.3: the
+code-writing scenarios "did not improvise: every one of them fitted exponential
+smoothing and a seasonal ARIMA, most added a decomposition, and twelve of fourteen
+combined their candidate models explicitly" — "precisely two techniques the thesis
+pipeline lacks". So a material part of the code arm's median win is plausibly
+attributable to established practice the substrate does not implement, not to code
+execution as such. Say it before it is asked.

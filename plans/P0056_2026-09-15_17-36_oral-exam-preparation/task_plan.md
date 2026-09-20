@@ -1,9 +1,9 @@
 ---
 pid: P0056
 created: 2026-09-15 17:36:00
-updated: 2026-09-15 18:05:00
+updated: 2026-09-19 12:00:00
 status: in_progress
-focus_detail: "Oral defence preparation. Thesis was HANDED IN 2026-09-15 14:00 - nothing here edits the thesis. Deliverables in order: (1) slide deck in TWO variants per Brian's instruction - one surfacing a known defect, one surfacing none; (2) NotebookLM source corpus for audio/quiz generation; (3) Q&A drill material extending the existing anticipated-assessor-questions.md. Phase 1 (reconnaissance) COMPLETE - see findings.md F1-F6. The single most important inherited asset is 06_thesis_writing/writing-notes/anticipated-assessor-questions.md (4,544 words, ~25 questions with measured answers) - READ IT BEFORE WRITING ANY DRILL MATERIAL; do not rebuild it."
+focus_detail: "Oral defence preparation. Thesis was HANDED IN 2026-09-15 14:00 - nothing here edits the thesis. CURRENT WORK: Phase 2b - restructure both decks onto the seven-section spine Brian chose (Background & Motivation / Literature Review / Methodology / Architecture & Experiment / Most Relevant Findings / Limitations & Conclusion / Discussion), modelled on a top-grade reference deck from Max's group. The structural move that matters is section 07: a single 'Let's discuss' slide followed by a WALL of reserve slides never presented, reached only when an examiner asks. Reference deck ran 13 presented to 22 reserve. See findings.md F11 for the measurement and task_plan.md Phase 2b for the slide-to-artefact mapping. Section 02 (Literature Review) is the only section with NO existing slide - it must be authored. Deliverables already complete: both deck variants (old 10-slide structure), NotebookLM corpus (4 files), qa-drill.md. Do not rebuild anticipated-assessor-questions.md (4,544 words) - extend it."
 ---
 
 # P0056 — Oral defence preparation
@@ -65,6 +65,88 @@ Same spine; they differ in **one slide**.
 defect in the submitted text. So Variant T foregrounds something the thesis
 owns; Variant S omits a slide about something the examiner can read. Neither is
 concealment. Brian to choose after seeing both.
+
+#### 2b — RESTRUCTURE to the seven-section spine (decided 2026-09-19)
+
+Brian supplied a reference deck: a **printed handout with speaker notes from
+Max's group, who took the top grade**, on a different topic (participatory
+governance on decentralised social media). Read at
+`~/OneDrive/Documents/02-Areas/MSc. Data Science/2026-03 - CBS Master Thesis/Documents/Max - Oral Defense Presentation_with_notes_OCR.pdf`,
+35 pages. See **F11** for what its shape actually is, measured.
+
+**The new section order, Brian's decision:**
+
+| # | Section | Maps to what we already have |
+|---|---|---|
+| 01 | Background & Motivation | current slide 2 (the gap) |
+| 02 | Literature Review | **new — we have no such slide today** |
+| 03 | Methodology | current slide 3 (RQ + four layers), plus DSR |
+| 04 | Architecture & Experiment | current slides 4 and 6 |
+| 05 | Most Relevant Findings | current slides 5 and 7 |
+| 06 | Limitations & Conclusion | current slides 8, 9, 10 |
+| 07 | Discussion | **new — the "Let's discuss!" wall** |
+
+**The load-bearing structural change is section 07.** Max's deck puts a single
+slide reading *"Let's discuss!"* at page 13, then carries **22 further slides
+behind it** (pages 14–35) that are never presented — interview tables, ethics,
+construct definitions, architecture comparisons, framework diagrams. They are
+reached only when an examiner asks something they answer.
+
+That ratio is the point: **13 slides presented, 22 held in reserve.** The
+backup set is roughly twice the size of the deck itself.
+
+**What this buys us, stated concretely.** F6 lists six questions askable from
+the submitted text that we cannot currently answer with a picture. F9 is a
+two-table memory discrepancy that needs a side-by-side. We have **87 generated
+SVGs and cite about two of them in the thesis** (F6 item 4) — which is itself a
+question an examiner may ask. A reserve wall converts that surplus from a
+liability into the answer.
+
+**Allocation rule for the restructure:**
+
+- Sections 01–06 carry **only** the figures and numbers the argument fails
+  without. Keep them few. Max's presented slides are visually sparse; the
+  density lives behind the discussion slide.
+- Section 07 is the wall. Every reserve slide is **one question, one artefact**,
+  titled with the question it answers so it can be found under pressure.
+- **No new figures are generated.** Every reserve slide references an existing
+  SVG in `05_thesis_results/` by path. The artefact rule holds: tier 06 produces
+  no artefact, and nothing is copied.
+
+**Reserve slides to build, each mapped to a real file** (verified present
+2026-09-19; 87 SVGs on disk):
+
+| Question it answers | Artefact |
+|---|---|
+| What does the whole ladder look like? | `08_experimental_evaluation/tables/22_scenario_comparison.svg` |
+| How did runs fail, not just how badly? | `08_experimental_evaluation/tables/23_outcome_taxonomy.svg` |
+| Show me an actual run | `.../25_per_run_record_p1.svg` … `30_per_run_record_p6.svg` |
+| Were the prompts really controlled? | `.../prompt_schema_composition.svg`, `31_run_configuration.svg` |
+| What does the memory profile show? | `05_model_benchmark/tables/15_substrate_resource_profile.svg` (**the F9 answer**) |
+| Sandbox side of the same measurement | `08_experimental_evaluation/tables/17_sandbox_resource_profile.svg` |
+| Which baselines beat you? | `05_model_benchmark/tables/19_statistical_baselines.svg` |
+| Why won't you name a winner? | `.../20_seed_stability_p1.svg`, `21_seed_stability_p2.svg` |
+| What does retraining cost? | `.../16_retraining_cost.svg` |
+| Do the parameters drift? | `.../18_parameter_drift.svg` |
+| What drives the model? | `05_model_benchmark/figures/shap_importance.svg` |
+| Does it actually track the series? | `.../fig3_forecast_overlay.svg` |
+| How was the model chosen? | `.../ch5_model_selection_v2.svg` |
+| How is the interval communicated? | `07_decision_synthesis/tables/24_interval_communication.svg` |
+| What is the tool contract? | `06_architecture/figures/ch6_tool_interface_v1.svg` |
+| What is the data pipeline? | `04_data_assessment/figures/ch4_preprocessing_pipeline_v2.svg` |
+| What is in the feature matrix? | `.../08_feature_matrix_p1.svg` … `13_feature_matrix_p6.svg` |
+| Is there annual seasonality? | `04_data_assessment/figures/*/06_acf_pacf_plots.svg` (**the lag-12 evidence**) |
+| What is the literature gap? | `02_literature_review/figures/ch2_gap_diagram_v2.svg` |
+| What is the DSR design? | `03_methodology/figures/ch3_methodology_design_v1.svg` |
+
+⚠ **Section 02 (Literature Review) has no current slide and needs writing from
+scratch.** `ch2_gap_diagram_v2.svg` exists and is the natural anchor. This is
+the only section where content must be authored rather than rearranged.
+
+⚠ **Timing is unchanged at ~15 minutes.** Adding a seventh section does not add
+time — section 07 is one slide (*"Let's discuss"*) plus a silent reserve. The
+presented body must still fit the same budget, so sections 01–06 are *tighter*
+than the current 10-slide deck, not longer.
 
 ### Phase 3 — NotebookLM corpus
 

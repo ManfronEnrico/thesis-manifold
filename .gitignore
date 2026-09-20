@@ -159,3 +159,29 @@ graph-engine/
 # Only the final engineered tier is un-ignored. Do not widen this.
 !01_SRQ1_Model_Training/01_thesis_data/_03_engineered/bymonth/**/*.parquet
 !01_SRQ1_Model_Training/01_thesis_data/_03_engineered/bymonth/**/*.csv
+
+# ---------------------------------------------------------------------------
+# Archives -- never tracked (2026-09-19)
+# ---------------------------------------------------------------------------
+# A zip of a results tier is a second, frozen copy of artefacts that are
+# already tracked file-by-file, and it goes stale the moment anything is
+# regenerated. It also defeats every rule above: a zip of a data tier carries
+# the Nielsen panel past the .csv/.parquet exclusions without being visible
+# as data. Build them for sharing, keep them out of history.
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+
+# ---------------------------------------------------------------------------
+# Deck snapshots: ALL ignored. None of them are source. (2026-09-20)
+# ---------------------------------------------------------------------------
+# Same reasoning as the .docx snapshots above. A deck snapshot is a derived
+# mirror of the OneDrive .pptx at one moment, and it carries a full copy of the
+# .pptx (~3 MB) plus regenerable markdown. The authoritative deck is the
+# OneDrive file; the snapshot exists so drift is diffable locally, not so it is
+# version-controlled twice.
+06_thesis_writing/defence/pptx-exported-snapshots/*
+!06_thesis_writing/defence/pptx-exported-snapshots/README.md

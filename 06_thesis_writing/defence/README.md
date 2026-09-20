@@ -1,11 +1,11 @@
 ---
 name: defence-readme
-description: REFERENCE - What lives in the defence folder, what each file is for, and the order to use them in.
+description: REFERENCE - What lives in the defence folder, what each file is for, the order to use them in, and the seven-section restructure with its reserve wall.
 category: reference
 applies-to: [oral defence]
 triggers: [preparing for the defence, what is in this folder]
 created: 2026_09_15-18_30
-updated: 2026_09_15-18_30
+updated: 2026_09_19-12_00
 ---
 
 # Defence preparation
@@ -34,6 +34,36 @@ them, so there is no second copy of any figure.
 | `notebooklm/02_the-ladder.md` | The SRQ4 design and why it has seven rungs | NotebookLM quiz — the most examinable methodology |
 | `notebooklm/03_every-number.md` | Every figure, read from `05_thesis_results/` | NotebookLM multiple-choice generation |
 | `notebooklm/04_known-flaws.md` | 12 defects, each with cause and answer | NotebookLM quiz; also read before the drill |
+
+## ⚠ The decks are mid-restructure (decided 2026-09-19)
+
+Both HTML decks currently carry the **original 10-slide structure**. They are
+being rebuilt onto a **seven-section spine**, modelled on a top-grade reference
+handout from another group (analysed in `plans/P0056_*/findings.md` **F11**):
+
+| # | Section | Status |
+|---|---|---|
+| 01 | Background & Motivation | exists (old slide 2) |
+| 02 | Literature Review | **must be authored — no current slide** |
+| 03 | Methodology | exists (old slide 3) + DSR framing |
+| 04 | Architecture & Experiment | exists (old slides 4, 6) |
+| 05 | Most Relevant Findings | exists (old slides 5, 7) |
+| 06 | Limitations & Conclusion | exists (old slides 8, 9, 10) |
+| 07 | Discussion | **new — the reserve wall** |
+
+**Section 07 is the structural point.** It is one slide reading *"Let's
+discuss"*, followed by roughly twenty slides that are **never presented** and
+exist only to be jumped to when an examiner asks something a picture answers
+faster than a sentence. The reference deck ran 13 presented against 22 reserve.
+
+Each reserve slide is **one question, one artefact**, and is titled with the
+question so it can be found under pressure. All of them reference SVGs that
+already exist in `05_thesis_results/` — **no new figure is generated, and
+nothing is copied into this folder.** The mapping from question to file is in
+`plans/P0056_*/task_plan.md`, Phase 2b.
+
+Timing does not change: still ~15 minutes. Sections 01–06 therefore get
+*tighter* than the current deck, not longer.
 
 ## The deck choice
 
