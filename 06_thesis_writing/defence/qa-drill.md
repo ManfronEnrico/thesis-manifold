@@ -5,7 +5,7 @@ category: reference
 applies-to: [oral defence]
 triggers: [rehearsing for the defence, the day before, in the room]
 created: 2026_09_15-18_30
-updated: 2026_09_15-18_30
+updated: 2026_10_12-10_30
 ---
 
 # Q&A drill
@@ -179,8 +179,11 @@ and ARIMA in every category, and those differences exceed the seed noise. What
 the result actually tells a practitioner is to benchmark against free methods
 before deploying a trained one — which is a finding, not an embarrassment."
 
-**Then.** Seasonal naive 19.2 on CSD and 27.3 on RTD; Prophet 19.4 on
-Danskvand. Prophet also returns 975.0 on Energidrikke — its variance across
+**Then.** Seasonal naive 27.3 on RTD (our best 30.2); Prophet 19.4 on
+Danskvand (ours 27.1). ⚠ On CSD we win, but narrowly: XGBoost 18.4 against
+seasonal naive 19.2 — a 0.8-point gap, inside the 2.81-point seed variation.
+If pressed: "on CSD the trained model and the free benchmark are effectively
+tied." Don't claim a clear win there. Prophet also returns 975.0 on Energidrikke — its variance across
 categories is enormous, which is itself the argument for selecting per category.
 
 ## Q10 · "Your thesis calls itself a bounded tool-using agent, not a multi-agent system. So what is agentic about it?"
@@ -304,12 +307,20 @@ little stored history cannot be forecast at all. That is a coverage limitation,
 and the correct response is a typed refusal naming the brand rather than a
 degraded forecast.
 
-## Q19 · "Why one month ahead?"
+## Q19 · "Why three months ahead?"
 
-**20s.** "The binding constraint is evaluation, not modelling. At longer
-horizons there is no evaluable test origin left in the panel. Predictability
-also decays with horizon and training rows are lost to deeper lags, but those
-are secondary to having nothing left to score against."
+*Corrected 2026-10-12: this question previously defended a one-month horizon,
+which contradicts the thesis. The primary horizon is three months.*
+
+**20s.** "Because a quarter is when the decisions this forecast supports are
+actually taken — promotional plans and range changes are set per quarter. A
+one-month forecast would be accurate and arrive too late to change anything."
+*(Ch5 §5.4: "chosen because a quarter is the period over which the promotional
+and range decisions this forecast supports are taken.")*
+
+**Then.** The cost of the longer horizon is data: it needs two more months of
+history per brand, so CSD keeps 95 brands at three months against 106 at one
+(Ch4 §4.2.1). A one-month run exists as a secondary result.
 
 ## Q20 · "You compare models 'on identical data', but the categories differ."
 
@@ -362,3 +373,22 @@ Questions that need no more than a sentence.
 | | Read `anticipated-assessor-questions.md` in full the week before — this is the compression, not the substance. |
 | | Rehearse the two handover slides out loud. Group defences stumble there. |
 | | Agree who takes an unexpected question first, and the phrase that hands it over. |
+
+## Q22 · "Does your model use last year's sales for the same month?"
+
+*Added 2026-10-12. **Only if asked — do not volunteer.** Full account: P0056
+findings F16.0 (plain) and F16.1 (technical).*
+
+**20s.** "Not directly. The analysis found a yearly pattern, but the lag settings
+never picked up the value from the same month last year. The model still knows
+which month it's forecasting, through the calendar features, so seasonality isn't
+missing — it's weaker than it could be. It's a limitation in Chapter 9, and fixing
+it would make our model more accurate, so it doesn't change the conclusion."
+
+**If pushed on the numbers.** Thirteen-month lag in the configuration; at the
+three-month horizon it reaches fifteen months back. The year-ago value would need
+a different lag at each horizon.
+
+**Never.** Say "off by one month" (true only at one month ahead). Guess how much
+accuracy it cost (never re-run). Claim it was noticed before submission.
+
