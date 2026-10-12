@@ -22,6 +22,11 @@ dialogue ≈55%.
 Assessment is **overall** — thesis plus defence performance — so the defence can
 still move the grade.
 
+## Defence date
+
+**Wednesday 21 October 2026, 13:15–14:30** (75 min, matching the CBS format below).
+Confirmed by Brian 2026-10-12. Nine days from that confirmation.
+
 ## Hard constraints from CBS (source: my.cbs.dk, pasted by Brian 2026-09-15)
 
 | Constraint | Consequence for this plan |
@@ -41,7 +46,7 @@ still move the grade.
 
 | Step | State |
 |---|---|
-| 0.1 | Notify supervisor **and** censor that GenAI was used in defence preparation | **pending — Brian/Enrico action, cannot be done by this session** |
+| 0.1 | Notify supervisor **and** censor that GenAI was used in defence preparation | **pending — Brian/Enrico action.** Distinct from the thesis's methodology-section declaration, which covers the *writing*; this rule covers *defence prep*, which happened after submission. An email suffices — no slide required. Draft in R-1012-03. Verbatim CBS source: "You need to inform your supervisor and censor if you have used GenAI when preparing for your oral defense." |
 | 0.2 | Confirm no GenAI tool is used during the defence | noted |
 
 Source: `anticipated-assessor-questions.md`, closing section, quoting the CBS
