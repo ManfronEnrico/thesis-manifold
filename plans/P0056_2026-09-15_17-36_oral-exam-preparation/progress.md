@@ -623,3 +623,76 @@ duplicated from anywhere else.
   a wrong cross-reference in §2.10, and Ch3 calling Ch2 "systematic" where Ch2
   says it is not). All unfixable post-submission; recorded so they are drilled
   rather than raised.
+
+---
+
+## Session 5 — 2026-10-10 — Deck finalisation pass (review pass 02)
+
+Brian: finalise the deck; the two of them will split the speaking themselves. Asked
+for help with the comments, speaker notes and fact-checking, **not** time
+optimisation ("your estimates are always wrong") and **not** design ("we can do
+that ourselves" — suggestions only).
+
+**Currency:** deck snapshot `2026-10-10_16-39_finalise_and_divide` — slide content
+identical to 20 Sept, only three new comments by Brian (slides 13, 23, 25). Thesis
+snapshot `2026-10-10_16-42_deck-finalisation` — byte-identical to 20 Sept. Zotero
+88 items (the client crashes in its sample-print on an item with no `year`, *after*
+writing both exports). Repo `b9a97fc`, in sync.
+
+**So pass 01 stands in full and none of its fixes are applied yet.**
+
+**Deliverable:** `06_thesis_writing/defence/slide-review/2026-10-10_deck-review-pass-02.md`
+— a follow-up beside pass 01, which stays frozen. Checklist of pass-01 items still
+open; answers to the three comments; new findings; speaker notes for all 16
+presented content slides, each bullet tagged with its thesis section; design
+suggestions.
+
+**New findings:**
+- Slide 13 is an empty skeleton → delete.
+- Slide 23: all four rows confirmed against Ch10 §10.1. Omits SRQ1's third clause —
+  category specialisation (pooling wins on the two smallest panels by 4.5–5.7 pp,
+  Ch9 §9.1.1).
+- Slide 25 follows **Ch9** §9.4/§9.5, not Ch10. 9 of 10 faithful. Item 5 joins two
+  unrelated limitations (planner decisions + hierarchical structure); splitting it
+  surfaces the limitation→future-work pairing §9.5 is built on. "Asymmetry inside the
+  substrate" is the lag-13 defect, already on the slide.
+- Slide 20's "34 MB" comes from `generate_architecture_diagrams.py` formatting 34.5
+  with `:.0f` — Python rounds half to even.
+- Slide 4: Stackpole, Gartner, Newmark and Green (Forbes) are **not in the thesis**.
+  Slide 5 names Royal Unibrew; the thesis names no client.
+- **The deck never shows the five design principles (Ch9 §9.2.2, DP1–DP5)**, which
+  the abstract lists as a contribution and which are DSR's "transferable design
+  knowledge" that slide 15 promises. Also absent: §9.1.5's deployment
+  recommendation.
+- Design audit: **slide 15's third column overflows the slide by 0.42 in**; slide 9's
+  table is entirely `-apple-system` (24 runs; MANIFEST's typography audit reported
+  16 — an undercount worth checking in `deck_snapshot.py` later).
+
+---
+
+## Session 6 — 2026-10-12 — Defect-disclosure strategy decided
+
+**Decision (Brian):** don't volunteer weaknesses; keep them in the limitations
+slide and the appendix in non-prominent form. Rationale given: two peers'
+defences went the same way, the supervisor is time-constrained, and the external
+examiner has no forecasting/statistics background.
+
+**Operationalised as "don't volunteer, never deny":**
+- Slide 25 keeps "Forecasting Practice and Asymmetry inside the Substrate" as
+  worded; the speaker note no longer says the lag defect out loud. A 20-second
+  plain-English answer is held in reserve (pass-02 §4.16).
+- No slide 06.x (the "what we applied / where the chain broke" slide stays unbuilt).
+- ACF/PACF goes in the deck appendix under a neutral title ("Autocorrelation by
+  brand"), not as "lag-12 evidence". Top-brands timeseries in the appendix too.
+  ECDF and decomposition stay out.
+- **Honesty floor:** if asked directly, answer plainly. The written record
+  already discloses it (Ch9 §9.4), so the thesis is not hiding anything; the
+  presentation simply doesn't lead with it.
+
+**Residual risk, stated for the record:** Ch9 §9.4 states the defect, and an
+AI-generated summary of the thesis is likely to surface a limitations section.
+So "unlikely to be asked" is not "won't be asked" — the reserve answer must be
+rehearsed.
+
+The academically precise account stays in findings **F14** and **F16**; the
+plain-English version was given to Brian in R-1012-01.

@@ -364,6 +364,10 @@ re-run it knows to sweep first.
 
 ## F14 — Forecasting methodology: snapshot vs codebase, line by line
 
+> **In plain English:** see **F16.0** — the same defect, explained without jargon,
+> with a verdict on how much it matters. F16.1 also corrects this entry: at the
+> primary three-month horizon the offset is three months, not one.
+
 Verified 2026-09-20 against snapshot `2026-09-20_14-09` and the live code.
 **Most of the methodology holds and is implemented as described.** One link
 fails, and one adjacent item is weaker than it first appears.
@@ -512,3 +516,105 @@ combined their candidate models explicitly" — "precisely two techniques the th
 pipeline lacks". So a material part of the code arm's median win is plausibly
 attributable to established practice the substrate does not implement, not to code
 execution as such. Say it before it is asked.
+
+---
+
+## F16 — EDA → modelling chain, audited end to end (2026-10-10, R-1010-03)
+
+Extends F14. Verified against the code, the shipped CSD H=3 matrix, the step-2
+console logs and snapshot `2026-10-10_16-42_deck-finalisation`.
+
+### F16.0 In plain English (read this first)
+
+*The precise version follows in F16.1–F16.5. This block is the same content,
+without the jargon. Given to Brian as R-1012-01.*
+
+**The big one — the model never looks at "same month last year".** To forecast
+December, the best single clue is last December. The analysis found that yearly
+pattern, but the model's inputs were set to 13 months back instead of 12, and
+because we forecast three months ahead, the model actually sees sales from **15
+months** before the target month. It never sees "last December". Ch9 calls this
+off by one month; it's off by three.
+
+**Why it isn't a disaster.** The model is still told *which month* it is
+forecasting (a month input and a peak-month flag), so it knows December is
+usually big. It just lacks the most precise clue.
+
+| Mistake | Plain English | Size |
+|---|---|---|
+| No seasonal classical baseline | one comparison model ignores seasons; already admitted in Ch9 | small, disclosed |
+| Seasonality checked on trending data | if sales keep growing, every month looks related to every other, so the chart "finds" patterns everywhere | small — affects reading one chart |
+| Decomposition picks its method wrongly | it compares numbers on different scales and always picks the same option | tiny, chart not in the thesis |
+
+**Done right:** the log transform (skewed sales), stationarity (trends), the
+train/test split and the uncertainty intervals.
+
+**How bad, honestly?**
+- No result is *wrong* — every number measures the model as built.
+- The conclusion doesn't change, and this is the key point: **the mistake weakens
+  our own model.** Fixing it would most likely make it more accurate, which only
+  strengthens the thesis. "Wins on cost, speed and reproducibility, not accuracy"
+  is if anything conservative.
+- The accuracy cost is **unknown** — never re-run. Don't guess a number.
+- Verdict: a medium-sized technical flaw with a small effect on the claims.
+
+### F16.1 The lag defect is larger at the primary horizon than the thesis states
+
+`engineer_features.py` builds `lag_k = shift(k + H − 1)`; names keep their H=1
+meaning. **H=3 is primary** (`_horizon.py: PRIMARY = 3`). Measured on
+`csd_feature_matrix_h3.parquet`: `lag_1 == shift(3)`, **`lag_13 == shift(15)`**.
+So at H=3 no lag reaches the year-ago month (that would be `lag_10`), and
+"fixing" 13→12 would give shift(14), still wrong.
+
+- Ch5 §5.4.2: lags "carry … the year-ago comparison" — false at both horizons.
+- Ch9 §9.4: "offset by one month" — true at H=1 only; at H=3 the offset is three.
+- The thesis never discloses that lag names are horizon-relative.
+
+**Mitigation, measured:** `month`, `quarter`, `peak_month` are target-month
+aligned (verified), so annual position still reaches the trees — but they carry
+only ~2–5% of SHAP attribution (`96_holiday_shap_attribution.csv`).
+
+**Plausible root cause (hypothesis, not established):** Ch4 §4.2.4 justifies 13 as
+"the annual cycle on the Nielsen calendar". The panel is 46 periods over
+Oct 2022–Jul 2026 = **12 per year** (a 4-4-5 calendar has 12 periods; 13-period
+calendars are the 4-week variant).
+
+**Defence wording:** "the lag set never reaches the same month last year" — true
+at both horizons. Never "off by one".
+
+### F16.2 ACF read on non-stationary levels
+
+`s16_acf_pacf` computes ACF on log1p **levels**; the ADF table finds 13 of 20 CSD
+brands need differencing. On a trending series every lag clears the band —
+COCA COLA and PEPSI are significant at all lags 1–15. The step-2 table note
+concedes the band "assumes a stationary series". Box–Jenkins practice is to
+difference first. Ch4's own pooled, demeaned figure gives lag 13 = **−0.16**.
+FAXE KONDI and FANTA show lags 3, 6, 9, 12, 15 — a **quarterly rhythm**,
+consistent with the quarter-end peak months Ch4 §4.2.3 reports.
+
+### F16.3 Decomposition model choice is not a test
+
+`s10_decomposition` picks additive vs multiplicative by lower residual variance,
+comparing squared units (CSD 7.67e+11) against a dimensionless ratio
+(2.15e-03). Multiplicative wins in all four categories by construction. The
+conclusion is probably still right (consistent with the log transform) but the
+selection proves nothing. Not cited in the thesis → low exposure.
+
+### F16.4 Stationarity and skewness — handled, with code-side overclaims
+
+**Not defects in the thesis.** Ch4 §4.2.2 states the treatment (log uniformly;
+ARIMA differenced; trees via lags) and its cost. Code-side only:
+- `step_2`: `log_necessary = (n_log + n_diff) >= n_raw` counts brands that need
+  *differencing* as support for *log*.
+- `step_3.derive_log_transform` records the evidence but returns the config
+  value regardless.
+- `pipeline_config.py:82` comments `LOG_TRANSFORM_TARGET` as "ADF-confirmed";
+  the ADF table does not confirm it.
+- Skewness (4.1–5.1) is computed on brand-months **pooled across brands**, so it
+  mostly measures brand-size heterogeneity rather than within-series shape. The
+  log transform remains right on the multiplicative-variance argument.
+
+### F16.5 Thesis appendix coverage of the four EDA figures
+
+ACF/PACF = **Appendix 5**, Top brands = **Appendix 7**. ECDF and decomposition are
+**not** in the thesis.
