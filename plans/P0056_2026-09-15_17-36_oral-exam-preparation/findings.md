@@ -638,7 +638,7 @@ prepared line for each.
 |---|---|---|---|
 | Q19 | defended a **one-month** horizon | three months: a quarter is when promo and range decisions are taken | Ch5 §5.4 |
 | Q1 | "51 times / 21 times"; "39 months" | "roughly fifty / twenty"; 46 months, last 6–7 held out | Ch10 §10.1; Ch4 |
-| Q3, Q4 | 36 of 37 ES, 32 SARIMA, 28 combined; "~37 training months" | every code scenario fitted ES + SARIMA; 12 of 14 combined | Ch9 §9.3 |
+| Q3, Q4 | "~37 training months" | under four years of monthly history | Ch4 |
 | Q9 | implied a clear CSD win | CSD 18.4 vs seasonal naive 19.2 — inside 2.81 pp seed noise, a tie | Ch5 Table 10/11 |
 | Q15 | "pilot brand-month" | funded set: B 2.9 vs C 14.6 median | `22_scenario_comparison.csv` |
 | Q16 | "guarantee holds, 83.9–91.7"; "six orders of magnitude" | met on CSD/RTD, missed on Energidrikke (86.7) and Danskvand (83.9) | Ch5 §5.6.7 Table 14 |
@@ -656,3 +656,26 @@ prepared line for each.
 Pass 01 §21a said the $25.20 token estimate "overshot the billed $18.46 by ~29%".
 Ch8 says the 29% is against the **measured $19.60** (25.20 / 19.60 = 1.29); $18.46
 is a separate billing-endpoint figure. The slide fix (~50× / ~20×) is unaffected.
+
+### F17.4 Cross-verified against code and raw results (2026-10-12, R-1012-04)
+
+**In plain English.** Brian asked whether the slide and drill claims were checked
+against the actual code and result files, not just the thesis text. Mostly yes.
+Re-running the checks on the raw files confirmed nearly everything, **reversed one
+of my own drill edits** (the old "36 of 37" counts were right, and the thesis
+rounds them up), and found two more small gaps in the thesis.
+
+| Claim | Checked against | Verdict |
+|---|---|---|
+| Scenario table (all 21 cells), ~50×, ~20× | `22_scenario_comparison.csv` | ✓ |
+| Coverage 91.7/91.4/86.7/83.9; width 8–34× | `calibration.csv`; `srq1_calibration.py:267` | ✓. CSV column still named `mean_rel_width`, but the code computes a **median** (the code comment documents the rename); the thesis's "median" is right |
+| Seed changes the winner in all four categories; 2.81 pp | `stability_per_seed_accuracy.csv` (recomputed per seed); `20_seed_stability_p1.csv` | ✓ all four flip |
+| Pooling wins on the two smallest by 4.5–5.7 pp, "both families agree" | `pooled_summary.md` | **3 of 4 cells.** LightGBM −5.7 / −5.6, XGBoost −4.5 on Danskvand, **+0.1 (tie) on Energidrikke**. Ch9's "agreement between the two model families" is overstated for energy drinks |
+| Lag offsets; calendar aligned to target month | `csd_feature_matrix_h3.parquet`; `engineer_features.py` | ✓ (F16.1) |
+| Three refusal conditions | `forecast_tool.py`; Ch7 | ✓ |
+| 34.5 MB fit peak; prediction 0.65 MB (XGBoost) | `15_substrate_resource_profile.csv` | ✓ (and F17.2.2) |
+| **~231 MB end-to-end peak** | **no results artefact** | **Unverified.** Typed into Ch6 Table 20; its components sum to ~241 MB. Plausibly a direct measurement whose component peaks don't coincide — cannot be confirmed from the repo |
+| ES / SARIMA use by the code scenarios | `raw_responses/*.json` (regex over 37 data-scenario responses) | ES **36/37**, SARIMA **32/37**; code-only B+D 18/18 and 17/18. Ch9 §9.3's "every one … a seasonal ARIMA" rounds up. **Corrects F17.1**: the drill's original counts were right; restored |
+
+Caveat on the last row: a regex finds the method *named* in a response, which is
+strong but not proof it was fitted. That matches how the original counts were made.

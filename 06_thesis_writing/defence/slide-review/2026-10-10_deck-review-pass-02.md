@@ -398,8 +398,9 @@ caption is already in the alt text, so **replace it** rather than add beneath it
 - Four rows, one per question. **Every row carries a qualification we put there
   ourselves.**
 - **SRQ1:** the boosters win, but we won't name which — five seeds change the winner
-  in every category. And pooling only helps on the two smallest panels, by 4.5 to 5.7
-  points. *(Ch9 §9.1.1)*
+  in every category. And training one model across categories helps on the small ones —
+  clearly on water, mostly on energy drinks. *(Ch9 §9.1.1; `pooled_summary.md`:
+  3 of 4 model-category cells, XGBoost on energy drinks is a tie)*
 - **SRQ2:** reliability holds by construction. The interval is honest but too wide to
   act on, so the measured track record carries the reliability claim, not the
   interval. *(Ch10 §10.1; Ch9 DP3)*

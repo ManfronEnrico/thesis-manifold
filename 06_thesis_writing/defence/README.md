@@ -1,109 +1,98 @@
 ---
 name: defence-readme
-description: REFERENCE - What lives in the defence folder, what each file is for, the order to use them in, and the seven-section restructure with its reserve wall.
+description: REFERENCE - Start here. What to open, in what order, and how to work through the deck finalisation before the 21 October defence.
 category: reference
 applies-to: [oral defence]
-triggers: [preparing for the defence, what is in this folder]
+triggers: [preparing for the defence, what is in this folder, what do I work on next]
 created: 2026_09_15-18_30
-updated: 2026_09_19-12_00
+updated: 2026_10_12-13_00
 ---
 
-# Defence preparation
+# Defence preparation — start here
 
-Created 2026-09-15, after submission, under **P0056**.
+**Defence: Wednesday 21 October 2026, 13:15–14:30.** 75 minutes: about 15 presented,
+the rest dialogue, deliberation and grading.
 
-**Nothing in this folder edits the thesis.** The thesis was submitted
-2026-09-15 14:00 and is closed. These are preparation artefacts for the oral
-defence.
+**Nothing in this folder edits the thesis.** It was submitted 2026-09-15 and is closed.
+The authoritative deck is the **OneDrive `.pptx`**; everything here helps you edit it.
 
-## Why this sits in tier 06
+---
 
-Tier 06 holds writing-side prose and notes. The artefact rule — *tier 06 holds
-no figures, tables or diagrams* — is respected: no artefact is produced here.
-The decks **reference** SVGs in `05_thesis_results/` by path and do not copy
-them, so there is no second copy of any figure.
+## 1 The three files to work through, in order
 
-## Files
+| # | File | What it is | Time |
+|---|---|---|---|
+| 1.1 | `slide-review/2026-10-10_deck-review-pass-02.md` | **The main worklist.** §1 open fixes · §2 your slide comments answered · §3 new findings · §4 speaker notes for every presented slide · §5 design suggestions | most of it |
+| 1.2 | `slide-review/2026-10-12_new-slide-design-principles.md` | Build spec for the **one new slide** (Five Design Principles, after slide 25) | ~30 min |
+| 1.3 | `qa-drill.md` | 22 likely questions, each with a 20-second answer. **Rehearsal, not editing.** | the last days |
 
-| File | What it is | When to use it |
+Background only, no action needed: `slide-review/2026-09-20_deck-review-pass-01.md`
+(the first review; pass 02 §1 lists which of its fixes are still open) and
+`slide-plan.md` (the September plan the deck grew from).
+
+---
+
+## 2 How to work through them
+
+### 2.1 Set up
+
+Open the `.pptx` and pass 02 side by side. Every item names the **slide number**, quotes
+the **current text**, and gives the **replacement**, so you never have to search.
+
+### 2.2 Work in this order
+
+| # | Step | Where | Why this order |
+|---|---|---|---|
+| 2.2.1 | Fix factual errors | pass 02 **§1**, top to bottom; tick each ☐ | these cost marks; everything else is polish |
+| 2.2.2 | Act on your slide comments | pass 02 **§2** (delete 13; split slide 25 item 5) | structural changes before wording |
+| 2.2.3 | Build the new slide | file **1.2** | changes the deck's last section |
+| 2.2.4 | Replace the speaker notes | pass 02 **§4**: on each slide, delete the pasted *"Original Figure Description"* and paste the bullets, then reword them in your own voice | notes should match the final slides |
+| 2.2.5 | Design | pass 02 **§5.1** first (slide 15 overflow, slide 9 font); §5.2 optional | last, because content changes move layout |
+
+### 2.3 Splitting it between two people
+
+Divide by **slide range** rather than by step, so you never edit the same slide at
+the same time in OneDrive. One natural split: slides 1–16 / 17–27 plus the new slide.
+Each person does steps 2.2.1–2.2.5 for their range.
+
+### 2.4 Checking your work
+
+Whenever you want a check, ask Claude to **"re-snap the deck"**. It snapshots the
+`.pptx`, diffs it against the last snapshot, and reports which fixes landed, which
+didn't, and any new comments.
+
+**Questions for Claude can go straight into PowerPoint comments.** The snapshot
+exports each comment with the exact text it's anchored to; that's how your slide
+13/23/25 comments were picked up.
+
+---
+
+## 3 Rules that are easy to break
+
+| # | Rule | Why |
 |---|---|---|
-| `deck-variant-T-transparent.html` | 15-min deck, 10 content slides. **Includes** a slide foregrounding the lag-12/13 provenance defect. | if you want to own the defect first |
-| `deck-variant-S-silent.html` | Same deck, 9 content slides. **No defect slide**; the 90 seconds go to the ladder and the closing. | if you would rather spend the time on contribution |
-| `qa-drill.md` | Every likely question in a 20-second-answer format. Printable. | the morning of, and in the room |
-| `notebooklm/01_thesis-in-brief.md` | The whole thesis restated in ~1,200 words | NotebookLM audio overview |
-| `notebooklm/02_the-ladder.md` | The SRQ4 design and why it has seven rungs | NotebookLM quiz — the most examinable methodology |
-| `notebooklm/03_every-number.md` | Every figure, read from `05_thesis_results/` | NotebookLM multiple-choice generation |
-| `notebooklm/04_known-flaws.md` | 12 defects, each with cause and answer | NotebookLM quiz; also read before the drill |
+| 3.1 | **Don't volunteer weaknesses; never deny them if asked.** | Decided 2026-10-12. The prepared "only if asked" answers are pass 02 §4.16 and drill Q22. |
+| 3.2 | **Never say "off by one month"** about the lags | at the three-month horizon it's three months (findings F16) |
+| 3.3 | **No GenAI during the defence itself** | CBS rule |
+| 3.4 | GenAI used in *preparing* the defence | CBS asks students to inform supervisor and censor; whether the slide-4 disclosure and §3.8 suffice is your call (R-1012-04 §1) |
+| 3.5 | Never upload thesis chapters to NotebookLM | it returns your own wording as a "source" |
 
-## ⚠ The decks are mid-restructure (decided 2026-09-19)
+---
 
-Both HTML decks currently carry the **original 10-slide structure**. They are
-being rebuilt onto a **seven-section spine**, modelled on a top-grade reference
-handout from another group (analysed in `plans/P0056_*/findings.md` **F11**):
-
-| # | Section | Status |
-|---|---|---|
-| 01 | Background & Motivation | exists (old slide 2) |
-| 02 | Literature Review | **must be authored — no current slide** |
-| 03 | Methodology | exists (old slide 3) + DSR framing |
-| 04 | Architecture & Experiment | exists (old slides 4, 6) |
-| 05 | Most Relevant Findings | exists (old slides 5, 7) |
-| 06 | Limitations & Conclusion | exists (old slides 8, 9, 10) |
-| 07 | Discussion | **new — the reserve wall** |
-
-**Section 07 is the structural point.** It is one slide reading *"Let's
-discuss"*, followed by roughly twenty slides that are **never presented** and
-exist only to be jumped to when an examiner asks something a picture answers
-faster than a sentence. The reference deck ran 13 presented against 22 reserve.
-
-Each reserve slide is **one question, one artefact**, and is titled with the
-question so it can be found under pressure. All of them reference SVGs that
-already exist in `05_thesis_results/` — **no new figure is generated, and
-nothing is copied into this folder.** The mapping from question to file is in
-`plans/P0056_*/task_plan.md`, Phase 2b.
-
-Timing does not change: still ~15 minutes. Sections 01–06 therefore get
-*tighter* than the current deck, not longer.
-
-## The deck choice
-
-The two variants differ in **one slide**. Read the note at the top of
-Variant S before choosing, because the choice is not what it first appears:
-
-**The lag-12/13 defect is already stated in the submitted thesis**, in Chapter 9
-§9.4, as a provenance failure between the analytical and engineering layers. So
-Variant S conceals nothing — it omits a slide about text the examiners can read.
-What it forgoes is the credit CBS explicitly signals for using the presentation
-to correct flaws, and the chance to raise the topic on your terms.
-
-Either way, **the answer must be ready**. `qa-drill.md` prepares it identically
-for both.
-
-## Order to work in
-
-1. Read `notebooklm/04_known-flaws.md` — it is the shortest route to knowing where the thesis is soft.
-2. Read both decks, pick one, and rehearse it aloud with a timer.
-3. Feed the four `notebooklm/` files to NotebookLM. Generate an audio overview first, then a quiz.
-4. Read `06_thesis_writing/writing-notes/anticipated-assessor-questions.md` in full — it is the evidence base behind the drill.
-5. Drill from `qa-drill.md` until the 20-second answers are fluent without the page.
-
-## ⚠ Two rules that are easy to break
-
-**Never upload thesis chapters to NotebookLM.** It returns our own wording as a
-"source", which reads as independent confirmation and is not. The four files
-here are restatements written from the results artefacts for exactly this
-reason.
-
-**Inform supervisor and censor that GenAI was used in preparation.** This is a
-CBS requirement, not a courtesy, and it has an outside party — it cannot be done
-from this repository. No GenAI tool may be used during the defence itself.
-
-## Where the evidence lives
+## 4 Where the evidence lives
 
 | Kind | Location |
 |---|---|
+| Every finding, in plain English **and** technical detail | `plans/P0056_*/findings.md`. F14/F16 = the forecasting method; F15 = deck pass 01; F17 = drill sweep and code cross-check |
 | Any measured number | `05_thesis_results/`, by chapter |
-| The 25-question evidence base | `06_thesis_writing/writing-notes/anticipated-assessor-questions.md` |
-| 22 line-numbered forecasting defects | `plans/P0055_*/findings.md` |
-| This session's reconnaissance | `plans/P0056_*/findings.md` |
-| The submitted text, greppable | `06_thesis_writing/docx-exported-snapshots/2026-09-15_17-43_oral-exam-prep/` |
+| The thesis text, greppable | `06_thesis_writing/docx-exported-snapshots/` (newest folder) |
+| Deck snapshots | `pptx-exported-snapshots/` (newest folder; gitignored) |
+| The 25-question evidence base behind the drill | `06_thesis_writing/writing-notes/anticipated-assessor-questions.md` |
+
+---
+
+## 5 Superseded
+
+`deck-variant-T-transparent.html` and `deck-variant-S-silent.html` are the September
+HTML decks, from before the PowerPoint existed. **Kept for history; don't work from
+them.** The `notebooklm/` restatements still stand as study material.

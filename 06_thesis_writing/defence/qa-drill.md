@@ -89,8 +89,11 @@ about half the dispersion around it."
 
 **Then.** Consistent with the explicit model-fitting visible in their working: every
 code-writing scenario fitted exponential smoothing and a seasonal ARIMA, and
-twelve of fourteen combined their models. *(Ch9 §9.3 — quote these, not the
-older 36-of-37 run counts, which are not in the thesis.)*
+twelve of fourteen combined their models. *(Ch9 §9.3.)* **Exact counts, from the raw responses, if pushed:** 36 of 37
+data-scenario responses used exponential smoothing and 32 of 37 a seasonal
+ARIMA; in the code-only scenarios (B, D) it is 18 of 18 and 17 of 18. Ch9's
+"every one" rounds the seasonal-ARIMA count up by one — so lead with the
+counts, not "every".
 
 **Concede.** Quote the **count**, not the ratios (the ratios come from the run
 records and are not in the thesis) — per brand the medians are
@@ -110,9 +113,9 @@ pipeline serves a slice of a model fitted across ninety-five brands. That is the
 largest of four competing explanations and the cheapest to test — one training
 run per brand would settle it."
 
-**Then.** Every code-writing scenario fitted exponential smoothing and a seasonal
-ARIMA, and twelve of fourteen combined their models — precisely the techniques
-our substrate lacks. *(Ch9 §9.3)*
+**Then.** 36 of 37 data-scenario responses used exponential smoothing and 32 a
+seasonal ARIMA (raw responses; Ch9 §9.3 rounds this to "every one") —
+precisely the techniques our substrate lacks.
 
 **Concede.** The grain choice was deliberate, not an oversight: a large
 competition found cross-learning superior to series-by-series training at scale,
