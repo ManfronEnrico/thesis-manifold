@@ -48,11 +48,13 @@ For a system answering the same question on every query, those are the
 properties that decide whether it can be relied on."
 
 **Then.** Funded set, 63 runs: C at $0.0091 and 6.0 s against B at $0.4667 and
-123.8 s — 51 times the cost, 21 times the latency. Median 14.6 against 2.9; mean
+123.8 s — roughly fifty times the cost and twenty times the latency (the
+thesis's own wording; never "51" or "21"). Median 14.6 against 2.9; mean
 13.1 against 27.9. Coefficient of variation 0.0 against 4.1.
 
 **Concede.** "At this data scale" is load-bearing and must carry its numbers
-every time: 39 months, 95 brands in the category, one category-tuned model.
+every time: 46 months of history with the last six or seven held out, 95 brands
+in the category, one category-tuned model. *(Ch4 §4.1, §4.4)*
 Without them the claim degrades into a universal one the evidence cannot
 support.
 
@@ -85,11 +87,13 @@ than arguable. Not one forecast fell within five per cent of the brand's last
 observed month. They sat much closer to a trailing twelve-month average, with
 about half the dispersion around it."
 
-**Then.** Consistent with the explicit model-fitting visible in their working:
-36 of 37 data-scenario responses fitted exponential smoothing, 32 a seasonal
-ARIMA.
+**Then.** Consistent with the explicit model-fitting visible in their working: every
+code-writing scenario fitted exponential smoothing and a seasonal ARIMA, and
+twelve of fourteen combined their models. *(Ch9 §9.3 — quote these, not the
+older 36-of-37 run counts, which are not in the thesis.)*
 
-**Concede.** Quote the **count**, not the ratios — per brand the medians are
+**Concede.** Quote the **count**, not the ratios (the ratios come from the run
+records and are not in the thesis) — per brand the medians are
 1.082, 0.991 and 0.825, so only one of three is genuinely centred on its
 trailing mean. And it does not cover scenario A, which receives no history and
 cannot anchor.
@@ -106,13 +110,13 @@ pipeline serves a slice of a model fitted across ninety-five brands. That is the
 largest of four competing explanations and the cheapest to test — one training
 run per brand would settle it."
 
-**Then.** Measured: 36 of 37 fitted exponential smoothing, 32 a seasonal ARIMA,
-28 used explicit combination language — precisely the techniques our substrate
-lacks.
+**Then.** Every code-writing scenario fitted exponential smoothing and a seasonal
+ARIMA, and twelve of fourteen combined their models — precisely the techniques
+our substrate lacks. *(Ch9 §9.3)*
 
 **Concede.** The grain choice was deliberate, not an oversight: a large
 competition found cross-learning superior to series-by-series training at scale,
-the panel gives ~37 training months per brand, one model per brand is not a
+the panel gives under four years of monthly history per brand, one model per brand is not a
 small-business memory budget, and it could not serve a brand with no history.
 
 ## Q5 · "Your memory budget is four gigabytes and your system uses 231 megabytes. Was the constraint real?"
@@ -123,7 +127,10 @@ the decision it existed to make. That the selected models then sat far below the
 ceiling is a result, not a failure of the constraint."
 
 **Then.** Peak fit memory 0.04 to 0.84 per cent of the 4096 MB budget across all
-models. Serving is under half a megabyte.
+models. Serving stays under one megabyte for the deployed
+models (XGBoost 0.65, LightGBM 0.07). ⚠ Ch8 and Ch9 say "below half a megabyte
+for every model family"; the results table says 0.65 for XGBoost and 1.73 for
+Prophet. Say "under a megabyte"; don't quote "half".
 
 **Concede openly.** The budget did its work at design time. A thesis claiming it
 was binding at run time would be contradicted by its own table.
@@ -267,28 +274,39 @@ re-derived on every invocation and is not guaranteed to be the same twice —
 which is measurable and substantial."
 
 **Concede.** Do not claim it is more accurate. The justification is reliability,
-reproducibility and auditability. On the pilot brand-month the code-writing arms
-were *more* accurate, and the argument survives that because it never rested on
+reproducibility and auditability. On the funded set the code-writing scenario was *more* accurate on the median
+(2.9 against 14.6), and the argument survives that because it never rested on
 accuracy.
 
 ## Q16 · "Your prediction intervals attain coverage but are enormous. Is that useful?"
 
-**20s.** "The marginal guarantee holds — 83.9 to 91.7 per cent against a 90 per
-cent target. The width is the honest cost of one pooled quantile over brands
-spanning six orders of magnitude with few validation months each. Three
-alternative schemes were implemented and measured, and none improved coverage
-and width together in more than two of four categories."
+*Corrected 2026-10-12: this answer previously said coverage holds everywhere and
+cited "six orders of magnitude", which is not in the thesis.*
 
-**Concede.** At 90 per cent no category yields an actionable interval. At 80 per
-cent three of four do. A tested negative result is a contribution — the answer
-is stronger for naming what failed than for defending the width.
+**20s.** "Not as a range on its own, and we say so. On the two largest categories
+the interval hits its target — 91.7 and 91.4 per cent against ninety. On the two
+smallest it falls short, because there are too few months to calibrate on. And
+where it does hit the target it's around nine times the forecast — honest, but
+too wide to plan with. That's why the tool also sends the model's past accuracy."
+*(Ch5 §5.6.7; Ch9 DP3)*
+
+**Then.** At 90%: CSD 91.7, RTD 91.4, Energidrikke 86.7, Danskvand 83.9.
+Calibration quality tracks calibration-set size (Danskvand has 174 rows). Three
+alternative schemes were implemented and none improved coverage and width
+together in more than two of four categories.
+
+⚠ **Known tension.** The abstract and Ch10 say the interval "attains its coverage
+guarantee"; Ch5's table shows two categories missing it. If pressed: "the
+guarantee is finite-sample, and it is met where the calibration set is large —
+Chapter 5 reports the two misses as limitations." Don't claim it holds
+everywhere.
 
 ## Q17 · "Your confidence index returns the same value for every brand. Why ship it?"
 
 **20s.** "It is degenerate and the thesis says so. The forecast cancels out of
 the relative width, leaving a function of the per-category quantile alone, and
-the second term is identically zero. Every forecast in every category tiers
-'Low'. It is retained only because published runs are scored against it."
+the second term is identically zero. It returns one value per category, so it
+discriminates nothing between brands. *(Ch7; Ch9 DP3)* It is retained only because published runs are scored against it."
 
 **The unexpected defence.** In the combined scenarios both agents departed from
 the model's forecast and cited its confidence tier and interval width as the
@@ -345,6 +363,26 @@ does not expose to anyone."
 
 ---
 
+## Q22 · "Does your model use last year's sales for the same month?"
+
+*Added 2026-10-12. **Only if asked — do not volunteer.** Full account: P0056
+findings F16.0 (plain) and F16.1 (technical).*
+
+**20s.** "Not directly. The analysis found a yearly pattern, but the lag settings
+never picked up the value from the same month last year. The model still knows
+which month it's forecasting, through the calendar features, so seasonality isn't
+missing — it's weaker than it could be. It's a limitation in Chapter 9, and fixing
+it would make our model more accurate, so it doesn't change the conclusion."
+
+**If pushed on the numbers.** Thirteen-month lag in the configuration; at the
+three-month horizon it reaches fifteen months back. The year-ago value would need
+a different lag at each horizon.
+
+**Never.** Say "off by one month" (true only at one month ahead). Guess how much
+accuracy it cost (never re-run). Claim it was noticed before submission.
+
+---
+
 # Part 4 — The one-line answers
 
 Questions that need no more than a sentence.
@@ -366,29 +404,10 @@ Questions that need no more than a sentence.
 
 | | |
 |---|---|
-| ⚠ | **Inform supervisor and censor of GenAI use in preparation.** CBS requirement. |
+| ⚠ | **Email Abid and the censor before 21 Oct that GenAI was used in defence preparation.** CBS rule for the *defence*, separate from the thesis's §3.8 declaration. Draft email: R-1012-03. |
 | ⚠ | **No GenAI during the defence.** |
 | | Print the deck for the examiners. |
 | | Bring this file on paper. |
 | | Read `anticipated-assessor-questions.md` in full the week before — this is the compression, not the substance. |
 | | Rehearse the two handover slides out loud. Group defences stumble there. |
 | | Agree who takes an unexpected question first, and the phrase that hands it over. |
-
-## Q22 · "Does your model use last year's sales for the same month?"
-
-*Added 2026-10-12. **Only if asked — do not volunteer.** Full account: P0056
-findings F16.0 (plain) and F16.1 (technical).*
-
-**20s.** "Not directly. The analysis found a yearly pattern, but the lag settings
-never picked up the value from the same month last year. The model still knows
-which month it's forecasting, through the calendar features, so seasonality isn't
-missing — it's weaker than it could be. It's a limitation in Chapter 9, and fixing
-it would make our model more accurate, so it doesn't change the conclusion."
-
-**If pushed on the numbers.** Thirteen-month lag in the configuration; at the
-three-month horizon it reaches fifteen months back. The year-ago value would need
-a different lag at each horizon.
-
-**Never.** Say "off by one month" (true only at one month ahead). Guess how much
-accuracy it cost (never re-run). Claim it was noticed before submission.
-

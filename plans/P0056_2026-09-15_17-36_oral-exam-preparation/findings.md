@@ -618,3 +618,41 @@ ARIMA differenced; trees via lags) and its cost. Code-side only:
 
 ACF/PACF = **Appendix 5**, Top brands = **Appendix 7**. ECDF and decomposition are
 **not** in the thesis.
+
+---
+
+## F17 — Q&A drill swept against the 10-10 snapshot (2026-10-12)
+
+### F17.0 In plain English
+
+The Q&A drill was written on 15 September, before several numbers settled. Six
+answers said things the thesis doesn't support, and one said the opposite of the
+thesis. All are fixed in `qa-drill.md`. Separately, the sweep found **two places
+where the thesis disagrees with its own tables**. Neither matters to the
+conclusions, but an examiner could spot either one, so the drill now carries a
+prepared line for each.
+
+### F17.1 Drill errors corrected
+
+| Q | Was | Now | Source |
+|---|---|---|---|
+| Q19 | defended a **one-month** horizon | three months: a quarter is when promo and range decisions are taken | Ch5 §5.4 |
+| Q1 | "51 times / 21 times"; "39 months" | "roughly fifty / twenty"; 46 months, last 6–7 held out | Ch10 §10.1; Ch4 |
+| Q3, Q4 | 36 of 37 ES, 32 SARIMA, 28 combined; "~37 training months" | every code scenario fitted ES + SARIMA; 12 of 14 combined | Ch9 §9.3 |
+| Q9 | implied a clear CSD win | CSD 18.4 vs seasonal naive 19.2 — inside 2.81 pp seed noise, a tie | Ch5 Table 10/11 |
+| Q15 | "pilot brand-month" | funded set: B 2.9 vs C 14.6 median | `22_scenario_comparison.csv` |
+| Q16 | "guarantee holds, 83.9–91.7"; "six orders of magnitude" | met on CSD/RTD, missed on Energidrikke (86.7) and Danskvand (83.9) | Ch5 §5.6.7 Table 14 |
+| Q17 | "every forecast tiers Low" | one value per category, discriminates nothing | Ch7; Ch9 DP3 |
+
+### F17.2 Thesis-internal inconsistencies (unfixable; drilled, not raised)
+
+| # | Prose says | Table says | Weight |
+|---|---|---|---|
+| F17.2.1 | Abstract, Ch10: the interval "attains its coverage guarantee" | Ch5 Table 14: 2 of 4 categories miss at 90% | **medium** — on slide 23's SRQ2 row ("truthful") |
+| F17.2.2 | Ch8, Ch9: serving "below half a megabyte for every model family" | `15_substrate_resource_profile.csv`: XGBoost 0.65, Prophet 1.73 MB | negligible against 4 GB |
+
+### F17.3 One correction to pass 01
+
+Pass 01 §21a said the $25.20 token estimate "overshot the billed $18.46 by ~29%".
+Ch8 says the 29% is against the **measured $19.60** (25.20 / 19.60 = 1.29); $18.46
+is a separate billing-endpoint figure. The slide fix (~50× / ~20×) is unaffected.
