@@ -407,7 +407,7 @@ Questions that need no more than a sentence.
 
 | | |
 |---|---|
-| ⚠ | **Email Abid and the censor before 21 Oct that GenAI was used in defence preparation.** CBS rule for the *defence*, separate from the thesis's §3.8 declaration. Draft email: R-1012-03. |
+| ⚠ | **GenAI in defence preparation:** CBS asks students to inform supervisor and censor. Whether the slide-4 disclosure and §3.8 cover it is your call; a draft email exists (R-1012-03) if you want it. |
 | ⚠ | **No GenAI during the defence.** |
 | | Print the deck for the examiners. |
 | | Bring this file on paper. |
