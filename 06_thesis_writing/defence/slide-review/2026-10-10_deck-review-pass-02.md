@@ -40,13 +40,13 @@ Tick these off in PowerPoint. Detail and paste-ready text are in pass 01.
 |---|---|---|---|
 | ☐ 1.1 | 14 | `Saunders et al. (2021)` → **2023** | A1, 15a |
 | ☐ 1.2 | 8 | `~150 / ~60` → **~100 / ~40** | A2, 8a |
-| ☐ 1.3 | 20, 23 | memory: say **34.5 MB** (or 35) — not 34 | A3 (and 3.1 below) |
+| ☐ 1.3 | 19 (notes) | memory: the last sentence of the pasted *"Original Figure Description"* in slide 19's **speaker notes** says *"…the most demanding model observed requires 34 MB to fit."* → **34.5 MB**. Goes away anyway when §4.13 replaces those notes. (Slide 22's on-slide *"fitting peaks at 35 MB"* is already correct — nothing to do there.) | A3 (and 3.1 below) |
 | ☐ 1.4 | 8 | `61 sources cited` → **42 in this chapter, 62 across the thesis** — closes Enrico's comment | 8b |
 | ☐ 1.5 | 8 | notes: chapter has **ten** sections; 2.8 is Contributions, **2.9** is DSR | 8c |
 | ☐ 1.6 | 9 | `Adress` → Address; row 4 drop **"at scale"**; row 5 gap cell is unsourced | 9a–9c |
 | ☐ 1.7 | 10 | RQ in quotation marks is **not verbatim** — restore it or drop the quotes | 10 |
 | ☐ 1.8 | 14 | `MdAPE` → **median APE**; three cycles are **Hevner (2007)** | 15c, 15d |
-| ☐ 1.9 | 15, 16 | `METHDOLOGY` → METHODOLOGY | 15b |
+| ☐ 1.9 | 14, 15 | `METHDOLOGY` → METHODOLOGY | 15b |
 | ☐ 1.10 | 20 | `51× / 21×` → **~50× / ~20×** (matches slide 22 and the thesis) | 21a |
 | ☐ 1.11 | 22 | "across the whole evaluation" → **"in every run where the tool was called"** | 23b |
 | ☐ 1.12 | 2 | agenda is missing **DISCUSSION** | Slide 02 |
@@ -158,7 +158,7 @@ its own.
 *"Asymmetry inside the Substrate"* **is** the lag-13 defect (§9.4 para 3). The deck
 names it, quietly. A committee member who reads §9.4 will ask. The answer is in the
 thesis: *"a gap of provenance between the analytical and engineering layers rather
-than of method"* — and see §4's notes for slide 25.
+than of method"* — and see §4's notes for slide 24.
 
 **Which limitation worries us most?** The thesis doesn't rank them. Honest answer:
 the hierarchical one — it's the only place where an established, cheap method
@@ -366,7 +366,7 @@ caption is already in the alt text, so **replace it** rather than add beneath it
   lines of enquiry. *(Ch4 §4.2)*
 - The one result to name: the autocorrelation analysis finds an **annual cycle** —
   which matters later. *(Ch4 §4.2; Ch9 §9.4)*
-- ⚠ Don't volunteer the lag-13 point here. It's on slide 25.
+- ⚠ Don't volunteer the lag-13 point here. It's on slide 24.
 
 ### 4.13 Slide 19 — MODELLING & EXPERIMENT | Combined Overview
 
