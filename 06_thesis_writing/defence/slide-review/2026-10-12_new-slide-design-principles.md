@@ -5,7 +5,7 @@ category: reference
 applies-to: [oral defence, slide deck]
 triggers: [design principles slide, closing slide, what transfers]
 created: 2026_10_12-11_00
-updated: 2026_10_12-11_00
+updated: 2026_10_13-13_45
 snapshot_thesis: 2026-10-10_16-42_deck-finalisation
 answers: pass-02 §3.4
 ---
@@ -16,8 +16,8 @@ answers: pass-02 §3.4
 
 | # | Point |
 |---|---|
-| 1.1 | **What it fixes.** The abstract names three contributions: an artefact, *"five design principles"*, and an evaluation design. The deck shows the first and third. Slide 15 tells the examiners that design science is judged on an artefact **and** transferable knowledge. Without this slide, the knowledge is never shown. |
-| 1.2 | **Where.** After slide 25 (Limitations), before the Reference List. Section 06 then ends on what the thesis *contributes* rather than on what it couldn't do, which suits the don't-volunteer approach (R-1012-01). |
+| 1.1 | **What it fixes.** The abstract names three contributions: an artefact, *"five design principles"*, and an evaluation design. The deck shows the first and third. Slide 14 tells the examiners that design science is judged on an artefact **and** transferable knowledge. Without this slide, the knowledge is never shown. |
+| 1.2 | **Where.** After slide 24 (Limitations), before the Reference List. Section 06 then ends on what the thesis *contributes* rather than on what it couldn't do, which suits the don't-volunteer approach (R-1012-01). |
 | 1.3 | **Title.** `WHAT TRANSFERS \| Five Design Principles` |
 | 1.4 | **Origin.** Planned in September as slide 06.2 in `slide-plan.md`, never built. This spec supersedes that one: it uses "~50×" instead of "51×" and has been re-checked against the 2026-10-10 snapshot. |
 
@@ -44,7 +44,7 @@ it, in the largest text on the slide. Two columns only.
 
 ### 2.7 Design suggestions
 
-- Bold only the principle names. Right column regular weight, 12–14 pt, matching slide 21's table.
+- Bold only the principle names. Right column regular weight, 12–14 pt, matching slide 20's table.
 - No icons. Five rows of text already fill the space.
 
 ---
