@@ -22,12 +22,12 @@ The authoritative deck is the **OneDrive `.pptx`**; everything here helps you ed
 
 | # | File | What it is | Time |
 |---|---|---|---|
-| 1.1 | `slide-review/2026-10-13_deck-review-pass-04.md` | **The main worklist: only what is still open**, grouped by slide. Every edit is Currently / Edit / Should be; PowerPoint comments answered on their slide. Closes pass 03 | most of it |
-| 1.2 | `slide-review/2026-10-10_deck-review-pass-02.md` | **Only its §4** (drafted speaker-note bullets) — used in the notes pass, *after* the content is final. §1–§3 and §5 are superseded (pass 04 carries everything still open) | later |
+| 1.1 | `slide-review/2026-10-13_deck-review-pass-05-final.md` | **Final claims check.** 3 small slide fixes plus 6 things to rehearse; everything else verified | short |
+| 1.2 | `speaker-notes/2026-10-13_speaker-notes-draft-01.md` | **Speaker notes draft**, every content slide, in the slide-26 four-block layout. Paste-ready; rewrite *Final Speaker Notes* in your own words | most of it |
 | 1.3 | `qa-drill.md` | 22 likely questions, each with a 20-second answer. **Rehearsal, not editing.** | the last days |
 
 Background only, no action needed: `slide-review/2026-09-20_deck-review-pass-01.md`
-(the first review) and `slide-review/2026-10-13_deck-review-pass-03.md` (closed; pass 04 lists what landed from it), and
+(the first review), passes 02–04 (closed; pass 02 §4 fed the notes draft), and
 `slide-plan.md` (the September plan the deck grew from).
 
 ---
