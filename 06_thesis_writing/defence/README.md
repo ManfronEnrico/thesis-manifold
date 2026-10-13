@@ -5,7 +5,7 @@ category: reference
 applies-to: [oral defence]
 triggers: [preparing for the defence, what is in this folder, what do I work on next]
 created: 2026_09_15-18_30
-updated: 2026_10_13-13_45
+updated: 2026_10_13-18_40
 ---
 
 # Defence preparation — start here
@@ -22,12 +22,12 @@ The authoritative deck is the **OneDrive `.pptx`**; everything here helps you ed
 
 | # | File | What it is | Time |
 |---|---|---|---|
-| 1.1 | `slide-review/2026-10-10_deck-review-pass-02.md` | **The main worklist.** §1 open fixes · §2 your slide comments answered · §3 new findings · §4 speaker notes for every presented slide · §5 design suggestions | most of it |
-| 1.2 | `slide-review/2026-10-12_new-slide-design-principles.md` | Build spec for the **one new slide** (Five Design Principles, after slide 24) | ~30 min |
+| 1.1 | `slide-review/2026-10-13_deck-review-pass-03.md` | **The main worklist, grouped by slide.** Every edit is Currently / Edit / Should be; your PowerPoint comments are answered on the slide they sit on | most of it |
+| 1.2 | `slide-review/2026-10-10_deck-review-pass-02.md` | **Only its §4** (drafted speaker-note bullets) — used in the notes pass, *after* the content is final. §1–§3 and §5 are superseded by pass 03 | later |
 | 1.3 | `qa-drill.md` | 22 likely questions, each with a 20-second answer. **Rehearsal, not editing.** | the last days |
 
 Background only, no action needed: `slide-review/2026-09-20_deck-review-pass-01.md`
-(the first review; pass 02 §1 lists which of its fixes are still open) and
+(the first review; pass 03 lists what has landed) and
 `slide-plan.md` (the September plan the deck grew from).
 
 ---
@@ -36,18 +36,17 @@ Background only, no action needed: `slide-review/2026-09-20_deck-review-pass-01.
 
 ### 2.1 Set up
 
-Open the `.pptx` and pass 02 side by side. Every item names the **slide number**, quotes
+Open the `.pptx` and pass 03 side by side. It runs in slide order; every edit quotes
 the **current text**, and gives the **replacement**, so you never have to search.
 
 ### 2.2 Work in this order
 
 | # | Step | Where | Why this order |
 |---|---|---|---|
-| 2.2.1 | Fix factual errors | pass 02 **§1**, top to bottom; tick each ☐ | these cost marks; everything else is polish |
-| 2.2.2 | Act on your slide comments | pass 02 **§2** (~~delete 13~~ ✅ done; split slide 24 item 5) | structural changes before wording |
-| 2.2.3 | Build the new slide | file **1.2** | changes the deck's last section |
-| 2.2.4 | Replace the speaker notes | pass 02 **§4**: on each slide, delete the pasted *"Original Figure Description"* and paste the bullets, then reword them in your own voice | notes should match the final slides |
-| 2.2.5 | Design | pass 02 **§5.1** first (slide 14 overflow, slide 9 font); §5.2 optional | last, because content changes move layout |
+| 2.2.1 | Slide content and comments | pass 03, slide by slide, top to bottom | content first; you asked for this order |
+| 2.2.2 | Re-snap the deck | ask Claude to **"re-snap the deck"** | confirms what landed, picks up new comments |
+| 2.2.3 | Speaker notes | the four-block template at the bottom of pass 03, filled from pass 02 §4 | notes only once the slides are frozen |
+| 2.2.4 | Design polish | pass 03, *Optional design polish* | last, because content changes move layout |
 
 ### 2.3 Splitting it between two people
 
