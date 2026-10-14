@@ -5,7 +5,7 @@ category: reference
 applies-to: [oral defence, slide deck, speaker notes]
 triggers: [speaker notes, rehearsal, notes pass]
 created: 2026_10_14-15_00
-updated: 2026_10_14-15_30
+updated: 2026_10_14-16_00
 snapshot_deck: 2026-10-14_14-04_pre_meeting
 snapshot_thesis: 2026-10-10_16-42_deck-finalisation
 supersedes: 2026-10-13_speaker-notes-draft-01.md (same content, new layout)
@@ -22,7 +22,7 @@ Same content as draft 01, in the layout you asked for:
 - Headers carry no `#`; each is followed by a blank line.
 - One point per line, with a blank line between points and no `- ` markers, so you can turn them into bullets in PowerPoint.
 - Section tags like *(Ch9 §9.4)* are for you; don't read them out.
-- Dividers (3, 7, 13, 16, 24, 27), the reference list (30) and the appendix title (32) are left out. Slides 20–23 share one block.
+- Dividers (3, 7, 13, 16, 24, 27) carry the hand-over lines between Brian and Enrico. The reference list (30) and the appendix title (32) are left out. Slides 20–23 share one block.
 - Slides 28 and 29 currently hold a copy of slide 26's notes, so replace them completely.
 
 ---
@@ -89,6 +89,38 @@ The roadmap.
 Practice Notes:
 
 10 seconds. Say who presents what so the hand-overs feel planned.
+```
+
+---
+
+## Slide 03 — Divider: BACKGROUND & Motivation (Brian)
+
+```text
+Final Speaker Notes:
+
+
+
+---
+
+What can be said (Suggestions):
+
+Brian continues straight from the agenda: "Let's start with why this matters."
+
+---
+
+Content in Plain English
+
+Section one: why we did this.
+
+---
+
+Practice Notes:
+
+No hand-over here. Brian presents slides 4 and 5.
+
+The hand-over to Enrico comes at the end of slide 5. Brian: "So that's the business problem. Enrico will show what it means for the research."
+
+2–3 seconds on this slide, then click.
 ```
 
 ---
@@ -209,6 +241,36 @@ Add a small, cheap forecasting engine to an existing AI assistant, and check whe
 Practice Notes:
 
 Don't explain each bullet in depth; the research questions slide does that. Name them and move on.
+```
+
+---
+
+## Slide 07 — Divider: LITERATURE REVIEW (Enrico)
+
+```text
+Final Speaker Notes:
+
+
+
+---
+
+What can be said (Suggestions):
+
+Enrico, who already has the floor since slide 6: "That's the practical gap. Is it also an academic one?"
+
+---
+
+Content in Plain English
+
+Section two: what others have already done.
+
+---
+
+Practice Notes:
+
+No hand-over; Enrico continues.
+
+2–3 seconds, then click.
 ```
 
 ---
@@ -409,6 +471,36 @@ Use the bridge sentence to hand over to methodology.
 
 ---
 
+## Slide 13 — Divider: METHODOLOGY (Enrico)
+
+```text
+Final Speaker Notes:
+
+
+
+---
+
+What can be said (Suggestions):
+
+Enrico, carrying on from the research questions: "Four questions about designing something make a design problem, not a hypothesis test. That's why the method is design science."
+
+---
+
+Content in Plain English
+
+Section three: how we did it.
+
+---
+
+Practice Notes:
+
+No hand-over; Enrico continues.
+
+This is the bridge sentence from slide 12. Say it here if it wasn't said there, not twice.
+```
+
+---
+
 ## Slide 14 — METHODOLOGY | Central Academic Grounding (Enrico)
 
 ```text
@@ -481,6 +573,40 @@ Here's the plan of the whole thesis on one page, and where each step happens.
 Practice Notes:
 
 Point at the figure as you name each activity. Then hand over to Brian.
+```
+
+---
+
+## Slide 16 — Divider: MODELLING, ARCHITECTURE & EXPERIMENT (Enrico → Brian)
+
+```text
+Final Speaker Notes:
+
+
+
+---
+
+What can be said (Suggestions):
+
+Enrico hands over: "So what did we actually build? Brian."
+
+Brian picks up: "We'll go bottom-up: the data, the models, the tool, and then the experiment."
+
+---
+
+Content in Plain English
+
+Section four: what we built and how we tested it.
+
+---
+
+Practice Notes:
+
+HAND-OVER: Enrico to Brian.
+
+Agree beforehand who holds the clicker; pass it on this slide, not mid-sentence.
+
+Brian starts talking only once he's in position.
 ```
 
 ---
@@ -651,6 +777,38 @@ ONLY IF ASKED about "Runs in": all seven use the same model, GPT-5.5. What diffe
 
 ---
 
+## Slide 24 — Divider: FINDINGS & CONTRIBUTIONS (Brian → Enrico)
+
+```text
+Final Speaker Notes:
+
+
+
+---
+
+What can be said (Suggestions):
+
+Brian hands over: "That's what we measured. Enrico, what does it mean?"
+
+Enrico picks up: "One row per sub-question, then what transfers beyond our case."
+
+---
+
+Content in Plain English
+
+Section five: what the results mean.
+
+---
+
+Practice Notes:
+
+HAND-OVER: Brian to Enrico.
+
+Brian's last words on slides 20–23 should be the surprise (our model isn't won on accuracy), so Enrico opens findings with the tension still in the room.
+```
+
+---
+
 ## Slide 25 — FINDINGS (Enrico)
 
 ```text
@@ -755,6 +913,40 @@ Close on the sentence at the top. It's the thesis's final statement, nearly word
 ONLY IF ASKED "comparable accuracy?": code wins on the median, our model on the mean (13.1 vs 27.9); neither dominates on accuracy.
 
 ONLY IF ASKED "how general are these?": "derived rather than validated across contexts", one design cycle, one company. (Ch10 §10.4)
+```
+
+---
+
+## Slide 27 — Divider: LIMITATIONS & FUTURE WORK (Enrico → Brian)
+
+```text
+Final Speaker Notes:
+
+
+
+---
+
+What can be said (Suggestions):
+
+Enrico hands over after closing slide 26: "And here's what bounds all of that. Brian."
+
+Brian picks up: "Five limits, and each one has a matching next step."
+
+---
+
+Content in Plain English
+
+Section six: the honest edges, and what comes next.
+
+---
+
+Practice Notes:
+
+HAND-OVER: Enrico to Brian.
+
+Brian keeps the floor through to slide 31 and closes.
+
+Last section: keep the energy up, as this is where examiners decide how to open questions.
 ```
 
 ---
