@@ -32,6 +32,8 @@ Same content as draft 01, in the layout you asked for:
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -64,6 +66,8 @@ Under 30 seconds. Don't explain the title word by word; the next slides do that.
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -93,6 +97,8 @@ Practice Notes:
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -132,6 +138,8 @@ The image is AI-generated and footnoted. Leave it that way.
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -169,6 +177,8 @@ Royal Unibrew is named from Manifold's public client-cases page. The thesis itse
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -208,6 +218,8 @@ Don't explain each bullet in depth; the research questions slide does that. Name
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -245,6 +257,8 @@ The old note said "eight sections, 2.8 paradigm". That's wrong (the chapter has 
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -288,6 +302,8 @@ If asked "five strands, but slide 11 shows four?": retail forecasting is the met
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -317,6 +333,8 @@ Pause after reading it. Let it land before explaining.
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -356,6 +374,8 @@ The figure's alt text says "Reasearch" (typo, not on screen).
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -393,6 +413,8 @@ Use the bridge sentence to hand over to methodology.
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -434,6 +456,8 @@ If asked about "not novelty": Ch3 says DSR judges knowledge by whether the artef
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -465,6 +489,8 @@ Point at the figure as you name each activity. Then hand over to Brian.
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -502,6 +528,8 @@ The counts on the figure are for the largest category (soft drinks).
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -535,6 +563,8 @@ Don't bring up the lag-13 point here. It has a prepared answer on slide 28, and 
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -577,6 +607,8 @@ Paste the same notes on all four; the build cue at the top tells you where you a
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -624,6 +656,8 @@ ONLY IF ASKED about "Runs in": all seven use the same model, GPT-5.5. What diffe
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -669,6 +703,8 @@ Your existing notes, completed.
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
@@ -728,6 +764,8 @@ ONLY IF ASKED "how general are these?": "derived rather than validated across co
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -776,6 +814,8 @@ If asked which limitation worries us most: the hierarchy. Reconciliation is chea
 ```text
 Final Speaker Notes:
 
+
+
 ---
 
 What can be said (Suggestions):
@@ -813,6 +853,8 @@ Keep it brisk, then hand over to the closing slide.
 
 ```text
 Final Speaker Notes:
+
+
 
 ---
 
