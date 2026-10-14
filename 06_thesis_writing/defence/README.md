@@ -23,7 +23,7 @@ The authoritative deck is the **OneDrive `.pptx`**; everything here helps you ed
 | # | File | What it is | Time |
 |---|---|---|---|
 | 1.1 | `slide-review/2026-10-13_deck-review-pass-05-final.md` | **Final claims check.** 3 small slide fixes plus 6 things to rehearse; everything else verified | short |
-| 1.2 | `speaker-notes/2026-10-13_speaker-notes-draft-01.md` | **Speaker notes draft**, every content slide, in the slide-26 four-block layout. Paste-ready; rewrite *Final Speaker Notes* in your own words | most of it |
+| 1.2 | `speaker-notes/2026-10-14_speaker-notes-draft-02.md` | **Speaker notes draft 02**, every content slide, plain headers, no bullet markers, Final Speaker Notes left empty (draft 01 is the same content in the old layout) | most of it |
 | 1.2a | `speaker-notes/2026-10-14_storyline.md` | **Storyline**: the argument in nine beats, with hand-overs and the decisions to agree on | 5 min |
 | 1.3 | `qa-drill.md` | 22 likely questions, each with a 20-second answer. **Rehearsal, not editing.** | the last days |
 
