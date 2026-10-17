@@ -1,7 +1,7 @@
 """Render the scenario comparison as a four-frame heatmap build for the defence deck.
 
 Frame 1 is the plain table. Frames 2-4 add the worst, middle and best tiers in
-turn (red, then orange, then green), each frame keeping the colours of the one
+turn (red, then yellow, then green), each frame keeping the colours of the one
 before, so clicking through the slides builds the heatmap up.
 
 Text is black throughout. A cell's tier sets its fill; the standout cells within
@@ -62,9 +62,12 @@ TIERS = {
     "Latency":                  dict(A="O",  B="R*", C="G*", F="R",  D="R",  E="O*", G="R"),
 }
 
-# Theme colours (red, accent2 orange, accent3 green) as (light, dark) tints over white.
-_BASE = {"R": "#FF0000", "O": "#E97132", "G": "#196B24"}
-_LIGHT, _DARK = 0.16, 0.55
+# Red / yellow / green as tints over white. The middle tier is yellow rather than the
+# theme's orange: at light tints orange and red were too close to tell apart.
+# Standout cells get a diagonal gradient between two darker tints (top-left darker).
+_BASE = {"R": "#FF0000", "O": "#FFC000", "G": "#196B24"}
+_LIGHT = 0.24
+_DARK_FROM, _DARK_TO = 0.70, 0.45
 
 
 def _tint(hex_colour: str, share: float) -> str:
@@ -97,12 +100,14 @@ def _values(df: pd.DataFrame) -> dict[str, dict[str, str]]:
     return out
 
 
-def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
-    """Fill a rectangle with a vertical gradient from `top` to `bottom`."""
+def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> None:
+    """Fill a rectangle with a gradient from `top` (top or top-left) to `bottom`."""
     from matplotlib.colors import LinearSegmentedColormap
     import numpy as np
     cmap = LinearSegmentedColormap.from_list("cell", [top, bottom])
-    ax.imshow(np.linspace(0, 1, 64).reshape(-1, 1), cmap=cmap, aspect="auto",
+    ramp = np.linspace(0, 1, 64)
+    field = (ramp[:, None] + ramp[None, :]) / 2 if diagonal else ramp.reshape(-1, 1)
+    ax.imshow(field, cmap=cmap, aspect="auto",
               extent=(x, x + w, y + h, y), interpolation="bicubic", zorder=1)
 
 
@@ -149,10 +154,13 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
                 continue
             colour, strong = tier[:1], tier.endswith("*")
             on = colour in shown
-            if on:
+            if on and strong:
+                _gradient(ax, x0[s] + pad, y + pad, col_w - 2 * pad, row_h - 2 * pad,
+                          _tint(_BASE[colour], _DARK_FROM), _tint(_BASE[colour], _DARK_TO),
+                          diagonal=True)
+            elif on:
                 ax.add_patch(Rectangle((x0[s] + pad, y + pad), col_w - 2 * pad, row_h - 2 * pad,
-                                       facecolor=_tint(_BASE[colour], _DARK if strong else _LIGHT),
-                                       edgecolor="none"))
+                                       facecolor=_tint(_BASE[colour], _LIGHT), edgecolor="none"))
             text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5)
 
     ax.plot([label_w - 0.02, label_w - 0.02], [0, height], color="black", lw=0.8)
