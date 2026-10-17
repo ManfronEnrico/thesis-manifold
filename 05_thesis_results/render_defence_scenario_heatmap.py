@@ -70,11 +70,11 @@ HIGHER_IS_BETTER = {"Usable answers", "Identical on repeat"}
 # Red / yellow / green as tints over white. The middle tier is yellow rather than the
 # theme's orange: at light tints orange and red were too close to tell apart.
 # Standout cells get a diagonal gradient between two darker tints (top-left darker).
-_BASE = {"R": "#FF0000", "O": "#FFC000", "G": "#196B24", "N": "#808080"}
+_BASE = {"R": "#FF0000", "O": "#FFC000", "G": "#196B24", "N": "#808080", "X": "#A50000"}
 _LIGHT = 0.32
 # Text on light cells: a dark shade of the same colour (the spreadsheet
 # "light fill, dark text" convention), so the tier reads from the text as well.
-_TEXT = {"R": "#9C0006", "O": "#7A5C00", "G": "#0E4A17", "N": "black"}
+_TEXT = {"R": "#9C0006", "O": "#7A5C00", "G": "#0E4A17", "N": "black", "X": "white"}
 # In the middle frames, cells not yet coloured fade to grey so the eye goes to
 # the newly coloured tier. The first (plain) and last (complete) frames stay full.
 _FADED = "#B4B4B4"
@@ -146,24 +146,38 @@ def _values(df: pd.DataFrame) -> tuple[dict[str, dict[str, str]], set[tuple[str,
 
 
 def _within_arms(nums: dict) -> tuple[dict, set]:
-    """Trial variant: rank the scenarios within each arm, with A as the reference.
+    """Trial variant: rank the scenarios within each arm, and flag the baseline.
 
     Each arm has three scenarios per row (B, C, F on GPT-5.5; D, E, G on
     Prometheus), which maps one-to-one onto green, yellow and red: best, middle,
-    worst. Ties share the better tier. Baseline A is not ranked; it is shown in
-    grey as the reference both arms are read against.
+    worst. Ties share the better tier.
+
+    Baseline A is coloured by where it falls against all six arm cells: green if
+    it beats them all, red if it is (joint) worst, yellow between. On top of
+    that, deep red ("X") marks the baseline comparison failing: an arm cell
+    strictly worse than A, or A strictly worse than every arm cell.
     """
     tiers, standouts = {}, set()
     for measure, v in nums.items():
         better = max if measure in HIGHER_IS_BETTER else min
         worse = min if measure in HIGHER_IS_BETTER else max
-        row = {"A": "N"}
+        is_worse = (lambda x, y: x < y) if measure in HIGHER_IS_BETTER else (lambda x, y: x > y)
+        row = {}
         for arm in (LEFT[1:], RIGHT):
             vals = {s: v[s] for s in arm}
             hi, lo = better(vals.values()), worse(vals.values())
             for s, x in vals.items():
-                row[s] = "G" if x == hi else "R" if x == lo else "O"
-                standouts.add((measure, s))
+                row[s] = "X" if is_worse(x, v["A"]) else "G" if x == hi else "R" if x == lo else "O"
+        arm_vals = [v[s] for s in LEFT[1:] + RIGHT]
+        if all(is_worse(v["A"], x) for x in arm_vals):
+            row["A"] = "X"
+        elif all(is_worse(x, v["A"]) for x in arm_vals):
+            row["A"] = "G"
+        elif not any(is_worse(x, v["A"]) for x in arm_vals):
+            row["A"] = "R"
+        else:
+            row["A"] = "O"
+        standouts |= {(measure, s) for s in RUNS_IN}
         tiers[measure] = row
     return tiers, standouts
 
@@ -182,7 +196,7 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> 
 def _render(values: dict, standouts: set, shown: set[str], path: Path,
             tiers: dict = TIERS,
             note: str = "Bold = best and worst in the row, best of the middle",
-            bold_standouts: bool = True) -> None:
+            bold_standouts: bool = True, key: list = _KEY) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -228,7 +242,10 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path,
                 continue
             colour, strong = tier, (measure, s) in standouts
             on = colour in shown
-            if on and strong:
+            if on and colour == "X":
+                _gradient(ax, x0[s] + pad, y + pad, col_w - 2 * pad, row_h - 2 * pad,
+                          _BASE["X"], _tint(_BASE["X"], 0.80), diagonal=True)
+            elif on and strong:
                 _gradient(ax, x0[s] + pad, y + pad, col_w - 2 * pad, row_h - 2 * pad,
                           _tint(_BASE[colour], _DARK_FROM), _tint(_BASE[colour], _DARK_TO),
                           diagonal=True)
@@ -236,8 +253,9 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path,
                 ax.add_patch(Rectangle((x0[s] + pad, y + pad), col_w - 2 * pad, row_h - 2 * pad,
                                        facecolor=_tint(_BASE[colour], _LIGHT), edgecolor="none"))
             faded = fade and not on and measure in TIERS
-            ink = _TEXT[colour] if on and not strong else (_FADED if faded else "black")
-            label = text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong and bold_standouts, size=10.5,
+            ink = _TEXT[colour] if on and (colour == "X" or not strong) else (_FADED if faded else "black")
+            label = text(x0[s] + 0.12, y + row_h / 2, cell,
+                         bold=on and (colour == "X" or (strong and bold_standouts)), size=10.5,
                          colour=ink)
             if on and strong and UNDERLINE:
                 underline.append(label)
@@ -246,15 +264,15 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path,
 
     # Key: each entry appears with its colour, in fixed slots so nothing shifts.
     key_y = table_h + row_h * 0.6
-    for i, (code, word) in enumerate(_KEY):
+    for i, (code, word) in enumerate(key):
         if code not in shown:
             continue
-        kx = label_w + 0.12 + i * 1.0
+        kx = label_w + 0.12 + i * 1.25
         ax.add_patch(Rectangle((kx, key_y - 0.1), 0.32, 0.2, edgecolor="none",
-                               facecolor=_tint(_BASE[code], _DARK_TO)))
+                               facecolor=_BASE[code] if code == "X" else _tint(_BASE[code], _DARK_TO)))
         text(kx + 0.42, key_y, word, size=10)
     if shown:
-        text(label_w + 0.12 + 3 * 1.0 + 0.2, key_y, note, bold=True, size=10)
+        text(label_w + 0.12 + len(key) * 1.25 + 0.3, key_y, note, bold=True, size=10)
     for after in ("A", LEFT[-1]):
         divider_x = x0[after] + col_w + gap / 2
         ax.plot([divider_x, divider_x], [row_h, table_h], color="#7F7F7F", lw=0.8)
@@ -289,9 +307,9 @@ def main() -> None:
     # Trial: the complete frame, coloured within each arm against baseline A.
     arm_tiers, arm_standouts = _within_arms(nums)
     out = OUT_DIR / f"{STEM}_4_within_arms.svg"
-    _render(values, arm_standouts, {"R", "O", "G", "N"}, out, tiers=arm_tiers,
-            note="Ranked within each arm; A (grey) is the shared baseline",
-            bold_standouts=False)
+    _render(values, arm_standouts, {"R", "O", "G", "X"}, out, tiers=arm_tiers,
+            note="Ranked within each arm", bold_standouts=False,
+            key=[("R", "Worst"), ("O", "Middle"), ("G", "Best"), ("X", "Worse than A")])
     print(f"wrote {out.relative_to(_ROOT)}")
 
 
