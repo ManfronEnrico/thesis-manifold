@@ -214,7 +214,7 @@ Practice Notes:
 
 Point at C's green cell, then B.
 
-If asked about E ($0.20) being dearer than C: the production platform adds its own overhead per request, but it's still the cheapest option on that side.
+If asked about E ($0.20) being dearer than C: the production platform sends far more context per request (about 30,000 tokens per answer against about 1,200 for C), but it's still the cheapest option on that side.
 
 ONLY IF ASKED about D: $0.77, about 84 times the cost of C.
 ```
