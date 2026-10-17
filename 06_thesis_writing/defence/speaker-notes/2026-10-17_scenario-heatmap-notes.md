@@ -5,7 +5,7 @@ category: reference
 applies-to: [oral defence, slide deck, speaker notes]
 triggers: [speaker notes, scenario heatmap, experiment slides]
 created: 2026_10_17-18_30
-updated: 2026_10_17-18_30
+updated: 2026_10_17-19_00
 ---
 
 # Speaker notes: scenario heatmap build (7 slides)
@@ -33,12 +33,6 @@ comes from `22_scenario_comparison.csv`. Ratios are rounded: 0.4667 / 0.0091 ≈
 
 ```text
 Final Speaker Notes:
-
-
-
----
-
-What can be said (Suggestions):
 
 Seven scenarios, one ladder: each column adds one thing to the one before.
 
@@ -74,12 +68,6 @@ ONLY IF ASKED about "Runs in": all seven use the same model, GPT-5.5. Prometheus
 ```text
 Final Speaker Notes:
 
-
-
----
-
-What can be said (Suggestions):
-
 First question: does it answer at all?
 
 Without data, A gave a usable forecast in only 6 of 9 runs.
@@ -107,12 +95,6 @@ Point at A's red cell only.
 
 ```text
 Final Speaker Notes:
-
-
-
----
-
-What can be said (Suggestions):
 
 Accuracy: the axis everyone usually reports.
 
@@ -150,12 +132,6 @@ Say the median result yourself, before an examiner points it out. Owning it read
 ```text
 Final Speaker Notes:
 
-
-
----
-
-What can be said (Suggestions):
-
 Replicability: ask the same question twice, do you get the same answer?
 
 With our model, yes, every time: 100% identical, 0% variation, on both platforms.
@@ -187,12 +163,6 @@ The line people remember: "never the same answer twice".
 
 ```text
 Final Speaker Notes:
-
-
-
----
-
-What can be said (Suggestions):
 
 Cost per answer.
 
@@ -226,12 +196,6 @@ ONLY IF ASKED about D: $0.77, about 84 times the cost of C.
 ```text
 Final Speaker Notes:
 
-
-
----
-
-What can be said (Suggestions):
-
 Latency: how long until the answer arrives.
 
 Our model: 6 seconds. The code agent: just over two minutes (123.8 s). About twenty times slower.
@@ -259,12 +223,6 @@ ONLY IF ASKED about D: 111.3 s, about 19 times slower than C.
 
 ```text
 Final Speaker Notes:
-
-
-
----
-
-What can be said (Suggestions):
 
 Now step back and look at the whole table.
 
