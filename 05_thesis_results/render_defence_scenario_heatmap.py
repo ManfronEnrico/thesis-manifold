@@ -66,6 +66,15 @@ SCALE = [(0.0, "#63BE7B"), (0.5, "#FFEB84"), (1.0, "#F8696B")]
 # Build order: which third of the scale each frame reveals.
 FRAMES = [set(), {"worst"}, {"worst", "middle"}, {"worst", "middle", "best"}]
 _FADED = "#B4B4B4"
+# Prometheus columns are drawn lighter: they follow B, C, F but run on a
+# proprietary platform, so the openly replicable GPT-5.5 arm carries the eye.
+DIM_COLS = set(RIGHT)
+DIM_SHARE = 0.45  # share of white blended into a dimmed column's fills
+
+# Draft: slide 23 with the cells its speaker notes point at outlined.
+# Each entry is (scenario, first row, last row); a single cell repeats the row.
+DRAFT_BORDERS = [("C", "Mean APE", "Latency"), ("E", "Mean APE", "Latency"),
+                 ("B", "Median APE", "Median APE"), ("D", "Median APE", "Median APE")]
 
 
 def _money(x: str) -> str:
@@ -131,7 +140,8 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
               extent=(x, x + w, y + h, y), interpolation="bicubic", zorder=1)
 
 
-def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path) -> None:
+def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path,
+            dim: set[str] = frozenset(), borders: list = ()) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -167,15 +177,20 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
             elif measure == "Receives":
                 cell = RECEIVES[s]
                 if cell in RECEIVES_FILL:
-                    _gradient(ax, cx, cy, cw, ch, *RECEIVES_FILL[cell])
+                    top, bottom = RECEIVES_FILL[cell]
+                    if s in dim:
+                        top, bottom = _mix(top, "#FFFFFF", DIM_SHARE), _mix(bottom, "#FFFFFF", DIM_SHARE)
+                    _gradient(ax, cx, cy, cw, ch, top, bottom)
                     text(x0[s] + 0.12, y + row_h / 2, cell, bold=True, size=10.5, colour="white")
                 else:
                     text(x0[s] + 0.12, y + row_h / 2, cell, size=10.5)
             else:
                 on = third[(measure, s)] in shown
                 if on:
-                    ax.add_patch(Rectangle((cx, cy), cw, ch, facecolor=fills[(measure, s)],
-                                           edgecolor="none"))
+                    fill = fills[(measure, s)]
+                    if s in dim:
+                        fill = _mix(fill, "#FFFFFF", DIM_SHARE)
+                    ax.add_patch(Rectangle((cx, cy), cw, ch, facecolor=fill, edgecolor="none"))
                 ink = _FADED if fade and not on else "black"
                 text(x0[s] + 0.12, y + row_h / 2, text_of[measure][s], size=10.5, colour=ink)
 
@@ -183,6 +198,11 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
     for after in ("A", LEFT[-1]):
         divider_x = x0[after] + col_w + gap / 2
         ax.plot([divider_x, divider_x], [row_h, table_h], color="#7F7F7F", lw=0.8)
+    for s, first, last in borders:
+        top = (rows.index(first) + 2) * row_h + pad
+        bottom = (rows.index(last) + 3) * row_h - pad
+        ax.add_patch(Rectangle((x0[s] + pad, top), col_w - 2 * pad, bottom - top,
+                               facecolor="none", edgecolor="black", lw=2, zorder=5))
     # Separates who-gets-what (Runs in, Receives) from the measured results.
     ax.plot([0, width], [row_h * 4, row_h * 4], color="black", lw=0.8)
 
@@ -214,6 +234,10 @@ def main() -> None:
         out = OUT_DIR / f"{STEM}_{i}.svg"
         _render(text_of, fills, third, shown, out)
         print(f"wrote {out.relative_to(_ROOT)}")
+
+    out = OUT_DIR / f"{STEM}_4_draft_borders_dimmed.svg"
+    _render(text_of, fills, third, FRAMES[-1], out, dim=DIM_COLS, borders=DRAFT_BORDERS)
+    print(f"wrote {out.relative_to(_ROOT)}")
 
 
 if __name__ == "__main__":
