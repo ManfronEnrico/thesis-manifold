@@ -170,7 +170,7 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
 def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path,
             dim: set[str] = frozenset(), borders: list = (),
             rows_shown: set[str] | None = None, active: set[str] | None = None) -> None:
-    """`active`, when given, is also outlined as one band across the whole table."""
+    """`active`, when given, is also outlined as one band across the value columns."""
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -237,7 +237,8 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
     if active:
         idx = sorted(rows.index(m) for m in active)
         top, bottom = (idx[0] + 2) * row_h + pad / 2, (idx[-1] + 3) * row_h - pad / 2
-        ax.add_patch(Rectangle((0.02, top), width - 0.04, bottom - top,
+        left = x0[cols[0]] + pad / 2
+        ax.add_patch(Rectangle((left, top), width - 0.02 - left, bottom - top,
                                facecolor="none", edgecolor="black", lw=BORDER_LW, zorder=5))
     for s, first, last in borders:
         top = (rows.index(first) + 2) * row_h + pad
