@@ -141,7 +141,37 @@ def _values(df: pd.DataFrame) -> tuple[dict[str, dict[str, str]], set[tuple[str,
         if mid:
             edge = (max if measure in HIGHER_IS_BETTER else min)(mid.values())
             standouts |= {(measure, s) for s, x in mid.items() if x == edge}
-    return out, standouts
+    values = {m: {s: float(series[s]) for s in RUNS_IN} for m, series in nums.items()}
+    return out, standouts, values
+
+
+def _within_arms(nums: dict) -> tuple[dict, set]:
+    """Trial variant: rank each arm against baseline A, not the whole row.
+
+    Each arm (A + the GPT-5.5 scenarios, A + the Prometheus scenarios) gets green
+    for its best value, red for its worst and yellow for anything between, ties
+    included. Best and worst are bold. A sits in both arms, so it must come out
+    in the same tier from both; the run stops if it does not.
+    """
+    tiers, standouts, clash = {}, set(), []
+    for measure, v in nums.items():
+        better = max if measure in HIGHER_IS_BETTER else min
+        worse = min if measure in HIGHER_IS_BETTER else max
+        row = {}
+        for arm in (LEFT, ["A", *RIGHT]):
+            vals = {s: v[s] for s in arm}
+            hi, lo = better(vals.values()), worse(vals.values())
+            for s, x in vals.items():
+                tier = "G" if x == hi else "R" if x == lo else "O"
+                if s in row and row[s] != tier:
+                    clash.append((measure, s, row[s], tier))
+                row[s] = tier
+                if tier != "O":
+                    standouts.add((measure, s))
+        tiers[measure] = row
+    if clash:
+        raise SystemExit(f"Baseline A lands in different tiers per arm: {clash}")
+    return tiers, standouts
 
 
 def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> None:
@@ -155,7 +185,9 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> 
               extent=(x, x + w, y + h, y), interpolation="bicubic", zorder=1)
 
 
-def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
+def _render(values: dict, standouts: set, shown: set[str], path: Path,
+            tiers: dict = TIERS,
+            note: str = "Bold = best and worst in the row, best of the middle") -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -193,7 +225,7 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
             elif measure == "Receives":
                 cell, tier = RECEIVES[s], ""
             else:
-                cell, tier = values[measure][s], TIERS[measure][s]
+                cell, tier = values[measure][s], tiers[measure][s]
             if measure == "Receives" and cell in RECEIVES_FILL:
                 _gradient(ax, x0[s] + pad, y + pad, col_w - 2 * pad, row_h - 2 * pad,
                           *RECEIVES_FILL[cell])
@@ -227,7 +259,7 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
                                facecolor=_tint(_BASE[code], _DARK_TO)))
         text(kx + 0.42, key_y, word, size=10)
     if shown:
-        text(label_w + 0.12 + 3 * 1.0 + 0.2, key_y, "Bold = best and worst in the row, best of the middle", bold=True, size=10)
+        text(label_w + 0.12 + 3 * 1.0 + 0.2, key_y, note, bold=True, size=10)
     for after in ("A", LEFT[-1]):
         divider_x = x0[after] + col_w + gap / 2
         ax.plot([divider_x, divider_x], [row_h, table_h], color="#7F7F7F", lw=0.8)
@@ -251,13 +283,20 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
 def main() -> None:
     if not SOURCE.is_file():
         raise SystemExit(f"Missing source table: {SOURCE}")
-    values, standouts = _values(pd.read_csv(SOURCE, dtype=str))
+    values, standouts, nums = _values(pd.read_csv(SOURCE, dtype=str))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     frames = [set(), {"R"}, {"R", "O"}, {"R", "O", "G"}]
     for i, shown in enumerate(frames, start=1):
         out = OUT_DIR / f"{STEM}_{i}.svg"
         _render(values, standouts, shown, out)
         print(f"wrote {out.relative_to(_ROOT)}")
+
+    # Trial: the complete frame, coloured within each arm against baseline A.
+    arm_tiers, arm_standouts = _within_arms(nums)
+    out = OUT_DIR / f"{STEM}_4_within_arms.svg"
+    _render(values, arm_standouts, {"R", "O", "G"}, out, tiers=arm_tiers,
+            note="Coloured within each arm against baseline A; bold = best and worst")
+    print(f"wrote {out.relative_to(_ROOT)}")
 
 
 if __name__ == "__main__":

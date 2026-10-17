@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="612.018pt" height="296.14608pt" viewBox="0 0 612.018 296.14608" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-17T13:29:00.966375</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 296.14608 
+L 612.018 296.14608 
+L 612.018 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+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" id="imaged5771260ff" transform="scale(1 -1) translate(0 -64.08)" x="138" y="-80.06608" width="463.68" height="64.08"/>
+   </g>
+   <g id="patch_2">
+    <path d="M 276.714 126.396 
+L 335.304 126.396 
+L 335.304 144.1368 
+L 276.714 144.1368 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 340.884 126.396 
+L 399.474 126.396 
+L 399.474 144.1368 
+L 340.884 144.1368 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAADIUlEQVR4nN1ZWXLDIAwVMzl1v3qdXrLqsBgk0IZDM2n90WIbtCE9PZz08fWJAAAJUv6XB31c/iYyvv7WF+qcNF5cUsucPs7PxwtxThl1kyS963vNNqY3YpswJw2DRd0PxBLHHkQgt+I9bM5JN9Yoc7KpyZVBXmTnu3/ZedyfE7GNBhKpDCKf2peCzuPYUC7jyhjHKAjoznZf2YAJISHT0uTWcdWbDWvjEqA2bnOq3DqnyylBYFLlDS2B7DNlgfl9SWviyBJ0CGTM9IwGlcrQNsfUTS5VrrN5UiJZ9sPk8+O77GzMiBLUKwvIGJwyLEbCmhF1Dc8gpiFjV5tTnpMs6xY3OX3llK1elWj2LxsOepVgFCOZ6btllng2v8o5yTZeuu19e8zkdtuEDV/k1DklkFomDiNX3JmDhhsQ4DYV0zkfNkTdC16TACv+RRMpTyAYaQvUnJMcQQcC1GY0G2kE3nfOwPwOAUO8nUgyflO9D8Tv0dlONQ3YLbO1hLROu2x4w15YcFW3bdg/5Ei4ym232Af6GKkJMEsVNsvsz1Mr2rVFBVN5gNNpEwLiKGoZJv4ftcKBkToRtZy7y83wOLXiZXaEWpHE8ahVvkbXdpxnV6RpgN+dz1ErXmZm0zBsUTdc3dBh2zgiCmUmKmgbZykAms1b9EWjVuuGnqZW6poeNCPZGCGfy0w4MUiniqoAa0YQXDU77YyreWw6J+PqDrU6yT4W2yC1ZhMpB9hVAH3RaeeWK0Ct2IY/Ta0ortYVpdmwE4xwJNo+wSQ7QM9SK7PMfoFaafbT+07IPeckATyoSEqXrJfkms69H7Vy2Qcj5EZpqgLUYxaSr8jOCWbB1XemVnqcaiADXSnkHNAPATdwlTwzszni3IuOrP17ZGGR1lfiSJmlC7xIAO/g6oR/3uaFcFVat4Gr0UTiH3YV57zdx42mcYJa0TlxamWcYOYvQ/MmgFMl7GRjNpVg04iUWYBauZlI4fcktWJB03BVgAD+m42hwHUOK8eCAASY1CpQZoHS3WUfe7gqv+ef0TQFJNDL/amfPSHQ0DzbAnN2OrGGq9KaH1ct+jP45/yHAAAAAElFTkSuQmCC" id="image462dd712ec" transform="scale(1 -1) translate(0 -18)" x="415.098" y="-126.1368" width="59.04" height="18"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 479.268 126.396 
+L 537.858 126.396 
+L 537.858 144.1368 
+L 479.268 144.1368 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 543.438 126.396 
+L 602.028 126.396 
+L 602.028 144.1368 
+L 543.438 144.1368 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAABZ0lEQVR4nN1YXQ+DIAzExH/r/3/1FufMUIuUfsHWF5MqvYMeJzphWZC2mKZ0ukpyVnVGyjHHzAn7Or6vW/K45sHN1UJTW4IXgfEZM6d1LResgVHP4SGnndy1di9c4v6uSA6xaIJg4tXGeuFe4ru1OZPXkEGnRgTh3j1Su0i9FdpJAGePjPQtKJVivUhc3AKXs0dKSFNjYETac3u2cq5weT7+RPoWflSh5Na2IC1RAOf50lgvf3Y7/lgRHFWhVB2uapuPPxLSeVj7aqRCqdyjR7ZMLtLLMIBCqdzJI7fw8C0YK6UXLgOv/NYehGBqzXnhVmrfPVJLGsGNaOXsJIDyl02Eb/2RQu9fNhoFHDGSlwXh0m9t6YJgAIV2sih6a1spFAa5iEZocdk/LaQEtb5F5bwaEfLTwqBjSeJb1rgtOS4G6/hjRToP64l42ULj4uuOP9G+hY4KrTS77JG10HQ9BWBocLm1s3svfwKhdJR20tsAAAAASUVORK5CYII=" id="image45ceb8c054" transform="scale(1 -1) translate(0 -18)" x="138.33" y="-149.4216" width="59.04" height="18"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 212.544 149.6808 
+L 271.134 149.6808 
+L 271.134 167.4216 
+L 212.544 167.4216 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAADIUlEQVR4nN1ZWXLDIAwVMzl1v3qdXrLqsBgk0IZDM2n90WIbtCE9PZz08fWJAAAJUv6XB31c/iYyvv7WF+qcNF5cUsucPs7PxwtxThl1kyS963vNNqY3YpswJw2DRd0PxBLHHkQgt+I9bM5JN9Yoc7KpyZVBXmTnu3/ZedyfE7GNBhKpDCKf2peCzuPYUC7jyhjHKAjoznZf2YAJISHT0uTWcdWbDWvjEqA2bnOq3DqnyylBYFLlDS2B7DNlgfl9SWviyBJ0CGTM9IwGlcrQNsfUTS5VrrN5UiJZ9sPk8+O77GzMiBLUKwvIGJwyLEbCmhF1Dc8gpiFjV5tTnpMs6xY3OX3llK1elWj2LxsOepVgFCOZ6btllng2v8o5yTZeuu19e8zkdtuEDV/k1DklkFomDiNX3JmDhhsQ4DYV0zkfNkTdC16TACv+RRMpTyAYaQvUnJMcQQcC1GY0G2kE3nfOwPwOAUO8nUgyflO9D8Tv0dlONQ3YLbO1hLROu2x4w15YcFW3bdg/5Ei4ym232Af6GKkJMEsVNsvsz1Mr2rVFBVN5gNNpEwLiKGoZJv4ftcKBkToRtZy7y83wOLXiZXaEWpHE8ahVvkbXdpxnV6RpgN+dz1ErXmZm0zBsUTdc3dBh2zgiCmUmKmgbZykAms1b9EWjVuuGnqZW6poeNCPZGCGfy0w4MUiniqoAa0YQXDU77YyreWw6J+PqDrU6yT4W2yC1ZhMpB9hVAH3RaeeWK0Ct2IY/Ta0ortYVpdmwE4xwJNo+wSQ7QM9SK7PMfoFaafbT+07IPeckATyoSEqXrJfkms69H7Vy2Qcj5EZpqgLUYxaSr8jOCWbB1XemVnqcaiADXSnkHNAPATdwlTwzszni3IuOrP17ZGGR1lfiSJmlC7xIAO/g6oR/3uaFcFVat4Gr0UTiH3YV57zdx42mcYJa0TlxamWcYOYvQ/MmgFMl7GRjNpVg04iUWYBauZlI4fcktWJB03BVgAD+m42hwHUOK8eCAASY1CpQZoHS3WUfe7gqv+ef0TQFJNDL/amfPSHQ0DzbAnN2OrGGq9KaH1ct+jP45/yHAAAAAElFTkSuQmCC" id="imageec35ca249a" transform="scale(1 -1) translate(0 -18)" x="276.714" y="-149.4216" width="59.04" height="18"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 340.884 149.6808 
+L 399.474 149.6808 
+L 399.474 167.4216 
+L 340.884 167.4216 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 415.098 149.6808 
+L 473.688 149.6808 
+L 473.688 167.4216 
+L 415.098 167.4216 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAADIUlEQVR4nN1ZWXLDIAwVMzl1v3qdXrLqsBgk0IZDM2n90WIbtCE9PZz08fWJAAAJUv6XB31c/iYyvv7WF+qcNF5cUsucPs7PxwtxThl1kyS963vNNqY3YpswJw2DRd0PxBLHHkQgt+I9bM5JN9Yoc7KpyZVBXmTnu3/ZedyfE7GNBhKpDCKf2peCzuPYUC7jyhjHKAjoznZf2YAJISHT0uTWcdWbDWvjEqA2bnOq3DqnyylBYFLlDS2B7DNlgfl9SWviyBJ0CGTM9IwGlcrQNsfUTS5VrrN5UiJZ9sPk8+O77GzMiBLUKwvIGJwyLEbCmhF1Dc8gpiFjV5tTnpMs6xY3OX3llK1elWj2LxsOepVgFCOZ6btllng2v8o5yTZeuu19e8zkdtuEDV/k1DklkFomDiNX3JmDhhsQ4DYV0zkfNkTdC16TACv+RRMpTyAYaQvUnJMcQQcC1GY0G2kE3nfOwPwOAUO8nUgyflO9D8Tv0dlONQ3YLbO1hLROu2x4w15YcFW3bdg/5Ei4ym232Af6GKkJMEsVNsvsz1Mr2rVFBVN5gNNpEwLiKGoZJv4ftcKBkToRtZy7y83wOLXiZXaEWpHE8ahVvkbXdpxnV6RpgN+dz1ErXmZm0zBsUTdc3dBh2zgiCmUmKmgbZykAms1b9EWjVuuGnqZW6poeNCPZGCGfy0w4MUiniqoAa0YQXDU77YyreWw6J+PqDrU6yT4W2yC1ZhMpB9hVAH3RaeeWK0Ct2IY/Ta0ortYVpdmwE4xwJNo+wSQ7QM9SK7PMfoFaafbT+07IPeckATyoSEqXrJfkms69H7Vy2Qcj5EZpqgLUYxaSr8jOCWbB1XemVnqcaiADXSnkHNAPATdwlTwzszni3IuOrP17ZGGR1lfiSJmlC7xIAO/g6oR/3uaFcFVat4Gr0UTiH3YV57zdx42mcYJa0TlxamWcYOYvQ/MmgFMl7GRjNpVg04iUWYBauZlI4fcktWJB03BVgAD+m42hwHUOK8eCAASY1CpQZoHS3WUfe7gqv+ef0TQFJNDL/amfPSHQ0DzbAnN2OrGGq9KaH1ct+jP45/yHAAAAAElFTkSuQmCC" id="imagebbcdd9ebd6" transform="scale(1 -1) translate(0 -18)" x="479.268" y="-149.4216" width="59.04" height="18"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 543.438 149.6808 
+L 602.028 149.6808 
+L 602.028 167.4216 
+L 543.438 167.4216 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAABZ0lEQVR4nN1YXQ+DIAzExH/r/3/1FufMUIuUfsHWF5MqvYMeJzphWZC2mKZ0ukpyVnVGyjHHzAn7Or6vW/K45sHN1UJTW4IXgfEZM6d1LResgVHP4SGnndy1di9c4v6uSA6xaIJg4tXGeuFe4ru1OZPXkEGnRgTh3j1Su0i9FdpJAGePjPQtKJVivUhc3AKXs0dKSFNjYETac3u2cq5weT7+RPoWflSh5Na2IC1RAOf50lgvf3Y7/lgRHFWhVB2uapuPPxLSeVj7aqRCqdyjR7ZMLtLLMIBCqdzJI7fw8C0YK6UXLgOv/NYehGBqzXnhVmrfPVJLGsGNaOXsJIDyl02Eb/2RQu9fNhoFHDGSlwXh0m9t6YJgAIV2sih6a1spFAa5iEZocdk/LaQEtb5F5bwaEfLTwqBjSeJb1rgtOS4G6/hjRToP64l42ULj4uuOP9G+hY4KrTS77JG10HQ9BWBocLm1s3svfwKhdJR20tsAAAAASUVORK5CYII=" id="image46035b1e81" transform="scale(1 -1) translate(0 -18)" x="138.33" y="-172.7064" width="59.04" height="18"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 212.544 172.9656 
+L 271.134 172.9656 
+L 271.134 190.7064 
+L 212.544 190.7064 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAADIUlEQVR4nN1ZWXLDIAwVMzl1v3qdXrLqsBgk0IZDM2n90WIbtCE9PZz08fWJAAAJUv6XB31c/iYyvv7WF+qcNF5cUsucPs7PxwtxThl1kyS963vNNqY3YpswJw2DRd0PxBLHHkQgt+I9bM5JN9Yoc7KpyZVBXmTnu3/ZedyfE7GNBhKpDCKf2peCzuPYUC7jyhjHKAjoznZf2YAJISHT0uTWcdWbDWvjEqA2bnOq3DqnyylBYFLlDS2B7DNlgfl9SWviyBJ0CGTM9IwGlcrQNsfUTS5VrrN5UiJZ9sPk8+O77GzMiBLUKwvIGJwyLEbCmhF1Dc8gpiFjV5tTnpMs6xY3OX3llK1elWj2LxsOepVgFCOZ6btllng2v8o5yTZeuu19e8zkdtuEDV/k1DklkFomDiNX3JmDhhsQ4DYV0zkfNkTdC16TACv+RRMpTyAYaQvUnJMcQQcC1GY0G2kE3nfOwPwOAUO8nUgyflO9D8Tv0dlONQ3YLbO1hLROu2x4w15YcFW3bdg/5Ei4ym232Af6GKkJMEsVNsvsz1Mr2rVFBVN5gNNpEwLiKGoZJv4ftcKBkToRtZy7y83wOLXiZXaEWpHE8ahVvkbXdpxnV6RpgN+dz1ErXmZm0zBsUTdc3dBh2zgiCmUmKmgbZykAms1b9EWjVuuGnqZW6poeNCPZGCGfy0w4MUiniqoAa0YQXDU77YyreWw6J+PqDrU6yT4W2yC1ZhMpB9hVAH3RaeeWK0Ct2IY/Ta0ortYVpdmwE4xwJNo+wSQ7QM9SK7PMfoFaafbT+07IPeckATyoSEqXrJfkms69H7Vy2Qcj5EZpqgLUYxaSr8jOCWbB1XemVnqcaiADXSnkHNAPATdwlTwzszni3IuOrP17ZGGR1lfiSJmlC7xIAO/g6oR/3uaFcFVat4Gr0UTiH3YV57zdx42mcYJa0TlxamWcYOYvQ/MmgFMl7GRjNpVg04iUWYBauZlI4fcktWJB03BVgAD+m42hwHUOK8eCAASY1CpQZoHS3WUfe7gqv+ef0TQFJNDL/amfPSHQ0DzbAnN2OrGGq9KaH1ct+jP45/yHAAAAAElFTkSuQmCC" id="image697a7d13e8" transform="scale(1 -1) translate(0 -18)" x="276.714" y="-172.7064" width="59.04" height="18"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 340.884 172.9656 
+L 399.474 172.9656 
+L 399.474 190.7064 
+L 340.884 190.7064 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 415.098 172.9656 
+L 473.688 172.9656 
+L 473.688 190.7064 
+L 415.098 190.7064 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAADIUlEQVR4nN1ZWXLDIAwVMzl1v3qdXrLqsBgk0IZDM2n90WIbtCE9PZz08fWJAAAJUv6XB31c/iYyvv7WF+qcNF5cUsucPs7PxwtxThl1kyS963vNNqY3YpswJw2DRd0PxBLHHkQgt+I9bM5JN9Yoc7KpyZVBXmTnu3/ZedyfE7GNBhKpDCKf2peCzuPYUC7jyhjHKAjoznZf2YAJISHT0uTWcdWbDWvjEqA2bnOq3DqnyylBYFLlDS2B7DNlgfl9SWviyBJ0CGTM9IwGlcrQNsfUTS5VrrN5UiJZ9sPk8+O77GzMiBLUKwvIGJwyLEbCmhF1Dc8gpiFjV5tTnpMs6xY3OX3llK1elWj2LxsOepVgFCOZ6btllng2v8o5yTZeuu19e8zkdtuEDV/k1DklkFomDiNX3JmDhhsQ4DYV0zkfNkTdC16TACv+RRMpTyAYaQvUnJMcQQcC1GY0G2kE3nfOwPwOAUO8nUgyflO9D8Tv0dlONQ3YLbO1hLROu2x4w15YcFW3bdg/5Ei4ym232Af6GKkJMEsVNsvsz1Mr2rVFBVN5gNNpEwLiKGoZJv4ftcKBkToRtZy7y83wOLXiZXaEWpHE8ahVvkbXdpxnV6RpgN+dz1ErXmZm0zBsUTdc3dBh2zgiCmUmKmgbZykAms1b9EWjVuuGnqZW6poeNCPZGCGfy0w4MUiniqoAa0YQXDU77YyreWw6J+PqDrU6yT4W2yC1ZhMpB9hVAH3RaeeWK0Ct2IY/Ta0ortYVpdmwE4xwJNo+wSQ7QM9SK7PMfoFaafbT+07IPeckATyoSEqXrJfkms69H7Vy2Qcj5EZpqgLUYxaSr8jOCWbB1XemVnqcaiADXSnkHNAPATdwlTwzszni3IuOrP17ZGGR1lfiSJmlC7xIAO/g6oR/3uaFcFVat4Gr0UTiH3YV57zdx42mcYJa0TlxamWcYOYvQ/MmgFMl7GRjNpVg04iUWYBauZlI4fcktWJB03BVgAD+m42hwHUOK8eCAASY1CpQZoHS3WUfe7gqv+ef0TQFJNDL/amfPSHQ0DzbAnN2OrGGq9KaH1ct+jP45/yHAAAAAElFTkSuQmCC" id="image33d2b8eba6" transform="scale(1 -1) translate(0 -18)" x="479.268" y="-172.7064" width="59.04" height="18"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 543.438 172.9656 
+L 602.028 172.9656 
+L 602.028 190.7064 
+L 543.438 190.7064 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAARIAAAAZCAYAAAD9h6FUAAAFnklEQVR4nO1dS9LbIAwWMz1BpyfptbLOpqtep4fpUXqF0AEbLEACYSPipmj+aRwekpIvkvUgqbGPhwVHxkDyeGZsFJ87jQn3mOcTTY4h+3j8AYCvC5vLn7dv5vl072VBP379/A0A3w2EPe5vxxTxSP7dJtg15pgIXP2aQ0ODVKPX+KuoEiW3nOd0S+RKdCPWGPT+UrK/gN38iH90i8MjJulYi67wPiNvhowrekl4YxkLm+HY2PAeO3JL0VPyOXSuMSf2MGv8y2nyQBPhMxMWGNu/RqKbdySvF29QrQ8uta42xvGRjuW83yWXmteghY06NsGRWGxDyL6wfYZ5TxUDs8cNPeURIoaGUYJAttM7RAPWWDA2kbLz3a43uU6x/do7iP16X7Px3dZEPv5NSLjSDi1GJBLDnG2gUnmtvVpyZ9DCRh0bGy2FNig378N6ZMiF0wFBxJCNYaeCecRJhg8pO3k9DN+G86IcaU1/yF7zkdpEjheM9k6Rwmy5GrSwUcfm5e/sMiP0TiVEAegaGmmIN1IoI4JtTxpBJBJc7WJf48dRlBE13vnEnVm00oqSOP0LhwfEa0JryhoJB8aVCEA6puWIZjvAUbSwUcdGUiNJTLc3zTBpNDPLuCnd0tRln9+HE75RN8LhFXy2NWmNZITxz4pQRjsJqVxOFw1a2Khj4wyNi0QOIy3rDrnTsB0pULOoWjXudtpEyi7qNcjBMK9P6kjdgrRGUgNDu24xQu6VsVEOcCQtbNSxOWokdYPijDuSkadAbDE2N9KMb59xV2o+MQU62NcdKV2/wXLr7V+tSOGTIpSZqc3CZjg21r6Ozsaooin0phllCsF1WgqHBymfo67C63bof/Ch6iqp7rXuk220f1sAXflg3y1CueLsZqQ2Z1+HZM9/jE2rRsIZUDVVgc40459vLfe0f/HYJ0YoFB9p1KJFCxt1bGLXhjSwLD2ARqfFWLD2SGroNOnzWstOt77276y7oPTOOPMuSI1pO5WFjTo2W42EP4h1umgK/NmM8a3lNM0Y0lpGjrPVWoZh7V/NSOFOEQo1pulMFjbq2MSuzYmDWdWiKTQcTc7jTJqROQxR0bSii6yuQuu21Uj8hEJuPDpSeJdciTwNWtioYxOPyBNpBmlggTWxhkwXutq3XGu5dGijW8vsHjbtS2XzXZu7GGjvmJbcFm8NWtioYxOLrXmaYcqwPgn994hgMzC7RQSorlLttOR1FXddNW66rtLTWh7ZfSp0A3cgjfLYV4x2tiPq1VnTAY6mhY06Nr7YKkkHoNfAIG4abdwFCVrLicO73FrGdZVtB3+ydUbd4pMiFA1a2Khj40ziMG7CoIo0Q9BpMXUHQaYLkhSISK1mtJY5/fHz8mTrlQiAWv/uSGF2ZDSSFjbq2IQDaXDibEbqVCxKXdB+im/VuO/XWm52n/yBtDwP58D4VyKUO6Roo2hho44NVSOJz/2C46GWAtlkHtVVsvQgj3jKuoqgaCox7tzhDWkt8+8TndqMilBGjEnlvtMBzkxtFjZDsfGORNCVEBk34C/CZfu5SIRJgarRTGDM8Zl4ZD/oJvvSHjV2xUlIZYyQK+V9t2gk8F/YqGLjT5Ew6YE4zTBBJuJ7pq4S1A6LGs5LVFeh9nXUVaSOVPalvRF37DN1i9Fye8akMjRpYaOOTfLDRoxxt+7+FhuhJM242FrGa+St5coJ1vybwZiQODZKIn8hTcNoqT2jDFkrLbrifEbRwkYdm/z3SCKdKZpK0gxBa7kZieDyy8jWcuI0uLoKkQJdbv/me7TrFu+MUFrOToMWNurYpL9HwnUlWsZttzMWIEiBcARRpECCNEOQuvR2n/rqKvQ8XyNp0Yw0YERkcZWkUYsGLWzUsUl+RoAzML+Qee7HDHJYJ//bB062oGPSs6anE8PVVag9fwHY2j9NMLnWqAAAAABJRU5ErkJggg==" id="image906e761b04" transform="scale(1 -1) translate(0 -18)" x="138" y="-196.14608" width="197.28" height="18"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 340.884 196.2504 
+L 399.474 196.2504 
+L 399.474 213.9912 
+L 340.884 213.9912 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAKsAAAAZCAYAAABO6t5nAAAE2UlEQVR4nN1bS5LcIAwVVblHDjjr2WQ118mtcpImBTZYgCQeNqY9Q6XSNghJ3fo9ZI/zHx+ewnCOis8zc7P4PGkO3OM+P9liOf78/fpHRL8dpT3h376P8+D/bwsqjTsWEtdIcyjhmLoyTbzKKkly23VNt0IuoptA49jvK8n+RX7z1fgZiNMnH+hcb1zhfUbeChnAHp9+4zACKbsV72mQxp3Yo9DEr9PlwRaSzyQC58dpEN2is75eutF6BpXorDmNDzpX836XXGkdcFbP7cRsyH0grcdhGNEfiankkTJfx/AEyA56p6zmnSfnCyk73+16kxsU26+jE+7XO83Gd6PJfOKPUHCVgyZnVsT4q50Aldfbe5fcgeGzNWSjhfVYApmzNI5NQOar5rjjch55UeEjyi6+j8K3EyBSsFr6U/WdDxiQOV5wjCdlvNVyjfGKGQozdHTclM3YNXVKdnQEajPbtqfMhIWEgCV3mjjPsmXWeOeTd1ZZt5ftNf2boCLhOzGaFrNqxriSydC5u5x9dZCdwKyFe4yWZFdm5VUOJOlWlvl9fZ8u+GbdhKBq+Gw0JWZdiSOvZrzZjojK1XQxRjCmllEPR2hxYO2YfgAudA9SpgP1IYYou8HPzImV74cGayAoMatljLtx5Ay5V+ZmBZmJWW2jaQ6Uh8PhgnoAqx2h4jvmQAYGz3DhYG8Hq4ynuVy7dbUSR37XTAvBgNdxYp51UKLRktyWW+0E3wQVlXwOnKvrduh/8JFwbqm71dXwndZVz0CzcORKuSjvEbkADMhjwEhmWafBkvzt22IjrSs+9xMzrcQHzb5oN0A0YlVKqXOCd568PwCADCl+Xlss6DbWulqVadHsuzLTSnNDmFVvhp8+KJHeu5zfFitL8pS2GAvOXluMprWuVmDLJ2RaaQ7CrHs34ERz3DwoUceZax5nSrKIc23dLF0wnCvrtmHWuHADjpyd8d4lF5GHPG4VSrJoxMRaoBFL61DrSWuLtUEzuy2m7ung3CRb7wY8xQlG5+6S2+ONHLDqkuzaEliUyT2zbUb0W2ZjONc8wdc4N1ybDiTj3JG22MyuRqMbhYcCUla4C0fe4eyjOt8ZZNYBCymdNGpEyptmO1AzgLZYEVSX22Ic52479CdYK3DkT8q0xgg/++FAgtGakgyc4J3thGJpReCCAENWtMU0/fl9+wRrxgHjSdhydYY3HgrQid5l6bielXm2X+JrOtDz2mLdrkZ8KFBjVs0Y3yXTPgHOAJg130eC48OCC75YZzi3KqV15m5xLnBQQhyoDqopbTH9d5JhwKxMO2MOlfvOIOvBgN06ZmlFHYj4yyHVfi2jKnDBzMqJscZn4ePfpBv2Ios0twJHzpCL8r4pq0ayaFW5lMIl2SWZjO8ZnJvUTkSdAIFwrrRvAOeiwYq9yDIj85zBkbPljsyhMoBRvHytOFAvi3kF56ol+WJbjNPgbTHjSVX9RhYfTJya7cW/FLjDMaQ9s5zlLghxxcE777PmceaghJRkoC3WzagcDs9sixWOqeFcAS5cbl3Ve+7Gke/MtL2Agt9n1U67PQfyWw+SALjAM2EDF4CSDJT50a7GGM6V13XM2hs3lcxpMq7IRXmjmLV2ZsmIkVC5j3OOBcXJP3nWZAMn8RGakRO+hnOlPf8BUECcQNq7WacAAAAASUVORK5CYII=" id="imageca79830746" transform="scale(1 -1) translate(0 -18)" x="415" y="-196.14608" width="123.12" height="18"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 543.438 196.2504 
+L 602.028 196.2504 
+L 602.028 213.9912 
+L 543.438 213.9912 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 138.33 219.5352 
+L 196.92 219.5352 
+L 196.92 237.276 
+L 138.33 237.276 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAKsAAAAZCAYAAABO6t5nAAAE2UlEQVR4nN1bS5LcIAwVVblHDjjr2WQ118mtcpImBTZYgCQeNqY9Q6XSNghJ3fo9ZI/zHx+ewnCOis8zc7P4PGkO3OM+P9liOf78/fpHRL8dpT3h376P8+D/bwsqjTsWEtdIcyjhmLoyTbzKKkly23VNt0IuoptA49jvK8n+RX7z1fgZiNMnH+hcb1zhfUbeChnAHp9+4zACKbsV72mQxp3Yo9DEr9PlwRaSzyQC58dpEN2is75eutF6BpXorDmNDzpX836XXGkdcFbP7cRsyH0grcdhGNEfiankkTJfx/AEyA56p6zmnSfnCyk73+16kxsU26+jE+7XO83Gd6PJfOKPUHCVgyZnVsT4q50Aldfbe5fcgeGzNWSjhfVYApmzNI5NQOar5rjjch55UeEjyi6+j8K3EyBSsFr6U/WdDxiQOV5wjCdlvNVyjfGKGQozdHTclM3YNXVKdnQEajPbtqfMhIWEgCV3mjjPsmXWeOeTd1ZZt5ftNf2boCLhOzGaFrNqxriSydC5u5x9dZCdwKyFe4yWZFdm5VUOJOlWlvl9fZ8u+GbdhKBq+Gw0JWZdiSOvZrzZjojK1XQxRjCmllEPR2hxYO2YfgAudA9SpgP1IYYou8HPzImV74cGayAoMatljLtx5Ay5V+ZmBZmJWW2jaQ6Uh8PhgnoAqx2h4jvmQAYGz3DhYG8Hq4ynuVy7dbUSR37XTAvBgNdxYp51UKLRktyWW+0E3wQVlXwOnKvrduh/8JFwbqm71dXwndZVz0CzcORKuSjvEbkADMhjwEhmWafBkvzt22IjrSs+9xMzrcQHzb5oN0A0YlVKqXOCd568PwCADCl+Xlss6DbWulqVadHsuzLTSnNDmFVvhp8+KJHeu5zfFitL8pS2GAvOXluMprWuVmDLJ2RaaQ7CrHs34ERz3DwoUceZax5nSrKIc23dLF0wnCvrtmHWuHADjpyd8d4lF5GHPG4VSrJoxMRaoBFL61DrSWuLtUEzuy2m7ung3CRb7wY8xQlG5+6S2+ONHLDqkuzaEliUyT2zbUb0W2ZjONc8wdc4N1ybDiTj3JG22MyuRqMbhYcCUla4C0fe4eyjOt8ZZNYBCymdNGpEyptmO1AzgLZYEVSX22Ic52479CdYK3DkT8q0xgg/++FAgtGakgyc4J3thGJpReCCAENWtMU0/fl9+wRrxgHjSdhydYY3HgrQid5l6bielXm2X+JrOtDz2mLdrkZ8KFBjVs0Y3yXTPgHOAJg130eC48OCC75YZzi3KqV15m5xLnBQQhyoDqopbTH9d5JhwKxMO2MOlfvOIOvBgN06ZmlFHYj4yyHVfi2jKnDBzMqJscZn4ePfpBv2Ios0twJHzpCL8r4pq0ayaFW5lMIl2SWZjO8ZnJvUTkSdAIFwrrRvAOeiwYq9yDIj85zBkbPljsyhMoBRvHytOFAvi3kF56ol+WJbjNPgbTHjSVX9RhYfTJya7cW/FLjDMaQ9s5zlLghxxcE777PmceaghJRkoC3WzagcDs9sixWOqeFcAS5cbl3Ve+7Gke/MtL2Agt9n1U67PQfyWw+SALjAM2EDF4CSDJT50a7GGM6V13XM2hs3lcxpMq7IRXmjmLV2ZsmIkVC5j3OOBcXJP3nWZAMn8RGakRO+hnOlPf8BUECcQNq7WacAAAAASUVORK5CYII=" id="image1c001b421b" transform="scale(1 -1) translate(0 -18)" x="213" y="-219.14608" width="123.12" height="18"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 340.884 219.5352 
+L 399.474 219.5352 
+L 399.474 237.276 
+L 340.884 237.276 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAKsAAAAZCAYAAABO6t5nAAAE2UlEQVR4nN1bS5LcIAwVVblHDjjr2WQ118mtcpImBTZYgCQeNqY9Q6XSNghJ3fo9ZI/zHx+ewnCOis8zc7P4PGkO3OM+P9liOf78/fpHRL8dpT3h376P8+D/bwsqjTsWEtdIcyjhmLoyTbzKKkly23VNt0IuoptA49jvK8n+RX7z1fgZiNMnH+hcb1zhfUbeChnAHp9+4zACKbsV72mQxp3Yo9DEr9PlwRaSzyQC58dpEN2is75eutF6BpXorDmNDzpX836XXGkdcFbP7cRsyH0grcdhGNEfiankkTJfx/AEyA56p6zmnSfnCyk73+16kxsU26+jE+7XO83Gd6PJfOKPUHCVgyZnVsT4q50Aldfbe5fcgeGzNWSjhfVYApmzNI5NQOar5rjjch55UeEjyi6+j8K3EyBSsFr6U/WdDxiQOV5wjCdlvNVyjfGKGQozdHTclM3YNXVKdnQEajPbtqfMhIWEgCV3mjjPsmXWeOeTd1ZZt5ftNf2boCLhOzGaFrNqxriSydC5u5x9dZCdwKyFe4yWZFdm5VUOJOlWlvl9fZ8u+GbdhKBq+Gw0JWZdiSOvZrzZjojK1XQxRjCmllEPR2hxYO2YfgAudA9SpgP1IYYou8HPzImV74cGayAoMatljLtx5Ay5V+ZmBZmJWW2jaQ6Uh8PhgnoAqx2h4jvmQAYGz3DhYG8Hq4ynuVy7dbUSR37XTAvBgNdxYp51UKLRktyWW+0E3wQVlXwOnKvrduh/8JFwbqm71dXwndZVz0CzcORKuSjvEbkADMhjwEhmWafBkvzt22IjrSs+9xMzrcQHzb5oN0A0YlVKqXOCd568PwCADCl+Xlss6DbWulqVadHsuzLTSnNDmFVvhp8+KJHeu5zfFitL8pS2GAvOXluMprWuVmDLJ2RaaQ7CrHs34ERz3DwoUceZax5nSrKIc23dLF0wnCvrtmHWuHADjpyd8d4lF5GHPG4VSrJoxMRaoBFL61DrSWuLtUEzuy2m7ung3CRb7wY8xQlG5+6S2+ONHLDqkuzaEliUyT2zbUb0W2ZjONc8wdc4N1ybDiTj3JG22MyuRqMbhYcCUla4C0fe4eyjOt8ZZNYBCymdNGpEyptmO1AzgLZYEVSX22Ic52479CdYK3DkT8q0xgg/++FAgtGakgyc4J3thGJpReCCAENWtMU0/fl9+wRrxgHjSdhydYY3HgrQid5l6bielXm2X+JrOtDz2mLdrkZ8KFBjVs0Y3yXTPgHOAJg130eC48OCC75YZzi3KqV15m5xLnBQQhyoDqopbTH9d5JhwKxMO2MOlfvOIOvBgN06ZmlFHYj4yyHVfi2jKnDBzMqJscZn4ePfpBv2Ios0twJHzpCL8r4pq0ayaFW5lMIl2SWZjO8ZnJvUTkSdAIFwrrRvAOeiwYq9yDIj85zBkbPljsyhMoBRvHytOFAvi3kF56ol+WJbjNPgbTHjSVX9RhYfTJya7cW/FLjDMaQ9s5zlLghxxcE777PmceaghJRkoC3WzagcDs9sixWOqeFcAS5cbl3Ve+7Gke/MtL2Agt9n1U67PQfyWw+SALjAM2EDF4CSDJT50a7GGM6V13XM2hs3lcxpMq7IRXmjmLV2ZsmIkVC5j3OOBcXJP3nWZAMn8RGakRO+hnOlPf8BUECcQNq7WacAAAAASUVORK5CYII=" id="image6cbce16825" transform="scale(1 -1) translate(0 -18)" x="415" y="-219.14608" width="123.12" height="18"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 543.438 219.5352 
+L 602.028 219.5352 
+L 602.028 237.276 
+L 543.438 237.276 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 138.33 242.82 
+L 196.92 242.82 
+L 196.92 260.5608 
+L 138.33 260.5608 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAKsAAAAZCAYAAABO6t5nAAAE2UlEQVR4nN1bS5LcIAwVVblHDjjr2WQ118mtcpImBTZYgCQeNqY9Q6XSNghJ3fo9ZI/zHx+ewnCOis8zc7P4PGkO3OM+P9liOf78/fpHRL8dpT3h376P8+D/bwsqjTsWEtdIcyjhmLoyTbzKKkly23VNt0IuoptA49jvK8n+RX7z1fgZiNMnH+hcb1zhfUbeChnAHp9+4zACKbsV72mQxp3Yo9DEr9PlwRaSzyQC58dpEN2is75eutF6BpXorDmNDzpX836XXGkdcFbP7cRsyH0grcdhGNEfiankkTJfx/AEyA56p6zmnSfnCyk73+16kxsU26+jE+7XO83Gd6PJfOKPUHCVgyZnVsT4q50Aldfbe5fcgeGzNWSjhfVYApmzNI5NQOar5rjjch55UeEjyi6+j8K3EyBSsFr6U/WdDxiQOV5wjCdlvNVyjfGKGQozdHTclM3YNXVKdnQEajPbtqfMhIWEgCV3mjjPsmXWeOeTd1ZZt5ftNf2boCLhOzGaFrNqxriSydC5u5x9dZCdwKyFe4yWZFdm5VUOJOlWlvl9fZ8u+GbdhKBq+Gw0JWZdiSOvZrzZjojK1XQxRjCmllEPR2hxYO2YfgAudA9SpgP1IYYou8HPzImV74cGayAoMatljLtx5Ay5V+ZmBZmJWW2jaQ6Uh8PhgnoAqx2h4jvmQAYGz3DhYG8Hq4ynuVy7dbUSR37XTAvBgNdxYp51UKLRktyWW+0E3wQVlXwOnKvrduh/8JFwbqm71dXwndZVz0CzcORKuSjvEbkADMhjwEhmWafBkvzt22IjrSs+9xMzrcQHzb5oN0A0YlVKqXOCd568PwCADCl+Xlss6DbWulqVadHsuzLTSnNDmFVvhp8+KJHeu5zfFitL8pS2GAvOXluMprWuVmDLJ2RaaQ7CrHs34ERz3DwoUceZax5nSrKIc23dLF0wnCvrtmHWuHADjpyd8d4lF5GHPG4VSrJoxMRaoBFL61DrSWuLtUEzuy2m7ung3CRb7wY8xQlG5+6S2+ONHLDqkuzaEliUyT2zbUb0W2ZjONc8wdc4N1ybDiTj3JG22MyuRqMbhYcCUla4C0fe4eyjOt8ZZNYBCymdNGpEyptmO1AzgLZYEVSX22Ic52479CdYK3DkT8q0xgg/++FAgtGakgyc4J3thGJpReCCAENWtMU0/fl9+wRrxgHjSdhydYY3HgrQid5l6bielXm2X+JrOtDz2mLdrkZ8KFBjVs0Y3yXTPgHOAJg130eC48OCC75YZzi3KqV15m5xLnBQQhyoDqopbTH9d5JhwKxMO2MOlfvOIOvBgN06ZmlFHYj4yyHVfi2jKnDBzMqJscZn4ePfpBv2Ios0twJHzpCL8r4pq0ayaFW5lMIl2SWZjO8ZnJvUTkSdAIFwrrRvAOeiwYq9yDIj85zBkbPljsyhMoBRvHytOFAvi3kF56ol+WJbjNPgbTHjSVX9RhYfTJya7cW/FLjDMaQ9s5zlLghxxcE777PmceaghJRkoC3WzagcDs9sixWOqeFcAS5cbl3Ve+7Gke/MtL2Agt9n1U67PQfyWw+SALjAM2EDF4CSDJT50a7GGM6V13XM2hs3lcxpMq7IRXmjmLV2ZsmIkVC5j3OOBcXJP3nWZAMn8RGakRO+hnOlPf8BUECcQNq7WacAAAAASUVORK5CYII=" id="image41db5035b3" transform="scale(1 -1) translate(0 -18)" x="213" y="-242.14608" width="123.12" height="18"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 340.884 242.82 
+L 399.474 242.82 
+L 399.474 260.5608 
+L 340.884 260.5608 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g clip-path="url(#p79103c28f8)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAKsAAAAZCAYAAABO6t5nAAAE2UlEQVR4nN1bS5LcIAwVVblHDjjr2WQ118mtcpImBTZYgCQeNqY9Q6XSNghJ3fo9ZI/zHx+ewnCOis8zc7P4PGkO3OM+P9liOf78/fpHRL8dpT3h376P8+D/bwsqjTsWEtdIcyjhmLoyTbzKKkly23VNt0IuoptA49jvK8n+RX7z1fgZiNMnH+hcb1zhfUbeChnAHp9+4zACKbsV72mQxp3Yo9DEr9PlwRaSzyQC58dpEN2is75eutF6BpXorDmNDzpX836XXGkdcFbP7cRsyH0grcdhGNEfiankkTJfx/AEyA56p6zmnSfnCyk73+16kxsU26+jE+7XO83Gd6PJfOKPUHCVgyZnVsT4q50Aldfbe5fcgeGzNWSjhfVYApmzNI5NQOar5rjjch55UeEjyi6+j8K3EyBSsFr6U/WdDxiQOV5wjCdlvNVyjfGKGQozdHTclM3YNXVKdnQEajPbtqfMhIWEgCV3mjjPsmXWeOeTd1ZZt5ftNf2boCLhOzGaFrNqxriSydC5u5x9dZCdwKyFe4yWZFdm5VUOJOlWlvl9fZ8u+GbdhKBq+Gw0JWZdiSOvZrzZjojK1XQxRjCmllEPR2hxYO2YfgAudA9SpgP1IYYou8HPzImV74cGayAoMatljLtx5Ay5V+ZmBZmJWW2jaQ6Uh8PhgnoAqx2h4jvmQAYGz3DhYG8Hq4ynuVy7dbUSR37XTAvBgNdxYp51UKLRktyWW+0E3wQVlXwOnKvrduh/8JFwbqm71dXwndZVz0CzcORKuSjvEbkADMhjwEhmWafBkvzt22IjrSs+9xMzrcQHzb5oN0A0YlVKqXOCd568PwCADCl+Xlss6DbWulqVadHsuzLTSnNDmFVvhp8+KJHeu5zfFitL8pS2GAvOXluMprWuVmDLJ2RaaQ7CrHs34ERz3DwoUceZax5nSrKIc23dLF0wnCvrtmHWuHADjpyd8d4lF5GHPG4VSrJoxMRaoBFL61DrSWuLtUEzuy2m7ung3CRb7wY8xQlG5+6S2+ONHLDqkuzaEliUyT2zbUb0W2ZjONc8wdc4N1ybDiTj3JG22MyuRqMbhYcCUla4C0fe4eyjOt8ZZNYBCymdNGpEyptmO1AzgLZYEVSX22Ic52479CdYK3DkT8q0xgg/++FAgtGakgyc4J3thGJpReCCAENWtMU0/fl9+wRrxgHjSdhydYY3HgrQid5l6bielXm2X+JrOtDz2mLdrkZ8KFBjVs0Y3yXTPgHOAJg130eC48OCC75YZzi3KqV15m5xLnBQQhyoDqopbTH9d5JhwKxMO2MOlfvOIOvBgN06ZmlFHYj4yyHVfi2jKnDBzMqJscZn4ePfpBv2Ios0twJHzpCL8r4pq0ayaFW5lMIl2SWZjO8ZnJvUTkSdAIFwrrRvAOeiwYq9yDIj85zBkbPljsyhMoBRvHytOFAvi3kF56ol+WJbjNPgbTHjSVX9RhYfTJya7cW/FLjDMaQ9s5zlLghxxcE777PmceaghJRkoC3WzagcDs9sixWOqeFcAS5cbl3Ve+7Gke/MtL2Agt9n1U67PQfyWw+SALjAM2EDF4CSDJT50a7GGM6V13XM2hs3lcxpMq7IRXmjmLV2ZsmIkVC5j3OOBcXJP3nWZAMn8RGakRO+hnOlPf8BUECcQNq7WacAAAAASUVORK5CYII=" id="imagebcf0613f6a" transform="scale(1 -1) translate(0 -18)" x="415" y="-242.14608" width="123.12" height="18"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 543.438 242.82 
+L 602.028 242.82 
+L 602.028 260.5608 
+L 543.438 260.5608 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffebad"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 142.236 271.75968 
+L 160.092 271.75968 
+L 160.092 282.84768 
+L 142.236 282.84768 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ff8c8c"/>
+   </g>
+   <g id="patch_23">
+    <path d="M 198.036 271.75968 
+L 215.892 271.75968 
+L 215.892 282.84768 
+L 198.036 282.84768 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #ffe38c"/>
+   </g>
+   <g id="patch_24">
+    <path d="M 253.836 271.75968 
+L 271.692 271.75968 
+L 271.692 282.84768 
+L 253.836 282.84768 
+z
+" clip-path="url(#p79103c28f8)" style="fill: #98bc9c"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 135.54 30.4848 
+L 604.818 30.4848 
+" clip-path="url(#p79103c28f8)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_2">
+    <path d="M 7.2 53.7696 
+L 604.818 53.7696 
+" clip-path="url(#p79103c28f8)" style="fill: none; stroke: #000000; stroke-width: 1.4; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_3">
+    <path d="M 134.424 7.2 
+L 134.424 263.3328 
+" clip-path="url(#p79103c28f8)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_4">
+    <path d="M 204.732 30.4848 
+L 204.732 263.3328 
+" clip-path="url(#p79103c28f8)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_5">
+    <path d="M 407.286 30.4848 
+L 407.286 263.3328 
+" clip-path="url(#p79103c28f8)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_6">
+    <path d="M 7.2 100.3392 
+L 604.818 100.3392 
+" clip-path="url(#p79103c28f8)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: middle" x="370.179" y="22.10865" transform="rotate(-0 370.179 22.10865)">Scenarios</text>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="45.39345" transform="rotate(-0 11.664 45.39345)">Measure</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="45.39345" transform="rotate(-0 142.236 45.39345)">A</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="45.39345" transform="rotate(-0 216.45 45.39345)">B</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="45.39345" transform="rotate(-0 280.62 45.39345)">C</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="45.39345" transform="rotate(-0 344.79 45.39345)">F</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="45.39345" transform="rotate(-0 419.004 45.39345)">D</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="45.39345" transform="rotate(-0 483.174 45.39345)">E</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="45.39345" transform="rotate(-0 547.344 45.39345)">G</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="68.050125" transform="rotate(-0 11.664 68.050125)">Runs in</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="68.049305" transform="rotate(-0 142.236 68.049305)">GPT 5.5</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="68.049305" transform="rotate(-0 216.45 68.049305)">GPT 5.5</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="68.049305" transform="rotate(-0 280.62 68.049305)">GPT 5.5</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="68.049305" transform="rotate(-0 344.79 68.049305)">GPT 5.5</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="68.049305" transform="rotate(-0 419.004 68.049305)">Prometheus</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="68.049305" transform="rotate(-0 483.174 68.049305)">Prometheus</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="68.049305" transform="rotate(-0 547.344 68.049305)">Prometheus</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="91.334925" transform="rotate(-0 11.664 91.334925)">Receives</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="91.331644" transform="rotate(-0 142.236 91.331644)">Nothing</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="216.45" y="91.334925" transform="rotate(-0 216.45 91.334925)">Data + code</text>
+   </g>
+   <g id="text_21">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="280.62" y="91.334925" transform="rotate(-0 280.62 91.334925)">Our model</text>
+   </g>
+   <g id="text_22">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="344.79" y="91.334925" transform="rotate(-0 344.79 91.334925)">All three</text>
+   </g>
+   <g id="text_23">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="419.004" y="91.334925" transform="rotate(-0 419.004 91.334925)">Data + code</text>
+   </g>
+   <g id="text_24">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="483.174" y="91.334925" transform="rotate(-0 483.174 91.334925)">Our model</text>
+   </g>
+   <g id="text_25">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="547.344" y="91.334925" transform="rotate(-0 547.344 91.334925)">All three</text>
+   </g>
+   <g id="text_26">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="114.619725" transform="rotate(-0 11.664 114.619725)">Usable answers</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="114.709959" transform="rotate(-0 142.236 114.709959)">6/9</text>
+   </g>
+   <g id="text_28">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="114.709959" transform="rotate(-0 216.45 114.709959)">9/9</text>
+   </g>
+   <g id="text_29">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="114.709959" transform="rotate(-0 280.62 114.709959)">9/9</text>
+   </g>
+   <g id="text_30">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="114.709959" transform="rotate(-0 344.79 114.709959)">9/9</text>
+   </g>
+   <g id="text_31">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="114.709959" transform="rotate(-0 419.004 114.709959)">9/9</text>
+   </g>
+   <g id="text_32">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="114.709959" transform="rotate(-0 483.174 114.709959)">9/9</text>
+   </g>
+   <g id="text_33">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="114.709959" transform="rotate(-0 547.344 114.709959)">9/9</text>
+   </g>
+   <g id="text_34">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="137.904525" transform="rotate(-0 11.664 137.904525)">Median APE</text>
+   </g>
+   <g id="text_35">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="137.904525" transform="rotate(-0 142.236 137.904525)">502.2 %</text>
+   </g>
+   <g id="text_36">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="137.904525" transform="rotate(-0 216.45 137.904525)">2.9 %</text>
+   </g>
+   <g id="text_37">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="280.62" y="137.903705" transform="rotate(-0 280.62 137.903705)">14.6 %</text>
+   </g>
+   <g id="text_38">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="344.79" y="137.903705" transform="rotate(-0 344.79 137.903705)">7.3 %</text>
+   </g>
+   <g id="text_39">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="137.904525" transform="rotate(-0 419.004 137.904525)">0.9 %</text>
+   </g>
+   <g id="text_40">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="483.174" y="137.903705" transform="rotate(-0 483.174 137.903705)">14.6 %</text>
+   </g>
+   <g id="text_41">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="547.344" y="137.903705" transform="rotate(-0 547.344 137.903705)">1.8 %</text>
+   </g>
+   <g id="text_42">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="161.189325" transform="rotate(-0 11.664 161.189325)">Mean APE</text>
+   </g>
+   <g id="text_43">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="161.189325" transform="rotate(-0 142.236 161.189325)">662.1 %</text>
+   </g>
+   <g id="text_44">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="216.45" y="161.188505" transform="rotate(-0 216.45 161.188505)">27.9 %</text>
+   </g>
+   <g id="text_45">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="161.189325" transform="rotate(-0 280.62 161.189325)">13.1 %</text>
+   </g>
+   <g id="text_46">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="344.79" y="161.188505" transform="rotate(-0 344.79 161.188505)">18.3 %</text>
+   </g>
+   <g id="text_47">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="419.004" y="161.188505" transform="rotate(-0 419.004 161.188505)">25.0 %</text>
+   </g>
+   <g id="text_48">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="161.189325" transform="rotate(-0 483.174 161.189325)">13.1 %</text>
+   </g>
+   <g id="text_49">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="547.344" y="161.188505" transform="rotate(-0 547.344 161.188505)">15.6 %</text>
+   </g>
+   <g id="text_50">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="184.474125" transform="rotate(-0 11.664 184.474125)">Variation across repeats</text>
+   </g>
+   <g id="text_51">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="184.474125" transform="rotate(-0 142.236 184.474125)">26.7 %</text>
+   </g>
+   <g id="text_52">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="216.45" y="184.473305" transform="rotate(-0 216.45 184.473305)">4.1 %</text>
+   </g>
+   <g id="text_53">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="184.474125" transform="rotate(-0 280.62 184.474125)">0.0 %</text>
+   </g>
+   <g id="text_54">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="344.79" y="184.473305" transform="rotate(-0 344.79 184.473305)">1.7 %</text>
+   </g>
+   <g id="text_55">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="419.004" y="184.473305" transform="rotate(-0 419.004 184.473305)">8.1 %</text>
+   </g>
+   <g id="text_56">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="184.474125" transform="rotate(-0 483.174 184.474125)">0.0 %</text>
+   </g>
+   <g id="text_57">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="547.344" y="184.473305" transform="rotate(-0 547.344 184.473305)">3.3 %</text>
+   </g>
+   <g id="text_58">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="207.758925" transform="rotate(-0 11.664 207.758925)">Identical on repeat</text>
+   </g>
+   <g id="text_59">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="207.758925" transform="rotate(-0 142.236 207.758925)">0 %</text>
+   </g>
+   <g id="text_60">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="207.758925" transform="rotate(-0 216.45 207.758925)">0 %</text>
+   </g>
+   <g id="text_61">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="207.758925" transform="rotate(-0 280.62 207.758925)">100 %</text>
+   </g>
+   <g id="text_62">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="344.79" y="207.758105" transform="rotate(-0 344.79 207.758105)">33 %</text>
+   </g>
+   <g id="text_63">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="207.758925" transform="rotate(-0 419.004 207.758925)">0 %</text>
+   </g>
+   <g id="text_64">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="207.758925" transform="rotate(-0 483.174 207.758925)">100 %</text>
+   </g>
+   <g id="text_65">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="547.344" y="207.758105" transform="rotate(-0 547.344 207.758105)">33 %</text>
+   </g>
+   <g id="text_66">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="231.043725" transform="rotate(-0 11.664 231.043725)">Cost per answer</text>
+   </g>
+   <g id="text_67">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="142.236" y="231.070795" transform="rotate(-0 142.236 231.070795)">$ 0.38</text>
+   </g>
+   <g id="text_68">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="231.085561" transform="rotate(-0 216.45 231.085561)">$ 0.47</text>
+   </g>
+   <g id="text_69">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="231.085561" transform="rotate(-0 280.62 231.085561)">$ 0.009</text>
+   </g>
+   <g id="text_70">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="344.79" y="231.070795" transform="rotate(-0 344.79 231.070795)">$ 0.43</text>
+   </g>
+   <g id="text_71">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="231.085561" transform="rotate(-0 419.004 231.085561)">$ 0.77</text>
+   </g>
+   <g id="text_72">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="231.085561" transform="rotate(-0 483.174 231.085561)">$ 0.20</text>
+   </g>
+   <g id="text_73">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="547.344" y="231.070795" transform="rotate(-0 547.344 231.070795)">$ 0.55</text>
+   </g>
+   <g id="text_74">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="254.328525" transform="rotate(-0 11.664 254.328525)">Latency</text>
+   </g>
+   <g id="text_75">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="142.236" y="254.327705" transform="rotate(-0 142.236 254.327705)">69.5 s</text>
+   </g>
+   <g id="text_76">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="254.328525" transform="rotate(-0 216.45 254.328525)">123.8 s</text>
+   </g>
+   <g id="text_77">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="254.328525" transform="rotate(-0 280.62 254.328525)">6.0 s</text>
+   </g>
+   <g id="text_78">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="344.79" y="254.327705" transform="rotate(-0 344.79 254.327705)">103.9 s</text>
+   </g>
+   <g id="text_79">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="254.328525" transform="rotate(-0 419.004 254.328525)">111.3 s</text>
+   </g>
+   <g id="text_80">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="254.328525" transform="rotate(-0 483.174 254.328525)">31.7 s</text>
+   </g>
+   <g id="text_81">
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #7a5c00" x="547.344" y="254.327705" transform="rotate(-0 547.344 254.327705)">84.4 s</text>
+   </g>
+   <g id="text_82">
+    <text style="font-size: 10px; font-family: 'Calibri'; text-anchor: start" x="165.672" y="279.815399" transform="rotate(-0 165.672 279.815399)">Worst</text>
+   </g>
+   <g id="text_83">
+    <text style="font-size: 10px; font-family: 'Calibri'; text-anchor: start" x="221.472" y="279.815399" transform="rotate(-0 221.472 279.815399)">Middle</text>
+   </g>
+   <g id="text_84">
+    <text style="font-size: 10px; font-family: 'Calibri'; text-anchor: start" x="277.272" y="279.815399" transform="rotate(-0 277.272 279.815399)">Best</text>
+   </g>
+   <g id="text_85">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'Calibri'; text-anchor: start" x="320.796" y="279.810711" transform="rotate(-0 320.796 279.810711)">Coloured within each arm against baseline A; bold = best and worst</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p79103c28f8">
+   <rect x="7.2" y="7.2" width="597.618" height="281.74608"/>
+  </clipPath>
+ </defs>
+</svg>
