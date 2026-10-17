@@ -43,7 +43,8 @@ SOURCE = THESIS_RESULTS_SRQ4_DIR / "tables" / "22_scenario_comparison.csv"
 OUT_DIR = get_chapter_figures_dir("experimental_evaluation")
 STEM = "defence_scenario_heatmap"
 # Outputs of earlier trial variants, removed on every run so no stale copy survives.
-RETIRED = [f"{STEM}_4_within_arms.svg", f"{STEM}_4_colour_scale.svg"]
+RETIRED = [f"{STEM}_4_within_arms.svg", f"{STEM}_4_colour_scale.svg",
+           f"{STEM}_4_draft_borders_dimmed.svg"]
 
 # Column order on the slide: the GPT-5.5 orchestrator, then Prometheus.
 LEFT, RIGHT = ["A", "B", "C", "F"], ["D", "E", "G"]
@@ -71,10 +72,19 @@ _FADED = "#B4B4B4"
 DIM_COLS = set(RIGHT)
 DIM_SHARE = 0.45  # share of white blended into a dimmed column's fills
 
-# Draft: slide 23 with the cells its speaker notes point at outlined.
+# Draft: per frame, the cells its speaker notes point at, outlined.
 # Each entry is (scenario, first row, last row); a single cell repeats the row.
-DRAFT_BORDERS = [("C", "Mean APE", "Latency"), ("E", "Mean APE", "Latency"),
-                 ("B", "Median APE", "Median APE"), ("D", "Median APE", "Median APE")]
+DRAFT_BORDERS = [
+    [],
+    [("A", "Usable answers", "Usable answers"), ("A", "Median APE", "Median APE"),
+     ("B", "Identical on repeat", "Identical on repeat"),
+     ("D", "Identical on repeat", "Identical on repeat"),
+     ("D", "Cost per answer", "Cost per answer"), ("B", "Latency", "Latency")],
+    [("F", "Usable answers", "Latency"), ("G", "Usable answers", "Latency")],
+    [("C", "Mean APE", "Latency"), ("E", "Mean APE", "Latency"),
+     ("B", "Median APE", "Median APE"), ("D", "Median APE", "Median APE")],
+]
+BORDER_LW = 1.3
 
 
 def _money(x: str) -> str:
@@ -202,7 +212,7 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
         top = (rows.index(first) + 2) * row_h + pad
         bottom = (rows.index(last) + 3) * row_h - pad
         ax.add_patch(Rectangle((x0[s] + pad, top), col_w - 2 * pad, bottom - top,
-                               facecolor="none", edgecolor="black", lw=2, zorder=5))
+                               facecolor="none", edgecolor="black", lw=BORDER_LW, zorder=5))
     # Separates who-gets-what (Runs in, Receives) from the measured results.
     ax.plot([0, width], [row_h * 4, row_h * 4], color="black", lw=0.8)
 
@@ -235,9 +245,10 @@ def main() -> None:
         _render(text_of, fills, third, shown, out)
         print(f"wrote {out.relative_to(_ROOT)}")
 
-    out = OUT_DIR / f"{STEM}_4_draft_borders_dimmed.svg"
-    _render(text_of, fills, third, FRAMES[-1], out, dim=DIM_COLS, borders=DRAFT_BORDERS)
-    print(f"wrote {out.relative_to(_ROOT)}")
+    for i, (shown, borders) in enumerate(zip(FRAMES, DRAFT_BORDERS), start=1):
+        out = OUT_DIR / f"{STEM}_draft_{i}.svg"
+        _render(text_of, fills, third, shown, out, dim=DIM_COLS, borders=borders)
+        print(f"wrote {out.relative_to(_ROOT)}")
 
 
 if __name__ == "__main__":
