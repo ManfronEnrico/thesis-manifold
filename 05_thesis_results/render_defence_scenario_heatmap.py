@@ -44,6 +44,10 @@ STEM = "defence_scenario_heatmap"
 LEFT, RIGHT = ["A", "B", "C", "F"], ["D", "E", "G"]
 RUNS_IN = {"A": "GPT 5.5", "B": "GPT 5.5", "C": "GPT 5.5", "F": "GPT 5.5",
            "D": "Prometheus", "E": "Prometheus", "G": "Prometheus"}
+# What each scenario receives, as a vertical gradient (top, bottom) with white text,
+# so the comparable scenarios on either side of the divider read as pairs.
+RECEIVES_FILL = {"Data + code": ("#2E6DA4", "#7393B3"), "Our model": ("#9C2A96", "#B86BB3"),
+                 "All three": ("#4A4A4A", "#0D0D0D")}
 RECEIVES = {"A": "Nothing", "B": "Data + code", "C": "Our model", "F": "All three",
             "D": "Data + code", "E": "Our model", "G": "All three"}
 
@@ -60,7 +64,7 @@ TIERS = {
 
 # Theme colours (red, accent2 orange, accent3 green) as (light, dark) tints over white.
 _BASE = {"R": "#FF0000", "O": "#E97132", "G": "#196B24"}
-_LIGHT, _DARK = 0.30, 0.55
+_LIGHT, _DARK = 0.16, 0.55
 
 
 def _tint(hex_colour: str, share: float) -> str:
@@ -93,12 +97,22 @@ def _values(df: pd.DataFrame) -> dict[str, dict[str, str]]:
     return out
 
 
+def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
+    """Fill a rectangle with a vertical gradient from `top` to `bottom`."""
+    from matplotlib.colors import LinearSegmentedColormap
+    import numpy as np
+    cmap = LinearSegmentedColormap.from_list("cell", [top, bottom])
+    ax.imshow(np.linspace(0, 1, 64).reshape(-1, 1), cmap=cmap, aspect="auto",
+              extent=(x, x + w, y + h, y), interpolation="bicubic", zorder=1)
+
+
 def _render(values: dict, shown: set[str], path: Path) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.03
     cols = LEFT + RIGHT
-    x0 = {s: label_w + i * col_w + (gap if s in RIGHT else 0) for i, s in enumerate(cols)}
-    width = label_w + len(cols) * col_w + gap
+    x0 = {s: label_w + i * col_w + (gap if i else 0) + (gap if s in RIGHT else 0)
+          for i, s in enumerate(cols)}
+    width = label_w + len(cols) * col_w + 2 * gap
     rows = ["Runs in", "Receives", *TIERS]
     height = (len(rows) + 2) * row_h
 
@@ -107,8 +121,8 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
     ax.set_ylim(height, 0)
     ax.axis("off")
 
-    def text(x, y, s, bold=False, size=11, ha="left"):
-        ax.text(x, y, s, ha=ha, va="center", fontsize=size, color="black",
+    def text(x, y, s, bold=False, size=11, ha="left", colour="black"):
+        ax.text(x, y, s, ha=ha, va="center", fontsize=size, color=colour,
                 fontweight="bold" if bold else "normal")
 
     text(label_w + (width - label_w) / 2, row_h * 0.5, "Scenarios", bold=True, size=13, ha="center")
@@ -128,6 +142,11 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
                 cell, tier = RECEIVES[s], ""
             else:
                 cell, tier = values[measure][s], TIERS[measure][s]
+            if measure == "Receives" and cell in RECEIVES_FILL:
+                _gradient(ax, x0[s] + pad, y + pad, col_w - 2 * pad, row_h - 2 * pad,
+                          *RECEIVES_FILL[cell])
+                text(x0[s] + 0.12, y + row_h / 2, cell, bold=True, size=10.5, colour="white")
+                continue
             colour, strong = tier[:1], tier.endswith("*")
             on = colour in shown
             if on:
@@ -136,10 +155,13 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
                                        edgecolor="none"))
             text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5)
 
-    divider_x = label_w + len(LEFT) * col_w + gap / 2
     ax.plot([label_w - 0.02, label_w - 0.02], [0, height], color="black", lw=0.8)
-    ax.plot([divider_x, divider_x], [row_h * 2, height], color="#7F7F7F", lw=0.8)
+    for after in ("A", LEFT[-1]):
+        divider_x = x0[after] + col_w + gap / 2
+        ax.plot([divider_x, divider_x], [row_h * 2, height], color="#7F7F7F", lw=0.8)
 
+    ax.set_xlim(0, width)
+    ax.set_ylim(height, 0)
     fig.savefig(path, format="svg", facecolor="white", transparent=False, bbox_inches="tight")
     plt.close(fig)
 

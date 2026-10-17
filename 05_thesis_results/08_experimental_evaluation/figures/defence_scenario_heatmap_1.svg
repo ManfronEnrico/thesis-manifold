@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="601.974pt" height="270.5328pt" viewBox="0 0 601.974 270.5328" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="612.018pt" height="270.5328pt" viewBox="0 0 612.018 270.5328" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-10-17T13:04:19.793005</dc:date>
+    <dc:date>2026-10-17T13:12:17.658483</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -22,35 +22,44 @@
  <g id="figure_1">
   <g id="patch_1">
    <path d="M 0 270.5328 
-L 601.974 270.5328 
-L 601.974 0 
+L 612.018 270.5328 
+L 612.018 0 
 L 0 0 
 z
 " style="fill: #ffffff"/>
   </g>
   <g id="axes_1">
+   <g clip-path="url(#pfece5eeddc)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAiAAAAAcCAYAAABYrgTjAAACkElEQVR4nO3dMU4bURSG0Yc9rdcQZSVRShoXUVaBBBJRthEhuWAXadzQZinZA7U9ka0UoSX3f7rFOR2NQU/og3tnPL55PBzXQamnh/3Nv1+/3B1/jzE+OOZSH2+f95dzvdrtdr/GGJ+ccanPr6+vl3P9L4+H488xxpeaH4m/vj497C/nevVyd/wxxvjmdEp9v33eX871arfb3Y8xDs64znL270fc6pDjNptN/pvwLn798zQmT2PqLWd1iFtP/stLE4e+NCZPY/I0pt7ib2Oe6SRvu91O+C68h8bkaUyextRbzqvpPE0c8kwnfWlMnsbkaUy95XQOvCpvWI/miUNfGpOnMXkaU88GZALTSZ449GUDkqcxeRpTzwZkAtNJnuuzfdmA5GlMnsbUswGZwHSSZzrpywYkT2PyNKbecnITapw45IlDXxqTpzF5GlNvObsJNc56NE8c+tKYPI3J05h6NiATmE7yxKEvG5A8jcnTmHoexT6BOOS5QawvD1vO05g8jam3nNQhzno0z3TSl8bkaUyextSzAZlgdRE8Thz6MuPkaUyextSzAZnAdJInDn3ZgORpTJ7G1LMBmcD12TzXZ/uyAcnTmDyNqeddMBOIQ57ppC/vgsnTmDyNqec5IBNYj+aJQ19ugcrTmDyNqWcDMoHpJE8c+rIBydOYPI2p57NgJhCHPHHoy2fB5GlMnsbU82m4E1iP5rlBrC+fhpunMXkaU88GZALTSZ7ppC8bkDyNydOYejYgE5hO8sShLxuQPI3J05h6NiATmE7yxKEvG5A8jcnTmHrLaQ28Km+IQ57rs31pTJ7G5GlMveXsMYVx1qN5ppO+NCZPY/I0pp5HsU9gOskTh77MOHkak6cxo9wfMnBDM5BYjbgAAAAASUVORK5CYII=" id="imaged8d2243b98" transform="scale(1 -1) translate(0 -20.16)" x="211" y="-78.3728" width="391.68" height="20.16"/>
+   </g>
    <g id="line2d_1">
     <path d="M 135.54 30.4848 
-L 594.774 30.4848 
-" clip-path="url(#pf99bf5d4b8)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+L 604.818 30.4848 
+" clip-path="url(#pfece5eeddc)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="line2d_2">
     <path d="M 7.2 53.7696 
-L 594.774 53.7696 
-" clip-path="url(#pf99bf5d4b8)" style="fill: none; stroke: #000000; stroke-width: 1.4; stroke-linecap: square"/>
+L 604.818 53.7696 
+" clip-path="url(#pfece5eeddc)" style="fill: none; stroke: #000000; stroke-width: 1.4; stroke-linecap: square"/>
    </g>
    <g id="line2d_3">
     <path d="M 134.424 7.2 
 L 134.424 263.3328 
-" clip-path="url(#pf99bf5d4b8)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#pfece5eeddc)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="line2d_4">
-    <path d="M 397.242 53.7696 
-L 397.242 263.3328 
-" clip-path="url(#pf99bf5d4b8)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
+    <path d="M 204.732 53.7696 
+L 204.732 263.3328 
+" clip-path="url(#pfece5eeddc)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_5">
+    <path d="M 407.286 53.7696 
+L 407.286 263.3328 
+" clip-path="url(#pfece5eeddc)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: middle" x="365.157" y="22.10865" transform="rotate(-0 365.157 22.10865)">Scenarios</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: middle" x="370.179" y="22.10865" transform="rotate(-0 370.179 22.10865)">Scenarios</text>
    </g>
    <g id="text_2">
     <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="45.39345" transform="rotate(-0 11.664 45.39345)">Measure</text>
@@ -59,22 +68,22 @@ L 397.242 263.3328
     <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="45.39345" transform="rotate(-0 142.236 45.39345)">A</text>
    </g>
    <g id="text_4">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="45.39345" transform="rotate(-0 206.406 45.39345)">B</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="45.39345" transform="rotate(-0 216.45 45.39345)">B</text>
    </g>
    <g id="text_5">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="45.39345" transform="rotate(-0 270.576 45.39345)">C</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="45.39345" transform="rotate(-0 280.62 45.39345)">C</text>
    </g>
    <g id="text_6">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="45.39345" transform="rotate(-0 334.746 45.39345)">F</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="45.39345" transform="rotate(-0 344.79 45.39345)">F</text>
    </g>
    <g id="text_7">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="45.39345" transform="rotate(-0 408.96 45.39345)">D</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="45.39345" transform="rotate(-0 419.004 45.39345)">D</text>
    </g>
    <g id="text_8">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="45.39345" transform="rotate(-0 473.13 45.39345)">E</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="45.39345" transform="rotate(-0 483.174 45.39345)">E</text>
    </g>
    <g id="text_9">
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="45.39345" transform="rotate(-0 537.3 45.39345)">G</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="45.39345" transform="rotate(-0 547.344 45.39345)">G</text>
    </g>
    <g id="text_10">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="68.050125" transform="rotate(-0 11.664 68.050125)">Runs in</text>
@@ -83,22 +92,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="68.049305" transform="rotate(-0 142.236 68.049305)">GPT 5.5</text>
    </g>
    <g id="text_12">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="68.049305" transform="rotate(-0 206.406 68.049305)">GPT 5.5</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="68.049305" transform="rotate(-0 216.45 68.049305)">GPT 5.5</text>
    </g>
    <g id="text_13">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="68.049305" transform="rotate(-0 270.576 68.049305)">GPT 5.5</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="68.049305" transform="rotate(-0 280.62 68.049305)">GPT 5.5</text>
    </g>
    <g id="text_14">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="68.049305" transform="rotate(-0 334.746 68.049305)">GPT 5.5</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="68.049305" transform="rotate(-0 344.79 68.049305)">GPT 5.5</text>
    </g>
    <g id="text_15">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="68.049305" transform="rotate(-0 408.96 68.049305)">Prometheus</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="68.049305" transform="rotate(-0 419.004 68.049305)">Prometheus</text>
    </g>
    <g id="text_16">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="68.049305" transform="rotate(-0 473.13 68.049305)">Prometheus</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="68.049305" transform="rotate(-0 483.174 68.049305)">Prometheus</text>
    </g>
    <g id="text_17">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="68.049305" transform="rotate(-0 537.3 68.049305)">Prometheus</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="68.049305" transform="rotate(-0 547.344 68.049305)">Prometheus</text>
    </g>
    <g id="text_18">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="91.334925" transform="rotate(-0 11.664 91.334925)">Receives</text>
@@ -107,22 +116,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="91.331644" transform="rotate(-0 142.236 91.331644)">Nothing</text>
    </g>
    <g id="text_20">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="91.334105" transform="rotate(-0 206.406 91.334105)">Data + code</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="216.45" y="91.334925" transform="rotate(-0 216.45 91.334925)">Data + code</text>
    </g>
    <g id="text_21">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="91.334105" transform="rotate(-0 270.576 91.334105)">Our model</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="280.62" y="91.334925" transform="rotate(-0 280.62 91.334925)">Our model</text>
    </g>
    <g id="text_22">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="91.334105" transform="rotate(-0 334.746 91.334105)">All three</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="344.79" y="91.334925" transform="rotate(-0 344.79 91.334925)">All three</text>
    </g>
    <g id="text_23">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="91.334105" transform="rotate(-0 408.96 91.334105)">Data + code</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="419.004" y="91.334925" transform="rotate(-0 419.004 91.334925)">Data + code</text>
    </g>
    <g id="text_24">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="91.334105" transform="rotate(-0 473.13 91.334105)">Our model</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="483.174" y="91.334925" transform="rotate(-0 483.174 91.334925)">Our model</text>
    </g>
    <g id="text_25">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="91.334105" transform="rotate(-0 537.3 91.334105)">All three</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #ffffff" x="547.344" y="91.334925" transform="rotate(-0 547.344 91.334925)">All three</text>
    </g>
    <g id="text_26">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="114.619725" transform="rotate(-0 11.664 114.619725)">Usable answers</text>
@@ -131,22 +140,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="114.618905" transform="rotate(-0 142.236 114.618905)">6/9</text>
    </g>
    <g id="text_28">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="114.618905" transform="rotate(-0 206.406 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="114.618905" transform="rotate(-0 216.45 114.618905)">9/9</text>
    </g>
    <g id="text_29">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="114.618905" transform="rotate(-0 270.576 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="114.618905" transform="rotate(-0 280.62 114.618905)">9/9</text>
    </g>
    <g id="text_30">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="114.618905" transform="rotate(-0 334.746 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="114.618905" transform="rotate(-0 344.79 114.618905)">9/9</text>
    </g>
    <g id="text_31">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="114.618905" transform="rotate(-0 408.96 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="114.618905" transform="rotate(-0 419.004 114.618905)">9/9</text>
    </g>
    <g id="text_32">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="114.618905" transform="rotate(-0 473.13 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="114.618905" transform="rotate(-0 483.174 114.618905)">9/9</text>
    </g>
    <g id="text_33">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="114.618905" transform="rotate(-0 537.3 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="114.618905" transform="rotate(-0 547.344 114.618905)">9/9</text>
    </g>
    <g id="text_34">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="137.904525" transform="rotate(-0 11.664 137.904525)">Median APE</text>
@@ -155,22 +164,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="137.903705" transform="rotate(-0 142.236 137.903705)">502.2 %</text>
    </g>
    <g id="text_36">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="137.903705" transform="rotate(-0 206.406 137.903705)">2.9 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="137.903705" transform="rotate(-0 216.45 137.903705)">2.9 %</text>
    </g>
    <g id="text_37">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="137.903705" transform="rotate(-0 270.576 137.903705)">14.6 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="137.903705" transform="rotate(-0 280.62 137.903705)">14.6 %</text>
    </g>
    <g id="text_38">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="137.903705" transform="rotate(-0 334.746 137.903705)">7.3 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="137.903705" transform="rotate(-0 344.79 137.903705)">7.3 %</text>
    </g>
    <g id="text_39">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="137.903705" transform="rotate(-0 408.96 137.903705)">0.9 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="137.903705" transform="rotate(-0 419.004 137.903705)">0.9 %</text>
    </g>
    <g id="text_40">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="137.903705" transform="rotate(-0 473.13 137.903705)">14.6 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="137.903705" transform="rotate(-0 483.174 137.903705)">14.6 %</text>
    </g>
    <g id="text_41">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="137.903705" transform="rotate(-0 537.3 137.903705)">1.8 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="137.903705" transform="rotate(-0 547.344 137.903705)">1.8 %</text>
    </g>
    <g id="text_42">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="161.189325" transform="rotate(-0 11.664 161.189325)">Mean APE</text>
@@ -179,22 +188,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="161.188505" transform="rotate(-0 142.236 161.188505)">662.1 %</text>
    </g>
    <g id="text_44">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="161.188505" transform="rotate(-0 206.406 161.188505)">27.9 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="161.188505" transform="rotate(-0 216.45 161.188505)">27.9 %</text>
    </g>
    <g id="text_45">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="161.188505" transform="rotate(-0 270.576 161.188505)">13.1 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="161.188505" transform="rotate(-0 280.62 161.188505)">13.1 %</text>
    </g>
    <g id="text_46">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="161.188505" transform="rotate(-0 334.746 161.188505)">18.3 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="161.188505" transform="rotate(-0 344.79 161.188505)">18.3 %</text>
    </g>
    <g id="text_47">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="161.188505" transform="rotate(-0 408.96 161.188505)">25.0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="161.188505" transform="rotate(-0 419.004 161.188505)">25.0 %</text>
    </g>
    <g id="text_48">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="161.188505" transform="rotate(-0 473.13 161.188505)">13.1 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="161.188505" transform="rotate(-0 483.174 161.188505)">13.1 %</text>
    </g>
    <g id="text_49">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="161.188505" transform="rotate(-0 537.3 161.188505)">15.6 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="161.188505" transform="rotate(-0 547.344 161.188505)">15.6 %</text>
    </g>
    <g id="text_50">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="184.474125" transform="rotate(-0 11.664 184.474125)">Variation across repeats</text>
@@ -203,22 +212,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="184.473305" transform="rotate(-0 142.236 184.473305)">26.7 %</text>
    </g>
    <g id="text_52">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="184.473305" transform="rotate(-0 206.406 184.473305)">4.1 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="184.473305" transform="rotate(-0 216.45 184.473305)">4.1 %</text>
    </g>
    <g id="text_53">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="184.473305" transform="rotate(-0 270.576 184.473305)">0.0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="184.473305" transform="rotate(-0 280.62 184.473305)">0.0 %</text>
    </g>
    <g id="text_54">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="184.473305" transform="rotate(-0 334.746 184.473305)">1.7 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="184.473305" transform="rotate(-0 344.79 184.473305)">1.7 %</text>
    </g>
    <g id="text_55">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="184.473305" transform="rotate(-0 408.96 184.473305)">8.1 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="184.473305" transform="rotate(-0 419.004 184.473305)">8.1 %</text>
    </g>
    <g id="text_56">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="184.473305" transform="rotate(-0 473.13 184.473305)">0.0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="184.473305" transform="rotate(-0 483.174 184.473305)">0.0 %</text>
    </g>
    <g id="text_57">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="184.473305" transform="rotate(-0 537.3 184.473305)">3.3 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="184.473305" transform="rotate(-0 547.344 184.473305)">3.3 %</text>
    </g>
    <g id="text_58">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="207.758925" transform="rotate(-0 11.664 207.758925)">Identical on repeat</text>
@@ -227,22 +236,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="207.758105" transform="rotate(-0 142.236 207.758105)">0 %</text>
    </g>
    <g id="text_60">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="207.758105" transform="rotate(-0 206.406 207.758105)">0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="207.758105" transform="rotate(-0 216.45 207.758105)">0 %</text>
    </g>
    <g id="text_61">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="207.758105" transform="rotate(-0 270.576 207.758105)">100 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="207.758105" transform="rotate(-0 280.62 207.758105)">100 %</text>
    </g>
    <g id="text_62">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="207.758105" transform="rotate(-0 334.746 207.758105)">33 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="207.758105" transform="rotate(-0 344.79 207.758105)">33 %</text>
    </g>
    <g id="text_63">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="207.758105" transform="rotate(-0 408.96 207.758105)">0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="207.758105" transform="rotate(-0 419.004 207.758105)">0 %</text>
    </g>
    <g id="text_64">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="207.758105" transform="rotate(-0 473.13 207.758105)">100 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="207.758105" transform="rotate(-0 483.174 207.758105)">100 %</text>
    </g>
    <g id="text_65">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="207.758105" transform="rotate(-0 537.3 207.758105)">33 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="207.758105" transform="rotate(-0 547.344 207.758105)">33 %</text>
    </g>
    <g id="text_66">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="231.043725" transform="rotate(-0 11.664 231.043725)">Cost per answer</text>
@@ -251,22 +260,22 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="231.070795" transform="rotate(-0 142.236 231.070795)">$ 0.38</text>
    </g>
    <g id="text_68">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="231.070795" transform="rotate(-0 206.406 231.070795)">$ 0.47</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="231.070795" transform="rotate(-0 216.45 231.070795)">$ 0.47</text>
    </g>
    <g id="text_69">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="231.070795" transform="rotate(-0 270.576 231.070795)">$ 0.009</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="231.070795" transform="rotate(-0 280.62 231.070795)">$ 0.009</text>
    </g>
    <g id="text_70">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="231.070795" transform="rotate(-0 334.746 231.070795)">$ 0.43</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="231.070795" transform="rotate(-0 344.79 231.070795)">$ 0.43</text>
    </g>
    <g id="text_71">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="231.070795" transform="rotate(-0 408.96 231.070795)">$ 0.77</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="231.070795" transform="rotate(-0 419.004 231.070795)">$ 0.77</text>
    </g>
    <g id="text_72">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="231.070795" transform="rotate(-0 473.13 231.070795)">$ 0.20</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="231.070795" transform="rotate(-0 483.174 231.070795)">$ 0.20</text>
    </g>
    <g id="text_73">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="231.070795" transform="rotate(-0 537.3 231.070795)">$ 0.55</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="231.070795" transform="rotate(-0 547.344 231.070795)">$ 0.55</text>
    </g>
    <g id="text_74">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="254.328525" transform="rotate(-0 11.664 254.328525)">Latency</text>
@@ -275,28 +284,28 @@ L 397.242 263.3328
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="254.327705" transform="rotate(-0 142.236 254.327705)">69.5 s</text>
    </g>
    <g id="text_76">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="206.406" y="254.327705" transform="rotate(-0 206.406 254.327705)">123.8 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="254.327705" transform="rotate(-0 216.45 254.327705)">123.8 s</text>
    </g>
    <g id="text_77">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="270.576" y="254.327705" transform="rotate(-0 270.576 254.327705)">6.0 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="254.327705" transform="rotate(-0 280.62 254.327705)">6.0 s</text>
    </g>
    <g id="text_78">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="334.746" y="254.327705" transform="rotate(-0 334.746 254.327705)">103.9 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="254.327705" transform="rotate(-0 344.79 254.327705)">103.9 s</text>
    </g>
    <g id="text_79">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="408.96" y="254.327705" transform="rotate(-0 408.96 254.327705)">111.3 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="254.327705" transform="rotate(-0 419.004 254.327705)">111.3 s</text>
    </g>
    <g id="text_80">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="473.13" y="254.327705" transform="rotate(-0 473.13 254.327705)">31.7 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="254.327705" transform="rotate(-0 483.174 254.327705)">31.7 s</text>
    </g>
    <g id="text_81">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="537.3" y="254.327705" transform="rotate(-0 537.3 254.327705)">84.4 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="254.327705" transform="rotate(-0 547.344 254.327705)">84.4 s</text>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="pf99bf5d4b8">
-   <rect x="7.2" y="7.2" width="587.574" height="256.1328"/>
+  <clipPath id="pfece5eeddc">
+   <rect x="7.2" y="7.2" width="597.618" height="256.1328"/>
   </clipPath>
  </defs>
 </svg>
