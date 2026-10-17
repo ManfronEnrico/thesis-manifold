@@ -86,6 +86,15 @@ DRAFT_BORDERS = [
 ]
 BORDER_LW = 1.3
 
+# Draft: the row-reveal build, one group of rows per click (first click plain).
+ROW_GROUPS = [
+    [],
+    ["Usable answers", "Median APE", "Mean APE"],          # accuracy, the axis usually reported
+    ["Variation across repeats", "Identical on repeat"],  # replicability
+    ["Cost per answer"],
+    ["Latency"],
+]
+
 
 def _money(x: str) -> str:
     v = float(str(x).replace("$", ""))
@@ -151,7 +160,8 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
 
 
 def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path,
-            dim: set[str] = frozenset(), borders: list = ()) -> None:
+            dim: set[str] = frozenset(), borders: list = (),
+            rows_shown: set[str] | None = None) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -161,7 +171,10 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
     rows = ["Runs in", "Receives", *MEASURES]
     table_h = (len(rows) + 2) * row_h
     height = table_h + row_h * 1.1
-    fade = bool(shown) and shown != FRAMES[-1]
+    if rows_shown is not None:
+        fade = bool(rows_shown) and rows_shown != set(MEASURES)
+    else:
+        fade = bool(shown) and shown != FRAMES[-1]
 
     fig, ax = plt.subplots(figsize=(width, height))
     ax.axis("off")
@@ -195,7 +208,7 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
                 else:
                     text(x0[s] + 0.12, y + row_h / 2, cell, size=10.5)
             else:
-                on = third[(measure, s)] in shown
+                on = (measure in rows_shown) if rows_shown is not None else third[(measure, s)] in shown
                 if on:
                     fill = fills[(measure, s)]
                     if s in dim:
@@ -217,7 +230,7 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
     ax.plot([0, width], [row_h * 4, row_h * 4], color="black", lw=0.8)
 
     # Scale bar, best to worst, from the first coloured frame on.
-    if shown:
+    if (rows_shown if rows_shown is not None else shown):
         key_y, bar_x, bar_w = table_h + row_h * 0.6, label_w + 0.85, 2.4
         text(label_w + 0.12, key_y, "Best", bold=True, size=10)
         cmap = LinearSegmentedColormap.from_list("scale", [c for _, c in SCALE])
@@ -243,6 +256,14 @@ def main() -> None:
     for i, shown in enumerate(FRAMES, start=1):
         out = OUT_DIR / f"{STEM}_{i}.svg"
         _render(text_of, fills, third, shown, out)
+        print(f"wrote {out.relative_to(_ROOT)}")
+
+    # Draft: reveal by row, grouped into the four axes of the Ch9 trade-off.
+    revealed: set[str] = set()
+    for i, group in enumerate(ROW_GROUPS, start=1):
+        revealed |= set(group)
+        out = OUT_DIR / f"{STEM}_rows_{i}.svg"
+        _render(text_of, fills, third, set(), out, dim=DIM_COLS, rows_shown=set(revealed))
         print(f"wrote {out.relative_to(_ROOT)}")
 
     for i, (shown, borders) in enumerate(zip(FRAMES, DRAFT_BORDERS), start=1):
