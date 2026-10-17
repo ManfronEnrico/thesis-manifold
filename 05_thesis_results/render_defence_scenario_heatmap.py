@@ -89,11 +89,19 @@ BORDER_LW = 1.3
 # Draft: the row-reveal build, one group of rows per click (first click plain).
 ROW_GROUPS = [
     [],
-    ["Usable answers", "Median APE", "Mean APE"],          # accuracy, the axis usually reported
+    ["Usable answers"],                                   # does it answer at all
+    ["Median APE", "Mean APE"],                           # accuracy, the axis usually reported
     ["Variation across repeats", "Identical on repeat"],  # replicability
     ["Cost per answer"],
     ["Latency"],
 ]
+# Rows revealed on an earlier click recede: this share of white is blended into
+# their fills, and their text greys, so the current group carries the eye.
+INACTIVE_SHARE = 0.60
+_INACTIVE_INK = "#7F7F7F"
+# Closing frame: the full table, nothing receding, with what to look at outlined.
+CONCLUSION_BORDERS = [("C", "Mean APE", "Latency"), ("E", "Mean APE", "Latency"),
+                      ("B", "Median APE", "Median APE"), ("D", "Median APE", "Median APE")]
 
 
 def _money(x: str) -> str:
@@ -161,7 +169,7 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
 
 def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path,
             dim: set[str] = frozenset(), borders: list = (),
-            rows_shown: set[str] | None = None) -> None:
+            rows_shown: set[str] | None = None, active: set[str] | None = None) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -213,8 +221,12 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
                     fill = fills[(measure, s)]
                     if s in dim:
                         fill = _mix(fill, "#FFFFFF", DIM_SHARE)
+                    if active is not None and measure not in active:
+                        fill = _mix(fill, "#FFFFFF", INACTIVE_SHARE)
                     ax.add_patch(Rectangle((cx, cy), cw, ch, facecolor=fill, edgecolor="none"))
                 ink = _FADED if fade and not on else "black"
+                if on and active is not None and measure not in active:
+                    ink = _INACTIVE_INK
                 text(x0[s] + 0.12, y + row_h / 2, text_of[measure][s], size=10.5, colour=ink)
 
     ax.plot([label_w - 0.02, label_w - 0.02], [0, table_h], color="black", lw=0.8)
@@ -263,8 +275,13 @@ def main() -> None:
     for i, group in enumerate(ROW_GROUPS, start=1):
         revealed |= set(group)
         out = OUT_DIR / f"{STEM}_rows_{i}.svg"
-        _render(text_of, fills, third, set(), out, dim=DIM_COLS, rows_shown=set(revealed))
+        _render(text_of, fills, third, set(), out, dim=DIM_COLS, rows_shown=set(revealed),
+                active=set(group) if group else None)
         print(f"wrote {out.relative_to(_ROOT)}")
+    out = OUT_DIR / f"{STEM}_rows_{len(ROW_GROUPS) + 1}.svg"
+    _render(text_of, fills, third, set(), out, dim=DIM_COLS, rows_shown=set(MEASURES),
+            borders=CONCLUSION_BORDERS)
+    print(f"wrote {out.relative_to(_ROOT)}")
 
     for i, (shown, borders) in enumerate(zip(FRAMES, DRAFT_BORDERS), start=1):
         out = OUT_DIR / f"{STEM}_draft_{i}.svg"
