@@ -4,13 +4,15 @@ Frame 1 is the plain table. Frames 2-4 add the worst, middle and best tiers in
 turn (red, then yellow, then green), each frame keeping the colours of the one
 before, so clicking through the slides builds the heatmap up.
 
-Text is black throughout. A cell's tier sets its fill; the standout cells within
-a tier get a darker shade of that fill and bold text.
+A cell's tier sets a light fill with darker text of the same colour. The best and
+worst value in each row (ties included) get a darker gradient fill and black, bold,
+underlined text.
 
-Values are read from the chapter's scenario-comparison CSV on every run. The tier
-grid below is editorial: the authors' own reading of which cells count as worst,
-middle and best, so it is typed rather than computed. A guard checks that it
-covers every scenario and measure the CSV carries.
+Values are read from the chapter's scenario-comparison CSV on every run, and the
+row-wise best and worst are computed from them. The tier grid below is editorial:
+the authors' own reading of which cells count as worst, middle and best, so it is
+typed rather than computed. Guards check that it covers every scenario and measure,
+and that every computed best is green and every computed worst is red.
 """
 from __future__ import annotations
 
@@ -51,22 +53,27 @@ RECEIVES_FILL = {"Data + code": ("#2E6DA4", "#7393B3"), "Our model": ("#9C2A96",
 RECEIVES = {"A": "Nothing", "B": "Data + code", "C": "Our model", "F": "All three",
             "D": "Data + code", "E": "Our model", "G": "All three"}
 
-# Editorial tier grid: R/O/G = worst/middle/best; a trailing * = standout (darker, bold).
+# Editorial tier grid: R/O/G = worst/middle/best (O renders yellow).
 TIERS = {
-    "Usable answers":           dict(A="R*", B="G*", C="G*", F="G*", D="G*", E="G*", G="G*"),
-    "Median APE":               dict(A="R*", B="G*", C="O*", F="O",  D="G*", E="O*", G="G"),
-    "Mean APE":                 dict(A="R*", B="R",  C="G*", F="O*", D="R",  E="G*", G="G"),
-    "Variation across repeats": dict(A="R*", B="O",  C="G*", F="O*", D="R",  E="G*", G="O"),
-    "Identical on repeat":      dict(A="R*", B="R*", C="G*", F="O*", D="R*", E="G*", G="O*"),
-    "Cost per answer":          dict(A="R",  B="R",  C="G*", F="R",  D="R*", E="O*", G="R"),
-    "Latency":                  dict(A="O",  B="R*", C="G*", F="R",  D="R",  E="O*", G="R"),
+    "Usable answers":           dict(A="R", B="G", C="G", F="G", D="G", E="G", G="G"),
+    "Median APE":               dict(A="R", B="G", C="O", F="O", D="G", E="O", G="G"),
+    "Mean APE":                 dict(A="R", B="R", C="G", F="O", D="R", E="G", G="G"),
+    "Variation across repeats": dict(A="R", B="O", C="G", F="O", D="R", E="G", G="O"),
+    "Identical on repeat":      dict(A="R", B="R", C="G", F="O", D="R", E="G", G="O"),
+    "Cost per answer":          dict(A="R", B="R", C="G", F="R", D="R", E="O", G="R"),
+    "Latency":                  dict(A="O", B="R", C="G", F="R", D="R", E="O", G="R"),
 }
+# Which direction is better, per row; drives the computed best and worst.
+HIGHER_IS_BETTER = {"Usable answers", "Identical on repeat"}
 
 # Red / yellow / green as tints over white. The middle tier is yellow rather than the
 # theme's orange: at light tints orange and red were too close to tell apart.
 # Standout cells get a diagonal gradient between two darker tints (top-left darker).
 _BASE = {"R": "#FF0000", "O": "#FFC000", "G": "#196B24"}
-_LIGHT = 0.24
+_LIGHT = 0.32
+# Text on light cells: a dark shade of the same colour (the spreadsheet
+# "light fill, dark text" convention), so the tier reads from the text as well.
+_TEXT = {"R": "#9C0006", "O": "#7A5C00", "G": "#0E4A17"}
 _DARK_FROM, _DARK_TO = 0.70, 0.45
 
 
@@ -81,7 +88,7 @@ def _money(x: str) -> str:
     return f"$ {v:.3f}" if v < 0.1 else f"$ {v:.2f}"
 
 
-def _values(df: pd.DataFrame) -> dict[str, dict[str, str]]:
+def _values(df: pd.DataFrame) -> tuple[dict[str, dict[str, str]], set[tuple[str, str]]]:
     row = df.set_index("Measure")
     pick = lambda prefix: row.loc[[i for i in row.index if i.startswith(prefix)][0]]  # noqa: E731
     runs, usable = pick("Runs completed"), pick("Usable answers")
@@ -97,7 +104,29 @@ def _values(df: pd.DataFrame) -> dict[str, dict[str, str]]:
     missing = [(m, s) for m in out for s in RUNS_IN if s not in TIERS.get(m, {})]
     if missing:
         raise SystemExit(f"Tier grid does not cover: {missing}")
-    return out
+
+    nums = {
+        "Usable answers": pick("Usable answers"), "Median APE": pick("Median APE"),
+        "Mean APE": pick("Mean APE"), "Variation across repeats": pick("Consistency"),
+        "Identical on repeat": pick("Replicability"),
+        "Cost per answer": pick("Cost per answer").str.replace("$", "", regex=False),
+        "Latency": pick("Response time"),
+    }
+    standouts, wrong = set(), []
+    for measure, series in nums.items():
+        v = {s: float(series[s]) for s in RUNS_IN}
+        best = max if measure in HIGHER_IS_BETTER else min
+        worst = min if measure in HIGHER_IS_BETTER else max
+        for pick_fn, tier in ((best, "G"), (worst, "R")):
+            edge = pick_fn(v.values())
+            for s, x in v.items():
+                if x == edge:
+                    standouts.add((measure, s))
+                    if TIERS[measure][s] != tier:
+                        wrong.append((measure, s, TIERS[measure][s], tier))
+    if wrong:
+        raise SystemExit(f"Computed best/worst disagrees with the tier grid: {wrong}")
+    return out, standouts
 
 
 def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> None:
@@ -111,7 +140,7 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> 
               extent=(x, x + w, y + h, y), interpolation="bicubic", zorder=1)
 
 
-def _render(values: dict, shown: set[str], path: Path) -> None:
+def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.03
     cols = LEFT + RIGHT
@@ -153,7 +182,7 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
                           *RECEIVES_FILL[cell])
                 text(x0[s] + 0.12, y + row_h / 2, cell, bold=True, size=10.5, colour="white")
                 continue
-            colour, strong = tier[:1], tier.endswith("*")
+            colour, strong = tier, (measure, s) in standouts
             on = colour in shown
             if on and strong:
                 _gradient(ax, x0[s] + pad, y + pad, col_w - 2 * pad, row_h - 2 * pad,
@@ -162,7 +191,9 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
             elif on:
                 ax.add_patch(Rectangle((x0[s] + pad, y + pad), col_w - 2 * pad, row_h - 2 * pad,
                                        facecolor=_tint(_BASE[colour], _LIGHT), edgecolor="none"))
-            label = text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5)
+            ink = _TEXT[colour] if on and not strong else "black"
+            label = text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5,
+                         colour=ink)
             if on and strong:
                 underline.append(label)
 
@@ -190,12 +221,12 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
 def main() -> None:
     if not SOURCE.is_file():
         raise SystemExit(f"Missing source table: {SOURCE}")
-    values = _values(pd.read_csv(SOURCE, dtype=str))
+    values, standouts = _values(pd.read_csv(SOURCE, dtype=str))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     frames = [set(), {"R"}, {"R", "O"}, {"R", "O", "G"}]
     for i, shown in enumerate(frames, start=1):
         out = OUT_DIR / f"{STEM}_{i}.svg"
-        _render(values, shown, out)
+        _render(values, standouts, shown, out)
         print(f"wrote {out.relative_to(_ROOT)}")
 
 
