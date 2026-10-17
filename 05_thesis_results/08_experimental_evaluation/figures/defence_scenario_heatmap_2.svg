@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-10-17T15:20:10.934963</dc:date>
+    <dc:date>2026-10-17T15:22:41.179402</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -29,9 +29,9 @@ z
 " style="fill: #ffffff"/>
   </g>
   <g id="axes_1">
-   <g clip-path="url(#p7f0bf4c0bc)">
+   <g clip-path="url(#pb78784bb49)">
     <image xlink:href="data:image/png;base64,
-iVBORw0KGgoAAAANSUhEUgAAAh0AAAAZCAYAAACVbpzYAAACZElEQVR4nO3dMUozYRCA4THZeq8gnkQsbVKIl7AwoHgNEdJ4Cps0th7FM6TPrqQOacy8w6Dv0/6QX5bw4sx+H148bbZz6Gxv69XFqX/7fNh+R8Slj/lsV7fvq8OzPDKO41dEXPuMz3az2+0OzzLN02b7ERF3mZ/5T92/rVeHZ3nk82H7GhHP9T/Sn/Ny+746PMsj4zg+RsSm/kf6W4bJXzlwsw8Zt1gs+P9Ev+LXn2djeDYmx7C3CLh57292NIPQl43h2Riejckx7KekT9JJTiG85XLpN7ApG8OzMTwbk2OYZqdw2mx1cU4hfdkYno3h2Zgcvl4p4BTCcwrpy9crPBvDszE5Bo8b8CYfMs4ppC+//jwbw7MxOdx0FPCQF88ppC83HTwbw7MxOYa9Zzpwrj55TiF92RiejeHZmBzeXingFMJzCunLc9Q8G8OzMTm8vVLAk+U8p5C+vL3CszE8G5PDTUcBV588g9CXmw6ejeHZmBye6Sjg6pPn6rMvz3TwbAzPxuTw9koBr7PxDEJf3l7h2Riejcnh65UCrj55rj778vUKz8bwbEwOD5IW8JAXzyD05UFSno3h2ZgcbjoK+L6V5+qzLzcdPBvDszE5PEhawNUnzymkLw+S8mwMz8bk8CBpAacQnlNIXx4k5dkYno3J4R98K+DJcp5TSF/+wTeejeHZmBxuOgq4+uQ5hfTlpoNnY3g2Joe3Vwp4spznFNKXt1d4NoZnY3J4e6WAUwjPKaQvb6/wbAzPxuTw9UoBD3nxnEL68vUKz8bwbEyOYZqTPkknOYXwDEJfNoZnY3g2JlL8ACwVJSKZlT/iAAAAAElFTkSuQmCC" id="imagefc407aa782" transform="scale(1 -1) translate(0 -18)" x="213" y="-79.14608" width="389.52" height="18"/>
+iVBORw0KGgoAAAANSUhEUgAAAh0AAAAZCAYAAACVbpzYAAACkUlEQVR4nO3dMUpzURDF8Uny6mxBLIVsQcTSJoK6CQsFxSp7ECGNq7Awja3gFgK2riF93pPUIYXJnOOQ/H+t8EWGj7lzz7039h6msy6ws5f7cW/Tzz5uZz8RcUSZd3Z88Tpe1XLNcDj8jIgzaryz88Visaplmvev+VtEXGX+mwfq5vJ0tKrlmu+3+XNEPPp/pb3zdHI9WtVyzWQyuYuIqf9X2i9Ny8gh11FkuX6/r/8QbKWjx+hRY7leb+O+En/QLFkQ5bolHUGNoaOu9r9/gQPAxkaPHpOjWdIR5GgIeoPBwPAp2EZL1KFHjeVIOnI0NAS9jslOjl1IXayHhhqzeZRj6MjB8YoBSYceSUddnODqdUx2cmxscjRcN9BrKbIcDaEuFkQDJjs5ko4cJB0GXCTVI+moi/VQj6BDj6EjR7Pkf6scxyt6JB110WIMNWayk6PH5OD1igFJhx5JR10tXyKhx2QnR9KRg9crBrxe0WMXUhfroaHGvF6RY+jIQdJhQPSpx9BRF8m/AZOdHD0mB3c6DDhe0eN4pS7WQ2q8D0g6cvB6xYAns3oMHXXxBYR6pKl6DB05OF4xoCHoEX3WxfGKAXGSHD0mBxdJDbhIqkdDqIv10FBjLpLKkXTkIOkw4E6HHscrdfFk1oDJTo6hIwcXSQ04XtEj6aiL9dBQY86w5OgxObhIakDSoUfSURfroR6DnR5JRw7+4JsBr1f02IXUxR98M2Cyk2PoyEHSYUD0qUfSURfroR6DnR4bmxy8XjHg9YoeDaEuon9DjXm9IkfSkYPXKwYkHXokHXXx5WAGTHZyDB05OF4x4CKpHklHXWzC9djY6NFjcjSct+rREPRoCHWxCXcU2fEhh42kI1L8ArGhCIJ59zTcAAAAAElFTkSuQmCC" id="image29a11d6df1" transform="scale(1 -1) translate(0 -18)" x="213" y="-79.14608" width="389.52" height="18"/>
    </g>
    <g id="patch_2">
     <path d="M 138.33 103.1112 
@@ -39,153 +39,89 @@ L 196.92 103.1112
 L 196.92 120.852 
 L 138.33 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
+" clip-path="url(#pb78784bb49)" style="fill: #f8696b"/>
    </g>
    <g id="patch_3">
-    <path d="M 138.33 126.396 
-L 196.92 126.396 
-L 196.92 144.1368 
-L 138.33 144.1368 
+    <path d="M 212.544 103.1112 
+L 271.134 103.1112 
+L 271.134 120.852 
+L 212.544 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
+" clip-path="url(#pb78784bb49)" style="fill: #63be7b"/>
    </g>
    <g id="patch_4">
-    <path d="M 276.714 126.396 
-L 335.304 126.396 
-L 335.304 144.1368 
-L 276.714 144.1368 
+    <path d="M 276.714 103.1112 
+L 335.304 103.1112 
+L 335.304 120.852 
+L 276.714 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #fcaa78"/>
+" clip-path="url(#pb78784bb49)" style="fill: #63be7b"/>
    </g>
    <g id="patch_5">
-    <path d="M 479.268 126.396 
-L 537.858 126.396 
-L 537.858 144.1368 
-L 479.268 144.1368 
+    <path d="M 340.884 103.1112 
+L 399.474 103.1112 
+L 399.474 120.852 
+L 340.884 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #fcaa78"/>
+" clip-path="url(#pb78784bb49)" style="fill: #63be7b"/>
    </g>
    <g id="patch_6">
-    <path d="M 138.33 149.6808 
-L 196.92 149.6808 
-L 196.92 167.4216 
-L 138.33 167.4216 
+    <path d="M 415.098 103.1112 
+L 473.688 103.1112 
+L 473.688 120.852 
+L 415.098 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
+" clip-path="url(#pb78784bb49)" style="fill: #a9dbb6"/>
    </g>
    <g id="patch_7">
-    <path d="M 212.544 149.6808 
-L 271.134 149.6808 
-L 271.134 167.4216 
-L 212.544 167.4216 
+    <path d="M 479.268 103.1112 
+L 537.858 103.1112 
+L 537.858 120.852 
+L 479.268 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #fb9874"/>
+" clip-path="url(#pb78784bb49)" style="fill: #a9dbb6"/>
    </g>
    <g id="patch_8">
-    <path d="M 138.33 172.9656 
-L 196.92 172.9656 
-L 196.92 190.7064 
-L 138.33 190.7064 
+    <path d="M 543.438 103.1112 
+L 602.028 103.1112 
+L 602.028 120.852 
+L 543.438 120.852 
 z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
+" clip-path="url(#pb78784bb49)" style="fill: #a9dbb6"/>
    </g>
-   <g id="patch_9">
-    <path d="M 415.098 172.9656 
-L 473.688 172.9656 
-L 473.688 190.7064 
-L 415.098 190.7064 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #fb9874"/>
-   </g>
-   <g id="patch_10">
-    <path d="M 138.33 196.2504 
-L 196.92 196.2504 
-L 196.92 213.9912 
-L 138.33 213.9912 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
-   </g>
-   <g id="patch_11">
-    <path d="M 212.544 196.2504 
-L 271.134 196.2504 
-L 271.134 213.9912 
-L 212.544 213.9912 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
-   </g>
-   <g id="patch_12">
-    <path d="M 415.098 196.2504 
-L 473.688 196.2504 
-L 473.688 213.9912 
-L 415.098 213.9912 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
-   </g>
-   <g id="patch_13">
-    <path d="M 415.098 219.5352 
-L 473.688 219.5352 
-L 473.688 237.276 
-L 415.098 237.276 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
-   </g>
-   <g id="patch_14">
-    <path d="M 543.438 219.5352 
-L 602.028 219.5352 
-L 602.028 237.276 
-L 543.438 237.276 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #fa9473"/>
-   </g>
-   <g id="patch_15">
-    <path d="M 212.544 242.82 
-L 271.134 242.82 
-L 271.134 260.5608 
-L 212.544 260.5608 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #f8696b"/>
-   </g>
-   <g id="patch_16">
-    <path d="M 415.098 242.82 
-L 473.688 242.82 
-L 473.688 260.5608 
-L 415.098 260.5608 
-z
-" clip-path="url(#p7f0bf4c0bc)" style="fill: #fa9473"/>
-   </g>
-   <g clip-path="url(#p7f0bf4c0bc)">
+   <g clip-path="url(#pb78784bb49)">
     <image xlink:href="data:image/png;base64,
-iVBORw0KGgoAAAANSUhEUgAAALoAAAAQCAYAAAChiWV5AAAA3ElEQVR4nO2aYQ6DIAxGW466a+xuO9q6VMApdo7f5b3EQKGtYL6govp4Pa2IiIpIUZGt3kq3j+1FdcpPVeP2Xj/Z+idXfO5Zv0vefQyD3+28rmOc9YvyqolIP97WysHe26ptvb77DXYQayd/C/N+46uv3fSdznPoqzE/5tNjg1x2m3ccc7sO0dwnxuzXHSA3m9Bd8QCZqXdwlA65cYWX+hQJkJf6brY93QNkX9F9KwAgMX23DSA3bC/CKrCiwxIgdMhP+yINkB6EDkuA0GEJEDqkx/+SROgg2fFvoh+y0YjrSSHpxwAAAABJRU5ErkJggg==" id="image5f996b7bf4" transform="scale(1 -1) translate(0 -11.52)" x="182.97" y="-271.32768" width="133.92" height="11.52"/>
+iVBORw0KGgoAAAANSUhEUgAAALoAAAAQCAYAAAChiWV5AAAA3ElEQVR4nO2aYQ6DIAxGW466a+xuO9q6VMApdo7f5b3EQKGtYL6govp4Pa2IiIpIUZGt3kq3j+1FdcpPVeP2Xj/Z+idXfO5Zv0vefQyD3+28rmOc9YvyqolIP97WysHe26ptvb77DXYQayd/C/N+46uv3fSdznPoqzE/5tNjg1x2m3ccc7sO0dwnxuzXHSA3m9Bd8QCZqXdwlA65cYWX+hQJkJf6brY93QNkX9F9KwAgMX23DSA3bC/CKrCiwxIgdMhP+yINkB6EDkuA0GEJEDqkx/+SROgg2fFvoh+y0YjrSSHpxwAAAABJRU5ErkJggg==" id="imagee319c98d0c" transform="scale(1 -1) translate(0 -11.52)" x="182.97" y="-271.32768" width="133.92" height="11.52"/>
    </g>
    <g id="line2d_1">
     <path d="M 135.54 30.4848 
 L 604.818 30.4848 
-" clip-path="url(#p7f0bf4c0bc)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="line2d_2">
     <path d="M 7.2 53.7696 
 L 604.818 53.7696 
-" clip-path="url(#p7f0bf4c0bc)" style="fill: none; stroke: #000000; stroke-width: 1.4; stroke-linecap: square"/>
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #000000; stroke-width: 1.4; stroke-linecap: square"/>
    </g>
    <g id="line2d_3">
     <path d="M 134.424 7.2 
 L 134.424 263.3328 
-" clip-path="url(#p7f0bf4c0bc)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="line2d_4">
     <path d="M 204.732 30.4848 
 L 204.732 263.3328 
-" clip-path="url(#p7f0bf4c0bc)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="line2d_5">
     <path d="M 407.286 30.4848 
 L 407.286 263.3328 
-" clip-path="url(#p7f0bf4c0bc)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #7f7f7f; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="line2d_6">
     <path d="M 7.2 100.3392 
 L 604.818 100.3392 
-" clip-path="url(#p7f0bf4c0bc)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="text_1">
     <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri'; text-anchor: middle" x="370.179" y="22.10865" transform="rotate(-0 370.179 22.10865)">Scenarios</text>
@@ -269,34 +205,34 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="114.618905" transform="rotate(-0 142.236 114.618905)">6/9</text>
    </g>
    <g id="text_28">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="216.45" y="114.618905" transform="rotate(-0 216.45 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="114.618905" transform="rotate(-0 216.45 114.618905)">9/9</text>
    </g>
    <g id="text_29">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="280.62" y="114.618905" transform="rotate(-0 280.62 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="114.618905" transform="rotate(-0 280.62 114.618905)">9/9</text>
    </g>
    <g id="text_30">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="344.79" y="114.618905" transform="rotate(-0 344.79 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="344.79" y="114.618905" transform="rotate(-0 344.79 114.618905)">9/9</text>
    </g>
    <g id="text_31">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="419.004" y="114.618905" transform="rotate(-0 419.004 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="114.618905" transform="rotate(-0 419.004 114.618905)">9/9</text>
    </g>
    <g id="text_32">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="483.174" y="114.618905" transform="rotate(-0 483.174 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="114.618905" transform="rotate(-0 483.174 114.618905)">9/9</text>
    </g>
    <g id="text_33">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="547.344" y="114.618905" transform="rotate(-0 547.344 114.618905)">9/9</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="114.618905" transform="rotate(-0 547.344 114.618905)">9/9</text>
    </g>
    <g id="text_34">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="137.904525" transform="rotate(-0 11.664 137.904525)">Median APE</text>
    </g>
    <g id="text_35">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="137.903705" transform="rotate(-0 142.236 137.903705)">502.2 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="142.236" y="137.903705" transform="rotate(-0 142.236 137.903705)">502.2 %</text>
    </g>
    <g id="text_36">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="216.45" y="137.903705" transform="rotate(-0 216.45 137.903705)">2.9 %</text>
    </g>
    <g id="text_37">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="280.62" y="137.903705" transform="rotate(-0 280.62 137.903705)">14.6 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="280.62" y="137.903705" transform="rotate(-0 280.62 137.903705)">14.6 %</text>
    </g>
    <g id="text_38">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="344.79" y="137.903705" transform="rotate(-0 344.79 137.903705)">7.3 %</text>
@@ -305,7 +241,7 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="419.004" y="137.903705" transform="rotate(-0 419.004 137.903705)">0.9 %</text>
    </g>
    <g id="text_40">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="483.174" y="137.903705" transform="rotate(-0 483.174 137.903705)">14.6 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="483.174" y="137.903705" transform="rotate(-0 483.174 137.903705)">14.6 %</text>
    </g>
    <g id="text_41">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="547.344" y="137.903705" transform="rotate(-0 547.344 137.903705)">1.8 %</text>
@@ -314,10 +250,10 @@ L 604.818 100.3392
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="161.189325" transform="rotate(-0 11.664 161.189325)">Mean APE</text>
    </g>
    <g id="text_43">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="161.188505" transform="rotate(-0 142.236 161.188505)">662.1 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="142.236" y="161.188505" transform="rotate(-0 142.236 161.188505)">662.1 %</text>
    </g>
    <g id="text_44">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="161.188505" transform="rotate(-0 216.45 161.188505)">27.9 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="216.45" y="161.188505" transform="rotate(-0 216.45 161.188505)">27.9 %</text>
    </g>
    <g id="text_45">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="280.62" y="161.188505" transform="rotate(-0 280.62 161.188505)">13.1 %</text>
@@ -338,7 +274,7 @@ L 604.818 100.3392
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="184.474125" transform="rotate(-0 11.664 184.474125)">Variation across repeats</text>
    </g>
    <g id="text_51">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="184.473305" transform="rotate(-0 142.236 184.473305)">26.7 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="142.236" y="184.473305" transform="rotate(-0 142.236 184.473305)">26.7 %</text>
    </g>
    <g id="text_52">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="216.45" y="184.473305" transform="rotate(-0 216.45 184.473305)">4.1 %</text>
@@ -350,7 +286,7 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="344.79" y="184.473305" transform="rotate(-0 344.79 184.473305)">1.7 %</text>
    </g>
    <g id="text_55">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="184.473305" transform="rotate(-0 419.004 184.473305)">8.1 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="419.004" y="184.473305" transform="rotate(-0 419.004 184.473305)">8.1 %</text>
    </g>
    <g id="text_56">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="483.174" y="184.473305" transform="rotate(-0 483.174 184.473305)">0.0 %</text>
@@ -362,10 +298,10 @@ L 604.818 100.3392
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="207.758925" transform="rotate(-0 11.664 207.758925)">Identical on repeat</text>
    </g>
    <g id="text_59">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="142.236" y="207.758105" transform="rotate(-0 142.236 207.758105)">0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="142.236" y="207.758105" transform="rotate(-0 142.236 207.758105)">0 %</text>
    </g>
    <g id="text_60">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="207.758105" transform="rotate(-0 216.45 207.758105)">0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="216.45" y="207.758105" transform="rotate(-0 216.45 207.758105)">0 %</text>
    </g>
    <g id="text_61">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="280.62" y="207.758105" transform="rotate(-0 280.62 207.758105)">100 %</text>
@@ -374,7 +310,7 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="344.79" y="207.758105" transform="rotate(-0 344.79 207.758105)">33 %</text>
    </g>
    <g id="text_63">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="207.758105" transform="rotate(-0 419.004 207.758105)">0 %</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="419.004" y="207.758105" transform="rotate(-0 419.004 207.758105)">0 %</text>
    </g>
    <g id="text_64">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="483.174" y="207.758105" transform="rotate(-0 483.174 207.758105)">100 %</text>
@@ -398,13 +334,13 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="344.79" y="231.070795" transform="rotate(-0 344.79 231.070795)">$ 0.43</text>
    </g>
    <g id="text_71">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="231.070795" transform="rotate(-0 419.004 231.070795)">$ 0.77</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="419.004" y="231.070795" transform="rotate(-0 419.004 231.070795)">$ 0.77</text>
    </g>
    <g id="text_72">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="483.174" y="231.070795" transform="rotate(-0 483.174 231.070795)">$ 0.20</text>
    </g>
    <g id="text_73">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="547.344" y="231.070795" transform="rotate(-0 547.344 231.070795)">$ 0.55</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="547.344" y="231.070795" transform="rotate(-0 547.344 231.070795)">$ 0.55</text>
    </g>
    <g id="text_74">
     <text style="font-weight: 700; font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="11.664" y="254.328525" transform="rotate(-0 11.664 254.328525)">Latency</text>
@@ -413,7 +349,7 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="142.236" y="254.327705" transform="rotate(-0 142.236 254.327705)">69.5 s</text>
    </g>
    <g id="text_76">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="216.45" y="254.327705" transform="rotate(-0 216.45 254.327705)">123.8 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="216.45" y="254.327705" transform="rotate(-0 216.45 254.327705)">123.8 s</text>
    </g>
    <g id="text_77">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="280.62" y="254.327705" transform="rotate(-0 280.62 254.327705)">6.0 s</text>
@@ -422,7 +358,7 @@ L 604.818 100.3392
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="344.79" y="254.327705" transform="rotate(-0 344.79 254.327705)">103.9 s</text>
    </g>
    <g id="text_79">
-    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start" x="419.004" y="254.327705" transform="rotate(-0 419.004 254.327705)">111.3 s</text>
+    <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="419.004" y="254.327705" transform="rotate(-0 419.004 254.327705)">111.3 s</text>
    </g>
    <g id="text_80">
     <text style="font-size: 10.5px; font-family: 'Calibri'; text-anchor: start; fill: #b4b4b4" x="483.174" y="254.327705" transform="rotate(-0 483.174 254.327705)">31.7 s</text>
@@ -439,10 +375,19 @@ L 604.818 100.3392
    <g id="text_84">
     <text style="font-size: 10px; font-family: 'Calibri'; text-anchor: start" x="361.53" y="279.815399" transform="rotate(-0 361.53 279.815399)">Ranked across all seven scenarios, per row</text>
    </g>
+   <g id="patch_9">
+    <path d="M 136.935 101.7252 
+L 603.702 101.7252 
+L 603.702 122.238 
+L 136.935 122.238 
+L 136.935 101.7252 
+z
+" clip-path="url(#pb78784bb49)" style="fill: none; stroke: #000000; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
   </g>
  </g>
  <defs>
-  <clipPath id="p7f0bf4c0bc">
+  <clipPath id="pb78784bb49">
    <rect x="7.2" y="7.2" width="597.618" height="281.74608"/>
   </clipPath>
  </defs>

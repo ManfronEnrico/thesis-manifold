@@ -1,14 +1,17 @@
-"""Render the scenario comparison as a four-frame heatmap build for the defence deck.
+"""Render the scenario comparison as a seven-frame heatmap build for the defence deck.
 
 Each row is coloured on a spreadsheet-style three-colour scale (green best,
 yellow middle, red worst) by the rank of its seven scenarios. Rank rather than
 value, because one baseline value (502 % median error) would otherwise squash
 the other six into a single colour. Ties share their average rank.
 
-The build: frame 1 is the plain table; frames 2-4 reveal the worst third of the
-scale, then the middle third, then the best, each frame keeping what the one
-before showed. Cells not yet revealed fade to grey so the eye goes to the new
-colour. A best-to-worst scale bar under the table appears from frame 2.
+The build reveals the table by row group, one axis of the trade-off per click:
+plain table; usable answers; accuracy; replicability; cost; latency. The group
+being discussed is at full strength and outlined; groups revealed earlier recede
+(lighter fill, grey text); groups still to come show grey numbers only. The last
+frame shows everything at full strength with the cells to look at outlined. The
+Prometheus columns are drawn lighter throughout. A best-to-worst scale bar sits
+under the table from frame 2.
 
 Every value and every colour is computed from the chapter's scenario-comparison
 CSV on each run; nothing is typed.
@@ -44,7 +47,9 @@ OUT_DIR = get_chapter_figures_dir("experimental_evaluation")
 STEM = "defence_scenario_heatmap"
 # Outputs of earlier trial variants, removed on every run so no stale copy survives.
 RETIRED = [f"{STEM}_4_within_arms.svg", f"{STEM}_4_colour_scale.svg",
-           f"{STEM}_4_draft_borders_dimmed.svg"]
+           f"{STEM}_4_draft_borders_dimmed.svg",
+           *(f"{STEM}_draft_{i}.svg" for i in range(1, 5)),
+           *(f"{STEM}_rows_{i}.svg" for i in range(1, 8))]
 
 # Column order on the slide: the GPT-5.5 orchestrator, then Prometheus.
 LEFT, RIGHT = ["A", "B", "C", "F"], ["D", "E", "G"]
@@ -64,29 +69,15 @@ HIGHER_IS_BETTER = {"Usable answers", "Identical on repeat"}
 
 # The default spreadsheet three-colour scale: best, midpoint, worst.
 SCALE = [(0.0, "#63BE7B"), (0.5, "#FFEB84"), (1.0, "#F8696B")]
-# Build order: which third of the scale each frame reveals.
-FRAMES = [set(), {"worst"}, {"worst", "middle"}, {"worst", "middle", "best"}]
 _FADED = "#B4B4B4"
 # Prometheus columns are drawn lighter: they follow B, C, F but run on a
 # proprietary platform, so the openly replicable GPT-5.5 arm carries the eye.
 DIM_COLS = set(RIGHT)
 DIM_SHARE = 0.45  # share of white blended into a dimmed column's fills
 
-# Draft: per frame, the cells its speaker notes point at, outlined.
-# Each entry is (scenario, first row, last row); a single cell repeats the row.
-DRAFT_BORDERS = [
-    [],
-    [("A", "Usable answers", "Usable answers"), ("A", "Median APE", "Median APE"),
-     ("B", "Identical on repeat", "Identical on repeat"),
-     ("D", "Identical on repeat", "Identical on repeat"),
-     ("D", "Cost per answer", "Cost per answer"), ("B", "Latency", "Latency")],
-    [("F", "Usable answers", "Latency"), ("G", "Usable answers", "Latency")],
-    [("C", "Mean APE", "Latency"), ("E", "Mean APE", "Latency"),
-     ("B", "Median APE", "Median APE"), ("D", "Median APE", "Median APE")],
-]
 BORDER_LW = 1.3
 
-# Draft: the row-reveal build, one group of rows per click (first click plain).
+# The build, one group of rows per click (first click plain).
 ROW_GROUPS = [
     [],
     ["Usable answers"],                                   # does it answer at all
@@ -146,9 +137,9 @@ def _mix(a: str, b: str, f: float) -> str:
     return "#" + "".join(f"{round(x + (y - x) * f):02X}" for x, y in zip(ca, cb))
 
 
-def _colour_scale(nums: dict) -> tuple[dict, dict]:
-    """Fill colour and build third ("best"/"middle"/"worst") for every cell."""
-    fills, third = {}, {}
+def _colour_scale(nums: dict) -> dict:
+    """Fill colour for every cell, by rank within its row."""
+    fills = {}
     for measure, v in nums.items():
         ranked = pd.Series(v).rank(ascending=measure not in HIGHER_IS_BETTER, method="average")
         span = max(ranked.max() - ranked.min(), 1)
@@ -156,8 +147,7 @@ def _colour_scale(nums: dict) -> tuple[dict, dict]:
             pos = (r - ranked.min()) / span
             (p0, c0), (p1, c1) = (SCALE[0], SCALE[1]) if pos <= 0.5 else (SCALE[1], SCALE[2])
             fills[(measure, s)] = _mix(c0, c1, (pos - p0) / (p1 - p0))
-            third[(measure, s)] = "best" if pos < 1 / 3 else "worst" if pos > 2 / 3 else "middle"
-    return fills, third
+    return fills
 
 
 def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
@@ -167,10 +157,11 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str) -> None:
               extent=(x, x + w, y + h, y), interpolation="bicubic", zorder=1)
 
 
-def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path,
-            dim: set[str] = frozenset(), borders: list = (),
-            rows_shown: set[str] | None = None, active: set[str] | None = None) -> None:
-    """`active`, when given, is also outlined as one band across the value columns."""
+def _render(text_of: dict, fills: dict, path: Path, rows_shown: set[str],
+            active: set[str] | None = None, borders: list = (),
+            dim: set[str] = frozenset()) -> None:
+    """Draw one frame. `active` rows are outlined as a band across the value columns;
+    rows in `rows_shown` but not in `active` recede."""
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
     label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
@@ -180,10 +171,7 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
     rows = ["Runs in", "Receives", *MEASURES]
     table_h = (len(rows) + 2) * row_h
     height = table_h + row_h * 1.1
-    if rows_shown is not None:
-        fade = bool(rows_shown) and rows_shown != set(MEASURES)
-    else:
-        fade = bool(shown) and shown != FRAMES[-1]
+    fade = bool(rows_shown) and rows_shown != set(MEASURES)
 
     fig, ax = plt.subplots(figsize=(width, height))
     ax.axis("off")
@@ -217,7 +205,7 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
                 else:
                     text(x0[s] + 0.12, y + row_h / 2, cell, size=10.5)
             else:
-                on = (measure in rows_shown) if rows_shown is not None else third[(measure, s)] in shown
+                on = measure in rows_shown
                 if on:
                     fill = fills[(measure, s)]
                     if s in dim:
@@ -249,7 +237,7 @@ def _render(text_of: dict, fills: dict, third: dict, shown: set[str], path: Path
     ax.plot([0, width], [row_h * 4, row_h * 4], color="black", lw=0.8)
 
     # Scale bar, best to worst, from the first coloured frame on.
-    if (rows_shown if rows_shown is not None else shown):
+    if rows_shown:
         key_y, bar_x, bar_w = table_h + row_h * 0.6, label_w + 0.85, 2.4
         text(label_w + 0.12, key_y, "Best", bold=True, size=10)
         cmap = LinearSegmentedColormap.from_list("scale", [c for _, c in SCALE])
@@ -268,32 +256,20 @@ def main() -> None:
     if not SOURCE.is_file():
         raise SystemExit(f"Missing source table: {SOURCE}")
     text_of, nums = _read(pd.read_csv(SOURCE, dtype=str))
-    fills, third = _colour_scale(nums)
+    fills = _colour_scale(nums)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for name in RETIRED:
         (OUT_DIR / name).unlink(missing_ok=True)
-    for i, shown in enumerate(FRAMES, start=1):
-        out = OUT_DIR / f"{STEM}_{i}.svg"
-        _render(text_of, fills, third, shown, out)
-        print(f"wrote {out.relative_to(_ROOT)}")
 
-    # Draft: reveal by row, grouped into the four axes of the Ch9 trade-off.
     revealed: set[str] = set()
     for i, group in enumerate(ROW_GROUPS, start=1):
         revealed |= set(group)
-        out = OUT_DIR / f"{STEM}_rows_{i}.svg"
-        _render(text_of, fills, third, set(), out, dim=DIM_COLS, rows_shown=set(revealed),
-                active=set(group) if group else None)
+        out = OUT_DIR / f"{STEM}_{i}.svg"
+        _render(text_of, fills, out, set(revealed), active=set(group) or None, dim=DIM_COLS)
         print(f"wrote {out.relative_to(_ROOT)}")
-    out = OUT_DIR / f"{STEM}_rows_{len(ROW_GROUPS) + 1}.svg"
-    _render(text_of, fills, third, set(), out, dim=DIM_COLS, rows_shown=set(MEASURES),
-            borders=CONCLUSION_BORDERS)
+    out = OUT_DIR / f"{STEM}_{len(ROW_GROUPS) + 1}.svg"
+    _render(text_of, fills, out, set(MEASURES), borders=CONCLUSION_BORDERS, dim=DIM_COLS)
     print(f"wrote {out.relative_to(_ROOT)}")
-
-    for i, (shown, borders) in enumerate(zip(FRAMES, DRAFT_BORDERS), start=1):
-        out = OUT_DIR / f"{STEM}_draft_{i}.svg"
-        _render(text_of, fills, third, shown, out, dim=DIM_COLS, borders=borders)
-        print(f"wrote {out.relative_to(_ROOT)}")
 
 
 if __name__ == "__main__":
