@@ -127,7 +127,7 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
     ax.axis("off")
 
     def text(x, y, s, bold=False, size=11, ha="left", colour="black"):
-        ax.text(x, y, s, ha=ha, va="center", fontsize=size, color=colour,
+        return ax.text(x, y, s, ha=ha, va="center", fontsize=size, color=colour,
                 fontweight="bold" if bold else "normal")
 
     text(label_w + (width - label_w) / 2, row_h * 0.5, "Scenarios", bold=True, size=13, ha="center")
@@ -137,6 +137,7 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
         text(x0[s] + 0.12, row_h * 1.5, s, bold=True, size=13)
     ax.plot([0, width], [row_h * 2, row_h * 2], color="black", lw=1.4)
 
+    underline = []
     for r, measure in enumerate(rows):
         y = (r + 2) * row_h
         text(0.08, y + row_h / 2, measure, bold=True, size=10.5)
@@ -161,12 +162,24 @@ def _render(values: dict, shown: set[str], path: Path) -> None:
             elif on:
                 ax.add_patch(Rectangle((x0[s] + pad, y + pad), col_w - 2 * pad, row_h - 2 * pad,
                                        facecolor=_tint(_BASE[colour], _LIGHT), edgecolor="none"))
-            text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5)
+            label = text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5)
+            if on and strong:
+                underline.append(label)
 
     ax.plot([label_w - 0.02, label_w - 0.02], [0, height], color="black", lw=0.8)
     for after in ("A", LEFT[-1]):
         divider_x = x0[after] + col_w + gap / 2
-        ax.plot([divider_x, divider_x], [row_h * 2, height], color="#7F7F7F", lw=0.8)
+        ax.plot([divider_x, divider_x], [row_h, height], color="#7F7F7F", lw=0.8)
+    # Separates who-gets-what (Runs in, Receives) from the measured results.
+    ax.plot([0, width], [row_h * 4, row_h * 4], color="black", lw=0.8)
+
+    # Underline the standout values; matplotlib text has no underline, so draw it.
+    renderer = fig.canvas.get_renderer()
+    to_data = ax.transData.inverted()
+    for label in underline:
+        box = label.get_window_extent(renderer)
+        (x_a, y_b), (x_b, _) = to_data.transform([(box.x0, box.y0), (box.x1, box.y1)])
+        ax.plot([x_a, x_b], [y_b + 0.01, y_b + 0.01], color="black", lw=0.9)
 
     ax.set_xlim(0, width)
     ax.set_ylim(height, 0)
