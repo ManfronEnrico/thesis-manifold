@@ -6,7 +6,7 @@ before, so clicking through the slides builds the heatmap up.
 
 A cell's tier sets a light fill with darker text of the same colour. The best and
 worst value in each row (ties included) get a darker gradient fill and black, bold
-text. In the middle frames, cells not yet coloured fade to grey; a key under the
+text, as does the best of the middle tier in each row. In the middle frames, cells not yet coloured fade to grey; a key under the
 table gains each colour as it appears.
 
 Values are read from the chapter's scenario-comparison CSV on every run, and the
@@ -133,6 +133,14 @@ def _values(df: pd.DataFrame) -> tuple[dict[str, dict[str, str]], set[tuple[str,
                         wrong.append((measure, s, TIERS[measure][s], tier))
     if wrong:
         raise SystemExit(f"Computed best/worst disagrees with the tier grid: {wrong}")
+
+    # The best of the middle (yellow) tier in each row is highlighted too, ties
+    # included, to guide the eye through the middle as well as the extremes.
+    for measure, series in nums.items():
+        mid = {s: float(series[s]) for s in RUNS_IN if TIERS[measure][s] == "O"}
+        if mid:
+            edge = (max if measure in HIGHER_IS_BETTER else min)(mid.values())
+            standouts |= {(measure, s) for s, x in mid.items() if x == edge}
     return out, standouts
 
 
@@ -219,7 +227,7 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
                                facecolor=_tint(_BASE[code], _DARK_TO)))
         text(kx + 0.42, key_y, word, size=10)
     if shown:
-        text(label_w + 0.12 + 3 * 1.0 + 0.2, key_y, "Bold = best or worst in the row", bold=True, size=10)
+        text(label_w + 0.12 + 3 * 1.0 + 0.2, key_y, "Bold = best and worst in the row, best of the middle", bold=True, size=10)
     for after in ("A", LEFT[-1]):
         divider_x = x0[after] + col_w + gap / 2
         ax.plot([divider_x, divider_x], [row_h, table_h], color="#7F7F7F", lw=0.8)
