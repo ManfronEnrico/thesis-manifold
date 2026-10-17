@@ -5,8 +5,9 @@ turn (red, then yellow, then green), each frame keeping the colours of the one
 before, so clicking through the slides builds the heatmap up.
 
 A cell's tier sets a light fill with darker text of the same colour. The best and
-worst value in each row (ties included) get a darker gradient fill and black, bold,
-underlined text.
+worst value in each row (ties included) get a darker gradient fill and black, bold
+text. In the middle frames, cells not yet coloured fade to grey; a key under the
+table gains each colour as it appears.
 
 Values are read from the chapter's scenario-comparison CSV on every run, and the
 row-wise best and worst are computed from them. The tier grid below is editorial:
@@ -74,6 +75,12 @@ _LIGHT = 0.32
 # Text on light cells: a dark shade of the same colour (the spreadsheet
 # "light fill, dark text" convention), so the tier reads from the text as well.
 _TEXT = {"R": "#9C0006", "O": "#7A5C00", "G": "#0E4A17"}
+# In the middle frames, cells not yet coloured fade to grey so the eye goes to
+# the newly coloured tier. The first (plain) and last (complete) frames stay full.
+_FADED = "#B4B4B4"
+# Underline the row-wise best and worst on top of bold. Off: bold carries it.
+UNDERLINE = False
+_KEY = [("R", "Worst"), ("O", "Middle"), ("G", "Best")]
 _DARK_FROM, _DARK_TO = 0.70, 0.45
 
 
@@ -142,13 +149,15 @@ def _gradient(ax, x, y, w, h, top: str, bottom: str, diagonal: bool = False) -> 
 
 def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
     plt.rcParams.update({"svg.fonttype": "none", "font.family": "Calibri"})
-    label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.03
+    label_w, col_w, gap, row_h, pad = 2.3, 1.15, 0.18, 0.42, 0.05
     cols = LEFT + RIGHT
     x0 = {s: label_w + i * col_w + (gap if i else 0) + (gap if s in RIGHT else 0)
           for i, s in enumerate(cols)}
     width = label_w + len(cols) * col_w + 2 * gap
     rows = ["Runs in", "Receives", *TIERS]
-    height = (len(rows) + 2) * row_h
+    table_h = (len(rows) + 2) * row_h
+    height = table_h + row_h * 1.1
+    fade = bool(shown) and shown != {c for c, _ in _KEY}
 
     fig, ax = plt.subplots(figsize=(width, height))
     ax.set_xlim(0, width)
@@ -191,16 +200,29 @@ def _render(values: dict, standouts: set, shown: set[str], path: Path) -> None:
             elif on:
                 ax.add_patch(Rectangle((x0[s] + pad, y + pad), col_w - 2 * pad, row_h - 2 * pad,
                                        facecolor=_tint(_BASE[colour], _LIGHT), edgecolor="none"))
-            ink = _TEXT[colour] if on and not strong else "black"
+            faded = fade and not on and measure in TIERS
+            ink = _TEXT[colour] if on and not strong else (_FADED if faded else "black")
             label = text(x0[s] + 0.12, y + row_h / 2, cell, bold=on and strong, size=10.5,
                          colour=ink)
-            if on and strong:
+            if on and strong and UNDERLINE:
                 underline.append(label)
 
-    ax.plot([label_w - 0.02, label_w - 0.02], [0, height], color="black", lw=0.8)
+    ax.plot([label_w - 0.02, label_w - 0.02], [0, table_h], color="black", lw=0.8)
+
+    # Key: each entry appears with its colour, in fixed slots so nothing shifts.
+    key_y = table_h + row_h * 0.6
+    for i, (code, word) in enumerate(_KEY):
+        if code not in shown:
+            continue
+        kx = label_w + 0.12 + i * 1.0
+        ax.add_patch(Rectangle((kx, key_y - 0.1), 0.32, 0.2, edgecolor="none",
+                               facecolor=_tint(_BASE[code], _DARK_TO)))
+        text(kx + 0.42, key_y, word, size=10)
+    if shown:
+        text(label_w + 0.12 + 3 * 1.0 + 0.2, key_y, "Bold = best or worst in the row", bold=True, size=10)
     for after in ("A", LEFT[-1]):
         divider_x = x0[after] + col_w + gap / 2
-        ax.plot([divider_x, divider_x], [row_h, height], color="#7F7F7F", lw=0.8)
+        ax.plot([divider_x, divider_x], [row_h, table_h], color="#7F7F7F", lw=0.8)
     # Separates who-gets-what (Runs in, Receives) from the measured results.
     ax.plot([0, width], [row_h * 4, row_h * 4], color="black", lw=0.8)
 
